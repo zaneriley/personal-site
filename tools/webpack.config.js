@@ -14,6 +14,7 @@ const path = require('path');
 const webpack = require('webpack');
 const AssetsPlugin = require('assets-webpack-plugin');
 const pkg = require('../package.json');
+const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 
 const isDebug = global.DEBUG === false ? false : !process.argv.includes('--release');
 const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v');
@@ -81,6 +82,16 @@ const config = {
     new webpack.LoaderOptionsPlugin({
       debug: isDebug,
       minimize: !isDebug,
+    }),
+    new SWPrecacheWebpackPlugin({
+      cacheId: 'zaneriley',
+      filename: 'service-worker.js',
+      maximumFileSizeToCacheInBytes: 4194304,
+      minify: true,
+      runtimeCaching: [{
+        handler: 'cacheFirst',
+        urlPattern: /[.]mp3$/,
+      }],
     }),
   ],
 

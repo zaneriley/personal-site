@@ -1,5 +1,5 @@
 ---
-title: About Us
+title: About – Zane Riley, Product Designer
 ---
 
 ## Cadme comitum fecere

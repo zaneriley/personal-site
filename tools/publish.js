@@ -22,7 +22,7 @@ module.exports = task('publish', () => new Promise((resolve, reject) => {
   const uploader = client.uploadDir({
     localDir: 'public',
     deleteRemoved: true,
-    s3Params: { Bucket: 'zaneriley' }, 
+    s3Params: { Bucket: 'zaneriley.com' }, 
   });
   uploader.on('error', reject);
   uploader.on('end', resolve);
