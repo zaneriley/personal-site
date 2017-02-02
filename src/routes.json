@@ -1,27 +1,24 @@
 [
   {
     "path": "/",
-    "page": "./home",
-    "chunk": "main",
-    "data": {
-      "articles": "GET https://gist.githubusercontent.com/koistya/a32919e847531320675764e7308b796a/raw/articles.json"
-    }
+    "page": "./pages/home",
+    "chunk": "main"
   },
   {
     "path": "/error",
-    "page": "./error",
+    "page": "./pages/error",
     "chunk": "main"
   },
   {
     "path": "/about",
-    "page": "./about"
+    "page": "./pages/about"
   },
   {
     "path": "/case-study/improving-purchase-process",
-    "page": "./improving-purchase-process"
+    "page": "./pages/improving-purchase-process"
   },
   {
     "path": "/tasks/:status(pending|completed)?",
-    "page": "./home"
+    "page": "./pages/home"
   }
 ]

@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'Maria';
+  src: local('Maria'), url(./assets/fonts/maria.woff) format('woff');
+  font-weight: 800;
+  font-style: bold;
+}
+
+@font-face {
+  font-family: 'GT America';
+  src: local('GT America Standard Light'), local('GT America Trial Light'), url(./assets/fonts/gt-america-standard-light.woff) format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
+

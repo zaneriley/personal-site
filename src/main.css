@@ -1,0 +1,57 @@
+@import './styles/fonts.css';
+@import './styles/variables.css';
+
+* {
+  margin: 0;
+}
+
+* + * {
+  margin-top: var(--baseline-normal);
+}
+
+html {
+  font-family: var(--font-family-fallback);
+  font-size: var(--font-size-main);
+  -webkit-font-smoothing: antialiased;
+  font-kerning: normal;
+}
+
+:--headers {
+  color: var(--color-secondary-base);
+}
+
+/* Fallback Fonts and Styles */
+body:not(:global(.wf-loaded)) {
+  /* GT America Fallback */
+  font-size: 0.955em;
+  line-height: 1.5;
+  word-spacing: 2px;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+/* Fallback Fonts and Styles */
+
+/* Maria Fallback */
+:global(body:not(.wf-loaded)) :--headers {
+  font-family: Arial, var(--font-family-fallback), sans-serif;
+  letter-spacing: -0.5px;
+  word-spacing: -1.25px;
+  font-weight: 600;
+}
+
+/* GT America */
+:global(.wf-loaded) {
+  font-family: var(--font-family-body);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+/* Maria */
+:global(.wf-loaded) :--headers {
+  font-family: var(--font-family-headers);
+}
+
+h1 {
+  font-size: ms(4)rem;
+}

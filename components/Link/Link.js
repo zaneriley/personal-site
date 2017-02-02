@@ -10,6 +10,8 @@
 
 import React, { PropTypes } from 'react';
 import history from '../../src/history';
+import b from '../../src/main.css';
+import s from './Link.css';
 
 class Link extends React.Component {
 

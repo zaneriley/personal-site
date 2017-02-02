@@ -20,6 +20,33 @@ import store from './store';
 import router from './router';
 import history from './history';
 
+import s from './main.css'
+
+const FontFaceObserver = require('fontfaceobserver');
+
+// Observe loading of Open Sans (to remove open sans, remove the <link> tag in
+// the index.html file and this observer)
+const maria = new FontFaceObserver('Maria', {});
+const america = new FontFaceObserver('GT America', {});
+
+// When Open Sans is loaded, add a font-family using Open Sans to the body
+maria.load().then(() => {
+  document.body.classList.add('wf-loaded');
+  console.log('font loaded successfully');
+}, () => {
+  document.body.classList.remove('wf-loaded');
+  console.log('font not loaded');
+});
+
+// When Open Sans is loaded, add a font-family using Open Sans to the body
+america.load().then(() => {
+  document.body.classList.add('wf-loaded');
+  console.log('font loaded successfully');
+}, () => {
+  document.body.classList.remove('wf-loaded');
+  console.log('font not loaded');
+});
+
 let routes = require('./routes.json').default; // Loaded with utils/routes-loader.js
 const container = document.getElementById('container');
 

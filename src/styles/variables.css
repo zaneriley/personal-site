@@ -1,0 +1,18 @@
+/* Custom Header selector */
+@custom-selector :--headers h1, h2, h3, h4, h5, h6;
+
+:root {
+  --color-main-base: #fa4aaa;
+  --color-secondary-base: #008ef6;
+  --color-secondary-dark: #0347c7;
+  --color-highlight-light: #fff009;
+  --color-neutral-base: #202020;
+  --color-neutral-absolute: #fff;
+  --font-size-main: 1.375em;
+  --font-family-fallback: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans';
+  --font-family-headers: 'Maria';
+  --font-family-body: 'GT America';
+  --ms-bases: 1;
+  --ms-ratios: 1.414;
+  --baseline-normal: 1.455rem;
+}

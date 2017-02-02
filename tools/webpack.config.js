@@ -14,7 +14,7 @@ const path = require('path');
 const webpack = require('webpack');
 const AssetsPlugin = require('assets-webpack-plugin');
 const pkg = require('../package.json');
-const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+var SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 
 const isDebug = global.DEBUG === false ? false : !process.argv.includes('--release');
 const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v');
@@ -34,6 +34,7 @@ const config = {
 
   // The entry point for the bundle
   entry: [
+    './main.css',
     /* Material Design Lite (https://getmdl.io) */
     'react-mdl/extra/material.min.js',
     /* The main entry point of your JavaScript application */
@@ -83,16 +84,18 @@ const config = {
       debug: isDebug,
       minimize: !isDebug,
     }),
-    new SWPrecacheWebpackPlugin({
-      cacheId: 'zaneriley',
-      filename: 'service-worker.js',
-      maximumFileSizeToCacheInBytes: 4194304,
-      minify: true,
-      runtimeCaching: [{
-        handler: 'cacheFirst',
-        urlPattern: /[.]mp3$/,
-      }],
-    }),
+    new SWPrecacheWebpackPlugin(
+      {
+        cacheId: 'zaneriley',
+        filepath: './service-worker.js',
+        maximumFileSizeToCacheInBytes: 4194304,
+        minify: true,
+        runtimeCaching: [{
+          handler: 'cacheFirst',
+          urlPattern: /[.]mp3$/,
+        }],
+      }
+    ),
   ],
 
   // Options affecting the normal modules
@@ -122,7 +125,10 @@ const config = {
               modules: true,
               localIdentName: isDebug ? '[name]_[local]_[hash:base64:3]' : '[hash:base64:4]',
               // CSS Nano http://cssnano.co/options/
-              minimize: !isDebug,
+              minimize: isDebug,
+              discardComments: {
+                removeAll: true
+              },
             },
           },
           {
