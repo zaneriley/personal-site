@@ -14,7 +14,7 @@ const path = require('path');
 const webpack = require('webpack');
 const AssetsPlugin = require('assets-webpack-plugin');
 const pkg = require('../package.json');
-var SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+const OfflinePlugin = require('offline-plugin');
 
 const isDebug = global.DEBUG === false ? false : !process.argv.includes('--release');
 const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v');
@@ -84,18 +84,15 @@ const config = {
       debug: isDebug,
       minimize: !isDebug,
     }),
-    new SWPrecacheWebpackPlugin(
-      {
-        cacheId: 'zaneriley',
-        filepath: './service-worker.js',
-        maximumFileSizeToCacheInBytes: 4194304,
-        minify: true,
-        runtimeCaching: [{
-          handler: 'cacheFirst',
-          urlPattern: /[.]mp3$/,
-        }],
-      }
-    ),
+    // Put it in the end to capture all the HtmlWebpackPlugin's
+    // assets manipulations and do leak its manipulations to HtmlWebpackPlugin
+    new OfflinePlugin({
+      path: path.resolve('../../public'),
+      relativePaths: false,
+      publicPath: '/',
+      updateStrategy: 'all',
+      caches: 'all',
+    })
   ],
 
   // Options affecting the normal modules

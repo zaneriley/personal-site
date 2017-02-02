@@ -16,6 +16,11 @@ html {
   font-kerning: normal;
 }
 
+:global(*::selection) {
+  text-shadow: 0.01em 0 var(--color-highlight-light), -0.1em 0 var(--color-highlight-light), 0 0.01em var(--color-highlight-light), 0 -0.1em var(--color-highlight-light), 0.06em 0 var(--color-highlight-light), -0.06em 0 var(--color-highlight-light), 0.09em 0 var(--color-highlight-light), -0.09em 0 var(--color-highlight-light), 0.12em 0 var(--color-highlight-light), -0.12em 0 var(--color-highlight-light), 0.15em 0 var(--color-highlight-light), -0.15em 0 var(--color-highlight-light), -0.136em 0.06em var(--color-highlight-light), 0.136em 0.06em var(--color-highlight-light);
+  background-color: var(--color-highlight-light);
+}
+
 :--headers {
   color: var(--color-secondary-base);
 }
@@ -23,14 +28,11 @@ html {
 /* Fallback Fonts and Styles */
 body:not(:global(.wf-loaded)) {
   /* GT America Fallback */
-  font-size: 0.955em;
-  line-height: 1.5;
-  word-spacing: 2px;
-  letter-spacing: 0;
+  font-family: 'Trebuchet MS';
+  line-height: 1.454;
+  word-spacing: -0.35px;
   font-weight: 400;
 }
-
-/* Fallback Fonts and Styles */
 
 /* Maria Fallback */
 :global(body:not(.wf-loaded)) :--headers {
@@ -40,18 +42,17 @@ body:not(:global(.wf-loaded)) {
   font-weight: 600;
 }
 
-/* GT America */
+/* Actual Font Typography */
 :global(.wf-loaded) {
+  /* GT America */
   font-family: var(--font-family-body);
   font-size: 1rem;
   line-height: 1.45;
 }
 
-/* Maria */
-:global(.wf-loaded) :--headers {
+:global(.wf-loaded) :--headers,
+:global(.wf-loaded) a {
+  /* Maria */
   font-family: var(--font-family-headers);
 }
 
-h1 {
-  font-size: ms(4)rem;
-}

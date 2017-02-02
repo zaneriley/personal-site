@@ -2,18 +2,12 @@
 
 a {
   color: var(--color-secondary-dark);
-  text-shadow: 0.03em 0 var(--color-neutral-absolute), -0.03em 0 var(--color-neutral-absolute), 0 0.03em var(--color-neutral-absolute), 0 -0.03em var(--color-neutral-absolute), 0.06em 0 var(--color-neutral-absolute), -0.06em 0 var(--color-neutral-absolute), 0.09em 0 var(--color-neutral-absolute), -0.09em 0 var(--color-neutral-absolute), 0.12em 0 var(--color-neutral-absolute), -0.12em 0 var(--color-neutral-absolute), 0.15em 0 var(--color-neutral-absolute), -0.15em 0 var(--color-neutral-absolute);
+  text-shadow: 0.01em 0 var(--color-neutral-absolute), -0.1em 0 var(--color-neutral-absolute), 0 0.01em var(--color-neutral-absolute), 0 -0.1em var(--color-neutral-absolute), 0.06em 0 var(--color-neutral-absolute), -0.06em 0 var(--color-neutral-absolute), 0.09em 0 var(--color-neutral-absolute), -0.09em 0 var(--color-neutral-absolute), 0.12em 0 var(--color-neutral-absolute), -0.12em 0 var(--color-neutral-absolute), 0.15em 0 var(--color-neutral-absolute), -0.15em 0 var(--color-neutral-absolute), -0.136em 0.06em var(--color-neutral-absolute), 0.136em 0.06em var(--color-neutral-absolute);
   text-decoration: none;
   background-image: linear-gradient(var(--color-secondary-dark), var(--color-secondary-dark));
   background-size: 1px 1px;
   background-repeat: repeat-x;
   background-position: 0% 95%;
-
-  &::selection,
-  &::-moz-selection {
-    text-shadow: 0.03em 0 var(--color-highlight-light) -0.03em 0 var(--color-highlight-light), 0 0.03em var(--color-highlight-light), 0 -0.03em var(--color-highlight-light), 0.06em 0 var(--color-highlight-light), -0.06em 0 var(--color-highlight-light), 0.09em 0 var(--color-highlight-light), -0.09em 0 var(--color-highlight-light), 0.12em 0 var(--color-highlight-light), -0.12em 0 var(--color-highlight-light), 0.15em 0 var(--color-highlight-light), -0.15em 0 var(--color-highlight-light);
-    background-color: (--color-highlight-light);
-  }
 
   &::before,
   &::after,
@@ -21,9 +15,5 @@ a {
   *::before,
   *::after {
     text-shadow: none;
-  }
-
-  &:visited {
-    color: inherit;
   }
 }
