@@ -22,6 +22,14 @@
   flex-wrap: wrap;
 }
 
+* + .gMarginLeftSmall {
+  margin-left: var(--baseline-normal);
+}
+
+.gNoMarginTop {
+  margin-top: 0;
+}
+
 @media (--small-bp) {
 
   .g3s {
@@ -58,6 +66,7 @@
 }
 
 @media (--medium-bp) {
+
   * + .gMarginLeftM {
     margin-left: var(--gutter);
   }

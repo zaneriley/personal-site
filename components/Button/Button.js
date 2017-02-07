@@ -11,6 +11,7 @@
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
 import Link from '../Link';
+import s from './Button.css';
 
 class Button extends React.Component {
 

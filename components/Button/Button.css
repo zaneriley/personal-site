@@ -1,0 +1,35 @@
+button {
+  position: relative;
+  display: inline-block;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  background-color: transparent;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  //overflow: hidden;
+  z-index: 1;
+
+  /* Removes the 300ms delay on touch-enabled devices. */
+  touch-action: manipulation;
+
+  /* Disables the selection of text on mobile so that we better reconigize a user is clicking on a link */
+  user-select: none;
+  clip: rect(0, 0, 0, 0);
+  background-image:
+    url(
+      'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0" y="0" viewBox="0 0 91 36" enable-background="new 0 0 91 36" xml:space="preserve"><path fill="none" stroke="#32E2CE" stroke-width="20" stroke-linecap="square" class="st0" stroke-miterlimit="10" d="M10 10c22.8 0 22.8 16 45.5 16S78.2 10 101 10M101 10c22.8 0 22.8 16 45.5 16s22.8-16 45.5-16"/></svg>'
+    );
+  background-position: 0 calc(100% - 1.5px);
+  background-size: auto 7px;
+  background-repeat: repeat-x;
+  padding-bottom: 15px;
+
+  &:hover {
+    background-image:
+      url(
+        'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0" y="0" viewBox="0 0 91 36" enable-background="new 0 0 91 36" xml:space="preserve"><style type="text/css">.st0{animation:background .3s linear infinite;} @keyframes background {from {transform:translateX(0);}to {transform:translateX(-50%);}}</style><path fill="none" stroke="#32E2CE" stroke-width="20" stroke-linecap="square" class="st0" stroke-miterlimit="10" d="M10 10c22.8 0 22.8 16 45.5 16S78.2 10 101 10M101 10c22.8 0 22.8 16 45.5 16s22.8-16 45.5-16"/></svg>'
+      );
+  }
+}

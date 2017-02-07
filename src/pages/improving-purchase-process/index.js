@@ -12,18 +12,19 @@ import React from 'react';
 import Layout from '../../../components/Layout';
 import About from '../../../components/About';
 import s from './styles.css';
-import { title, html } from './index.md';
+import { title, about, html } from './index.md';
 
 class ImprovingPurchaseProcessPage extends React.Component {
 
   componentDidMount() {
     document.title = title;
+    document.about = about;
   }
 
   render() {
     return (
       <Layout className={s.content}>
-        <About title={title}/>
+        <About title={title} about="Brit + Co helps women discover online courses and DIY tutorials to improve their creativity and embrace their passion. At the time of this project, we separately sold the supplies (“Kits”) for projects and Classes." role="Wireframing and visual design of kit page. Developed prototype and led user testing." result="<strong>3.5% increase</strong> in the attach rate (the rate at which classes and kits were purchased together)."/>
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </Layout>
     );
