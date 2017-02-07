@@ -66,6 +66,7 @@
     "postcss-nesting": "^2.3.1",
     "postcss-selector-matches": "^2.0.5",
     "postcss-selector-not": "^2.0.0",
+    "postcss-strip-units": "^1.2.0",
     "react-hot-loader": "^3.0.0-beta.2",
     "react-webfontloader": "^0.1.2",
     "rimraf": "^2.5.4",

@@ -10,6 +10,7 @@
 
 import React from 'react';
 import Layout from '../../../components/Layout';
+import About from '../../../components/About';
 import s from './styles.css';
 import { title, html } from './index.md';
 
@@ -22,7 +23,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
   render() {
     return (
       <Layout className={s.content}>
-        <h1>{title}</h1>
+        <About title={title}/>
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </Layout>
     );

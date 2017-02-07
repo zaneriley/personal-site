@@ -8,6 +8,7 @@ a {
   background-size: 1px 1px;
   background-repeat: repeat-x;
   background-position: 0% 95%;
+  cursor: pointer;
 
   &::before,
   &::after,

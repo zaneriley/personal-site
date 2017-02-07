@@ -1,19 +1,20 @@
 @import './styles/fonts.css';
 @import './styles/variables.css';
-
-* {
-  margin: 0;
-}
-
-* + * {
-  margin-top: var(--baseline-normal);
-}
+@import './styles/grid.css';
 
 html {
   font-family: var(--font-family-fallback);
-  font-size: var(--font-size-main);
+  font-size: var(--font-body-small);
   -webkit-font-smoothing: antialiased;
   font-kerning: normal;
+
+  @media (--small-bp) {
+    font-size: calc(var(--font-body-small) + (strip(var(--font-body-large)) - strip(var(--font-body-small))) * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
+  }
+
+  @media (--large-bp) {
+    font-size: var(--font-body-large);
+  }
 }
 
 :global(*::selection) {
@@ -21,8 +22,32 @@ html {
   background-color: var(--color-highlight-light);
 }
 
-:--headers {
+h1 {
+  line-height: 1.333;
+  font-size: 1.728rem;
+
+  @media (--small-bp) {
+    font-size: calc(2.074rem + 1.105 * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
+  }
+
+  @media (--large-bp) {
+    font-size: 2.833rem;
+  }
+}
+
+
+h2 {
+  line-height: 1.5;
+  font-size: 1.2rem;
   color: var(--color-secondary-base);
+
+  @media (--small-bp) {
+    font-size: calc(1.2rem + 0.215 * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
+  }
+
+  @media (--large-bp) {
+    font-size: 1.415rem;
+  }
 }
 
 /* Fallback Fonts and Styles */
@@ -51,8 +76,8 @@ body:not(:global(.wf-loaded)) {
 }
 
 :global(.wf-loaded) :--headers,
+:global(.wf-loaded) strong,
 :global(.wf-loaded) a {
   /* Maria */
   font-family: var(--font-family-headers);
 }
-
