@@ -1,0 +1,12 @@
+.shadow1 {
+  box-shadow: 0 2px 6px rgba(0,41,117,.19), 0 10px 20px rgba(0,41,117,.05);
+}
+
+.shadow2 {
+  box-shadow: 0 4px 8px 0 rgba(0,6,38,0.15), 0 14px 32px 0 rgba(0,36,104,0.08);
+}
+
+.borderRadiusSmall {
+  border-radius: 8px 8px 0 0;
+}
+

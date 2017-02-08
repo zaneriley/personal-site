@@ -3,7 +3,9 @@ import cx from 'classnames';
 import { Resizable, ResizableBox } from 'react-resizable';
 import v from '../../src/styles/variables.css';
 import g from '../../src/styles/grid.css';
+import z from '../../src/styles/shadows.css';
 import s from './ImageCompare.css';
+import IconChromeBar from '../IconChromeBar';
 
 type State = {width: string};
 type Size = {width: number};
@@ -30,22 +32,23 @@ class ImageCompare extends React.Component {
 
     return ( 
 
-      <figure className={`${g.maxWidth} ${g.hasBackground} ${s.ImageCompareWrapper}`}>
-
-          <div>
-            <img src={before} />
-          </div>
-
-          <Resizable width={this.state.width} height={this.state.height} axis="x" onResize={this.onResize} className={`${g.gNoMarginTop}`} draggableOpts={{bounds: "parent"}}>
-            <div style={{width: this.state.width + 'px'}}>
-              <div className={`${s.crop}`}>
-                <img className={`${s.noCrop}`} src={after} />
-              </div>
+      <div className={`${z.shadow1} ${z.borderRadiusSmall} ${g.maxWidth} ${g.hasBackground}`}>
+        <IconChromeBar />
+        <figure className={`${s.ImageCompareWrapper} ${g.gNoMarginTop}`}>
+            <div>
+              <img src={before} />
             </div>
-          </Resizable>
 
-      </figure>
+            <Resizable width={this.state.width} height={this.state.height} axis="x" onResize={this.onResize} className={`${g.gNoMarginTop}`}>
+              <div style={{width: this.state.width + 'px'}}>
+                <div className={`${s.crop}`}>
+                  <img className={`${s.noCrop}`} src={after} />
+                </div>
+              </div>
+            </Resizable>
 
+        </figure>
+      </div>
     );
   }
   

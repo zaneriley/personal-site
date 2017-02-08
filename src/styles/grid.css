@@ -22,6 +22,10 @@
   flex-wrap: wrap;
 }
 
+* + .gMarginLeftSmaller {
+  margin-left: var(--baseline-small);
+}
+
 * + .gMarginLeftSmall {
   margin-left: var(--baseline-normal);
 }

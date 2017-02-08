@@ -13,6 +13,7 @@
   --font-family-fallback: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans';
   --font-family-headers: 'Maria';
   --font-family-body: 'GT America';
+  --baseline-small: 0.7275rem;
   --baseline-normal: 1.455rem;
   --baseline-large: 2.909rem;
   --gutter: var(--baseline-large);
