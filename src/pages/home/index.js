@@ -17,7 +17,6 @@ import { title, html } from './index.md';
 class HomePage extends React.Component {
 
   static propTypes = {
-    articles: PropTypes.array.isRequired,
   };
 
   componentDidMount() {

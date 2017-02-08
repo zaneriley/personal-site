@@ -5,8 +5,8 @@ import v from '../../src/styles/variables.css';
 import g from '../../src/styles/grid.css';
 import s from './ImageCompare.css';
 
-type State = {width: string, height: number};
-type Size = {width: number, height: number};
+type State = {width: string};
+type Size = {width: number};
 type ResizeData = {element: Element, size: Size};
 
 class ImageCompare extends React.Component {
@@ -17,10 +17,11 @@ class ImageCompare extends React.Component {
     after: PropTypes.string
   };
 
-  state = {width: 200};
+  state = {width: 200, height: 200};
 
   onResize = (event, {element, size}) => {
     this.setState({width: size.width});
+    this.setState({height: size.height});
   };
 
   render() {
@@ -32,13 +33,13 @@ class ImageCompare extends React.Component {
       <figure className={`${g.maxWidth} ${g.hasBackground} ${s.ImageCompareWrapper}`}>
 
           <div>
-            <img src={after} />
+            <img src={before} />
           </div>
 
-          <Resizable width={this.state.width} axis="x" onResize={this.onResize} className={`${g.gNoMarginTop}`} draggableOpts={{bounds: "parent"}}>
+          <Resizable width={this.state.width} height={this.state.height} axis="x" onResize={this.onResize} className={`${g.gNoMarginTop}`} draggableOpts={{bounds: "parent"}}>
             <div style={{width: this.state.width + 'px'}}>
               <div className={`${s.crop}`}>
-                <img className={`${s.noCrop}`} src={before} />
+                <img className={`${s.noCrop}`} src={after} />
               </div>
             </div>
           </Resizable>

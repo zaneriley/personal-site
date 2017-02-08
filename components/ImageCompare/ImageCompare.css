@@ -20,8 +20,8 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: calc(100vw - var(--gutter) * 2);
-  max-width: calc(var(--max-width - var(--gutter) * 2));
+  width: calc(100vw - 1rem * 2);
+  max-width: calc(var(--max-width) - var(--gutter) * 2);
 }
 
 :global(.react-resizable) {

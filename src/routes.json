@@ -7,15 +7,17 @@
   {
     "path": "/error",
     "page": "./pages/error",
-    "chunk": "main"
+    "chunk": "error"
   },
   {
     "path": "/about",
-    "page": "./pages/about"
+    "page": "./pages/about",
+    "chunk": "about"
   },
   {
     "path": "/case-study/improving-purchase-process",
-    "page": "./pages/improving-purchase-process"
+    "page": "./pages/improving-purchase-process",
+    "chunk": "case-study"
   },
   {
     "path": "/tasks/:status(pending|completed)?",

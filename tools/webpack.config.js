@@ -163,7 +163,7 @@ const config = {
         loader: path.resolve(__dirname, './markdown-loader.js'),
       },
       {
-        test: /\.(png|jpg|jpeg|gif|svg|woff|woff2)$/,
+        test: /\.(woff|woff2)$/,
         loader: 'url-loader',
         options: {
           limit: 10000,
@@ -172,6 +172,31 @@ const config = {
       {
         test: /\.(eot|ttf|wav|mp3)$/,
         loader: 'file-loader',
+      },
+      {
+        test: /.*\.(gif|png|jpe?g|svg)$/i,
+        loaders: [
+          'file-loader',
+          {
+            loader: 'image-webpack-loader',
+            query: {
+              options: 10000,
+              mozjpeg: {
+                progressive: true,
+              },
+              gifsicle: {
+                interlaced: false,
+              },
+              optipng: {
+                optimizationLevel: 4,
+              },
+              pngquant: {
+                quality: '75-90',
+                speed: 3,
+              },
+            }
+          }
+        ]
       },
     ],
   },
