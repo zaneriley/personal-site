@@ -3,8 +3,7 @@
 .bar {
   display: flex;
   align-items: center;
-  height: var(--baseline-large);
-  padding: 0 var(--baseline-small);
+  padding: var(--baseline-small) var(--baseline-small);
   background: var(--color-neutral-absolute);
   box-shadow: inset -2px -3px 15px 0 rgba(220, 232, 250, 0.5), inset 0 7px 13px 2px rgba(255, 255, 255, 0.25);
   border-radius: 8px 8px 0 0;

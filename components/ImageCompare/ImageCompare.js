@@ -28,11 +28,11 @@ class ImageCompare extends React.Component {
 
   render() {
 
-    const { before, after } = this.props;
+    const { className, before, after } = this.props;
 
     return ( 
 
-      <div className={`${z.shadow1} ${z.borderRadiusSmall} ${g.maxWidth} ${g.hasBackground}`}>
+      <div className={`${z.shadow1} ${z.borderRadiusSmall} ${g.maxWidth} ${g.hasBackground} className`}>
         <IconChromeBar />
         <figure className={`${s.ImageCompareWrapper} ${g.gNoMarginTop}`}>
             <div>

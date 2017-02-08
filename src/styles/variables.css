@@ -16,6 +16,7 @@
   --baseline-small: 0.7275rem;
   --baseline-normal: 1.455rem;
   --baseline-large: 2.909rem;
+  --baseline-larger: 5.818rem;
   --gutter: var(--baseline-large);
   --small-viewport: 30rem;
   --medium-viewport: 53rem;
