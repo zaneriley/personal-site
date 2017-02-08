@@ -30,8 +30,16 @@
   margin-top: 0;
 }
 
-@media (--small-bp) {
+.gPositionAbsolute {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  margin: auto;
+}
 
+@media (--small-bp) {
   .g3s {
     width: calc(99.99% * 3/12 - (var(--gutter) - var(--gutter) * 3/12));
   }
@@ -151,12 +159,22 @@
   }
 }
 
-
 .maxWidth {
-  max-width: 60rem;
+  max-width: var(--max-width);
   margin-right: auto;
   margin-left: auto;
-  padding: 1rem;
+  padding: 0 1rem;
+
+  &.hasBackground {
+    margin-right: 1rem;
+    margin-left: 1rem;
+    padding: 0;
+
+    @media (--large-bp) {
+      margin-right: auto;
+      margin-left: auto;
+    }
+  }
 }
 
 /* Prevent Orphan Words */

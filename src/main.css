@@ -81,3 +81,7 @@ body:not(:global(.wf-loaded)) {
   /* Maria */
   font-family: var(--font-family-headers);
 }
+
+img {
+  width: 100%;
+}

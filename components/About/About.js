@@ -3,7 +3,6 @@ import cx from 'classnames';
 import IconClock from '../IconClock';
 import Button from '../Button';
 import g from '../../src/styles/grid.css';
-import s from './About.css';
 
 
 class About extends React.Component {
@@ -21,9 +20,9 @@ class About extends React.Component {
     const { title, about, role, result } = this.props;
     const readingLength = this.props.readingLength || '3 Minute Read'
     return (
-      <div className={`${g.maxWidth} ${s.project}`}>
+      <div className={`${g.maxWidth}`}>
 
-        <h1 className={` ${s.title}`}>
+        <h1>
           {title}
         </h1>
 
