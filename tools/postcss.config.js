@@ -28,6 +28,7 @@ module.exports = () => ({
     // https://github.com/postcss/postcss-custom-selectors
     require('postcss-custom-selectors')(),
     require('postcss-strip-units')(),
+    require('postcss-math')(),
     // W3C calc() function, e.g. div { height: calc(100px - 2em); }
     // https://github.com/postcss/postcss-calc
     require('postcss-calc')(),

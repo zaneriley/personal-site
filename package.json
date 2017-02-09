@@ -62,6 +62,7 @@
     "postcss-flexbugs-fixes": "^2.1.0",
     "postcss-import": "^9.1.0",
     "postcss-loader": "^1.2.2",
+    "postcss-math": "0.0.7",
     "postcss-media-minmax": "^2.1.2",
     "postcss-modular-scale": "^2.5.2",
     "postcss-nesting": "^2.3.1",

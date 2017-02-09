@@ -10,10 +10,11 @@
 
 import React from 'react';
 import Link from '../Link';
+import g from '../../src/styles/grid.css';
 
 function Footer() {
   return (
-    <footer className="mdl-mini-footer">
+    <footer className={`${g.textCenter}`}>
       <div className="mdl-mini-footer__left-section">
         <p className="mdl-logo"><strong>Copyright © 2014 - 2017 Zane Riley</strong></p>
       </div>

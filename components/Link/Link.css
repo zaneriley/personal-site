@@ -18,3 +18,8 @@ a {
     text-shadow: none;
   }
 }
+
+:global(.wf-loaded) a {
+  /* Maria */
+  font-family: var(--font-family-headers);
+}

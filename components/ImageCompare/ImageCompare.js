@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { Resizable, ResizableBox } from 'react-resizable';
 import v from '../../src/styles/variables.css';
 import g from '../../src/styles/grid.css';
-import z from '../../src/styles/shadows.css';
+import z from '../../src/styles/aesthetics.css';
 import s from './ImageCompare.css';
 import IconChromeBar from '../IconChromeBar';
 
@@ -32,17 +32,17 @@ class ImageCompare extends React.Component {
 
     return ( 
 
-      <div className={`${z.shadow1} ${z.borderRadiusSmall} ${g.maxWidth} ${g.hasBackground} className`}>
+      <div className={className + ` ${z.shadow1} ${z.borderRadiusSmall} ${g.maxWidth} ${g.hasBackground} `}>
         <IconChromeBar />
         <figure className={`${s.ImageCompareWrapper} ${g.gNoMarginTop}`}>
             <div>
-              <img src={before} />
+              <img src={after} />
             </div>
 
             <Resizable width={this.state.width} height={this.state.height} axis="x" onResize={this.onResize} className={`${g.gNoMarginTop}`}>
               <div style={{width: this.state.width + 'px'}}>
                 <div className={`${s.crop}`}>
-                  <img className={`${s.noCrop}`} src={after} />
+                  <img className={`${s.noCrop}`} src={before} />
                 </div>
               </div>
             </Resizable>

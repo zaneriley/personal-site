@@ -1,5 +1,5 @@
 @import '../../src/styles/variables.css';
-@import '../../src/styles/shadows.css';
+@import '../../src/styles/aesthetics.css';
 
 :root {
   --handle-width: 55px;
@@ -8,9 +8,15 @@
 .ImageCompareWrapper {
   position: relative;
   height: calc(100vh - var(--baseline-large) * 2);
+  max-height: max-content;
   background-color: grey;
   overflow: hidden;
   user-select: none;
+
+  img {
+    /* Get rid of the space due to inline elements */
+    display: block;
+  }
 }
 
 .crop {

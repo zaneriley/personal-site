@@ -1,0 +1,26 @@
+@import './variables.css';
+
+:root {
+  --border-radius-small: 4px;
+}
+
+.shadow1 {
+  box-shadow: 0 2px 6px rgba(0,41,117,.19), 0 10px 20px rgba(0,41,117,.05);
+}
+
+.shadow2 {
+  box-shadow: 0 4px 8px 0 rgba(0,6,38,0.15), 0 14px 32px 0 rgba(0,36,104,0.08);
+}
+
+.dropCap::first-letter {
+  float: left;
+}
+
+:global(.wf-loaded) .dropCap::first-letter {
+  /* Maria */
+  font-family: var(--font-family-headers);
+  font-size: 2.833em;
+  line-height: 0.865;
+  margin-top: 0.14em;
+  padding: 0 var(--baseline-smaller) 0 0;
+}

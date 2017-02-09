@@ -35,8 +35,8 @@ h1 {
   }
 }
 
-
-h2 {
+h2,
+blockquote {
   line-height: 1.5;
   font-size: 1.2rem;
   color: var(--color-secondary-base);
@@ -47,6 +47,16 @@ h2 {
 
   @media (--large-bp) {
     font-size: 1.415rem;
+  }
+}
+
+blockquote {
+  color: inherit;
+
+  @media (--medium-bp) {
+    position: relative;
+    padding: 0 0 var(--gutter) var(--gutter);
+    top: resolve(-1px * strip(var(--cap-height)));
   }
 }
 
@@ -76,8 +86,8 @@ body:not(:global(.wf-loaded)) {
 }
 
 :global(.wf-loaded) :--headers,
-:global(.wf-loaded) strong,
-:global(.wf-loaded) a {
+:global(.wf-loaded) blockquote,
+:global(.wf-loaded) strong {
   /* Maria */
   font-family: var(--font-family-headers);
 }
@@ -85,3 +95,21 @@ body:not(:global(.wf-loaded)) {
 img {
   width: 100%;
 }
+
+/*html {
+  &::after {
+    pointer-events: none;
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 100%;
+    max-width: 1156px;
+    height: 100vh;
+    background-image: linear-gradient(to right, rgba(253, 110, 110, 0.2) calc(99.99% - var(--gutter)), rgba(0, 0, 0, 0) 1px), linear-gradient(to top, rgba(0, 0, 0, 0) 95%, rgba(56, 255, 255, 0.8) 100%);
+    background-size: calc((99% * 1/12) + (64px / 11)) 100%, 100% 16px;
+    content: '';
+  }
+}*/

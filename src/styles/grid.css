@@ -16,7 +16,9 @@
 }
 
 /* Element Spacing */
-* + p {
+* + p,
+* + blockquote,
+* + .gMarginTopSmall {
   margin-top: var(--baseline-normal);
 }
 
@@ -48,6 +50,7 @@
 }
 
 @media (--small-bp) {
+
   .g3s {
     width: calc(99.99% * 3/12 - (var(--gutter) - var(--gutter) * 3/12));
   }
@@ -82,6 +85,10 @@
 }
 
 @media (--medium-bp) {
+  
+  .floatRightM {
+    float: right;
+  }
 
   * + .gMarginLeftM {
     margin-left: var(--gutter);
@@ -188,4 +195,8 @@
 /* Prevent Orphan Words */
 .noWrap {
   white-space: nowrap;
+}
+
+.textCenter {
+  text-align: center;
 }
