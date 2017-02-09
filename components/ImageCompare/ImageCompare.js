@@ -36,6 +36,7 @@ class ImageCompare extends React.Component {
         <IconChromeBar />
         <figure className={`${s.ImageCompareWrapper} ${g.gNoMarginTop}`}>
             <div>
+            <div>
               <img src={after} />
             </div>
 
@@ -46,7 +47,7 @@ class ImageCompare extends React.Component {
                 </div>
               </div>
             </Resizable>
-
+            </div>
         </figure>
       </div>
     );

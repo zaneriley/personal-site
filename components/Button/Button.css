@@ -33,16 +33,26 @@ button {
     margin: auto;
     width: 300%;
     height: 8px;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0" y="0" viewBox="0 0 91 36" enable-background="new 0 0 91 36" xml:space="preserve"><path fill="none" stroke="#32E2CE" stroke-width="20" stroke-linecap="square" class="st0" stroke-miterlimit="10" d="M10 10c22.8 0 22.8 16 45.5 16S78.2 10 101 10M101 10c22.8 0 22.8 16 45.5 16s22.8-16 45.5-16"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0" y="0" viewBox="0 0 91 36" enable-background="new 0 0 91 36" xml:space="preserve"><path fill="none" stroke="%2332E2CE" stroke-width="20" stroke-linecap="square" class="st0" stroke-miterlimit="10" d="M10 10c22.8 0 22.8 16 45.5 16S78.2 10 101 10M101 10c22.8 0 22.8 16 45.5 16s22.8-16 45.5-16"/></svg>');
     background-position: 0 100%;
     background-size: 15px 8px;
     background-repeat: repeat-x;
     content: '';
     animation-name: background;
     animation-duration: 1s;
-    animation-timing-function: linear; 
-    animation-iteration-count: infinite; 
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
     animation-play-state: paused;
   }
 }
-@keyframes background {from {transform:translateX(0);}to {transform:translateX(-20%);}}
+
+@keyframes background {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-20%);
+  }
+}
+

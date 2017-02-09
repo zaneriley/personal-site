@@ -96,6 +96,7 @@ img {
   width: 100%;
 }
 
+/*
 html {
   &::after {
     pointer-events: none;
@@ -113,3 +114,4 @@ html {
     content: '';
   }
 }
+*/
