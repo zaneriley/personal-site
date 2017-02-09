@@ -38,7 +38,7 @@ button {
     background-size: 15px 8px;
     background-repeat: repeat-x;
     content: '';
-    animation-name:background;
+    animation-name: background;
     animation-duration: 1s;
     animation-timing-function: linear; 
     animation-iteration-count: infinite; 

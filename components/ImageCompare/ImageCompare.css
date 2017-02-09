@@ -13,7 +13,7 @@
   overflow: hidden;
   user-select: none;
 
-  img {
+  & img {
     /* Get rid of the space due to inline elements */
     display: block;
   }

@@ -47,6 +47,10 @@
   left: 0;
   bottom: 0;
   margin: auto;
+
+  &.right {
+    left: initial;
+  }
 }
 
 @media (--small-bp) {
@@ -88,6 +92,13 @@
   
   .floatRightM {
     float: right;
+
+    &::after {
+      position: relative;
+      display: block;
+      content: '';
+      clear: both;
+    }
   }
 
   * + .gMarginLeftM {
@@ -112,6 +123,10 @@
 
   .g6m {
     width: calc(99.99% * 6/12 - (var(--gutter) - var(--gutter) * 6/12));
+  }
+
+  .g7m {
+    width: calc(99.99% * 7/12 - (var(--gutter) - var(--gutter) * 7/12));
   }
 
   .g8m {
@@ -139,6 +154,19 @@
 
   .gNoMarginTopL {
     margin-top: 0;
+  }
+
+  .gPositionAbsoluteL {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    margin: auto;
+
+    &.right {
+      left: initial;
+    }
   }
 
   .g3l {
@@ -175,6 +203,7 @@
 }
 
 .maxWidth {
+  position: relative;
   max-width: var(--max-width);
   margin-right: auto;
   margin-left: auto;

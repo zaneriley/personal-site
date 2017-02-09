@@ -17,9 +17,12 @@ import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
 import { title, about, html } from './index.md';
 
+/* Images for this Page */
 import before from '../../assets/images/kit-pdp-desktop-before@2x.jpg';
 import after from '../../assets/images/kit-pdp-desktop-after@2x.jpg';
 import purchaseFlowOfClass from '../../assets/images/purchase-flow-class-draft.svg'
+import wireframeKit from '../../assets/images/kit-wireframe.svg'
+import calloutPanel from '../../assets/images/callout-panel.svg'
 
 class ImprovingPurchaseProcessPage extends React.Component {
 
@@ -66,6 +69,17 @@ class ImprovingPurchaseProcessPage extends React.Component {
 
           <p className={`${g.g6l}`}>People seeking Kits may not need or want instruction; they could simply want supplies for their projects. People interested in Classes, on the other hand, seemed to also want all the supplies they need to begin learning that craft. We needed to make it easier for those viewing Classes to purchase related Kits, and we needed to convince those looking at Kits to view Classes as well.</p>
 
+        </div>
+
+        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+            <div className={`${g.gPositionAbsoluteL} ${g.right} ${g.g4l}`}>
+              <h3>Kit Page Wireframe</h3>
+              <p>On kit pages that had a matching class, we added a callout that encouraged users to click through to the class. Messaging was positioned around making sure a user’s project turned out well.</p>
+            </div>
+          <figure className={`${s.flexContainer}`}>
+            <img src={wireframeKit} className={`${g.g7m} ${v.shadow1}`} />
+            <img src={calloutPanel} className={`${g.g10s} ${g.g6m} ${v.shadow2} ${s.calloutPanel}`} />
+          </figure>
         </div>
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </Layout>

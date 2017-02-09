@@ -96,7 +96,7 @@ img {
   width: 100%;
 }
 
-/*html {
+html {
   &::after {
     pointer-events: none;
     display: block;
@@ -109,7 +109,7 @@ img {
     max-width: 1156px;
     height: 100vh;
     background-image: linear-gradient(to right, rgba(253, 110, 110, 0.2) calc(99.99% - var(--gutter)), rgba(0, 0, 0, 0) 1px), linear-gradient(to top, rgba(0, 0, 0, 0) 95%, rgba(56, 255, 255, 0.8) 100%);
-    background-size: calc((99% * 1/12) + (64px / 11)) 100%, 100% 16px;
+    background-size: calc((99% * 1/12) + (7px)) 100%, 100% 16px;
     content: '';
   }
-}*/
+}
