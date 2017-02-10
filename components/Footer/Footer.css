@@ -1,0 +1,14 @@
+@import '../../src/styles/variables.css';
+
+footer {
+  padding-bottom: var(--baseline-large);
+}
+
+.socialIcons a {
+  background-image: none;
+}
+
+.mail a {
+  color: inherit;
+  background-image: none;
+}

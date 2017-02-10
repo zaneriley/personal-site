@@ -9,7 +9,7 @@
   --color-neutral-base: #202020;
   --color-neutral-absolute: #fff;
   --font-body-small: 1.125rem;
-  --font-body-large: 1.375rem;
+  --font-body-large: 1.250rem;
   --font-family-fallback: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans';
   --font-family-headers: 'Maria';
   --font-family-body: 'GT America';
@@ -23,10 +23,10 @@
   --small-viewport: 30rem;
   --medium-viewport: 53rem;
   --large-viewport: 65rem;
-  --max-width: 1156px;
+  --max-width: 64.222rem;
 }
 
 /* can't use vars here */
 @custom-media --small-bp (min-width: 550px);
 @custom-media --medium-bp (min-width: 800px);
-@custom-media --large-bp (min-width: 1156px);
+@custom-media --large-bp (min-width: 64.222rem);

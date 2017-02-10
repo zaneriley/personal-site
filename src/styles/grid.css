@@ -4,7 +4,21 @@
 
 /* Default Spacing */
 * {
+  box-sizing: border-box;
   margin: 0;
+}
+
+html,
+body,
+:global(#container) {
+  margin-top: 0;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 100vh;
 }
 
 * + * {
@@ -23,9 +37,13 @@
 }
 
 /* Grid Classes */
-.gContainer {
+.gFlexContainer {
   display: flex;
   flex-wrap: wrap;
+
+  &.gFlexEnd {
+    align-items: flex-end;
+  }
 }
 
 * + .gMarginLeftSmaller {
@@ -54,6 +72,9 @@
 }
 
 @media (--small-bp) {
+  .g1s {
+    width: calc(99.99% * 1/12 - (var(--gutter) - var(--gutter) * 1/12));
+  }
 
   .g3s {
     width: calc(99.99% * 3/12 - (var(--gutter) - var(--gutter) * 3/12));
@@ -185,6 +206,10 @@
     width: calc(99.99% * 6/12 - (var(--gutter) - var(--gutter) * 6/12));
   }
 
+  .g7l {
+    width: calc(99.99% * 7/12 - (var(--gutter) - var(--gutter) * 7/12));
+  }
+
   .g8l {
     width: calc(99.99% * 8/12 - (var(--gutter) - var(--gutter) * 8/12));
   }
@@ -205,19 +230,13 @@
 .maxWidth {
   position: relative;
   max-width: var(--max-width);
-  margin-right: auto;
-  margin-left: auto;
-  padding: 0 1rem;
+  margin-right: 1rem;
+  margin-left: 1rem;
 
-  &.hasBackground {
-    margin-right: 1rem;
-    margin-left: 1rem;
-    padding: 0;
-
-    @media (--large-bp) {
-      margin-right: auto;
-      margin-left: auto;
-    }
+  @media (--medium-bp) {
+    width: calc(100% - (var(--gutter) * 2 + 100% * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
+    margin-right: auto;
+    margin-left: auto;
   }
 }
 

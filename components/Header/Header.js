@@ -9,9 +9,11 @@
  */
 
 import React from 'react';
+import Logo from '../Logo';
 import Navigation from '../Navigation';
 import Link from '../Link';
 import s from './Header.css';
+import g from '../../src/styles/grid.css';
 
 class Header extends React.Component {
 
@@ -25,14 +27,8 @@ class Header extends React.Component {
 
   render() {
     return (
-      <header className={` ${s.header}`} ref={node => (this.root = node)}>
-        <div className={` ${s.row}`}>
-          <Link className={` ${s.title}`} to="/">
-            React Static Boilerplate
-          </Link>
-          <div className=""></div>
-          <Navigation />
-        </div>
+      <header ref={node => (this.root = node)}>
+        <Logo className={`${g.g1s}`}/>
       </header>
     );
   }

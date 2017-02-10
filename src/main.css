@@ -55,7 +55,7 @@ blockquote {
 
   @media (--medium-bp) {
     position: relative;
-    padding: 0 0 var(--gutter) var(--gutter);
+    padding: 0 0 0 var(--gutter);
     top: resolve(-1px * strip(var(--cap-height)));
   }
 }
@@ -90,10 +90,6 @@ body:not(:global(.wf-loaded)) {
 :global(.wf-loaded) strong {
   /* Maria */
   font-family: var(--font-family-headers);
-}
-
-img {
-  width: 100%;
 }
 
 /*

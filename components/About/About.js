@@ -26,7 +26,7 @@ class About extends React.Component {
           {title}
         </h1>
 
-        <div className={`${g.gContainer}`}>
+        <div className={`${g.gFlexContainer}`}>
           <div className={` ${g.g12m} ${g.g6l} `}>
             <h2>About Project</h2>
             <p>{about}</p>

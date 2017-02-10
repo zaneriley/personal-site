@@ -16,7 +16,12 @@
   & img {
     /* Get rid of the space due to inline elements */
     display: block;
+    width: calc(100vw - (var(--gutter) * 2 + 100vw * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
   }
+}
+
+.baseImage img {
+  width: 100%;
 }
 
 .crop {
@@ -31,7 +36,6 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: calc(100vw - 1rem * 2);
   max-width: var(--max-width);
 }
 

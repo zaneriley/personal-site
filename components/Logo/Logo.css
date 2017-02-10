@@ -1,0 +1,15 @@
+@import '../../src/styles/variables.css';
+
+.logo {
+  background-image: none;
+
+  & svg {
+    display: block;
+    width: 100%;
+    fill: var(--color-secondary-base);
+
+    &:hover {
+      fill: url('#logoFill');
+    }
+  }
+}

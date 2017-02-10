@@ -12,6 +12,8 @@ import React, { PropTypes } from 'react';
 import Layout from '../../../components/Layout';
 import Link from '../../../components/Link';
 import s from './styles.css';
+import g from '../../styles/grid.css';
+import v from '../../styles/aesthetics.css';
 import { title, html } from './index.md';
 
 class HomePage extends React.Component {
@@ -25,7 +27,7 @@ class HomePage extends React.Component {
 
   render() {
     return (
-      <Layout className={s.content}>
+      <Layout className={` ${g.maxWidth} `}>
         <div dangerouslySetInnerHTML={{ __html: html }} />
         <p>I can add more stuff using the index.js file if I need to.
         <Link className="mdl-navigation__link" to="/case-study/improving-purchase-process">Improving the purchase process of Classes and Kits</Link></p>

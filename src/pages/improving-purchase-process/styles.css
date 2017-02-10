@@ -1,12 +1,10 @@
 @import '../../styles/variables.css';
 
-.flexContainer {
+.KitWrapper {
   position: relative;
-  display: flex;
-  align-items: flex-end;
   flex-wrap: wrap;
 
-  @media (--small-bp) {
+  @media (--large-bp) {
     flex-wrap: nowrap;
   }
 
@@ -16,22 +14,17 @@
   }
 }
 
+
 .calloutPanel {
+  width: 100%;
 
-
-  @media (--small-bp) {
-    position: absolute;
-    right: 0;
-    bottom: var(--baseline-large);
-  }
-
-  @media (--medium-bp) {
+  @media (--large-bp) {
     position: static;
     transform: translateX(calc((99.99% * 1/6 + (var(--baseline-large) - var(--baseline-large) * 1/3)) * -1));
     margin-bottom: var(--baseline-large);
   }
 }
 
-.kitWireframe {
-
+.wireframeKit {
+  width: 100%;
 }

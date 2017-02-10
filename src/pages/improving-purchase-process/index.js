@@ -47,12 +47,13 @@ class ImprovingPurchaseProcessPage extends React.Component {
 
           <p className={`${g.g6l}`}>The relationship between specific Classes and Kits varied wildly. Some products worked together seamlessly, like the Calligraphy Class and Calligraphy Kit. Other pairings were less straightforward. Some classes had no kit, and some kits had no <span className={`${g.noWrap}`}>matching class.</span></p>
 
-          <div className={`${g.g8l} ${g.gMarginTopSmall}`}>
-            <blockquote className={`${g.g6m} ${g.floatRightM}`}>To increase the attach rate, we first had to understand which of our products was primary, and which one was secondary.</blockquote>
+          <div className={`${g.gMarginTopSmall} ${g.gFlexContainer}`}>
+            <div className={`${g.g4l}`}>
+            <p>We couldn’t lock ourselves into a single pricing strategy while the company was exploring product/market fit. We would need to increase the attach rate without simplifying pricing or changing products.</p>
 
-            <p className={`${g.g6l}`}>We couldn’t lock ourselves into a single pricing strategy while the company was exploring product/market fit. We would need to increase the attach rate without simplifying pricing or changing products.</p>
-
-            <p className={`${g.g6l}`}>One interesting piece of data helped shape our solution:</p> 
+            <p>One interesting piece of data helped shape our solution:</p>
+            </div>
+            <blockquote className={`${g.g4l} ${g.gMarginTopLarge} ${g.gNoMarginTopL}`}>To increase the attach rate, we first had to understand which of our products was primary, and which one was secondary.</blockquote>
           </div>
 
           <figure className={`${g.gMarginTopLarge}`}>
@@ -76,9 +77,9 @@ class ImprovingPurchaseProcessPage extends React.Component {
               <h3>Kit Page Wireframe</h3>
               <p>On kit pages that had a matching class, we added a callout that encouraged users to click through to the class. Messaging was positioned around making sure a user’s project turned out well.</p>
             </div>
-          <figure className={`${s.flexContainer}`}>
-            <img src={wireframeKit} className={`${g.g7m} ${v.shadow1}`} />
-            <img src={calloutPanel} className={`${g.g10s} ${g.g6m} ${v.shadow2} ${s.calloutPanel}`} />
+          <figure className={`${s.KitWrapper} ${g.gFlexContainer} ${g.gFlexEnd}`}>
+            <img src={wireframeKit} className={`${s.wireframeKit} ${g.g6l} ${v.shadow1}`} />
+            <img src={calloutPanel} className={`${s.calloutPanel} ${g.g10m} ${g.g7l} ${v.shadow2}`} />
           </figure>
         </div>
         <div dangerouslySetInnerHTML={{ __html: html }} />
