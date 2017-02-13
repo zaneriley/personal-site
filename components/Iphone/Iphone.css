@@ -1,0 +1,63 @@
+@import '../../src/styles/variables.css';
+@import '../../src/styles/aesthetics.css';
+
+.iphone {
+  background: var(--color-neutral-absolute);
+  box-shadow: 0 8px 70px 0 rgba(2,71,199,0.10), 0 8px 22px 0 rgba(2,71,199,0.10), inset -4px -10px 61px 0 rgba(220,232,250,0.75), inset 0 14px 26px 4px rgba(255,255,255,0.50);
+  border-radius: 2.5rem;
+  & > * {
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+.imageWrapper {
+  position: relative;
+  margin-top: 8%;
+  width: calc(99.99% * 11/12 - (var(--gutter) - var(--gutter) * 11/12));
+  border: 2px solid #DCE8FA;
+  overflow: hidden;
+
+  &::before {
+    /* Make this div keep a 1:1 ratio */
+    display: block;
+    padding-top: 176%;
+    content: '';
+  }
+
+  & img {
+    bottom: initial;
+  }
+}
+
+.controls {
+  background: #F6FAFF;
+  box-shadow: inset -4px 0 31px 0 rgba(229,238,252,0.75);
+}
+
+.headset {
+  margin-top: 8%;
+  width: calc(99.99% * 5/12 - (var(--gutter) - var(--gutter) * 5/12));
+  border-radius: 1rem;
+
+  &::before {
+    /* Make this div keep a 1:1 ratio */
+    display: block;
+    padding-top: 10%;
+    content: '';
+  }
+}
+
+.home {
+  margin-top: 6%;
+  width: 14%;
+  border-radius: 100%;
+  margin-bottom: 6%;
+
+  &::before {
+    /* Make this div keep a 1:1 ratio */
+    display: block;
+    padding-top: 100%;
+    content: '';
+  }
+}

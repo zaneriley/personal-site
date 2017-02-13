@@ -12,7 +12,7 @@ import React from 'react';
 import Layout from '../../../components/Layout';
 import About from '../../../components/About';
 import ImageCompare from '../../../components/ImageCompare';
-import Video from 'react-html5video';
+import Iphone from '../../../components/Iphone';
 import s from './styles.css';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
@@ -32,6 +32,8 @@ import addToCartPanel from '../../assets/images/add-to-cart.svg';
 
 import userTestWebm from '../../assets/images/user-test.webm';
 import userTestMp4 from '../../assets/images/user-test.mp4';
+
+import iphoneImage from '../../assets/images/user-test-result@2x.jpg'
 
 class ImprovingPurchaseProcessPage extends React.Component {
 
@@ -85,7 +87,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
         <div className={`${g.maxWidth} ${g.gMarginTopLarge} ${g.gFlexContainer} ${g.gFlexEnd} ${s.kitWrapper}`}>
             <div className={`${g.right} ${g.g4l} ${s.aboutKit}`}>
               <h3>Kit Page Wireframe</h3>
-              <p>On kit pages that had a matching class, we added a callout that encouraged users to click through to the class. Messaging was positioned around making sure a user’s project turned out well.</p>
+              <p>For Kits that had a matching class, we added a callout that encourages users to view the class. Messaging was positioned around making sure a user’s project turned out well.</p>
             </div>
           <figure className={`${s.wireframeKit} ${g.g8m} ${g.g7l} ${v.shadow1}`} >
             <img src={wireframeKit} />
@@ -98,13 +100,12 @@ class ImprovingPurchaseProcessPage extends React.Component {
         <div className={`${g.maxWidth} ${g.gMarginTopLarge} ${g.gFlexContainer} ${g.gFlexStart} ${s.classWrapper}`}>
             <div className={`${g.right} ${g.g4l}`}>
               <h3>Class Page Wireframe</h3>
-              <p>Krystle Cho, a product designer, mocked up a solution that allowed users to purchase both kits and classes.</p>
-              <p>On both pages, we removed all content from the right rail so that only the add-to-cart module remained.</p>
+              <p>The Class page was designed by Krystle Cho<sup>1</sup>. It allows users to purchase both kits and classes. On both pages, we removed content from the right rail so that only the add-to-cart module remained.</p>
             </div>
           <figure className={`${s.wireframeClass} ${g.g8m} ${g.g7l} ${v.shadow1}`} >
             <img src={wireframeClass} />
           </figure>
-          <figure className={`${s.addToCartPanel} ${g.g6m} ${g.g4l} ${g.gAlignSelfEnd} ${v.shadow2}`}>
+          <figure className={`${s.addToCartPanel} ${g.g6m} ${g.g4l} ${g.gAlignSelfEnd} ${g.z1} ${v.shadow2}`}>
              <img src={addToCartPanel} />
           </figure>
         </div>
@@ -114,15 +115,32 @@ class ImprovingPurchaseProcessPage extends React.Component {
               <h3>User Testing</h3>
               <p> This was a clear direction, but we still needed to validate it with users, so I conducted a round of in-person user tests with 5 people.</p>
               <p>The results showed we still needed to communicate our pricing structure more effectively. For instance, in the first user test below, Sophie couldn't understand the price range until she selected the drop down menu.</p>
+              <blockquote className={`${s.userQuote}`}>“Okay, Class and Kit… well that’s confusing, because it looks like it’s <span className={`${g.noWrap}`}>a price</span> range, not <span className={`${g.noWrap}`}>a choice.</span>”
+              </blockquote>
             </div>
-            <blockquote className={`${g.g4l} ${s.userQuote}`}>“Okay, Class and Kit… well that’s confusing, because it looks like it’s a price range, not a choice.”
-            </blockquote>
-            <video className={`${g.g6l}`} controls autoPlay loop muted poster="http://placehold.it/20x20/">
+            
+            <video className={`${g.g5l}`} autoPlay loop muted poster="http://placehold.it/20x20/">
               <source src={userTestWebm} type="video/webm" />
               <source src={userTestMp4} type="video/mp4" />
             </video>
         </div>
 
+        <div className={`${g.maxWidth} ${g.gMarginTopLarge} ${g.gFlexContainer} ${g.gFlexStart}`}>
+            <div className={`${g.g6m} ${g.gFlexStart}`}>
+              <h3>Iterating</h3>
+              <p> While I reported these findings to the team, Krystle revised the class page to better communicate the pricing structure. We tested again using a toggle instead of a dropdown menu, with much better results.</p>
+              <p>Simplifying the product pages and removing friction to purchase both the class and kit increased the attachment rate by 3.5%. We did it without inhibiting new strategy exploration for the rest of the  team, and we saved engineering resources  by building and deploying our own  prototype.</p>
+
+              <h3>Credits</h3>
+              <p>
+                <a href="">Erica Rios</a> – Project Manager <br />
+                <a href="">Krystle Cho</a> – Product Designer <br />
+                <a href="">Bailey Stoner</a> – Engineer
+              </p>
+            </div>
+            
+            <Iphone image={iphoneImage} className={`${g.g4m} ${g.gMarginLeftM} ${g.gNoMarginTopL}`} />
+        </div>
       </Layout>
     );
   }

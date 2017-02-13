@@ -67,7 +67,6 @@
 
 .addToCartPanel {
   margin-bottom: resolve(-1 * var(--gutter));
-  z-index: 1;
 
   @media (--medium-bp-max) {
     width: 100%;
@@ -93,15 +92,11 @@
 .aboutUserTesting {
 
   @media (--large-bp) {
-    margin-left: auto;
+    margin-left: var(--gutter);
     margin-right: 0;
   }
 }
 
 .userQuote {
-  @media (--large-bp) {
-    order: -1;
-    margin-left: calc(-99.99% * 1/12 + (var(--gutter) - var(--gutter) * 1/12));
-    padding: 0;
-  }
+  padding: 0;
 }

@@ -1,0 +1,6 @@
+{
+  "name": "Iphone",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Iphone.js"
+}

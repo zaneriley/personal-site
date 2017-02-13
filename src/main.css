@@ -103,7 +103,7 @@ body:not(:global(.wf-loaded)) {
     left: 0;
     right: 0;
     margin: auto;
-    width: calc(100% - (2.889rem * 2 + 100% * 2/12 - 2.4075rem));
+    width: 1004px;
     height: 100vh;
     background-image: linear-gradient(to right, rgba(253, 110, 110, 0.2) calc(99.99% - var(--gutter)), rgba(0, 0, 0, 0) 1px), linear-gradient(to top, rgba(0, 0, 0, 0) 95%, rgba(56, 255, 255, 0.8) 100%);
     background-size: calc((99% * 1/12) + (6px)) 100%, 100% 16px;
