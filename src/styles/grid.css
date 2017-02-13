@@ -9,9 +9,12 @@
 }
 
 html,
-body,
-:global(#container) {
+body {
   margin-top: 0;
+}
+
+:global(#container) {
+  margin-top: var(--gutter);
 }
 
 main {
@@ -36,6 +39,11 @@ main {
   margin-top: var(--baseline-normal);
 }
 
+img {
+  display: block;
+  width: 100%;
+}
+
 /* Grid Classes */
 .gFlexContainer {
   display: flex;
@@ -44,6 +52,24 @@ main {
   &.gFlexEnd {
     align-items: flex-end;
   }
+
+  &.gFlexStart {
+    align-items: flex-start;
+  }
+
+  &.gNoFlexWrap {
+    @media (--small-bp) {
+      flex-wrap: nowrap;
+    }
+  }
+}
+
+.gAlignSelfStart {
+  align-self: flex-start;
+}
+
+.gAlignSelfEnd {
+  align-self: flex-end;
 }
 
 * + .gMarginLeftSmaller {
@@ -72,6 +98,11 @@ main {
 }
 
 @media (--small-bp) {
+
+  .gNoMarginTopS {
+    margin-top: 0;
+  }
+
   .g1s {
     width: calc(99.99% * 1/12 - (var(--gutter) - var(--gutter) * 1/12));
   }
@@ -238,6 +269,14 @@ main {
     margin-right: auto;
     margin-left: auto;
   }
+}
+
+.z0 {
+  z-index: -1;
+}
+
+.z1 {
+  z-index: 1;
 }
 
 /* Prevent Orphan Words */

@@ -19,7 +19,7 @@
 :global(.wf-loaded) .dropCap::first-letter {
   /* Maria */
   font-family: var(--font-family-headers);
-  font-size: 2.833em;
+  font-size: 2.77rem;
   line-height: 0.865;
   margin-top: 0.14em;
   padding: 0 var(--baseline-smaller) 0 0;

@@ -32,11 +32,13 @@ class ImageCompare extends React.Component {
 
     return ( 
 
-      <div className={className + ` ${z.shadow1} ${z.borderRadiusSmall} ${g.maxWidth} ${g.hasBackground} `}>
+      <div className={className + ` ${z.shadow1} ${z.borderRadiusSmall} ${g.maxWidth}`}>
         <IconChromeBar />
         <figure className={`${s.ImageCompareWrapper} ${g.gNoMarginTop}`}>
             <div className={`${s.baseImage}`}>
-              <img src={after} />
+              <a href={after} target="_blank">
+                <img src={after} />
+              </a>
             </div>
 
             <Resizable width={this.state.width} height={this.state.height} axis="x" onResize={this.onResize} className={`${g.gNoMarginTop}`}>

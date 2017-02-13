@@ -12,11 +12,28 @@
   background-color: grey;
   overflow: hidden;
   user-select: none;
+  resize: vertical;
+  
+  &::after {
+    position: absolute;
+    display: block;
+    bottom: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    cursor: s-resize;
+    content: '';
+    z-index: 1;
+  }
 
   & img {
     /* Get rid of the space due to inline elements */
     display: block;
-    width: calc(100vw - (var(--gutter) * 2 + 100vw * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
+    width: calc(100vw - (1rem * 2));
+
+    @media (--medium-bp) {
+      width: calc(100vw - (var(--gutter) * 2 + 100vw * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
+    }
   }
 }
 

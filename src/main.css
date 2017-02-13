@@ -23,7 +23,7 @@ html {
 }
 
 h1 {
-  line-height: 1.333;
+  line-height: 1.142;
   font-size: 1.728rem;
 
   @media (--small-bp) {
@@ -53,8 +53,9 @@ blockquote {
 blockquote {
   color: inherit;
 
-  @media (--medium-bp) {
+  @media (--small-bp) {
     position: relative;
+    flex-grow: 0.25;
     padding: 0 0 0 var(--gutter);
     top: resolve(-1px * strip(var(--cap-height)));
   }
@@ -92,8 +93,8 @@ body:not(:global(.wf-loaded)) {
   font-family: var(--font-family-headers);
 }
 
-/*
-html {
+
+/*html {
   &::after {
     pointer-events: none;
     display: block;
@@ -102,11 +103,10 @@ html {
     left: 0;
     right: 0;
     margin: auto;
-    width: 100%;
-    max-width: 1156px;
+    width: calc(100% - (2.889rem * 2 + 100% * 2/12 - 2.4075rem));
     height: 100vh;
     background-image: linear-gradient(to right, rgba(253, 110, 110, 0.2) calc(99.99% - var(--gutter)), rgba(0, 0, 0, 0) 1px), linear-gradient(to top, rgba(0, 0, 0, 0) 95%, rgba(56, 255, 255, 0.8) 100%);
-    background-size: calc((99% * 1/12) + (7px)) 100%, 100% 16px;
+    background-size: calc((99% * 1/12) + (6px)) 100%, 100% 16px;
     content: '';
   }
 }

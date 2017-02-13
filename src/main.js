@@ -32,19 +32,15 @@ const america = new FontFaceObserver('GT America', {});
 // When Open Sans is loaded, add a font-family using Open Sans to the body
 maria.load().then(() => {
   document.body.classList.add('wf-loaded');
-  console.log('font loaded successfully');
 }, () => {
   document.body.classList.remove('wf-loaded');
-  console.log('font not loaded');
 });
 
 // When Open Sans is loaded, add a font-family using Open Sans to the body
 america.load().then(() => {
   document.body.classList.add('wf-loaded');
-  console.log('font loaded successfully');
 }, () => {
-  document.body.classList.remove('wf-loaded');
-  console.log('font not loaded');
+  document.body.classList.remove('wf-loaded');;
 });
 
 let routes = require('./routes.json').default; // Loaded with utils/routes-loader.js

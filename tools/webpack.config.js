@@ -188,8 +188,12 @@ const config = {
           }
         ]
       },
+      {
+        test: /\.(webm|mp4)$/,
+        loader: 'file-loader',
+      },
     ],
-  },
+  }
 };
 
 // Optimize the bundle in release (production) mode

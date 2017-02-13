@@ -9,24 +9,28 @@
   --color-neutral-base: #202020;
   --color-neutral-absolute: #fff;
   --font-body-small: 1.125rem;
-  --font-body-large: 1.250rem;
+  --font-body-large: 1.15rem;
   --font-family-fallback: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans';
   --font-family-headers: 'Maria';
   --font-family-body: 'GT America';
-  --cap-height: 4px;
+  --cap-height: 2px;
   --baseline-smaller: 0.3637rem;
   --baseline-small: 0.7275rem;
-  --baseline-normal: 1.455rem;
-  --baseline-large: 2.909rem;
-  --baseline-larger: 5.818rem;
+  --baseline-normal: 1.444rem;
+  --baseline-large: 2.889rem;
+  --baseline-larger: 4.333rem;
   --gutter: var(--baseline-large);
   --small-viewport: 30rem;
   --medium-viewport: 53rem;
   --large-viewport: 65rem;
-  --max-width: 64.222rem;
+  --max-width: 1050px;
 }
 
 /* can't use vars here */
-@custom-media --small-bp (min-width: 550px);
-@custom-media --medium-bp (min-width: 800px);
-@custom-media --large-bp (min-width: 64.222rem);
+
+@custom-media --small-bp (min-width: 500px);
+@custom-media --small-bp-max (max-width: 500px);
+@custom-media --medium-bp (min-width: 750px);
+@custom-media --medium-bp-max (max-width: 750px);
+@custom-media --large-bp-max (max-width: 1050px);
+@custom-media --large-bp (min-width: 1050px);
