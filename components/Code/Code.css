@@ -1,0 +1,56 @@
+@import '../../src/styles/variables.css';
+
+tt, code, kbd, samp {
+  font-family: inherit;
+}
+
+pre {
+  display: block;
+  padding: var(--baseline-small);
+  font-family: Apercu, 'Fira Mono', Courier, monospace;
+  font-size: 0.833rem;
+  background-color: #f6faff;
+  white-space: pre-wrap;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: scroll;
+
+}
+
+code {
+  display: block;
+  font-feature-settings: 'tnum';
+  list-style-type: none;
+  counter-reset: table-ol;
+
+  & > span {
+    display: table-row;
+
+    &::before {
+      display: table-cell;
+      padding-right: var(--baseline-small);
+      content: counter(table-ol);
+      counter-increment: table-ol;
+      font-family: var(--font-family-body);
+      user-select: none;
+      text-align: right;
+      color: #9fd3fe;
+    }
+  }
+}
+
+:global(.token.punctuation) {
+  color: #9fd3fe;
+}
+
+:global(.token.selector) {
+  color: #fa4a4a;
+}
+
+:global(.token.keyword) {
+  color: #0000fb;
+}
+
+:global(.token.function),
+:global(.token.atrule) {
+  color: #008ef6;
+}

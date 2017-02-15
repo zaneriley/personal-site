@@ -9,10 +9,10 @@
   --color-neutral-base: #202020;
   --color-neutral-absolute: #fff;
   --font-body-small: 1.125rem;
-  --font-body-large: 1.15rem;
+  --font-body-large: 1.25rem;
   --font-family-fallback: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans';
   --font-family-headers: 'Maria';
-  --font-family-body: 'GT America';
+  --font-family-body: 'GT America', 'Trebuchet MS', Avenir, Fira Sans, -apple-system, system-ui, sans-serif;
   --cap-height: 2px;
   --baseline-smaller: 0.3637rem;
   --baseline-small: 0.7275rem;

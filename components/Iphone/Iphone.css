@@ -2,9 +2,11 @@
 @import '../../src/styles/aesthetics.css';
 
 .iphone {
+  padding: 2.5% 0.25% 2%;
   background: var(--color-neutral-absolute);
-  box-shadow: 0 8px 70px 0 rgba(2,71,199,0.10), 0 8px 22px 0 rgba(2,71,199,0.10), inset -4px -10px 61px 0 rgba(220,232,250,0.75), inset 0 14px 26px 4px rgba(255,255,255,0.50);
+  box-shadow: 0 8px 70px 0 rgba(2, 71, 199, 0.1), 0 8px 22px 0 rgba(2, 71, 199, 0.1), inset -4px -10px 61px 0 rgba(220, 232, 250, 0.75), inset 0 14px 26px 4px rgba(255, 255, 255, 0.5);
   border-radius: 2.5rem;
+
   & > * {
     margin-right: auto;
     margin-left: auto;
@@ -36,7 +38,6 @@
 }
 
 .headset {
-  margin-top: 8%;
   width: calc(99.99% * 5/12 - (var(--gutter) - var(--gutter) * 5/12));
   border-radius: 1rem;
 
@@ -52,7 +53,6 @@
   margin-top: 6%;
   width: 14%;
   border-radius: 100%;
-  margin-bottom: 6%;
 
   &::before {
     /* Make this div keep a 1:1 ratio */

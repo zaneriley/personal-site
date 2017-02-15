@@ -1,7 +1,10 @@
 @import '../../src/styles/variables.css';
 
 header {
-  position: absolute;
-  top: var(--gutter);
-  left: 0;
+  position: fixed;
+  top: resolve(var(--gutter) + 0.6rem);
+  left: var(--gutter);
+  margin: auto;
+  width: 100%;
+  max-width: var(--max-width);
 }

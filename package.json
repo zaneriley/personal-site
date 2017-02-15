@@ -31,6 +31,7 @@
     "babel-preset-stage-1": "^6.22.0",
     "babel-register": "^6.22.0",
     "babel-runtime": "^6.22.0",
+    "block-loader": "^2.1.0",
     "browser-sync": "^2.18.6",
     "chai": "^4.0.0-canary.1",
     "connect-history-api-fallback": "^1.3.0",

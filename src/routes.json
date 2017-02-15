@@ -20,6 +20,11 @@
     "chunk": "case-study"
   },
   {
+    "path": "/case-study/building-a-design-system",
+    "page": "./pages/building-a-design-system",
+    "chunk": "case-study"
+  },
+  {
     "path": "/tasks/:status(pending|completed)?",
     "page": "./pages/home"
   }

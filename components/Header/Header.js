@@ -28,7 +28,7 @@ class Header extends React.Component {
   render() {
     return (
       <header ref={node => (this.root = node)}>
-        <Logo className={`${g.g1s}`}/>
+        <Logo />
       </header>
     );
   }

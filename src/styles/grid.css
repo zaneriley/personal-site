@@ -35,11 +35,13 @@ main {
 /* Element Spacing */
 * + p,
 * + blockquote,
+* + pre,
 * + .gMarginTopSmall {
   margin-top: var(--baseline-normal);
 }
 
-img {
+img,
+video {
   display: block;
   width: 100%;
 }
@@ -51,6 +53,10 @@ img {
 
   &.gFlexEnd {
     align-items: flex-end;
+  }
+
+  &.gFlexCenter {
+    align-items: center;
   }
 
   &.gFlexStart {
@@ -66,6 +72,10 @@ img {
 
 .gAlignSelfStart {
   align-self: flex-start;
+}
+
+.gAlignSelfCenter {
+  align-self: center;
 }
 
 .gAlignSelfEnd {
@@ -95,6 +105,10 @@ img {
   &.right {
     left: initial;
   }
+}
+
+.g2 {
+  width: calc(99.99% * 2/12 - (var(--gutter) - var(--gutter) * 2/12));
 }
 
 @media (--small-bp) {
@@ -144,6 +158,16 @@ img {
   
   .floatRightM {
     float: right;
+    padding: 0 0 0 var(--gutter);
+  }
+
+  .floatLeftM {
+    float: left;
+    padding: 0 var(--gutter) 0 0;
+  }
+
+  .floatRightM,
+  .floatLeftM {
 
     &::after {
       position: relative;
@@ -286,4 +310,9 @@ img {
 
 .textCenter {
   text-align: center;
+}
+
+.center {
+  margin-right: auto;
+  margin-left: auto;
 }

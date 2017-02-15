@@ -1,12 +1,14 @@
 @import '../../src/styles/variables.css';
 
 .logo {
+  display: block;
   background-image: none;
+  width: 2.05rem;
 
   & svg {
     display: block;
     width: 100%;
-    fill: var(--color-secondary-base);
+    fill: url('#logoNormal');
 
     &:hover {
       fill: url('#logoFill');

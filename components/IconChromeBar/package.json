@@ -1,6 +1,6 @@
 {
-  "name": "IconPhone",
+  "name": "IconChromeBar",
   "version": "0.0.0",
   "private": true,
-  "main": "./IconPhone.js"
+  "main": "./IconChromeBar.js"
 }

@@ -33,7 +33,7 @@
 .calloutPanel {
 
   @media (--medium-bp) {
-    margin-top: calc(-var(--gutter) * 4);
+    margin-top: calc(var(--gutter) * 4);
     margin-right: 0;
     margin-left: auto;
     transform: translateY(-var(--gutter));
@@ -71,17 +71,10 @@
   @media (--medium-bp-max) {
     width: 100%;
   }
-
-  @media (--medium-bp) {
-    margin-left: calc(-99.99% * 2/12 + (var(--gutter) - 2.8889rem * 2/12));
-  }
-
-  @media (--large-bp) {
-    margin-left: calc(-99.99% * 3/12 + (var(--gutter) - 2.8889rem * 3/12));
-  }
 }
 
 .userTestingWrapper {
+  justify-content: space-around;
   & video {
     @media (--large-bp) {
       order: -2;
