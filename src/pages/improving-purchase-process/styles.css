@@ -33,7 +33,7 @@
 .calloutPanel {
 
   @media (--medium-bp) {
-    margin-top: calc(var(--gutter) * 4);
+    margin-top: resolve(var(--gutter) * -4);
     margin-right: 0;
     margin-left: auto;
     transform: translateY(-var(--gutter));
@@ -54,10 +54,22 @@
 }
 
 .classWrapper {
-  padding-bottom: var(--gutter);
+  @media (--medium-bp) {
+    padding-bottom: var(--gutter);
+  }
+  
+  @media (--large-bp) {
+    padding-bottom: 0;
+  }
 }
 
 .wireframeClass {
+  margin-left: auto;
+
+  @media (--small-bp-max) {
+    width: 100%;
+  }
+
   @media (--large-bp) {
     order: 2;
     margin-left: auto;
@@ -66,24 +78,38 @@
 }
 
 .addToCartPanel {
-  margin-bottom: resolve(-1 * var(--gutter));
-
   @media (--medium-bp-max) {
     width: 100%;
+  }
+
+  @media (--medium-bp) {
+    margin-top: resolve(var(--gutter) * -4);
+    margin-bottom: resolve(-1 * var(--gutter));
+  }
+
+  @media (--large-bp) {
+    margin-top: 0;
+    margin-bottom: 0;
   }
 }
 
 .userTestingWrapper {
   justify-content: space-around;
+
   & video {
     @media (--large-bp) {
       order: -2;
     }
   }
+
+  @media (--medium-bp-max) {
+    & > * {
+      width: 100%;
+    }
+  }
 }
 
 .aboutUserTesting {
-
   @media (--large-bp) {
     margin-left: var(--gutter);
     margin-right: 0;

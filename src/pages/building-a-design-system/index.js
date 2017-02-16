@@ -17,14 +17,16 @@ class BuildingADesignSystem extends React.Component {
     return (
       <Layout className={s.content}>
 
-        <About title={title} about="A design system that improves communication, maintainability, and consistency." role="Led the creation of our design system – visual design, code, sketch files, documentation and accessibility guidelines." result="<strong>Reduced CSS file size by 33%.</strong> Increased velocity – Built landing page in a day without engineering resources."/>
+        <About title={title} about="Build a design system for Brit + Co's media site, classroom platform and internal dashboards in order to improve communication, maintainability, and consistency." role="Led the creation of our design system – visual design, documentation, and code." result="<strong>Reduced CSS file size by 33%.</strong> Improved communication, increased velocity."/>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
 
           <p className={`${g.g6l} ${g.center} ${v.dropCap}`}>The Brit + Co design system is a collection of reusable design patterns and visual styles. These help us create a better product by allowing us to focus on higher-level thinking.</p>
 
-          <p className={`${g.g6l} ${g.center}`}>Projects often revolve around integral user interface elements. As these elements popped up the product team would standardized them. Instead of stopping other projects so we could build our design system, we built new patterns on a per-project basis.
+          <p className={`${g.g6l} ${g.center}`}>Projects often revolve around integral user interface elements. As these elements popped up the product team would standardized them. Instead of stopping other projects so we could build our design system in one go, we built new patterns on a per-project basis.
           </p>
+
+          <h2 className={`${g.g6l} ${g.center}`}>Defining What's Needed</h2>
 
           <p className={`${g.g6l} ${g.center}`}>Brit + Co has a diverse set of design needs. User behavior often varies between articles and classes. People browse articles while casually surfing social media. On the other hand, when taking online classes, they are much more focused and task-driven.</p>
 

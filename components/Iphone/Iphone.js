@@ -20,7 +20,7 @@ class Iphone extends React.Component {
       <div className={className + ` ${s.iphone} ${v.shadow2}`}>
         <div className={`${s.controls} ${s.headset}`} />
         <div className={`${s.imageWrapper}`}>
-          <img src={image} className={`${g.gPositionAbsoluteL}`} />
+          <img src={image} className={`${g.gPositionAbsolute}`} />
         </div>
         <div className={`${s.controls} ${s.home}`} />
       </div>

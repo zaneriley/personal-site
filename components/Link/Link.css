@@ -17,6 +17,10 @@ a {
   *::after {
     text-shadow: none;
   }
+
+  &::selection {
+    text-shadow: 0.01em 0 var(--color-highlight-light), -0.1em 0 var(--color-highlight-light), 0 0.01em var(--color-highlight-light), 0 -0.1em var(--color-highlight-light), 0.06em 0 var(--color-highlight-light), -0.06em 0 var(--color-highlight-light), 0.09em 0 var(--color-highlight-light), -0.09em 0 var(--color-highlight-light), 0.12em 0 var(--color-highlight-light), -0.12em 0 var(--color-highlight-light), 0.15em 0 var(--color-highlight-light), -0.15em 0 var(--color-highlight-light), -0.136em 0.06em var(--color-highlight-light), 0.136em 0.06em var(--color-highlight-light);
+  }
 }
 
 :global(.wf-loaded) a {

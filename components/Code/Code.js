@@ -14,7 +14,7 @@ class Code extends React.Component {
   render() {
     const { className, children } = this.props;
     return (
-      <pre className={className + ` ${s.bar} ${v.shadow1}`}>
+      <pre className={className + ` ${v.shadow1}`}>
         <code>{ children }</code>
       </pre>
     );

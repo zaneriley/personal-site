@@ -158,17 +158,16 @@ video {
   
   .floatRightM {
     float: right;
-    padding: 0 0 0 var(--gutter);
+    padding: 0 0 var(--gutter) var(--gutter);
   }
 
   .floatLeftM {
     float: left;
-    padding: 0 var(--gutter) 0 0;
+    padding: 0 var(--gutter) var(--gutter) 0;
   }
 
   .floatRightM,
   .floatLeftM {
-
     &::after {
       position: relative;
       display: block;
