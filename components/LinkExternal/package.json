@@ -1,0 +1,6 @@
+{
+  "name": "LinkExternal",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./LinkExternal.js"
+}

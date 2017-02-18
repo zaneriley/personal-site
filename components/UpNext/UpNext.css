@@ -1,0 +1,14 @@
+@import '../../src/styles/variables.css';
+
+.panel {
+  padding: var(--baseline-normal);
+  justify-content: space-between;
+
+  & > * {
+    width: 100%;
+  }
+
+  @media (--medium-bp-max) {
+    width: 100%;
+  }
+}

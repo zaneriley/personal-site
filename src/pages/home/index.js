@@ -28,9 +28,9 @@ class HomePage extends React.Component {
   render() {
     return (
       <Layout className={` ${g.maxWidth} `}>
-        <div dangerouslySetInnerHTML={{ __html: html }} />
-        <p><Link className="mdl-navigation__link" to="/case-study/improving-purchase-process">Improving the purchase process of Classes and Kits</Link></p>
-        <p><Link className="mdl-navigation__link" to="/case-study/building-a-design-system">Building a Design system.</Link></p>
+        <div dangerouslySetInnerHTML={{ __html: html }} className={`${g.g9m} ${g.g6l}`}/>
+        <p className={`${g.g9m} ${g.g6l}`}><Link className="mdl-navigation__link" to="/case-study/improving-purchase-process">Improving the purchase process of Classes and Kits</Link></p>
+        <p className={`${g.g9m} ${g.g6l}`}><Link className="mdl-navigation__link" to="/case-study/building-a-design-system">Building a Design system.</Link></p>
       </Layout>
     );
   }

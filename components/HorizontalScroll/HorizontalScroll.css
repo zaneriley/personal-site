@@ -1,5 +1,4 @@
 @import '../../src/styles/variables.css';
-@import '../../src/styles/aesthetics.css';
 
 .horizontalScrollOuterWrapper {
   display: flex;
@@ -17,7 +16,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  
+
   & > * {
     display: inline-block;
     vertical-align: middle;

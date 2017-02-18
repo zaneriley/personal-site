@@ -70,6 +70,10 @@ video {
   }
 }
 
+.gJustifySpaceBetween {
+  justify-content: space-between;
+}
+
 .gAlignSelfStart {
   align-self: flex-start;
 }
@@ -80,6 +84,10 @@ video {
 
 .gAlignSelfEnd {
   align-self: flex-end;
+}
+
+* + .gMarginLeftSmallest {
+  margin-left: var(--baseline-smaller);
 }
 
 * + .gMarginLeftSmaller {
@@ -107,8 +115,8 @@ video {
   }
 }
 
-.g2 {
-  width: calc(99.99% * 2/12 - (var(--gutter) - var(--gutter) * 2/12));
+.g3Max {
+  width: calc(var(--max-width) * 2/12 - (var(--gutter) - var(--gutter) * 2/12));
 }
 
 @media (--small-bp) {
@@ -314,4 +322,16 @@ video {
 .center {
   margin-right: auto;
   margin-left: auto;
+}
+
+.thrashPreventerSquare {
+  position: relative;
+  width: 100%;
+
+  &::before {
+    /* Make this div keep a 1:1 ratio */
+    display: block;
+    padding-top: 100%;
+    content: '';
+  }
 }

@@ -1,5 +1,7 @@
 import React from 'react';
 import Layout from '../../../components/Layout';
+import Link from '../../../components/Link';
+import LinkExternal from '../../../components/LinkExternal';
 import About from '../../../components/About';
 import Code from '../../../components/Code';
 import s from './styles.css';
@@ -17,7 +19,7 @@ class BuildingADesignSystem extends React.Component {
     return (
       <Layout className={s.content}>
 
-        <About title={title} about="Build a design system for Brit + Co's media site, classroom platform and internal dashboards in order to improve communication, maintainability, and consistency." role="Led the creation of our design system – visual design, documentation, and code." result="<strong>Reduced CSS file size by 33%.</strong> Improved communication, increased velocity."/>
+        <About title={title} about="Build a design system for Brit + Co's media site, classroom platform and internal tools in order to improve communication, maintainability, and consistency." role="Led the creation of design system – visual design, code and documentation." result="<strong>Reduced CSS file size by 33%.</strong> Improved communication, increased velocity." readingLength="2 Minute Read"/>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
 
@@ -33,11 +35,11 @@ class BuildingADesignSystem extends React.Component {
           <p className={`${g.g6l} ${g.center}`}>To solve for these design needs, I performed an audit to look for patterns across the site.</p>
 
           <h3 className={`${g.g6l} ${g.center}`}>Example: Patterns in Typography</h3>
-          <p className={`${g.g6l} ${g.center}`}>To quote iA.net, <a href="https://ia.net/topics/the-web-is-all-about-typography-period/" target="_blank">“Web Design is 95% Typography”</a>, so it isn’t a surprise that so much of our design system is typography related.</p>
+          <p className={`${g.g6l} ${g.center}`}>To quote iA.net, <LinkExternal href="https://ia.net/topics/the-web-is-all-about-typography-period/">“Web Design is 95% Typography”</LinkExternal>, so it isn’t a surprise that so much of our design system is typography related.</p>
 
           <p className={`${g.g6l} ${g.center}`}>Throughout the audit, I noticed there were 17 different font-sizes (50 if you count unique values in the CSS). All were hardcoded pixel values.</p>
 
-          <p className={`${g.g6l} ${g.center}`}>I then chose an appropriate <a href="http://www.modularscale.com/?18&px&1.2&web&text" target="_blank">modular scale</a>. Each font-size was simply multiplied by 1.2 to get the next size increase.</p>
+          <p className={`${g.g6l} ${g.center}`}>I then chose an appropriate <LinkExternal href="http://www.modularscale.com/?18&px&1.2&web&text">modular scale</LinkExternal>. Each font-size was simply multiplied by 1.2 to get the next size increase.</p>
 
           <p className={`${g.g6l} ${g.center}`}>Thus we reduced the site to just seven type sizes:</p>
 

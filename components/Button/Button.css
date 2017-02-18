@@ -1,15 +1,19 @@
+@import '../../src/styles/variables.css';
+
 button {
   position: relative;
   display: inline-block;
-  padding: 0;
+  padding: 0 0 var(--baseline-smaller) 0;
   font-size: inherit;
   font-family: inherit;
+  line-height: inherit;
   background-color: transparent;
   border: none;
   text-align: center;
   cursor: pointer;
   z-index: 1;
   overflow: hidden;
+  outline: none;
 
   /* Removes the 300ms delay on touch-enabled devices. */
   touch-action: manipulation;
@@ -17,9 +21,10 @@ button {
   /* Disables the selection of text on mobile so that we better reconigize a user is clicking on a link */
   user-select: none;
   clip: rect(0, 0, 0, 0);
-  padding-bottom: 11px;
 
-  &:hover {
+  &:hover,
+  &:active,
+  &:focus {
     &::after {
       animation-play-state: running;
     }
@@ -47,10 +52,6 @@ button {
 }
 
 @keyframes background {
-  from {
-    transform: translateX(0);
-  }
-
   to {
     transform: translateX(-60px);
   }

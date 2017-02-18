@@ -11,9 +11,12 @@
 import React from 'react';
 import Layout from '../../../components/Layout';
 import About from '../../../components/About';
+import Link from '../../../components/Link';
+import LinkExternal from '../../../components/LinkExternal';
 import HorizontalScroll from '../../../components/HorizontalScroll';
 import ImageCompare from '../../../components/ImageCompare';
 import Iphone from '../../../components/Iphone';
+import UpNext from '../../../components/UpNext';
 import s from './styles.css';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
@@ -81,37 +84,47 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </div>
         <figure className={`${g.gMarginTopSmall}`}>
           <HorizontalScroll>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmallest}`}>
               <p>All Classes</p>
-              <img src={flowAllClasses} className={`${g.gMarginTopSmall}`}/>
+              <div className={`${g.gMarginTopSmall} ${g.thrashPreventerSquare}`}>
+                <img src={flowAllClasses} className={`${g.gPositionAbsolute}`} />
+              </div>
             </div>
-            <div className={`${g.textCenter} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.textCenter} ${g.gMarginLeftSmallest}`}>
               <img src={flowArrow} />
             </div>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmallest}`}>
               <p>Single Class</p>
-              <img src={flowSingleClass} className={`${g.gMarginTopSmall}`} />
+              <div className={`${g.gMarginTopSmall} ${g.thrashPreventerSquare}`}>
+                <img src={flowSingleClass} className={`${g.gPositionAbsolute}`} />
+              </div>
             </div>
-            <div className={`${g.textCenter} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.textCenter} ${g.gMarginLeftSmallest}`}>
               <img src={flowArrow} />
             </div>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmallest}`}>
               <p>Single Kit</p>
-              <img src={flowSingleKit} className={`${g.gMarginTopSmall}`}/>
+              <div className={`${g.gMarginTopSmall} ${g.thrashPreventerSquare}`}>
+                <img src={flowSingleKit} className={`${g.gPositionAbsolute}`} />
+              </div>
             </div>
-            <div className={`${g.textCenter} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.textCenter} ${g.gMarginLeftSmallest}`}>
               <img src={flowArrow} />
             </div>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmallest}`}>
               <p>Buys Kit</p>
-              <img src={flowSingleKit} className={`${g.gMarginTopSmall}`}/>
+              <div className={`${g.gMarginTopSmall} ${g.thrashPreventerSquare} ${s.overlayRed}`}>
+                <img src={flowSingleKit} className={`${g.gPositionAbsolute}`} />
+              </div>
             </div>
-            <div className={`${g.textCenter} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.textCenter} ${g.gMarginLeftSmallest}`}>
               <img src={flowArrow} />
             </div>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
               <p>Buys Class</p>
-              <img src={flowSingleClass} className={`${g.gMarginTopSmall}`} />
+              <div className={`${g.gMarginTopSmall} ${s.overlayBlue} ${g.thrashPreventerSquare} `} >
+                <img src={flowSingleClass} className={`${g.gPositionAbsolute}`} />
+              </div>
             </div>
           </HorizontalScroll>
         </figure>
@@ -124,23 +137,29 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </div>
         <figure className={`${g.gMarginTopSmall}`}>
           <HorizontalScroll>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmallest}`}>
               <p>All Classes</p>
-              <img src={flowAllKits} className={`${g.gMarginTopSmall}`}/>
+              <div className={`${g.gMarginTopSmall} ${g.thrashPreventerSquare} `} >
+                <img src={flowAllKits} className={`${g.gPositionAbsolute}`} />
+              </div>
             </div>
-            <div className={`${g.textCenter} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.textCenter} ${g.gMarginLeftSmallest}`}>
               <img src={flowArrow} />
             </div>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmallest}`}>
               <p>Single Kit</p>
-              <img src={flowSingleKit} className={`${g.gMarginTopSmall}`} />
+              <div className={`${g.gMarginTopSmall} ${g.thrashPreventerSquare} `} >
+                <img src={flowSingleKit} className={`${g.gPositionAbsolute}`}  />
+              </div>
             </div>
-            <div className={`${g.textCenter} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.textCenter} ${g.gMarginLeftSmallest}`}>
               <img src={flowArrow} />
             </div>
-            <div className={` ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmaller}`}>
+            <div className={`${g.g3Max} ${g.textCenter} ${g.gNoMarginTop} ${g.gMarginLeftSmallest}`}>
               <p>Purchase Kit</p>
-              <img src={flowSingleKit} className={`${g.gMarginTopSmall}`}/>
+              <div className={`${g.gMarginTopSmall} ${s.overlayRed} ${g.thrashPreventerSquare} `} >
+                <img src={flowSingleKit} className={`${g.gPositionAbsolute}`} />
+              </div>
             </div>
           </HorizontalScroll>
         </figure>
@@ -200,16 +219,18 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </div>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
-            <p className={`${g.g9m} ${g.g9m} ${g.g6l} ${g.center}`}>Simplifying the product pages and removing friction to purchase both the class and kit increased the attachment rate by 3.5%. We did it without inhibiting new strategy exploration for the rest of the  team, and we saved engineering resources  by building and deploying our own  prototype.</p>
+          <p className={`${g.g9m} ${g.g9m} ${g.g6l} ${g.center}`}>Simplifying the product pages and removing friction to purchase both the class and kit increased the attachment rate by 3.5%. We did it without inhibiting new strategy exploration for the rest of the  team, and we saved engineering resources  by building and deploying our own  prototype.</p>
 
-            <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Credits</h2>
+          <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Credits</h2>
 
-            <p className={`${g.g9m} ${g.g6l} ${g.center}`}>
-              <a href="https://www.linkedin.com/in/ericarios" target="_blank">Erica Rios</a> – Project Manager <br />
-              <a href="" target="_blank">Krystle Cho</a> – Product Designer <br />
-              <a href="" target="_blank">Bailey Stoner</a> – Engineer
-            </p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>
+            <LinkExternal href="https://www.linkedin.com/in/ericarios">Erica Rios</LinkExternal> – Project Manager <br />
+            <LinkExternal href="https://angel.co/mskrys" >Krystle Cho</LinkExternal> – Product Designer <br />
+            <LinkExternal href="https://twitter.com/monokrome">Bailey Stoner</LinkExternal> – Engineer
+          </p>
         </div>
+
+        <UpNext />
 
       </Layout>
     );
