@@ -17,12 +17,12 @@
   {
     "path": "/case-study/improving-purchase-process",
     "page": "./pages/improving-purchase-process",
-    "chunk": "case-study"
+    "chunk": "improving-purchase-process"
   },
   {
     "path": "/case-study/building-a-design-system",
     "page": "./pages/building-a-design-system",
-    "chunk": "case-study"
+    "chunk": "building-a-design-system"
   },
   {
     "path": "/tasks/:status(pending|completed)?",

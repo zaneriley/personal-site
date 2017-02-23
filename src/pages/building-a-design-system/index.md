@@ -1,3 +1,3 @@
 ---
-title: Building a design system at Brit + Co.
+title: Building a design system at Brit + Co. | Zane Riley, Product Designer
 ---

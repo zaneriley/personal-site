@@ -12,6 +12,7 @@
     "fastclick": "^1.0.6",
     "history": "^4.5.1",
     "react": "^15.4.2",
+    "react-addons-css-transition-group": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-html5video": "^1.4.0",
     "react-mdl": "^1.9.0",

@@ -1,0 +1,13 @@
+.socialIcons {
+  white-space: nowrap;
+  
+  & a {
+    background-image: none;
+  }
+
+  & img {
+    display: inline;
+    width: auto;
+    vertical-align: middle;
+  }
+}

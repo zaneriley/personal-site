@@ -3,7 +3,7 @@ title: Zane Riley, Product Designer
 ---
 
 # Zane Riley
-Product designer that writes production-ready frontend code. 
+Product designer that makes successful products and services by making people happy.
 
 
 

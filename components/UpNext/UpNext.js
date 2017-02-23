@@ -19,6 +19,7 @@ class UpNext extends React.Component {
 
       <div className={className + ` ${g.maxWidth} ${g.gFlexContainer} ${g.gJustifySpaceBetween} ${g.gMarginTopLarge}`}>
         
+
         <div className={`${s.panel} ${g.g6m} ${z.shadow2} ${g.gFlexContainer}`}>
           <h3>Helping people more easily find inspiration for  DIY projects.</h3>
           <div className={`${g.gAlignSelfEnd} ${g.gMarginTopSmall} ${g.gFlexContainer} ${g.gJustifySpaceBetween}`}>

@@ -12,11 +12,15 @@
   box-shadow: 0 4px 8px 0 rgba(0,6,38,0.15), 0 14px 32px 0 rgba(0,36,104,0.08);
 }
 
+.borderRadiusTop {
+  border-radius: 8px 8px 0 0;
+}
+
 .dropCap::first-letter {
   float: left;
 }
 
-:global(.wf-loaded) .dropCap::first-letter {
+:global(.wfLoadedMaria) .dropCap::first-letter {
   /* Maria */
   font-family: var(--font-family-headers);
   font-size: 2.77rem;

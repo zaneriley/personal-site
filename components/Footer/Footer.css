@@ -4,20 +4,6 @@ footer {
   padding-bottom: var(--baseline-large);
 }
 
-.socialIcons {
-  white-space: nowrap;
-  
-  & a {
-    background-image: none;
-  }
-
-  & img {
-    display: inline;
-    width: auto;
-    vertical-align: middle;
-  }
-}
-
 .mail a {
   color: inherit;
   background-image: none;

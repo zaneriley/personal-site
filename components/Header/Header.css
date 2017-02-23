@@ -3,8 +3,9 @@
 header {
   position: fixed;
   top: resolve(var(--gutter) + 0.6rem);
-  left: var(--gutter);
+  left: 0;
   margin: auto;
   width: 100%;
   max-width: var(--max-width);
+  z-index: 5;
 }

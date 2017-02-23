@@ -1,3 +1,4 @@
+
 /**
  * React Static Boilerplate
  * https://github.com/kriasoft/react-static-boilerplate
@@ -10,9 +11,13 @@
 
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import Footer from '../Footer';
 import Header from '../Header';
+import BigNav from '../BigNav';
 import s from './Layout.css';
+import g from '../../src/styles/grid.css';
+import z from '../../src/styles/aesthetics.css';
 
 class Layout extends React.Component {
 
@@ -29,16 +34,33 @@ class Layout extends React.Component {
   }
 
   render() {
+    const { path, children, className } = this.props;
+
     return (
-      <div className="mdl-layout mdl-js-layout" ref={node => (this.root = node)}>
-        <Header />
-        <div className="mdl-layout__inner-container">
-          <main className="mdl-layout__content">
-            <div {...this.props} className={cx(s.content, this.props.className) + `${s.siteContent}`} />
-            <Footer />
-          </main>
+      <ReactCSSTransitionGroup
+      component="div"
+      className="container"
+      transitionName={{
+        enter: s.enter,
+        leave: s.leave
+      }}
+      transitionEnterTimeout={9000}
+      transitionLeaveTimeout={9000}
+      >
+        <div className="mdl-layout mdl-js-layout" ref={node => (this.root = node)}>
+          <BigNav />
+          <div className={`mdl-layout__inner-container`}>
+            <Header />
+            <main className={`mdl-layout__content`}>
+              <div className={`${s.sitePrevious} ${g.maxWidthOuter} ${z.shadow1} ${z.borderRadiusTop}`} />
+              <section className={`${s.siteContent} ${g.maxWidthOuter} ${z.shadow2} ${z.borderRadiusTop}`}>
+                <div {...this.props} className={cx(s.content, className) + ``} />
+              </section>
+              <Footer />
+            </main>
+          </div>
         </div>
-      </div>
+      </ReactCSSTransitionGroup>
     );
   }
   

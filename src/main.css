@@ -1,12 +1,15 @@
 @import './styles/fonts.css';
 @import './styles/variables.css';
 @import './styles/grid.css';
+@import './styles/aesthetics.css';
 
 html {
   font-family: var(--font-family-fallback);
   font-size: var(--font-body-small);
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: subpixel-antialiased;
   font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  background-image: linear-gradient(-225deg, #f7e0fc 0%, #e5e5fd 100%);
 
   @media (--small-bp) {
     font-size: calc(var(--font-body-small) + (strip(var(--font-body-large)) - strip(var(--font-body-small))) * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
@@ -26,7 +29,7 @@ h1 {
   font-size: 1.728rem;
 
   @media (--small-bp) {
-    font-size: calc(2.074rem + 1.105 * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
+    font-size: calc(1.728rem + (2.833 - 1.728) * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
   }
 
   @media (--large-bp) {
@@ -45,7 +48,7 @@ blockquote {
   color: var(--color-secondary-base);
 
   @media (--small-bp) {
-    font-size: calc(1.2rem + 0.215 * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
+    font-size: calc(1.2rem + (1.415 - 1.2) * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
   }
 
   @media (--large-bp) {
@@ -63,8 +66,29 @@ blockquote {
   }
 }
 
+figcaption,
+small {
+  line-height: 1.6;
+  font-size: 0.8333rem;
+  text-align: center;
+
+  @media (--small-bp) {
+    font-size: calc(0.8333rem + (0.707 - 0.833) * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
+  }
+
+  @media (--large-bp) {
+    font-size: 0.707rem;
+    text-align: right;
+  }
+}
+
+abbr {
+  letter-spacing: 0.05em;
+  cursor: help;
+}
+
 /* Fallback Fonts and Styles */
-body:not(:global(.wf-loaded)) {
+:global(body:not(.wfLoadedAmerica)) {
   /* GT America Fallback */
   font-family: 'Trebuchet MS';
   line-height: 1.454;
@@ -73,7 +97,11 @@ body:not(:global(.wf-loaded)) {
 }
 
 /* Maria Fallback */
-:global(body:not(.wf-loaded)) :--headers {
+:global(body:not(.wfLoadedMaria)) :--headers,
+:global(body:not(.wfLoadedMaria)) blockquote,
+:global(body:not(.wfLoadedMaria)) strong,
+:global(body:not(.wfLoadedMaria)) figcaption,
+:global(body:not(.wfLoadedMaria)) small {
   font-family: Arial, var(--font-family-fallback), sans-serif;
   letter-spacing: -0.5px;
   word-spacing: -1.25px;
@@ -81,22 +109,24 @@ body:not(:global(.wf-loaded)) {
 }
 
 /* Actual Font Typography */
-:global(.wf-loaded) {
+:global(.wfLoadedAmerica) {
   /* GT America */
   font-family: var(--font-family-body);
   font-size: 1rem;
   line-height: 1.45;
 }
 
-:global(.wf-loaded) :--headers,
-:global(.wf-loaded) blockquote,
-:global(.wf-loaded) strong {
+:global(.wfLoadedMaria) :--headers,
+:global(.wfLoadedMaria) blockquote,
+:global(.wfLoadedMaria) strong,
+:global(.wfLoadedMaria) figcaption,
+:global(.wfLoadedMaria) small {
   /* Maria */
   font-family: var(--font-family-headers);
 }
 
-
-/*html {
+/*
+html {
   &::after {
     pointer-events: none;
     display: block;

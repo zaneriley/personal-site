@@ -1,0 +1,16 @@
+@import '../../styles/variables.css';
+
+.fontSizes {
+  display: flex;
+  transform: scale(80vw);
+
+  & * + * {
+    margin-top: 0;
+  }
+}
+
+.beforeScale {
+  & svg {
+    display: block;
+  }
+}

@@ -32,7 +32,7 @@
     width: calc(100vw - (1rem * 2));
 
     @media (--medium-bp) {
-      width: calc(100vw - (var(--gutter) * 2 + 100vw * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
+      width: calc(100vw - (var(--gutter) + 100vw * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
     }
   }
 }

@@ -1,3 +1,31 @@
+@import '../../src/styles/variables.css';
+@import '../../src/styles/aesthetics.css';
+
+.sitePrevious {
+  height: var(--baseline-normal);
+  background-color: var(--color-neutral-absolute);
+  transform: scaleX(0.95);
+  opacity: 0.7;
+  z-index: -1;
+
+  & + * {
+    margin-top: 0;
+  }
+}
+
 .siteContent {
   flex: 1;
+  position: relative;
+  background-color: #fff;
+  padding-top: var(--baseline-large);
+  padding-bottom: var(--baseline-large);
+  z-index: 1;
+}
+
+.enter {
+  opacity: 1;
+}
+
+.leave {
+  opacity: 0;
 }

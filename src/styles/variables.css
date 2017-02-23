@@ -11,7 +11,7 @@
   --font-body-small: 1.125rem;
   --font-body-large: 1.25rem;
   --font-family-fallback: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans';
-  --font-family-headers: 'Maria';
+  --font-family-headers: 'Maria', 'Arial Black', -apple-system, system-ui, sans-serif;
   --font-family-body: 'GT America', 'Trebuchet MS', Avenir, Fira Sans, -apple-system, system-ui, sans-serif;
   --cap-height: 2px;
   --baseline-smaller: 0.3637rem;

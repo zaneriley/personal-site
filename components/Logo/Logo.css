@@ -8,10 +8,5 @@
   & svg {
     display: block;
     width: 100%;
-    fill: url('#logoNormal');
-
-    &:hover {
-      fill: url('#logoFill');
-    }
   }
 }

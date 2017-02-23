@@ -31,16 +31,16 @@ const america = new FontFaceObserver('GT America', {});
 
 // When Open Sans is loaded, add a font-family using Open Sans to the body
 maria.load().then(() => {
-  document.body.classList.add('wf-loaded');
+  document.body.classList.add('wfLoadedMaria');
 }, () => {
-  document.body.classList.remove('wf-loaded');
+  document.body.classList.remove('wfLoadedMaria');
 });
 
 // When Open Sans is loaded, add a font-family using Open Sans to the body
 america.load().then(() => {
-  document.body.classList.add('wf-loaded');
+  document.body.classList.add('wfLoadedAmerica');
 }, () => {
-  document.body.classList.remove('wf-loaded');;
+  document.body.classList.remove('wfLoadedAmerica');;
 });
 
 let routes = require('./routes.json').default; // Loaded with utils/routes-loader.js

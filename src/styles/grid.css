@@ -14,7 +14,7 @@ body {
 }
 
 :global(#container) {
-  margin-top: var(--gutter);
+  margin-top: var(--baseline-smaller);
 }
 
 main {
@@ -36,7 +36,8 @@ main {
 * + p,
 * + blockquote,
 * + pre,
-* + .gMarginTopSmall {
+* + .gMarginTopSmall,
+* + figcaption {
   margin-top: var(--baseline-normal);
 }
 
@@ -72,6 +73,10 @@ video {
 
 .gJustifySpaceBetween {
   justify-content: space-between;
+}
+
+.gJustifyCenter {
+  justify-content: center;
 }
 
 .gAlignSelfStart {
@@ -296,7 +301,18 @@ video {
   margin-left: 1rem;
 
   @media (--medium-bp) {
-    width: calc(100% - (var(--gutter) * 2 + 100% * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
+    width: calc(100% - var(--gutter));
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+.maxWidthOuter {
+  margin-right: 0;
+  margin-left: 0;
+
+  @media (--medium-bp) {
+    width: calc(100% - (var(--gutter) * 2));
     margin-right: auto;
     margin-left: auto;
   }
@@ -317,6 +333,10 @@ video {
 
 .textCenter {
   text-align: center;
+}
+
+.textRight {
+  text-align: right;
 }
 
 .center {
