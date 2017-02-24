@@ -23,7 +23,7 @@
   --small-viewport: 30rem;
   --medium-viewport: 53rem;
   --large-viewport: 65rem;
-  --max-width: 1050px;
+  --max-width: 53rem;
 }
 
 /* can't use vars here */

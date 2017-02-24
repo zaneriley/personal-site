@@ -301,7 +301,7 @@ video {
   margin-left: 1rem;
 
   @media (--medium-bp) {
-    width: calc(100% - var(--gutter));
+    width: calc(100% - var(--gutter) * 2);
     margin-right: auto;
     margin-left: auto;
   }
@@ -310,6 +310,7 @@ video {
 .maxWidthOuter {
   margin-right: 0;
   margin-left: 0;
+  max-width: resolve(var(--max-width) + (var(--gutter) * 2));
 
   @media (--medium-bp) {
     width: calc(100% - (var(--gutter) * 2));
