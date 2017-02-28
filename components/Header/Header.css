@@ -1,11 +1,17 @@
 @import '../../src/styles/variables.css';
 
 header {
-  position: fixed;
+  position: sticky;
   top: resolve(var(--gutter) + 0.6rem);
-  left: 0;
-  margin: auto;
+  margin-top: -1.728rem;
+  margin-right: auto;
+  margin-left: auto;
+  padding-left: var(--baseline-normal);
   width: 100%;
-  max-width: var(--max-width);
   z-index: 5;
+}
+
+.logo {
+  width: 1.728rem;
+  height: 1.728rem;
 }

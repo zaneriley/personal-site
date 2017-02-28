@@ -1,4 +1,5 @@
 import React from 'react';
+import recommendedPages from '../../relatedPages.json';
 import Layout from '../../../components/Layout';
 import Link from '../../../components/Link';
 import LinkExternal from '../../../components/LinkExternal';
@@ -25,15 +26,16 @@ class BuildingADesignSystem extends React.Component {
   }
 
   render() {
+
     return (
-      <Layout className={s.content}>
+      <Layout className={s.content} breadCrumbs="Case Study" recommendedPageFirst={recommendedPages[2]} recommendedPageSecond={recommendedPages[3]}>
 
         <About title="Building a design system at Brit + Co." about="Built a design system for Brit + Co's media site, classroom platform and internal tools in order to improve communication, maintainability, and consistency." role="Led the creation of design system – visual design, code and documentation." result="<strong>Reduced <abbr title='cascading style sheets'>CSS</abbr> file size by 33%.</strong> Improved communication, increased velocity." readingLength="2 Minute Read"/>
 
         <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
             <IconChromeBar />
-            <video className={`${g.gNoMarginTop} ${g.center}`} autoPlay loop muted poster="http://placehold.it/20x20/">
+            <video className={`${g.gNoMarginTop} ${g.center}`} autoPlay loop muted playsInline poster="http://placehold.it/20x20/">
               <source src={SketchLapseWebm} type="video/webm" />
               <source src={SketchLapseMp4} type="video/mp4" />
             </video>
@@ -49,7 +51,7 @@ class BuildingADesignSystem extends React.Component {
           </p>
         </div>
 
-        <figure className={`${g.maxWidth} ${g.center} ${g.gMarginTopLarge}`}>
+        <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
             <IconChromeBar />
             <img src={styleguide} className={`${g.gNoMarginTop} ${g.center}`} />
@@ -96,9 +98,7 @@ class BuildingADesignSystem extends React.Component {
           <HorizontalScroll>
             <svg className={`${g.center}`} xmlns="http://www.w3.org/2000/svg" width="599" height="97" viewBox="0 7 599 97" version="1.1"><title>Previous font sizes.</title><desc>This image shows Brit + Co's existing font sizes laid out on a scale.</desc><g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd"><path d="M0.3 59L597 59" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/><text fontFamily="inherit" fill="#202020"><tspan x="4.3" y="22">12</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="46.1" y="102">14</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="66" y="22">15</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="87.5" y="102">16</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="107.2" y="22">17</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="126.4" y="102">18</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="167.1" y="22">20</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="208.1" y="102">22</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="247.5" y="22">24</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="286.3" y="102">26</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="310.1" y="22">27</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="408.3" y="22">32</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="450.2" y="102">34</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="570.9" y="22">40</tspan></text><circle fill="#008EFE" cx="17" cy="58" r="6"/><circle fill="#008EFE" cx="57" cy="58" r="6"/><circle fill="#008EFE" cx="77" cy="58" r="6"/><circle fill="#008EFE" cx="98" cy="58" r="6"/><circle fill="#008EFE" cx="118" cy="58" r="6"/><circle fill="#008EFE" cx="138" cy="58" r="6"/><circle fill="#008EFE" cx="178" cy="58" r="6"/><circle fill="#008EFE" cx="219" cy="58" r="6"/><circle fill="#008EFE" cx="259" cy="58" r="6"/><circle fill="#008EFE" cx="299" cy="58" r="6"/><circle fill="#008EFE" cx="319" cy="58" r="6"/><circle fill="#008EFE" cx="420" cy="58" r="6"/><circle fill="#008EFE" cx="461" cy="58" r="6"/><circle fill="#008EFE" cx="583" cy="58" r="6"/></g></svg>
             </HorizontalScroll>
-            <div className={`${g.maxWidth}`}>
-              <figcaption className={`${g.g6l} ${g.center}`}>The number of existing font sizes <span className={`${g.noWrap}`}>on Brit + Co</span></figcaption>
-            </div>
+            <figcaption className={`${g.textCenter}`}>The number of existing font sizes <span className={`${g.noWrap}`}>on Brit + Co</span></figcaption>
         </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
@@ -125,7 +125,7 @@ class BuildingADesignSystem extends React.Component {
           <HorizontalScroll>
             <svg xmlns="http://www.w3.org/2000/svg" width="599" height="63" viewBox="0 6 599 63" version="1.1"><title>Font sizes using a modular scale</title><desc>This image shows Brit + Co's new font sizes laid out on a modular scale where each number is multipled by 1.2 to get the next fontSize.</desc><path d="M0.3 59L597 59" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/><text fontFamily="inherit" fill="#202020"><tspan x="11.3" y="22">12</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="72" y="22">15</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="133.4" y="22">18</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="210.1" y="22">22</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="293.3" y="22">26</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="394.5" y="22">31</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="510.3" y="22">37</tspan></text><circle fill="#008EFE" cx="21" cy="59" r="6"/><circle fill="#008EFE" cx="81" cy="59" r="6"/><circle fill="#008EFE" cx="143" cy="59" r="6"/><circle fill="#008EFE" cx="221" cy="59" r="6"/><circle fill="#008EFE" cx="305" cy="59" r="6"/><circle fill="#008EFE" cx="404" cy="59" r="6"/><circle fill="#008EFE" cx="521" cy="59" r="6"/></svg>
             </HorizontalScroll>
-            <figcaption className={`${g.g6l} ${g.center}`}>Simplified font-sizes using a modular scale.</figcaption>
+            <figcaption className={`${g.textCenter}`}>Simplified font-sizes using a modular scale.</figcaption>
         </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
@@ -155,9 +155,17 @@ class BuildingADesignSystem extends React.Component {
 <span><span className="token key atrule">  global</span><span className="token punctuation">:</span> <span className="token punctuation">{`[`}</span><span className="token string">'em'</span><span className="token punctuation">,</span> <span className="token string">'rem'</span><span className="token punctuation">,</span> <span className="token string">'%'</span><span className="token punctuation">,</span> <span className="token string">'vw'</span><span className="token punctuation">,</span> <span className="token string">'vh'</span><span className="token punctuation">,</span> <span className="token string">'vmin'</span><span className="token punctuation">,</span> <span className="token string">'vmax'</span><span className="token punctuation">{`]`}</span></span>
 <span><span className="token key atrule">  properties</span><span className="token punctuation">:</span></span>
 <span><span className="token key atrule">    color</span><span className="token punctuation">:</span>       <span className="token punctuation">{`      [`}</span><span className="token punctuation">{`]`}</span> // color(primary<span className="token punctuation">,</span> lighter);</span>
-<span><span className="token key atrule">    fontSize</span><span className="token punctuation">:</span>   <span className="token punctuation">{`  [`}</span><span className="token punctuation">{`]`}</span> // typography(large);</span>
+<span><span className="token key atrule">    font-size</span><span className="token punctuation">:</span>   <span className="token punctuation">{`   [`}</span><span className="token punctuation">{`]`}</span> // typography(large);</span>
 <span><span className="token key atrule">    margin-top</span><span className="token punctuation">:</span>  <span className="token punctuation">{` [`}</span><span className="token punctuation">{`]`}</span> // spacing(large)</span>
           </Code>
+
+          <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Credits</h2>
+
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>
+            <LinkExternal href="https://angel.co/mskrys" >Krystle Cho</LinkExternal> – Product Designer <br />
+            <LinkExternal href="http://www.emelynbaker.com/">Emelyn Baker</LinkExternal> – Product Designer<br />
+            <LinkExternal href="https://twitter.com/threesided">Scott Gamble</LinkExternal> – Engineer
+          </p>
         </div>
       </Layout>
     );

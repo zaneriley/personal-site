@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import recommendedPages from '../../relatedPages.json';
 import Layout from '../../../components/Layout';
 import About from '../../../components/About';
 import Link from '../../../components/Link';
@@ -20,7 +21,7 @@ import UpNext from '../../../components/UpNext';
 import s from './styles.css';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
-import { title, html } from './index.md';
+import {title, html} from './index.md';
 
 /* Images for this Page */
 import before from '../../assets/images/kit-pdp-desktop-before@2x.jpg';
@@ -41,21 +42,31 @@ import addToCartPanel from '../../assets/images/add-to-cart.svg';
 import userTestWebm from '../../assets/images/user-test.webm';
 import userTestMp4 from '../../assets/images/user-test.mp4';
 
-import iphoneImage from '../../assets/images/user-test-result@2x.jpg'
+import iphoneImage from '../../assets/images/user-test-result@2x.jpg';
 
 class ImprovingPurchaseProcessPage extends React.Component {
 
+  static defaultProps = {
+    title: recommendedPages[0].title,
+    recommendedPageFirst: {title: ''},
+    recommendedPageSecond: {}
+  };
+
   componentDidMount() {
-    document.title = title;
+    document.title = recommendedPages[0].title + ' | Zane Riley';
   }
 
   render() {
+
     return (
-      <Layout className={s.content}>
+      <Layout className={s.content} breadCrumbs="Case Study" recommendedPageFirst={recommendedPages[1]} recommendedPageSecond={recommendedPages[2]}>
 
-        <About title={title} about="Brit + Co helps women discover online courses and DIY tutorials to improve their creativity. I was asked to increase the attach rate between  Brit + Co’s two main products – Classes and Kits." role="Wireframing and visual design of kit page. Developed prototype and led user testing." result="<strong>3.5% increase</strong> in the attach rate (how often classes and kits were purchased together)."/>
+        <About title={recommendedPages[0].title} about="Brit + Co helps women discover online courses and DIY tutorials to improve their creativity. I was asked to increase the attach rate between  Brit + Co’s two main products – Classes and Kits." role="Wireframing and visual design of kit page. Developed prototype and led user testing." result="<strong>3.5% increase</strong> in the attach rate (how often classes and kits were purchased together)."/>
 
-        <ImageCompare before={before} after={after} className={`${g.gMarginTopLarge}`}/>
+        <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+          <ImageCompare before={before} after={after}/>
+          <figcaption>Before and after designs of the <span className={`${g.noWrap}`}>Kit page.</span></figcaption>
+        </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <p className={`${g.g9m} ${g.g6l} ${g.center} ${v.dropCap}`}>I was asked to increase the attach rate between  Brit + Co’s two main products – Classes, offering instruction on topics like calligraphy, and Kits, supplies for both projects <span className={`${g.noWrap}`}>and Classes.</span></p>
@@ -169,32 +180,39 @@ class ImprovingPurchaseProcessPage extends React.Component {
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>People seeking Kits may not need or want instruction; they could simply want supplies for their projects. People interested in Classes, on the other hand, seemed to also want all the supplies they need to begin learning that craft. We needed to make it easier for those viewing Classes to purchase related Kits, and we needed to convince those looking at Kits to view Classes as well.</p>
 
           <h2 className={`${g.g9m} ${g.g6l} ${g.center} ${g.gMarginTopLarge}`}>Alerting Users About Classes</h2>
-          <p className={`${g.g9m} ${g.g6l} ${g.center} `}>For Kits that had a matching class, we added a callout that encourages users to view the class. Messaging was positioned around making sure a user’s project turned out well.</p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center} `}>For Kits that had a matching class, we added a callout that encourages users to view the class. Messaging was positioned around making sure a user’s project turned <span className={`${g.noWrap}`}>out well.</span></p>
         </div>
 
-        <div className={`${g.maxWidth} ${g.gFlexContainer} ${g.gFlexEnd} ${s.kitWrapper}`}>
-          <figure className={`${s.wireframeKit} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
-            <img src={wireframeKit} />
-          </figure>
-          <figure className={`${s.calloutPanel} ${g.g7m} ${v.shadow2}`}>
-             <img src={calloutPanel} />
-          </figure>
-        </div>
+        <figure className={`${g.maxWidth}`}>
+          <div className={`${g.gFlexContainer} ${g.gFlexEnd} ${s.kitWrapper}`}>
+            <div className={`${s.wireframeKit} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
+              <img src={wireframeKit} />
+            </div>
+            <div className={`${s.calloutPanel} ${g.g7m} ${v.shadow2}`}>
+               <img src={calloutPanel} />
+            </div>
+          </div>
+          <figcaption>A callout panel that notifies users that there's a class associated with <span className={`${g.noWrap}`}>this Kit.</span></figcaption>
+        </figure>
+
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Bundling Both Products</h2>
-          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>The Class page was designed by Krystle Cho<sup>1</sup>. It allows users to purchase both kits and classes in a single click.</p>
-          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>On both pages, we removed content from the right rail so that only the add-to-cart module remained.</p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>The Class page was designed by Krystle Cho<sup>1</sup>. It allows users to purchase both kits and classes in a <span className={`${g.noWrap}`}>single click.</span></p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>On both pages, we removed content from the right rail so that only the add-to-cart <span className={`${g.noWrap}`}>module remained.</span></p>
         </div>
 
-        <div className={`${g.maxWidth} ${g.gFlexContainer} ${g.gFlexStart} ${s.classWrapper}`}>
-          <figure className={`${s.wireframeClass} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
-            <img src={wireframeClass} />
-          </figure>
-          <figure className={`${s.addToCartPanel} ${g.g6m} ${g.g4l} ${g.gAlignSelfCenter} ${g.z1} ${v.shadow2}`}>
-             <img src={addToCartPanel} />
-          </figure>
-        </div>
+        <figure className={`${g.maxWidth}`}>
+          <div className={`${g.gFlexContainer} ${g.gFlexStart} ${s.classWrapper}`}>
+            <div className={`${s.wireframeClass} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
+              <img src={wireframeClass} />
+            </div>
+            <div className={`${s.addToCartPanel} ${g.g6m} ${g.g4l} ${g.gAlignSelfCenter} ${g.z1} ${v.shadow2}`}>
+              <img src={addToCartPanel} />
+            </div>
+          </div>
+          <figcaption>A new add-to-cart module that allows for purchasing <span className={`${g.noWrap}`}>both products.</span></figcaption>
+        </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>User Testing</h2>
@@ -209,14 +227,16 @@ class ImprovingPurchaseProcessPage extends React.Component {
 
         </div>
 
-        <div className={`${g.maxWidth} ${g.gFlexContainer} ${g.gFlexCenter} ${s.userTestingWrapper}`
-      }>            
-            <video className={`${g.g5m}`} autoPlay loop muted poster="http://placehold.it/20x20/">
+        <figure className={`${g.maxWidth}`}>
+          <div className={`${g.gFlexContainer} ${g.gFlexCenter} ${s.userTestingWrapper}`}>
+            <video className={`${g.g5m}`} autoPlay playsInline loop muted poster="http://placehold.it/20x20/">
               <source src={userTestWebm} type="video/webm" />
               <source src={userTestMp4} type="video/mp4" />
             </video>
             <Iphone image={iphoneImage} className={`${g.g4m}`} />
-        </div>
+          </div>
+          <figcaption className={`${g.textCenter}`}>On the left, user testing the initial design. The revised design <span className={`${g.noWrap}`}>on right.</span></figcaption>
+        </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <p className={`${g.g9m} ${g.g9m} ${g.g6l} ${g.center}`}>Simplifying the product pages and removing friction to purchase both the class and kit increased the attachment rate by 3.5%. We did it without inhibiting new strategy exploration for the rest of the  team, and we saved engineering resources  by building and deploying our own  prototype.</p>
@@ -229,9 +249,6 @@ class ImprovingPurchaseProcessPage extends React.Component {
             <LinkExternal href="https://twitter.com/monokrome">Bailey Stoner</LinkExternal> – Engineer
           </p>
         </div>
-
-        <UpNext />
-
       </Layout>
     );
   }

@@ -1,9 +1,9 @@
 @import '../../src/styles/variables.css';
 
 .logo {
-  display: block;
+  display: inline-block;
   background-image: none;
-  width: 2.05rem;
+  outline: none;
 
   & svg {
     display: block;

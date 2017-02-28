@@ -13,7 +13,6 @@ pre {
   white-space: pre-wrap;
   -webkit-overflow-scrolling: touch;
   overflow-x: scroll;
-
 }
 
 code {
@@ -24,6 +23,7 @@ code {
 
   & > span {
     display: table-row;
+    -webkit-text-size-adjust: 100%;
 
     &::before {
       display: table-cell;

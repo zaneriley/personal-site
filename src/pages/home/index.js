@@ -9,8 +9,10 @@
  */
 
 import React, { PropTypes } from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Layout from '../../../components/Layout';
 import Link from '../../../components/Link';
+import Logo from '../../../components/Logo';
 import s from './styles.css';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
@@ -27,10 +29,44 @@ class HomePage extends React.Component {
 
   render() {
     return (
-      <Layout className={` ${g.maxWidth} `}>
-        <div dangerouslySetInnerHTML={{ __html: html }} className={`${g.g9m} ${g.g6l}`}/>
-        <p className={`${g.g9m} ${g.g6l}`}><Link className="mdl-navigation__link" to="/case-study/improving-purchase-process">Improving the purchase process of Classes and Kits</Link></p>
-        <p className={`${g.g9m} ${g.g6l}`}><Link className="mdl-navigation__link" to="/case-study/building-a-design-system">Building a Design system.</Link></p>
+      <Layout>
+
+        <div className={`${s.hero} ${g.gFlexContainer} ${g.gFlexCenter}`}>
+
+                <ReactCSSTransitionGroup
+      component="div"
+      className={`container ${g.maxWidth}`}
+      transitionName={{
+        enter: s.enter,
+        leave: s.leave
+      }}
+      transitionEnterTimeout={9000}
+      transitionLeaveTimeout={9000}
+      > 
+
+            <a key="1" href="mailto:hello@zaneriley.com?subject=Hey there">
+              <h2>hello@zaneriley.com</h2>
+            </a>
+
+            <h1 key="2" className={`${g.gMarginTopSmaller} ${g.g8l} `}>Digital product designer that codes</h1>
+
+            <p key="3" className={` ${g.g6l} ${g.gMarginTop}`}>I’m Zane, based in San Francisco, California, making products easier to use and help businesses communicate more effectively. </p>
+
+          </ReactCSSTransitionGroup>
+
+          <Logo className={`${s.theBigZ}`}/>
+        </div>
+
+        <div className={`${g.maxWidth}`}>
+          <h2 className={`${g.g9m} ${g.g6l} `}>Case Studies</h2>
+
+          <p className={`${g.g9m} ${g.g6l} `}><Link className="mdl-navigation__link" to="/case-study/improving-purchase-process">Improving the purchase process of Classes and Kits</Link></p>
+
+          <p className={`${g.g9m} ${g.g6l} `}><Link className="mdl-navigation__link" to="/case-study/building-a-design-system">Building a Design system.</Link></p>
+
+        </div>
+
+
       </Layout>
     );
   }

@@ -9,7 +9,6 @@ html {
   -webkit-font-smoothing: subpixel-antialiased;
   font-kerning: normal;
   text-rendering: optimizeLegibility;
-  background-image: linear-gradient(-225deg, #f7e0fc 0%, #e5e5fd 100%);
 
   @media (--small-bp) {
     font-size: calc(var(--font-body-small) + (strip(var(--font-body-large)) - strip(var(--font-body-small))) * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));

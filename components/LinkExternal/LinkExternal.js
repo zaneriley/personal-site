@@ -8,16 +8,20 @@ class LinkExternal extends React.Component {
 
   static propTypes = {
     className: PropTypes.string,
-    href: PropTypes.string
+    href: PropTypes.string.isRequired
   };
 
   render() {
+
     const { className, href } = this.props;
+
     return (
-      <a href={href} target="_blank" className={className + ` ${s.LinkExternal}`}>
+
+      <a href={href} target="_blank" className={cx(s.LinkExternal, className) + ``}>
         <span>{this.props.children}</span>&nbsp;
         <span className={`${s.LinkExternalIcon}`}><IconExternal /></span>
       </a>
+      
     );
   }
 }

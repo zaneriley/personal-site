@@ -11,18 +11,29 @@
 
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Footer from '../Footer';
 import Header from '../Header';
 import BigNav from '../BigNav';
+import BreadCrumbs from '../BreadCrumbs';
+import UpNext from '../UpNext';
 import s from './Layout.css';
 import g from '../../src/styles/grid.css';
 import z from '../../src/styles/aesthetics.css';
 
 class Layout extends React.Component {
 
+  static defaultProps = {
+    breadCrumbs: '',
+    recommendedPageFirst: {title: ''},
+    recommendedPageSecond: {},
+  };
+
   static propTypes = {
     className: PropTypes.string,
+    breadCrumbs: PropTypes.string,
+    recommendedPageFirst: PropTypes.array,
+    recommendedPageSecond: PropTypes.array
   };
 
   componentDidMount() {
@@ -34,9 +45,20 @@ class Layout extends React.Component {
   }
 
   render() {
-    const { path, children, className } = this.props;
+
+    const { 
+      path, 
+      children, 
+      className, 
+      breadCrumbs,
+      recommendedPageFirst,
+      recommendedPageSecond
+    } = this.props;
+
+    console.log(recommendedPageFirst);
 
     return (
+
       <ReactCSSTransitionGroup
       component="div"
       className="container"
@@ -46,16 +68,24 @@ class Layout extends React.Component {
       }}
       transitionEnterTimeout={9000}
       transitionLeaveTimeout={9000}
-      >
-        <div className="mdl-layout mdl-js-layout" ref={node => (this.root = node)}>
-          <BigNav />
+      > 
+        <Header />
+        <div className={`mdl-js-layout ${g.gNoMarginTop}`} ref={node => (this.root = node)}>
           <div className={`mdl-layout__inner-container`}>
-            <Header />
-            <main className={`mdl-layout__content`}>
-              <div className={`${s.sitePrevious} ${g.maxWidthOuter} ${z.shadow1} ${z.borderRadiusTop}`} />
-              <section className={`${s.siteContent} ${g.maxWidthOuter} ${z.shadow2} ${z.borderRadiusTop}`}>
-                <div {...this.props} className={cx(s.content, className) + ``} />
+            
+            <main className={`mdl-layout__content `}>
+              <section className={`${s.siteContent}`}>
+
+              {breadCrumbs.length > 0 &&
+                <BreadCrumbs pageLocation={breadCrumbs} className={`${g.maxWidth} ${g.center}`}/>
+              }
+
+                <div {...this.props} className={cx(s.content, g.gMarginTopSmaller, className) + ``} />
               </section>
+
+              {recommendedPageFirst.title.length > 0 && 
+                <UpNext recommendedPageFirst={recommendedPageFirst} recommendedPageSecond={recommendedPageSecond}  />
+              }
               <Footer />
             </main>
           </div>

@@ -11,20 +11,20 @@ class BreadCrumbs extends React.Component {
 
   static propTypes = {
     className: PropTypes.string,
-    title: PropTypes.string,
+    pageLocation: PropTypes.string,
   };
 
   render() {
 
-    const { className } = this.props;
+    const { className, pageLocation } = this.props;
 
     return ( 
 
-      <nav role="navigation" className={`${s.breadcrumbs}`}>
+      <nav role="navigation" className={cx(s.breadcrumbs, className) + ``}>
         <ol id="breadcrumb" aria-label="You are here:">
           <small>
             <li><Link to="/" title="Home">Home</Link></li>
-            <li>Case Study</li>
+            <li>{pageLocation}</li>
           </small>
         </ol>
       </nav>

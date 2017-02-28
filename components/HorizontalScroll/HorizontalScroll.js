@@ -14,7 +14,7 @@ class HorizontalScroll extends React.Component {
 
     return ( 
 
-      <div className={className + ` ${s.horizontalScrollOuterWrapper}`}>
+      <div className={cx(s.horizontalScrollOuterWrapper, className) + ``}>
         <div className={`${s.horizontalScrollInnerWrapper}`}>
           {this.props.children}
         </div>

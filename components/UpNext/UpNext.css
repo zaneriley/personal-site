@@ -1,8 +1,39 @@
 @import '../../src/styles/variables.css';
 
+.upNextWrapper {
+  position: relative;
+  padding: var(--baseline-larger) 0;
+
+  &::before,
+  &::after {
+    display: block;
+    position: absolute;
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(-53deg, #8700FF 0%, #FF56B8 45%, #FFD635 100%);
+    content: '';
+    z-index: -1;
+    opacity: 0.5;
+  }
+
+  &::before {
+    transform: skewY(2deg);
+  }
+
+  &::after {
+    transform: skewY(5deg);
+  }
+}
+
 .panel {
   padding: var(--baseline-normal);
   justify-content: space-between;
+  background-color: var(--color-neutral-absolute);
 
   & > * {
     width: 100%;

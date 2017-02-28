@@ -1,3 +1,3 @@
 ---
-title: Improving the Purchase Process of Classes and Kits
+title: Improving the Purchase Process of Classes and Kits. | Zane Riley
 ---
