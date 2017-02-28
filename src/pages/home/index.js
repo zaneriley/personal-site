@@ -50,7 +50,7 @@ class HomePage extends React.Component {
 
             <h1 key="2" className={`${g.gMarginTopSmaller} ${g.g8l} `}>Digital product designer that codes</h1>
 
-            <p key="3" className={` ${g.g6l} ${g.gMarginTop}`}>I’m Zane, based in San Francisco, California, making products easier to use and help businesses communicate more effectively. </p>
+            <p key="3" className={` ${g.g6l} ${g.gMarginTop}`}>I’m Zane, a designer based in San Francisco, California. I make products easier to use and help businesses communicate more effectively. </p>
 
           </ReactCSSTransitionGroup>
 
