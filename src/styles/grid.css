@@ -33,6 +33,10 @@ main {
   margin-top: var(--baseline-larger);
 }
 
+.gPaddingTopLarge {
+  padding-top: var(--baseline-larger);
+}
+
 /* Element Spacing */
 * + p,
 * + blockquote,
@@ -40,6 +44,10 @@ main {
 * + .gMarginTopSmall,
 * + figcaption {
   margin-top: var(--baseline-normal);
+}
+
+* + footer {
+  margin-top: 0;
 }
 
 img,
@@ -106,10 +114,6 @@ video {
 
 .gNoMarginTop {
   margin-top: 0;
-}
-
-.gReverseMarginTop {
-  margin-top: resolve(var(--gutter) * -1);
 }
 
 * + .gMarginTopSmaller {

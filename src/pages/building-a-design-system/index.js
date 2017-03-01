@@ -28,7 +28,7 @@ class BuildingADesignSystem extends React.Component {
   render() {
 
     return (
-      <Layout className={s.content} breadCrumbs="Case Study" recommendedPageFirst={recommendedPages[2]} recommendedPageSecond={recommendedPages[3]}>
+      <Layout className={`${g.gPaddingTopLarge}`} breadCrumbs="Case Study" recommendedPageFirst={recommendedPages[2]} recommendedPageSecond={recommendedPages[3]}>
 
         <About title="Building a design system at Brit + Co." about="Built a design system for Brit + Co's media site, classroom platform and internal tools in order to improve communication, maintainability, and consistency." role="Led the creation of design system – visual design, code and documentation." result="<strong>Reduced <abbr title='cascading style sheets'>CSS</abbr> file size by 33%.</strong> Improved communication, increased velocity." readingLength="2 Minute Read"/>
 

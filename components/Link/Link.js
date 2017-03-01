@@ -18,7 +18,13 @@ class Link extends React.Component {
   static propTypes = {
     to: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
     onClick: PropTypes.func,
+    childWrapper: PropTypes.bool
   };
+
+  static defaultProps = {
+    childWrapper: true,
+  };
+
 
   handleClick = (event) => {
     if (this.props.onClick) {
@@ -41,7 +47,6 @@ class Link extends React.Component {
 
     if (this.props.to) {
       history.push(this.props.to)
-      window.scrollTo(0, 0);
     } else {
       history.push({
         pathname: event.currentTarget.pathname,
@@ -51,8 +56,15 @@ class Link extends React.Component {
   };
 
   render() {
-    const { to, ...props } = this.props; // eslint-disable-line no-use-before-define
-    return <a href={typeof to === 'string' ? to : history.createHref(to)} {...props} onClick={this.handleClick} ><span>{this.props.children}</span></a>;
+    const { to, children, childWrapper, ...props } = this.props;
+
+    function getChildrenWithContainer() {
+      if (!childWrapper) return children;
+      return <span className={`${s.linkText}`}>{ children }</span>;
+    }
+    return (
+      <a href={typeof to === 'string' ? to : history.createHref(to)} {...props} onClick={this.handleClick} >{ getChildrenWithContainer() }</a>
+    );
   }
 
 }

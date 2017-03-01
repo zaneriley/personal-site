@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
+import Link from '../Link';
 import IconClock from '../IconClock';
 import g from '../../src/styles/grid.css';
 import z from '../../src/styles/aesthetics.css';
@@ -28,23 +29,27 @@ class UpNext extends React.Component {
         <div className={cx(g.maxWidth, g.gFlexContainer, g.gJustifySpaceBetween, g.gMarginTopLarge, className) + ``}>
           
           <div className={`${s.panel} ${g.g6m} ${z.shadow2} ${g.gFlexContainer}`}>
-            <h3>{recommendedPageFirst.title}</h3>
-            <div className={`${g.gAlignSelfEnd} ${g.gMarginTopSmall} ${g.gFlexContainer} ${g.gJustifySpaceBetween}`}>
-                <span>
-                  <IconClock /> {recommendedPageFirst.readingLength}
-                </span>
-                <button className={`${g.gNoMarginTop}`}>Read More</button>
-            </div>
+            <Link to={recommendedPageFirst.path} childWrapper={false}>
+              <h3>{recommendedPageFirst.title}</h3>
+              <div className={`${g.gAlignSelfEnd} ${g.gMarginTopSmall} ${g.gFlexContainer} ${g.gJustifySpaceBetween}`}>
+                  <span>
+                    <IconClock /> {recommendedPageFirst.readingLength}
+                  </span>
+                  <button className={`${g.gNoMarginTop}`}>Read More</button>
+              </div>
+            </Link>
           </div>
 
           <div className={`${s.panel} ${g.g6m} ${z.shadow2} ${g.gNoMarginTopM} ${g.gFlexContainer}`}>
-            <h3>{recommendedPageSecond.title}</h3>
-            <div className={`${g.gAlignSelfEnd} ${g.gMarginTopSmall} ${g.gFlexContainer} ${g.gFlexStart} ${g.gJustifySpaceBetween}`}>
-              <span>
-                <IconClock /> {recommendedPageSecond.readingLength}
-              </span>
-              <button className={`${g.gNoMarginTop}`}>Read More</button>
-            </div>
+            <Link to={recommendedPageSecond.path} childWrapper={false}>
+              <h3>{recommendedPageSecond.title}</h3>
+              <div className={`${g.gAlignSelfEnd} ${g.gMarginTopSmall} ${g.gFlexContainer} ${g.gFlexStart} ${g.gJustifySpaceBetween}`}>
+                <span>
+                  <IconClock /> {recommendedPageSecond.readingLength}
+                </span>
+                <button className={`${g.gNoMarginTop}`}>Read More</button>
+              </div>
+            </Link>
           </div>
         </div>
       </div>

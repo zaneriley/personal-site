@@ -12,16 +12,19 @@
   {
     "title": "Helping people find inspiration for DIY projects.",
     "readingLength": "2 Minute Read",
-    "path": "/case-study/helping-find-diy-projects"
+    "path": "#",
+    "suggestedpath": "/case-study/helping-find-diy-projects"
   },
   {
     "title": "Making it easier to donate to Days for Girls.",
     "readingLength": "5 Minute Read",
-    "path": "/case-study/simplifying-donations"
+    "path": "#",
+    "suggestedPath": "/case-study/simplifying-donations"
   },
   {
     "title": "Creating an indie game with a global, active fan base.",
     "readingLength": "3 Minute Read",
-    "path": "/case-study/creating-an-indie-game"
+    "path": "#",
+    "suggestedpath": "/case-study/creating-an-indie-game"
   }
 ]

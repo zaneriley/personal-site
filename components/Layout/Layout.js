@@ -37,11 +37,10 @@ class Layout extends React.Component {
   };
 
   componentDidMount() {
-    window.componentHandler.upgradeElement(this.root);
+    window.scrollTo(0, 0);
   }
 
   componentWillUnmount() {
-    window.componentHandler.downgradeElements(this.root);
   }
 
   render() {
@@ -52,45 +51,35 @@ class Layout extends React.Component {
       className, 
       breadCrumbs,
       recommendedPageFirst,
-      recommendedPageSecond
+      recommendedPageSecond,
+      ...rest
     } = this.props;
 
-    console.log(recommendedPageFirst);
-
     return (
-
-      <ReactCSSTransitionGroup
-      component="div"
-      className="container"
-      transitionName={{
-        enter: s.enter,
-        leave: s.leave
-      }}
-      transitionEnterTimeout={9000}
-      transitionLeaveTimeout={9000}
-      > 
-        <Header />
-        <div className={`mdl-js-layout ${g.gNoMarginTop}`} ref={node => (this.root = node)}>
-          <div className={`mdl-layout__inner-container`}>
+        
+        <div className={cx(className) + ` mdl-js-layout ref={node => (this.root = node)}`}>
+          <Header />
+          <div className={`mdl-layout__inner-container ${g.gNoMarginTop}`}>
             
             <main className={`mdl-layout__content `}>
               <section className={`${s.siteContent}`}>
 
               {breadCrumbs.length > 0 &&
-                <BreadCrumbs pageLocation={breadCrumbs} className={`${g.maxWidth} ${g.center}`}/>
+                <BreadCrumbs pageLocation={this.props.breadCrumbs} className={`${g.maxWidth} `}/>
               }
 
-                <div {...this.props} className={cx(s.content, g.gMarginTopSmaller, className) + ``} />
+                <div className={cx(s.content, g.gMarginTopSmaller) + ``}>
+                  {children}
+                </div>
               </section>
 
               {recommendedPageFirst.title.length > 0 && 
-                <UpNext recommendedPageFirst={recommendedPageFirst} recommendedPageSecond={recommendedPageSecond}  />
+                <UpNext recommendedPageFirst={this.props.recommendedPageFirst} recommendedPageSecond={this.props.recommendedPageSecond}  />
               }
               <Footer />
             </main>
           </div>
         </div>
-      </ReactCSSTransitionGroup>
     );
   }
   

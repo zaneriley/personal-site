@@ -3,6 +3,7 @@
 .upNextWrapper {
   position: relative;
   padding: var(--baseline-larger) 0;
+  background-color: var(--color-neutral-absolute);
 
   &::before,
   &::after {
@@ -17,7 +18,6 @@
     height: 100%;
     background-image: linear-gradient(-53deg, #8700FF 0%, #FF56B8 45%, #FFD635 100%);
     content: '';
-    z-index: -1;
     opacity: 0.5;
   }
 
@@ -34,6 +34,7 @@
   padding: var(--baseline-normal);
   justify-content: space-between;
   background-color: var(--color-neutral-absolute);
+  z-index: 1;
 
   & > * {
     width: 100%;
