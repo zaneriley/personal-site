@@ -16,51 +16,26 @@ import s from './Button.css';
 class Button extends React.Component {
 
   static propTypes = {
-    component: PropTypes.oneOf([
+    component: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.element,
       PropTypes.func,
     ]),
-    type: PropTypes.oneOf(['raised', 'fab', 'mini-fab', 'icon']),
-    to: PropTypes.oneOf([PropTypes.string, PropTypes.object]),
+    to: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     href: PropTypes.string,
     className: PropTypes.string,
-    colored: PropTypes.bool,
-    primary: PropTypes.bool,
-    accent: PropTypes.bool,
-    ripple: PropTypes.bool,
-    children: PropTypes.node,
   };
 
-  componentDidMount() {
-    window.componentHandler.upgradeElement(this.root);
-  }
-
-  componentWillUnmount() {
-    window.componentHandler.downgradeElements(this.root);
-  }
-
   render() {
-    const { component, type, className, colored, to, href,
-      primary, accent, ripple, children, ...other } = this.props;
+    const { component, type, className, to, href, children, ...other } = this.props;
+
     return React.createElement(
-      component || (to ? Link : (href ? 'a' : 'button')), // eslint-disable-line no-nested-ternary
+      component || to ? Link : (href ? 'a' : 'button'), 
       {
         ref: node => (this.root = node),
-        className: cx(
-          'mdl-button mdl-js-button',
-          type && `mdl-button--${type}`,
-          {
-            'mdl-button--colored': colored,
-            'mdl-button--primary': primary,
-            'mdl-button--accent': accent,
-            'mdl-js-ripple-effect': ripple,
-          },
-          className
-        ),
-        to,
-        href,
-        ...other,
+        className: cx(className, s.button), to, href, ...other,
+        childWrapper: false,
+        href: to,
       },
       children
     );

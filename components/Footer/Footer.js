@@ -30,7 +30,7 @@ function Footer() {
           <SocialIcons className={`${g.g9m} ${g.g6l}`}/>
           <p className={`${g.g9m} ${g.g6l}`}>Type is set in Maria and GT America. Site built with React, Post-CSS and Webpack. View it on <LinkExternal href="https://github.com/zaneriley/personal-site">Github</LinkExternal>.</p>
           <div className={`${g.textCenter}`}>
-            <p><strong>Copyright © 2014 - 2017 Zane Riley</strong></p>
+            <p><small>Copyright © 2014 - {new Date().getFullYear()} Zane Riley</small></p>
           </div>
         </div>
     </footer>

@@ -51,17 +51,18 @@ class ImprovingPurchaseProcessPage extends React.Component {
     recommendedPageFirst: {title: ''},
     recommendedPageSecond: {}
   };
-
+  
   componentDidMount() {
     document.title = recommendedPages[0].title + ' | Zane Riley';
   }
 
   render() {
+    const {title, about, role, result, readingLength} = recommendedPages[0];
 
     return (
       <Layout className={`${g.gPaddingTopLarge}`} breadCrumbs="Case Study" recommendedPageFirst={recommendedPages[1]} recommendedPageSecond={recommendedPages[2]}>
 
-        <About title={recommendedPages[0].title} about="Brit + Co helps women discover online courses and DIY tutorials to improve their creativity. I was asked to increase the attach rate between  Brit + Co’s two main products – Classes and Kits." role="Wireframing and visual design of kit page. Developed prototype and led user testing." result="<strong>3.5% increase</strong> in the attach rate (how often classes and kits were purchased together)."/>
+        <About title={title} about={about} role={role} result={result} readingLength={readingLength}/>
 
         <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <ImageCompare before={before} after={after}/>

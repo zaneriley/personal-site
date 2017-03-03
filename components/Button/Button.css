@@ -1,5 +1,6 @@
 @import '../../src/styles/variables.css';
 
+.button,
 button {
   position: relative;
   display: inline-block;

@@ -22,10 +22,12 @@ main {
   flex-direction: column;
   align-items: stretch;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 * + *,
-* + .gMarginTop {
+* + .gMarginTop,
+pre + p {
   margin-top: var(--gutter);
 }
 
@@ -33,14 +35,9 @@ main {
   margin-top: var(--baseline-larger);
 }
 
-.gPaddingTopLarge {
-  padding-top: var(--baseline-larger);
-}
-
 /* Element Spacing */
 * + p,
 * + blockquote,
-* + pre,
 * + .gMarginTopSmall,
 * + figcaption {
   margin-top: var(--baseline-normal);
@@ -116,8 +113,16 @@ video {
   margin-top: 0;
 }
 
+.gPaddingTopLarge {
+  padding-top: var(--baseline-small);
+}
+
 * + .gMarginTopSmaller {
   margin-top: var(--baseline-small);
+}
+
+.gPositionRelative {
+  position: relative;
 }
 
 .gPositionAbsolute {
@@ -181,7 +186,11 @@ video {
 }
 
 @media (--medium-bp) {
-  
+
+  .gPaddingTopLarge {
+    padding-top: 10vh;
+  }
+
   .floatRightM {
     float: right;
     padding: 0 0 var(--gutter) var(--gutter);

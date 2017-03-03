@@ -18,7 +18,7 @@ class LinkExternal extends React.Component {
     return (
 
       <a href={href} target="_blank" className={cx(s.LinkExternal, className) + ``}>
-        <span>{this.props.children}</span>&nbsp;
+        <span className={`${s.linkText}`}>{this.props.children}</span>&nbsp;
         <span className={`${s.LinkExternalIcon}`}><IconExternal /></span>
       </a>
       

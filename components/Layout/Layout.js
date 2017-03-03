@@ -11,7 +11,6 @@
 
 import React, { PropTypes } from 'react';
 import cx from 'classnames';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Footer from '../Footer';
 import Header from '../Header';
 import BigNav from '../BigNav';
@@ -57,18 +56,18 @@ class Layout extends React.Component {
 
     return (
         
-        <div className={cx(className) + ` mdl-js-layout ref={node => (this.root = node)}`}>
+        <div className={`mdl-js-layout ` + cx(className)} >
           <Header />
           <div className={`mdl-layout__inner-container ${g.gNoMarginTop}`}>
-            
+
             <main className={`mdl-layout__content `}>
-              <section className={`${s.siteContent}`}>
+              <section className={`${s.siteContent}`} ref={node => (this.root = node)}>
 
-              {breadCrumbs.length > 0 &&
-                <BreadCrumbs pageLocation={this.props.breadCrumbs} className={`${g.maxWidth} `}/>
-              }
+                {breadCrumbs.length > 0 &&
+                  <BreadCrumbs pageLocation={this.props.breadCrumbs} className={`${g.maxWidth}`}/>
+                }
 
-                <div className={cx(s.content, g.gMarginTopSmaller) + ``}>
+                <div className={cx(s.content, g.gMarginTopSmaller) + ``} {...rest} >
                   {children}
                 </div>
               </section>
@@ -76,6 +75,7 @@ class Layout extends React.Component {
               {recommendedPageFirst.title.length > 0 && 
                 <UpNext recommendedPageFirst={this.props.recommendedPageFirst} recommendedPageSecond={this.props.recommendedPageSecond}  />
               }
+              
               <Footer />
             </main>
           </div>

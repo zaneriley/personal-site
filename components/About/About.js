@@ -18,13 +18,13 @@ class About extends React.Component {
 
   render() {
     const { title, about, role, result } = this.props;
+    
     const readingLength = this.props.readingLength || '3 Minute Read'
+
     return (
       <div className={`${g.maxWidth}`}>
 
-        <h1>
-          {title}
-        </h1>
+        <h1 dangerouslySetInnerHTML={{__html: title}} />
 
         <div className={`${g.gFlexContainer}`}>
           <div className={` ${g.g12m} ${g.g6l} `}>

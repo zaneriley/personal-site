@@ -1,4 +1,5 @@
 @import '../../src/styles/variables.css';
+@import '../../components/Link/Link.css';
 
 .LinkExternal {
   position: relative;

@@ -10,7 +10,6 @@ import Code from '../../../components/Code';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
 import s from './styles.css';
-import { title, html } from './index.md';
 
 /* Images for this Page */
 import styleguide from '../../assets/images/styleguide-1680w.png';
@@ -22,15 +21,16 @@ import scaleAfter from '../../assets/images/after-scale.svg';
 class BuildingADesignSystem extends React.Component {
 
   componentDidMount() {
-    document.title = title;
+    document.title = recommendedPages[1].title + ' | Zane Riley';
   }
 
   render() {
+    const {title, about, role, result, readingLength} = recommendedPages[1];
 
     return (
       <Layout className={`${g.gPaddingTopLarge}`} breadCrumbs="Case Study" recommendedPageFirst={recommendedPages[2]} recommendedPageSecond={recommendedPages[3]}>
 
-        <About title="Building a design system at Brit + Co." about="Built a design system for Brit + Co's media site, classroom platform and internal tools in order to improve communication, maintainability, and consistency." role="Led the creation of design system – visual design, code and documentation." result="<strong>Reduced <abbr title='cascading style sheets'>CSS</abbr> file size by 33%.</strong> Improved communication, increased velocity." readingLength="2 Minute Read"/>
+        <About title={title} about={about} role={role} result={result} readingLength={readingLength}/>
 
         <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
@@ -150,7 +150,7 @@ class BuildingADesignSystem extends React.Component {
 
           <p className={`${g.g6l} ${g.center}`}>This shared language compounds as design patterns get more complex:</p>
 
-          <Code language="YAML" className={`${g.g8l} ${g.center}`}>
+          <Code language="YAML" className={`${g.g8l} ${g.center} `}>
 <span><span className="token key atrule">PropertyUnits</span><span className="token punctuation">:</span></span>
 <span><span className="token key atrule">  global</span><span className="token punctuation">:</span> <span className="token punctuation">{`[`}</span><span className="token string">'em'</span><span className="token punctuation">,</span> <span className="token string">'rem'</span><span className="token punctuation">,</span> <span className="token string">'%'</span><span className="token punctuation">,</span> <span className="token string">'vw'</span><span className="token punctuation">,</span> <span className="token string">'vh'</span><span className="token punctuation">,</span> <span className="token string">'vmin'</span><span className="token punctuation">,</span> <span className="token string">'vmax'</span><span className="token punctuation">{`]`}</span></span>
 <span><span className="token key atrule">  properties</span><span className="token punctuation">:</span></span>

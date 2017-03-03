@@ -1,6 +1,9 @@
+@import '../../styles/variables.css';
+
 .hero {
   position: relative;
-  height: 100vh;
+  height: calc(100vh - var(--baseline-small));
+  min-height: 300px;
 }
 
 .theBigZ {
@@ -9,14 +12,6 @@
   right: 0;
   margin-top: 0;
   z-index: -1;
-  transform: translate(25%,-13%);
-  width: 28rem;
-}
-
-.enter {
-  opacity: 1;
-}
-
-.leave {
-  opacity: 0;
+  width: 45vw;
+  transform: translate(25%, -14%);
 }

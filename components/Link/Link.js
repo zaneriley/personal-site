@@ -62,6 +62,7 @@ class Link extends React.Component {
       if (!childWrapper) return children;
       return <span className={`${s.linkText}`}>{ children }</span>;
     }
+
     return (
       <a href={typeof to === 'string' ? to : history.createHref(to)} {...props} onClick={this.handleClick} >{ getChildrenWithContainer() }</a>
     );
