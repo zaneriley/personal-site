@@ -32,7 +32,7 @@ class HomePage extends React.Component {
 
   render() {
     return (
-      <Layout>
+      <Layout hasHeader={false}>
 
         <div className={`${s.hero} ${g.gFlexContainer} ${g.gFlexCenter}`}>
 
@@ -48,7 +48,7 @@ class HomePage extends React.Component {
 
           </div>
 
-          <svg width="100%" height="100%" version="1.1" x="0" y="0" viewBox="0 0 337.2 351.8" enableBackground="new 0 0 337.2 351.8" className={`${s.theBigZ}`}>
+          <svg width="575" height="575" version="1.1" x="0" y="0" viewBox="0 0 337.2 351.8" enableBackground="new 0 0 337.2 351.8" className={`${s.theBigZ}`}>
             <pattern id="logoNormal" width="105%" height="105%">
               <image id="effect-image" xlinkHref={logoFill} preserveAspectRatio="none" width="105%" height="105%"></image>
             </pattern>

@@ -26,13 +26,15 @@ class Layout extends React.Component {
     breadCrumbs: '',
     recommendedPageFirst: {title: ''},
     recommendedPageSecond: {},
+    hasHeader: true,
   };
 
   static propTypes = {
     className: PropTypes.string,
     breadCrumbs: PropTypes.string,
     recommendedPageFirst: PropTypes.array,
-    recommendedPageSecond: PropTypes.array
+    recommendedPageSecond: PropTypes.array,
+    hasHeader: PropTypes.bool
   };
 
   componentDidMount() {
@@ -51,13 +53,20 @@ class Layout extends React.Component {
       breadCrumbs,
       recommendedPageFirst,
       recommendedPageSecond,
+      hasHeader,
       ...rest
     } = this.props;
+
+    function ifHasHeader() {
+      if (hasHeader) return <Header />;
+    }
 
     return (
         
         <div className={`mdl-js-layout ` + cx(className)} >
-          <Header />
+
+          { ifHasHeader() }
+
           <div className={`mdl-layout__inner-container ${g.gNoMarginTop}`}>
 
             <main className={`mdl-layout__content `}>

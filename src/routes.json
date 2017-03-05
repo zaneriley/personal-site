@@ -10,11 +10,6 @@
     "chunk": "error"
   },
   {
-    "path": "/about",
-    "page": "./pages/about",
-    "chunk": "about"
-  },
-  {
     "path": "/case-study/improving-purchase-process",
     "page": "./pages/improving-purchase-process",
     "chunk": "improving-purchase-process"
