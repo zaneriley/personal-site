@@ -20,7 +20,10 @@ import store from './store';
 import router from './router';
 import history from './history';
 
-import s from './main.css'
+import s from './main.css';
+
+import('./analytics/base.js').then((analytics) => analytics.init());
+
 
 const FontFaceObserver = require('fontfaceobserver');
 
