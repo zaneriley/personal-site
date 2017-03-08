@@ -10,7 +10,8 @@
 
 import 'babel-polyfill';
 import 'whatwg-fetch';
-
+import * as OfflinePluginRuntime from 'offline-plugin/runtime';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import FastClick from 'fastclick';
@@ -21,9 +22,6 @@ import router from './router';
 import history from './history';
 
 import s from './main.css';
-
-import('./analytics/base.js').then((analytics) => analytics.init());
-
 
 const FontFaceObserver = require('fontfaceobserver');
 
@@ -50,7 +48,18 @@ let routes = require('./routes.json').default; // Loaded with utils/routes-loade
 const container = document.getElementById('container');
 
 function renderComponent(component) {
-  ReactDOM.render(<Provider store={store}>{component}</Provider>, container);
+  ReactDOM.render(
+    <Provider store={store}><ReactCSSTransitionGroup
+      component="div"
+      transitionName={{
+        enter: s.enter,
+        leave: s.leave
+      }}
+      transitionEnterTimeout={9000}
+      transitionLeaveTimeout={9000}
+    >{component}</ReactCSSTransitionGroup></Provider>, container
+  );
+  import('./analytics/base.js').then((analytics) => analytics.init());
 }
 
 // Find and render a web page matching the current URL path,
@@ -59,7 +68,9 @@ function render(location) {
   router.resolve(routes, location)
     .then(renderComponent)
     .catch(error => router.resolve(routes, { ...location, error }).then(renderComponent));
+    OfflinePluginRuntime.install();
 }
+
 
 // Handle client-side navigation by using HTML5 History API
 // For more information visit https://github.com/ReactJSTraining/history/tree/master/docs#readme

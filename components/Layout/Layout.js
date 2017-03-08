@@ -13,7 +13,6 @@ import React, { PropTypes } from 'react';
 import cx from 'classnames';
 import Footer from '../Footer';
 import Header from '../Header';
-import BigNav from '../BigNav';
 import BreadCrumbs from '../BreadCrumbs';
 import UpNext from '../UpNext';
 import s from './Layout.css';
@@ -63,7 +62,7 @@ class Layout extends React.Component {
 
     return (
         
-        <div className={`mdl-js-layout ` + cx(className)} >
+        <div className={cx(className)} >
 
           { ifHasHeader() }
 

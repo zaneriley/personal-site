@@ -9,7 +9,6 @@ html {
   -webkit-font-smoothing: subpixel-antialiased;
   font-kerning: normal;
   text-rendering: optimizeLegibility;
-  background-color: var(--color-secondary-base);
 
   @media (--small-bp) {
     font-size: calc(var(--font-body-small) + (strip(var(--font-body-large)) - strip(var(--font-body-small))) * ((100vw - var(--small-viewport)) / (strip(var(--large-viewport)) - strip(var(--small-viewport)))));
@@ -123,4 +122,22 @@ abbr {
 :global(.wfLoadedMaria) small {
   /* Maria */
   font-family: var(--font-family-headers);
+}
+
+.enter {
+  opacity: 0.01;
+}
+
+.enter.enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.leave {
+  opacity: 1;
+}
+
+.leave.leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
 }

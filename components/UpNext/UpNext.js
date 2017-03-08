@@ -27,11 +27,13 @@ class UpNext extends React.Component {
 
       <div className={`${s.upNextWrapper} ${z.bgGradient}`}>
 
-        <div className={cx(g.maxWidth, g.gFlexContainer, g.gJustifySpaceBetween, g.gMarginTopLarge, className) + ``}>
-          
-          <Panel panelPage={recommendedPageFirst} className={`${g.gNoMarginTop} ${g.g6m}`} />
+        <h2 className={`${g.maxWidth}`}>More Case Studies</h2>
 
-          <Panel panelPage={recommendedPageSecond} className={`${g.gNoMarginTop} ${g.g6m}`} />
+        <div className={cx(g.maxWidth, g.gMarginTopSmall, g.gFlexContainer, g.gJustifySpaceBetween, g.gFlexStart, className) + ``}>
+
+          <Panel panelPage={recommendedPageFirst} className={`${g.g6m}`} />
+
+          <Panel panelPage={recommendedPageSecond} className={`${g.g6m}`} />
 
         </div>
       </div>

@@ -2,8 +2,14 @@
 
 .hero {
   position: relative;
-  height: calc(100vh - var(--baseline-small));
+  margin: auto;
+  height: calc(100vh - var(--baseline-larger));
+  max-width: 1600px;
   min-height: 300px;
+
+  @media (--small-bp) {
+    height: calc(100vh - var(--gutter));
+  }
 }
 
 .theBigZ {
@@ -13,5 +19,20 @@
   margin-top: 0;
   z-index: -1;
   width: 45vw;
+  height: 45vw;
+  max-width: 26rem;
+  max-height: 26rem;
   transform: translate(25%, -14%);
+}
+
+.showMediumUp {
+  @media (--medium-bp-max) {
+    display: none;
+  }
+}
+
+.showSmall {
+  @media (--medium-bp) {
+    display: none;
+  }
 }

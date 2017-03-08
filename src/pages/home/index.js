@@ -14,6 +14,7 @@ import Layout from '../../../components/Layout';
 import Link from '../../../components/Link';
 import Panel from '../../../components/Panel';
 import Logo from '../../../components/Logo';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import s from './styles.css';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
@@ -35,18 +36,32 @@ class HomePage extends React.Component {
       <Layout hasHeader={false}>
 
         <div className={`${s.hero} ${g.gFlexContainer} ${g.gFlexCenter}`}>
-
-            <div className={`${g.maxWidth}`}> 
+          <ReactCSSTransitionGroup
+            component="div"
+            className={`${g.maxWidth}`}
+            transitionName={ {
+              enter: v.enter,
+              enterActive: v.enterActive,
+              leave: v.leave,
+              leaveActive: v.leaveActive,
+              appear: v.appear,
+              appearActive: v.appearActive
+            } }
+            transitionAppear={true}
+            transitionAppearTimeout={15000}
+            transitionEnterTimeout={300}
+            transitionLeaveTimeout={300}
+          >
 
             <a href="mailto:hello@zaneriley.com?subject=Hey there">
               <h2>hello@zaneriley.com</h2>
             </a>
 
-            <h1 className={`${g.gMarginTopSmaller} ${g.g8m} `}>Digital product designer that codes</h1>
+            <h1 className={`${g.gMarginTopSmaller} ${g.g8m} `}>Digital product designer.</h1>
 
-            <p className={` ${g.g6m} ${g.gMarginTop}`}>I’m Zane, a designer based in San Francisco, California. I make products easier to use and help businesses communicate more effectively. </p>
+            <p className={` ${g.g6m} ${g.gMarginTop}`}>I’m Zane, a designer based in San Francisco, California. I make products easy to use and help businesses communicate more effectively. </p>
 
-          </div>
+          </ReactCSSTransitionGroup>
 
           <svg width="575" height="575" version="1.1" x="0" y="0" viewBox="0 0 337.2 351.8" enableBackground="new 0 0 337.2 351.8" className={`${s.theBigZ}`}>
             <pattern id="logoNormal" width="105%" height="105%">
@@ -60,20 +75,26 @@ class HomePage extends React.Component {
           
           <h2 className={`${g.maxWidth}`}>Case Studies</h2>
 
-          <div className={`${g.maxWidth} ${g.gFlexContainer} ${g.gJustifySpaceBetween} `}>
-            <div className={`${g.g6l}`}>
-              <Panel panelPage={panelPages[0]} type="large" />
+          <div className={`${g.maxWidth} ${g.gFlexContainer} ${g.gJustifySpaceBetween} ${s.showMediumUp}`}>
+            <div className={`${g.g6m}`}>
+              <Panel panelPage={panelPages[0]} type="large"/>
               <Panel panelPage={panelPages[2]} type="large" disabled/>
             </div>
 
-            <div className={`${g.g6l}`}>
-              <Panel panelPage={panelPages[1]} type="large" />
+            <div className={`${g.g6m}`}>
+              <Panel panelPage={panelPages[1]} type="large"/>
               <Panel panelPage={panelPages[3]} type="large" disabled/>
             </div>
-
-            
-
           </div>
+
+
+          <div className={`${g.maxWidth} ${s.showSmall} ${g.gFlexContainer} ${g.gJustifySpaceBetween}`}>
+            <Panel panelPage={panelPages[0]} type="large"/>
+            <Panel panelPage={panelPages[1]} type="large"/>
+            <Panel panelPage={panelPages[2]} type="large" disabled/>
+            <Panel panelPage={panelPages[3]} type="large" disabled/>
+          </div>
+
         </div>
 
 

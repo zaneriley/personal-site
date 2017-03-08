@@ -1,5 +1,4 @@
-/* Custom Header selector */
-@custom-selector :--headers h1, h2, h3, h4, h5, h6;
+@custom-selector :--headers h1, h2, h3, h4, h5, h6, :global(.h2), :global(.h3);
 
 :root {
   --color-main-base: #fa4aaa;
@@ -25,8 +24,6 @@
   --large-viewport: 65rem;
   --max-width: 53rem;
 }
-
-/* can't use vars here */
 
 @custom-media --small-bp (min-width: 500px);
 @custom-media --small-bp-max (max-width: 500px);

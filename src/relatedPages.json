@@ -1,6 +1,6 @@
 [
   { 
-    "title": "Improving the Purchase Process of Classes and Kits.",
+    "title": "Improving the purchase process of Classes and Kits.",
     "readingLength": "2 Minute Read",
     "path": "/case-study/improving-purchase-process",
     "about": "Brit + Co helps women discover online courses and DIY tutorials to improve their creativity. I was asked to increase the attach rate between Brit + Co’s two main products – Classes and Kits.",
@@ -8,7 +8,7 @@
     "result": "<strong>3.5% increase</strong> in the attach rate (how often classes and kits were purchased together)."
   },
   {
-    "title": "Building a Design System at Brit + Co.",
+    "title": "Building a design system at Brit + Co.",
     "readingLength": "3 Minute Read",
     "path": "/case-study/building-a-design-system",
     "about": "Built a design system for Brit + Co's media site, classroom platform and internal tools in order to improve communication, maintainability, and consistency.",
@@ -16,7 +16,8 @@
     "result": "<strong>Reduced <abbr title='cascading style sheets'>CSS</abbr> file size by 33%.</strong> Improved communication, increased velocity."
   },
   {
-    "title": "Helping people find inspiration for DIY projects.",
+    "title": "Helping people discover new DIY content.",
+    "disabled": "true",
     "readingLength": "2 Minute Read",
     "path": "#",
     "suggestedpath": "/case-study/helping-find-diy-projects",
@@ -25,7 +26,8 @@
     "result": "60% of visitors used the feature multiple times within each article."
   },
   {
-    "title": "Making it easier to donate to Days for Girls.",
+    "title": "Making it easier to donate to a nonprofit.",
+    "disabled": "true",
     "readingLength": "5 Minute Read",
     "path": "#",
     "suggestedPath": "/case-study/simplifying-donations",
@@ -35,6 +37,7 @@
   },
   {
     "title": "Creating an indie game with a global, active fan base.",
+    "disabled": "true",
     "readingLength": "3 Minute Read",
     "path": "#",
     "suggestedpath": "/case-study/creating-an-indie-game",

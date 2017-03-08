@@ -15,8 +15,10 @@ import s from './styles.css';
 import styleguide from '../../assets/images/styleguide-1680w.png';
 import SketchLapseWebm from '../../assets/images/sketch-time-lapse.webm';
 import SketchLapseMp4 from '../../assets/images/sketch-time-lapse.mp4';
+import SketchLapsePoster from '../../assets/images/sketch-time-lapse-3360w.jpg';
 import scaleBefore from '../../assets/images/before-scale.svg';
 import scaleAfter from '../../assets/images/after-scale.svg';
+import textInSketch from '../../assets/images/sketch-text-sizes-2560w.jpg'
 
 class BuildingADesignSystem extends React.Component {
 
@@ -32,10 +34,10 @@ class BuildingADesignSystem extends React.Component {
 
         <About title={title} about={about} role={role} result={result} readingLength={readingLength}/>
 
-        <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <figure className={`${g.maxWidth} ${g.gMarginTopLarge} `}>
           <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
             <IconChromeBar />
-            <video className={`${g.gNoMarginTop} ${g.center}`} autoPlay loop muted playsInline poster="http://placehold.it/20x20/">
+            <video className={`${g.gNoMarginTop} ${g.center}`} autoPlay loop muted playsInline poster={SketchLapsePoster}>
               <source src={SketchLapseWebm} type="video/webm" />
               <source src={SketchLapseMp4} type="video/mp4" />
             </video>
@@ -43,7 +45,7 @@ class BuildingADesignSystem extends React.Component {
           <figcaption>Using the design system in Sketch</figcaption>
         </figure>
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth} $`}>
 
           <p className={`${g.g6l} ${g.center} ${v.dropCap}`}>The Brit + Co design system is a collection of reusable design patterns and visual styles. These help us create a better product by allowing us to focus on higher-level thinking.</p>
 
@@ -51,7 +53,7 @@ class BuildingADesignSystem extends React.Component {
           </p>
         </div>
 
-        <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <figure className={`${g.maxWidth} $`}>
           <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
             <IconChromeBar />
             <img src={styleguide} className={`${g.gNoMarginTop} ${g.center}`} />
@@ -59,7 +61,7 @@ class BuildingADesignSystem extends React.Component {
           <figcaption>Online styleguide showing color palettes.</figcaption>
         </figure>
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth} $`}>
           <h2 className={`${g.g6l} ${g.center}`}>Defining What's Needed</h2>
 
           <p className={`${g.g6l} ${g.center}`}>Brit + Co has a diverse set of design needs. User behavior often varies between articles and classes. People browse articles while casually surfing social media. On the other hand, when taking online classes, they are much more focused and task-driven.</p>
@@ -98,16 +100,16 @@ class BuildingADesignSystem extends React.Component {
           <HorizontalScroll>
             <svg className={`${g.center}`} xmlns="http://www.w3.org/2000/svg" width="599" height="97" viewBox="0 7 599 97" version="1.1"><title>Previous font sizes.</title><desc>This image shows Brit + Co's existing font sizes laid out on a scale.</desc><g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd"><path d="M0.3 59L597 59" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/><text fontFamily="inherit" fill="#202020"><tspan x="4.3" y="22">12</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="46.1" y="102">14</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="66" y="22">15</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="87.5" y="102">16</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="107.2" y="22">17</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="126.4" y="102">18</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="167.1" y="22">20</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="208.1" y="102">22</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="247.5" y="22">24</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="286.3" y="102">26</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="310.1" y="22">27</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="408.3" y="22">32</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="450.2" y="102">34</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="570.9" y="22">40</tspan></text><circle fill="#008EFE" cx="17" cy="58" r="6"/><circle fill="#008EFE" cx="57" cy="58" r="6"/><circle fill="#008EFE" cx="77" cy="58" r="6"/><circle fill="#008EFE" cx="98" cy="58" r="6"/><circle fill="#008EFE" cx="118" cy="58" r="6"/><circle fill="#008EFE" cx="138" cy="58" r="6"/><circle fill="#008EFE" cx="178" cy="58" r="6"/><circle fill="#008EFE" cx="219" cy="58" r="6"/><circle fill="#008EFE" cx="259" cy="58" r="6"/><circle fill="#008EFE" cx="299" cy="58" r="6"/><circle fill="#008EFE" cx="319" cy="58" r="6"/><circle fill="#008EFE" cx="420" cy="58" r="6"/><circle fill="#008EFE" cx="461" cy="58" r="6"/><circle fill="#008EFE" cx="583" cy="58" r="6"/></g></svg>
             </HorizontalScroll>
-            <figcaption className={`${g.textCenter}`}>The number of existing font sizes <span className={`${g.noWrap}`}>on Brit + Co</span></figcaption>
+            <figcaption className={`${g.textCenter}`}>The number of existing font sizes <span className={`${g.noWrap}`}>on Brit + Co.</span></figcaption>
         </figure>
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth} $`}>
 
           <p className={`${g.g6l} ${g.center}`}>I then chose an appropriate <LinkExternal href="http://www.modularscale.com/?18&px&1.2&web&text">modular scale</LinkExternal>. Each fontSize was simply multiplied by 1.2 to get the next size increase.</p>
 
           <p className={`${g.g6l} ${g.center}`}>Thus we reduced the site to just seven <span className={`${g.noWrap}`}>type sizes:</span></p>
 
-          <figure className={`${s.fontSizes} ${g.gJustifyCenter} ${g.gFlexEnd} ${g.gMarginTopLarge}`}>
+          <figure className={`${s.fontSizes} ${g.gJustifyCenter} ${g.gFlexEnd} $`}>
 
             <div className={`${g.gMarginLeftL} ${g.g6l}`}>
               <p style={{"fontSize" : "12px", "lineHeight" : "1.1rem"}}>Font-size 12px</p>
@@ -128,7 +130,7 @@ class BuildingADesignSystem extends React.Component {
             <figcaption className={`${g.textCenter}`}>Simplified font-sizes using a modular scale.</figcaption>
         </figure>
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth} ${g.gMarginTop}`}>
           <p className={`${g.g6l} ${g.center}`}>We applied this same approach with the grid, buttons, and other patterns. Now we just needed to simplify how we communicated without using verbose, time-intensive spec documents.</p>
         </div>
 
@@ -146,18 +148,39 @@ class BuildingADesignSystem extends React.Component {
 <span><span className="token punctuation">{`{`}</span></span>
           </Code>
 
-          <p className={`${g.g6l} ${g.center}`}>When designing, you’d simply choose a text style with the same name.</p>
+          <p className={`${g.g6l} ${g.center}`}>When designing, you’d simply choose a text style with the same name as the code convention.</p>
 
-          <p className={`${g.g6l} ${g.center}`}>This shared language compounds as design patterns get more complex:</p>
+          <figure className={`${g.maxWidth}`}>
+            <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
+              <img src={textInSketch} alt="A screenshot of choosing text styles in Sketch. The text styles have the same naming as the code conventions."/>
+            </div>
+            <figcaption>Conventions are the same for both design and code.</figcaption>
+          </figure>
+
+          <p className={`${g.g6l} ${g.center} $`}>This shared language compounds as design patterns get more complex:</p>
+
+          <p className={`${g.g6l} ${g.center}`}>
+            To ensure maintainability as the team grew, we knew we’d have to automate as many of our design decisions as possible.
+          </p>
+
+          <h2 className={`${g.g6l} ${g.center}`}>Building Tools to Enforce Standards</h2>
+
+          <p className={`${g.g6l} ${g.center}`}>To enforce more rigorous coding standards, we introduced linting, continuous integration tooling, editor configs, Github pull request templates and more. Simple tools like opinionated linters further improved communication because IDE’s helped keep new code in check.</p>
 
           <Code language="YAML" className={`${g.g8l} ${g.center} `}>
 <span><span className="token key atrule">PropertyUnits</span><span className="token punctuation">:</span></span>
 <span><span className="token key atrule">  global</span><span className="token punctuation">:</span> <span className="token punctuation">{`[`}</span><span className="token string">'em'</span><span className="token punctuation">,</span> <span className="token string">'rem'</span><span className="token punctuation">,</span> <span className="token string">'%'</span><span className="token punctuation">,</span> <span className="token string">'vw'</span><span className="token punctuation">,</span> <span className="token string">'vh'</span><span className="token punctuation">,</span> <span className="token string">'vmin'</span><span className="token punctuation">,</span> <span className="token string">'vmax'</span><span className="token punctuation">{`]`}</span></span>
 <span><span className="token key atrule">  properties</span><span className="token punctuation">:</span></span>
 <span><span className="token key atrule">    color</span><span className="token punctuation">:</span>       <span className="token punctuation">{`      [`}</span><span className="token punctuation">{`]`}</span> // color(primary<span className="token punctuation">,</span> lighter);</span>
-<span><span className="token key atrule">    font-size</span><span className="token punctuation">:</span>   <span className="token punctuation">{`   [`}</span><span className="token punctuation">{`]`}</span> // typography(large);</span>
+<span><span className="token key atrule">    font-size</span><span className="token punctuation">:</span>   <span className="token punctuation">{`  [`}</span><span className="token punctuation">{`]`}</span> // typography(large);</span>
 <span><span className="token key atrule">    margin-top</span><span className="token punctuation">:</span>  <span className="token punctuation">{` [`}</span><span className="token punctuation">{`]`}</span> // spacing(large)</span>
           </Code>
+
+          <p className={`${g.g6l} ${g.center}`}>When the system needed to be adjusted, everyone would know when they ran into that particular change via their IDE. You no longer had to read through release notes or ask a colleague. 
+          </p>
+
+          <p className={`${g.g6l} ${g.center}`}>The design system represents a large overhaul for both the product and the team. We reduced the complexity of working in the frontend, made our site faster, and improved communication.</p> 
+
 
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Credits</h2>
 

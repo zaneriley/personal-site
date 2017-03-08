@@ -46,7 +46,7 @@ class Link extends React.Component {
     event.preventDefault();
 
     if (this.props.to) {
-      history.push(this.props.to)
+      history.push(this.props.to);    
     } else {
       history.push({
         pathname: event.currentTarget.pathname,

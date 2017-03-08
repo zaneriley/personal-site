@@ -11,7 +11,10 @@
 import React from 'react';
 import history from '../../history';
 import Link from '../../../components/Link';
+import Layout from '../../../components/Layout';
 import s from './styles.css';
+import g from '../../styles/grid.css';
+import v from '../../styles/aesthetics.css';
 
 class ErrorPage extends React.Component {
 
@@ -34,11 +37,10 @@ class ErrorPage extends React.Component {
 
     const [code, title] = this.props.error && this.props.error.status === 404 ?
       ['404', 'Page not found'] :
-      ['Error', 'Oups, something went wrong'];
+      ['Error', 'Oops, something went wrong'];
 
     return (
-      <div className={s.container}>
-        <main className={s.content}>
+      <main className={` ${s.container} ${g.maxWidth}`}>
           <h1 className={s.code}>{code}</h1>
           <p className={s.title}>{title}</p>
           {code === '404' &&
@@ -47,11 +49,9 @@ class ErrorPage extends React.Component {
             </p>
           }
           <p className={s.text}>
-            <a href="/" onClick={this.goBack}>Go back</a>, or head over to the&nbsp;
-            <Link to="/">home page</Link> to choose a new direction.
+            <a href="/" onClick={this.goBack}>Go back</a>, or head over to the <Link to="/">home page</Link> to choose a new direction.
           </p>
-        </main>
-      </div>
+      </main>
     );
   }
 
