@@ -24,12 +24,31 @@ class SocialIcons extends React.Component {
 
     return (
       <p className={className + ` ${s.socialIcons}`}>
-       <a href="https://dribbble.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank"><img src={iconDribbble} alt="Zane's Dribbbble Profile" /></a> 
-       <a href="https://github.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank"><img src={iconGithub} alt="Zane's Github Profile" /></a> 
-       <a href="https://codepen.io/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank"><img src={iconCodepen} alt="Zane's Codepen Profile" /></a> 
-       <a href="https://twitter.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank"><img src={iconTwitter} alt="Zane's Twitter Profile" /></a> 
-       <a href="https://angellist.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank"><img src={iconAngellist} alt="Zane's Angellist Profile" /></a> 
-       <a href="https://www.linkedin.com/in/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank"><img src={iconLinkedIn} alt="Zane's LinkedIn Profile" /></a>
+      
+        <a href="https://dribbble.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank" rel="noopener">
+          <img src={iconDribbble} alt="Zane's Dribbbble Profile"/>
+        </a> 
+        
+        <a href="https://github.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank" rel="noopener">
+          <img src={iconGithub} alt="Zane's Github Profile"/>
+        </a> 
+        
+        <a href="https://codepen.io/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank" rel="noopener">
+          <img src={iconCodepen} alt="Zane's Codepen Profile"/>
+        </a> 
+        
+        <a href="https://twitter.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank" rel="noopener">
+          <img src={iconTwitter} alt="Zane's Twitter Profile"/>
+        </a> 
+        
+        <a href="https://angellist.com/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank" rel="noopener">
+          <img src={iconAngellist} alt="Zane's Angellist Profile"/>
+        </a> 
+        
+        <a href="https://www.linkedin.com/in/zaneriley" className={`${g.gMarginLeftSmaller}`} target="_blank" rel="noopener">
+          <img src={iconLinkedIn} alt="Zane's LinkedIn Profile"/>
+        </a>
+      
       </p>
     );
   }

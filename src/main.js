@@ -10,8 +10,7 @@
 
 import 'babel-polyfill';
 import 'whatwg-fetch';
-import * as OfflinePluginRuntime from 'offline-plugin/runtime';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import FastClick from 'fastclick';
@@ -20,6 +19,7 @@ import { Provider } from 'react-redux';
 import store from './store';
 import router from './router';
 import history from './history';
+import * as OfflinePluginRuntime from 'offline-plugin/runtime';
 
 import s from './main.css';
 
@@ -49,15 +49,7 @@ const container = document.getElementById('container');
 
 function renderComponent(component) {
   ReactDOM.render(
-    <Provider store={store}><ReactCSSTransitionGroup
-      component="div"
-      transitionName={{
-        enter: s.enter,
-        leave: s.leave
-      }}
-      transitionEnterTimeout={9000}
-      transitionLeaveTimeout={9000}
-    >{component}</ReactCSSTransitionGroup></Provider>, container
+    <Provider store={store}>{component}</Provider>, container
   );
   import('./analytics/base.js').then((analytics) => analytics.init());
 }
@@ -68,9 +60,7 @@ function render(location) {
   router.resolve(routes, location)
     .then(renderComponent)
     .catch(error => router.resolve(routes, { ...location, error }).then(renderComponent));
-    OfflinePluginRuntime.install();
 }
-
 
 // Handle client-side navigation by using HTML5 History API
 // For more information visit https://github.com/ReactJSTraining/history/tree/master/docs#readme
@@ -89,3 +79,8 @@ if (module.hot) {
     render(history.location);
   });
 }
+
+// Install ServiceWorker and AppCache in the end since
+// it's not most important operation and if main code fails,
+// we do not want it installed
+require('offline-plugin/runtime').install();

@@ -18,6 +18,7 @@ import HorizontalScroll from '../../../components/HorizontalScroll';
 import ImageCompare from '../../../components/ImageCompare';
 import Iphone from '../../../components/Iphone';
 import UpNext from '../../../components/UpNext';
+import LazyLoader from '../../../components/LazyLoader';
 import s from './styles.css';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
@@ -185,14 +186,16 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </div>
 
         <figure className={`${g.maxWidth}`}>
-          <div className={`${g.gFlexContainer} ${g.gFlexEnd} ${s.kitWrapper}`}>
-            <div className={`${s.wireframeKit} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
-              <img src={wireframeKit} />
+          <LazyLoader height="85vh">
+            <div className={`${g.gFlexContainer} ${g.gFlexEnd} ${s.kitWrapper}`}>
+              <div className={`${s.wireframeKit} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
+                <img src={wireframeKit} />
+              </div>
+              <div className={`${s.calloutPanel} ${g.g7m} ${v.shadow2}`}>
+                 <img src={calloutPanel} />
+              </div>
             </div>
-            <div className={`${s.calloutPanel} ${g.g7m} ${v.shadow2}`}>
-               <img src={calloutPanel} />
-            </div>
-          </div>
+          </LazyLoader>
           <figcaption>A callout panel that notifies users that there's a class associated with <span className={`${g.noWrap}`}>this Kit.</span></figcaption>
         </figure>
 

@@ -67,4 +67,5 @@ module.exports = function routesLoader(source) {
   output.push(']');
 
   return `export default ${output.join('')};`;
+  
 };

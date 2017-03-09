@@ -43,10 +43,10 @@ const config = {
 
   // Options affecting the output of the compilation
   output: {
-    path: path.resolve(__dirname, '../public/dist'),
-    publicPath: isDebug ? `http://localhost:${process.env.PORT || 3000}/dist/` : '/dist/',
-    filename: isDebug ? '[name].js?[hash]' : '[name].[hash].js',
-    chunkFilename: isDebug ? '[id].js?[chunkhash]' : '[id].[chunkhash].js',
+    path: isDebug ? path.resolve(__dirname, '../public/dist') : path.resolve(__dirname, '../public/'),
+    publicPath: isDebug ? `http://localhost:${process.env.PORT || 3000}/dist` : '',
+    filename: isDebug ? '[name].js?[hash]' : '/dist/[name].[hash].js',
+    chunkFilename: isDebug ? '[id].js?[chunkhash]' : '/dist/[id].[chunkhash].js',
     sourcePrefix: '  ',
   },
 
@@ -85,9 +85,16 @@ const config = {
       minimize: !isDebug,
     }),
     new OfflinePlugin({
-      output: {
-        path: __dirname + '../public'
-      }
+      ServiceWorker: {
+        navigateFallbackURL: '../public/index.html',
+        events: true,
+        entry: '../public/sw-handler.js',
+      },
+      Appcache: {
+        FALLBACK: '/',
+        events: true,
+      },
+
     }),
   ],
 
@@ -160,19 +167,16 @@ const config = {
       },
       {
         test: /\.(woff|woff2)$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-        },
+        loader: 'url-loader?limit=10000&name=' + (isDebug ? '[hash].[ext]' : '/dist/[hash].[ext]'),
       },
       {
         test: /\.(eot|ttf|wav|mp3)$/,
-        loader: 'file-loader',
+        loader: 'file-loader?name=' + (isDebug ? '[hash].[ext]' : '/dist/[hash].[ext]'),
       },
       {
         test: /.*\.(gif|png|jpe?g|svg)$/i,
         loaders: [
-          'file-loader',
+          'file-loader?name=' + (isDebug ? '[hash].[ext]' : '/dist/[hash].[ext]'),
           {
             loader: 'image-webpack-loader',
             query: {
@@ -190,13 +194,13 @@ const config = {
                 quality: '75-90',
                 speed: 3,
               },
-            }
+            },
           }
         ]
       },
       {
         test: /\.(webm|mp4)$/,
-        loader: 'file-loader',
+        loader: 'file-loader?name=' + (isDebug ? '[hash].[ext]' : '/dist/[hash].[ext]'),
       },
     ],
   }
@@ -217,7 +221,8 @@ if (!isDebug) {
 if (isDebug && useHMR) {
   babelConfig.plugins.unshift('react-hot-loader/babel');
   config.entry.unshift('react-hot-loader/patch', 'webpack-hot-middleware/client');
-  config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  config.plugins.push(new webpack.HotModuleReplacementPlugin({
+      output: path.resolve(__dirname, '../public/dist')}));
   config.plugins.push(new webpack.NoEmitOnErrorsPlugin());
 }
 

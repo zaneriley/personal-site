@@ -39,14 +39,14 @@ class HomePage extends React.Component {
           <ReactCSSTransitionGroup
             component="div"
             className={`${g.maxWidth}`}
-            transitionName={ {
+            transitionName={{
               enter: v.enter,
               enterActive: v.enterActive,
               leave: v.leave,
               leaveActive: v.leaveActive,
               appear: v.appear,
               appearActive: v.appearActive
-            } }
+            }}
             transitionAppear={true}
             transitionAppearTimeout={15000}
             transitionEnterTimeout={300}

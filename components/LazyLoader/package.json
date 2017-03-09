@@ -1,0 +1,6 @@
+{
+  "name": "LazyLoader",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./LazyLoader.js"
+}
