@@ -93,12 +93,10 @@ class ImprovingPurchaseProcessPage extends React.Component {
 
         <About title={title} about={about} role={role} result={result} readingLength={readingLength}/>
 
-        <LazyLoader height="100vh">
-          <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
-            <ImageCompare before={before} after={after}/>
-            <figcaption>Before and after designs of the <span className={`${g.noWrap}`}>Kit page.</span></figcaption>
-          </figure>
-        </LazyLoader>
+        <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+          <ImageCompare before={before} after={after}/>
+          <figcaption>Before and after designs of the <span className={`${g.noWrap}`}>Kit page.</span></figcaption>
+        </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <p className={`${g.g9m} ${g.g6l} ${g.center} ${v.dropCap}`}>I was asked to increase the attach rate between  Brit + Co’s two main products – Classes, offering instruction on topics like calligraphy, and Kits, supplies for both projects <span className={`${g.noWrap}`}>and Classes.</span></p>
