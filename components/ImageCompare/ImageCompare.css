@@ -8,12 +8,13 @@
 .ImageCompareWrapper {
   position: relative;
   height: calc(100vh - var(--baseline-large) * 2);
+  min-height: 375px;
   max-height: max-content;
   background-color: grey;
   overflow: hidden;
   user-select: none;
   resize: vertical;
-  
+
   &::after {
     position: absolute;
     display: block;
@@ -32,7 +33,7 @@
     width: calc(100vw - (1rem * 2));
 
     @media (--medium-bp) {
-      width: calc(100vw - (var(--gutter) + 100vw * 2/12 - (var(--gutter) - var(--gutter) * 2/12)));
+      width: calc(100vw - var(--gutter));
     }
   }
 }

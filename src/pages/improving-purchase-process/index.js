@@ -20,13 +20,25 @@ import Iphone from '../../../components/Iphone';
 import UpNext from '../../../components/UpNext';
 import LazyLoader from '../../../components/LazyLoader';
 import s from './styles.css';
+import b from '../../styles/variables.css'
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
 import {title, html} from './index.md';
 
 /* Images for this Page */
-import before from '../../assets/images/kit-pdp-desktop-before@2x.jpg';
-import after from '../../assets/images/kit-pdp-desktop-after@2x.jpg';
+import before2796w from '../../assets/images/kit-pdp-desktop-before-2796w.jpg';
+import before1440w from '../../assets/images/kit-pdp-desktop-before-1440w.jpg';
+import before960w from '../../assets/images/kit-pdp-desktop-before-960w.jpg';
+import before494w from '../../assets/images/kit-pdp-desktop-before-494w.jpg';
+import before320w from '../../assets/images/kit-pdp-desktop-before-320w.jpg';
+import beforePlaceholder from '../../assets/images/kit-pdp-desktop-before-20w.jpg';
+
+import after2796w from '../../assets/images/kit-pdp-desktop-after-2796w.jpg';
+import after1440w from '../../assets/images/kit-pdp-desktop-after-1440w.jpg';
+import after960w from '../../assets/images/kit-pdp-desktop-after-960w.jpg';
+import after494w from '../../assets/images/kit-pdp-desktop-after-494w.jpg';
+import after320w from '../../assets/images/kit-pdp-desktop-after-320w.jpg';
+import afterPlaceholder from '../../assets/images/kit-pdp-desktop-after-20w.jpg';
 
 import flowAllClasses from '../../assets/images/flow-all-classes.svg';
 import flowAllKits from '../../assets/images/flow-all-kits.svg';
@@ -40,6 +52,8 @@ import calloutPanel from '../../assets/images/callout-panel.svg';
 import wireframeClass from '../../assets/images/class-wireframe.svg';
 import addToCartPanel from '../../assets/images/add-to-cart.svg';
 
+import userTestPlaceholder from '../../assets/images/user-test-20w.jpg';
+import userTestPoster from '../../assets/images/user-test-928w.jpg';
 import userTestWebm from '../../assets/images/user-test.webm';
 import userTestMp4 from '../../assets/images/user-test.mp4';
 
@@ -60,15 +74,31 @@ class ImprovingPurchaseProcessPage extends React.Component {
   render() {
     const {title, about, role, result, readingLength} = recommendedPages[0];
 
+    const after = {
+      placeholder: afterPlaceholder,
+      images: after320w + ' 320w,' + after494w + ' 494w,' + after960w + ' 960w,' + after1440w + ' 1440w,' + after2796w + ' 2796w',
+      url: after2796w,
+      alt: "The updated kit web page showing a cleaner and more simple user interface.",
+    } 
+
+    const before = {
+      placeholder: beforePlaceholder,
+      images: before320w + ' 320w,' + before494w + ' 494w,' + before960w + ' 960w,' + before1440w + ' 1440w,' + before2796w + ' 2796w',
+      url: before2796w,
+      alt: "The original kit web page showing a busier layout with an unclear visual hierachy.",
+    } 
+
     return (
       <Layout className={`${g.gPaddingTopLarge}`} breadCrumbs="Case Study" recommendedPageFirst={recommendedPages[1]} recommendedPageSecond={recommendedPages[2]}>
 
         <About title={title} about={about} role={role} result={result} readingLength={readingLength}/>
 
-        <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
-          <ImageCompare before={before} after={after}/>
-          <figcaption>Before and after designs of the <span className={`${g.noWrap}`}>Kit page.</span></figcaption>
-        </figure>
+        <LazyLoader height="100vh">
+          <figure className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+            <ImageCompare before={before} after={after}/>
+            <figcaption>Before and after designs of the <span className={`${g.noWrap}`}>Kit page.</span></figcaption>
+          </figure>
+        </LazyLoader>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <p className={`${g.g9m} ${g.g6l} ${g.center} ${v.dropCap}`}>I was asked to increase the attach rate between  Brit + Co’s two main products – Classes, offering instruction on topics like calligraphy, and Kits, supplies for both projects <span className={`${g.noWrap}`}>and Classes.</span></p>
@@ -186,16 +216,21 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </div>
 
         <figure className={`${g.maxWidth}`}>
-          <LazyLoader height="85vh">
             <div className={`${g.gFlexContainer} ${g.gFlexEnd} ${s.kitWrapper}`}>
-              <div className={`${s.wireframeKit} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
-                <img src={wireframeKit} />
+
+              <div className={`${s.wireframeKit} ${g.g9m} ${g.g7l} ${v.shadow1}`}>
+                <LazyLoader height="96%" placeholderColor="#e3e3e3">
+                  <img src={wireframeKit} />
+                </LazyLoader>
               </div>
-              <div className={`${s.calloutPanel} ${g.g7m} ${v.shadow2}`}>
-                 <img src={calloutPanel} />
+
+              <div className={`${s.calloutPanel} ${g.z1} ${g.g7m} ${v.shadow2}`}>
+                <LazyLoader height="32%" placeholderColor="#fdf1ff">
+                  <img src={calloutPanel} />
+                </LazyLoader>
               </div>
             </div>
-          </LazyLoader>
+          
           <figcaption>A callout panel that notifies users that there's a class associated with <span className={`${g.noWrap}`}>this Kit.</span></figcaption>
         </figure>
 
@@ -209,10 +244,14 @@ class ImprovingPurchaseProcessPage extends React.Component {
         <figure className={`${g.maxWidth}`}>
           <div className={`${g.gFlexContainer} ${g.gFlexStart} ${s.classWrapper}`}>
             <div className={`${s.wireframeClass} ${g.g9m} ${g.g7l} ${v.shadow1}`} >
-              <img src={wireframeClass} />
+                <LazyLoader height="96%" placeholderColor="#e3e3e3">
+                  <img src={wireframeClass} />
+                </LazyLoader>
             </div>
             <div className={`${s.addToCartPanel} ${g.g6m} ${g.g4l} ${g.gAlignSelfCenter} ${g.z1} ${v.shadow2}`}>
-              <img src={addToCartPanel} />
+              <LazyLoader height="85%" placeholderColor="#dbf3f2">
+                <img src={addToCartPanel} />
+              </LazyLoader>
             </div>
           </div>
           <figcaption>A new add-to-cart module that allows for purchasing <span className={`${g.noWrap}`}>both products.</span></figcaption>
@@ -233,11 +272,17 @@ class ImprovingPurchaseProcessPage extends React.Component {
 
         <figure className={`${g.maxWidth}`}>
           <div className={`${g.gFlexContainer} ${g.gFlexCenter} ${s.userTestingWrapper}`}>
-            <video className={`${g.g5m}`} autoPlay playsInline loop muted poster="http://placehold.it/20x20/">
-              <source src={userTestWebm} type="video/webm" />
-              <source src={userTestMp4} type="video/mp4" />
-            </video>
-            <Iphone image={iphoneImage} className={`${g.g4m}`} />
+            <div className={`${g.g5m}`}>
+              <LazyLoader height="132%" placeholderImage={userTestPlaceholder}>
+                <video autoPlay playsInline loop muted poster={userTestPoster}>
+                  <source src={userTestWebm} type="video/webm" />
+                  <source src={userTestMp4} type="video/mp4" />
+                </video>
+              </LazyLoader>
+            </div>
+            <div className={`${g.g4m}`}>
+              <Iphone image={iphoneImage} />
+            </div>
           </div>
           <figcaption className={`${g.textCenter}`}>On the left, user testing the initial design. The revised design <span className={`${g.noWrap}`}>on right.</span></figcaption>
         </figure>

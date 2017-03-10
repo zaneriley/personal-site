@@ -15,8 +15,8 @@ class UpNext extends React.Component {
 
   static propTypes = {
     className: PropTypes.string,
-    recommendedPageFirst: PropTypes.array,
-    recommendedPageSecond: PropTypes.array,
+    recommendedPageFirst: PropTypes.object,
+    recommendedPageSecond: PropTypes.object,
   };
 
   render() {

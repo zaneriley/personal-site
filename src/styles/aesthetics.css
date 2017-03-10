@@ -95,14 +95,14 @@
   transform: translateY(0);
   transition-property: opacity, transform;
   transition-duration: 300ms;
-  transition-timing-function: linear;
+  transition-timing-function: cubic-bezier(0.550, 0.055, 0.675, 0.190);
 }
 
 .leave {
   opacity: 1;
   transition-property: opacity;
   transition-duration: 300ms;
-  transition-timing-function: linear;
+  transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
 }
 
 .leave.leaveActive {

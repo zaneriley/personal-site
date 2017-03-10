@@ -31,8 +31,8 @@ class Layout extends React.Component {
   static propTypes = {
     className: PropTypes.string,
     breadCrumbs: PropTypes.string,
-    recommendedPageFirst: PropTypes.array,
-    recommendedPageSecond: PropTypes.array,
+    recommendedPageFirst: PropTypes.object,
+    recommendedPageSecond: PropTypes.object,
     hasHeader: PropTypes.bool
   };
 

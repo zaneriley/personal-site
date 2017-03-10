@@ -2,8 +2,10 @@
 @import '../../src/styles/aesthetics.css';
 
 .iphone {
-  padding-right: .25%;
-  padding-left: .25%;
+  padding-top: 9%;
+  padding-right: 0.25%;
+  padding-left: 0.25%;
+  padding-bottom: 6%;
   background: var(--color-neutral-absolute);
   box-shadow: 0 8px 70px 0 rgba(2, 71, 199, 0.1), 0 8px 22px 0 rgba(2, 71, 199, 0.1), inset -4px -10px 61px 0 rgba(220, 232, 250, 0.75), inset 0 14px 26px 4px rgba(255, 255, 255, 0.5);
   border-radius: 2.5rem;
@@ -21,13 +23,6 @@
   border: 2px solid #dce8fa;
   overflow: hidden;
 
-  &::before {
-    /* Make this div keep a 1:1 ratio */
-    display: block;
-    padding-top: 176%;
-    content: '';
-  }
-
   & img {
     bottom: initial;
   }
@@ -39,7 +34,6 @@
 }
 
 .headset {
-  margin-top: 11%;
   width: calc(99.99% * 5/12 - (var(--gutter) - var(--gutter) * 5/12));
   border-radius: 1rem;
 
@@ -53,7 +47,6 @@
 
 .home {
   margin-top: 6%;
-  margin-bottom: 6%;
   width: 14%;
   border-radius: 100%;
 

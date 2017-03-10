@@ -11,7 +11,7 @@ class Panel extends React.Component {
 
   static propTypes = {
     className: PropTypes.string,
-    panelPage: PropTypes.array,
+    panelPage: PropTypes.object,
     type: PropTypes.oneOf(['large', 'small']),
   };
 

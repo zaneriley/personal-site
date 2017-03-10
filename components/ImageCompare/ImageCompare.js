@@ -15,8 +15,8 @@ class ImageCompare extends React.Component {
 
   static propTypes = {
     className: PropTypes.string,
-    before: PropTypes.string,
-    after: PropTypes.string
+    before: PropTypes.object,
+    after: PropTypes.object,
   };
 
   state = {width: 200, height: 200};
@@ -36,15 +36,15 @@ class ImageCompare extends React.Component {
         <IconChromeBar />
         <div className={`${s.ImageCompareWrapper} ${g.gNoMarginTop}`}>
             <div className={`${s.baseImage}`}>
-              <a href={after} target="_blank">
-                <img src={after} />
+              <a href={after.url} target="_blank">
+                <img src={after.placeholder} srcSet={after.images} alt={after.alt} />
               </a>
             </div>
 
             <Resizable width={this.state.width} height={this.state.height} axis="x" onResize={this.onResize} className={`${g.gNoMarginTop}`}>
               <div style={{width: this.state.width + 'px'}}>
                 <div className={`${s.crop}`}>
-                  <img className={`${s.noCrop}`} src={before} />
+                  <img className={`${s.noCrop}`} src={before.placeholder} srcSet={before.images} alt={before.alt}/>
                 </div>
               </div>
             </Resizable>
