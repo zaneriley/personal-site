@@ -99,15 +99,15 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
-          <p className={`${g.g9m} ${g.g6l} ${g.center} ${v.dropCap}`}>I was asked to increase the attach rate between  Brit + Co’s two main products – Classes, offering instruction on topics like calligraphy, and Kits, supplies for both projects <span className={`${g.noWrap}`}>and Classes.</span></p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center} ${v.dropCap}`}>I was asked to increase the attach rate between  Brit + Co’s two main products – Classes, offering instruction on topics like calligraphy, and Kits, supplies for projects <span className={`${g.noWrap}`}>and Classes.</span></p>
 
-          <p className={`${g.g9m} ${g.g6l} ${g.center} `}>When measuring the attach rate, it’s usually clear which product is primary and which is secondary. For example, if we were selling smart phones, it would be the primary product. Phone accessories, like cases, would be secondary. For Classes and Kits, however, the primary product wasn’t quite <span className={`${g.noWrap}`}>so obvious.</span></p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center} `}>When measuring the attach rate, it’s usually clear which product is primary and which is secondary. For example, smart phones are a primary product. Phone accessories, like cases, would be secondary. For Classes and Kits, however, the primary product wasn’t quite <span className={`${g.noWrap}`}>so obvious.</span></p>
 
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>To increase the attach rate, we first had to understand which of our products was primary, and which one <span className={`${g.noWrap}`}>was secondary.</span></p>
 
-          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>The relationship between specific Classes and Kits varied wildly. Some products worked together seamlessly, like the Calligraphy Class and Calligraphy Kit. Other pairings were less straightforward. Some classes had no kit, and some kits had no <span className={`${g.noWrap}`}>matching class.</span></p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>The relationship between specific Classes and Kits varied wildly. Some products worked together seamlessly, like the Calligraphy Class and Calligraphy Kit. Other pairings were less straightforward. Some classes had no kit, and some Kits had no <span className={`${g.noWrap}`}>matching class.</span></p>
 
-          <blockquote className={`${g.g5l} ${g.center} ${g.floatRightM}`}>To increase the attach rate, we first had to understand which of our products was primary, and which one was secondary.
+          <blockquote className={`${g.g5l} ${g.center} ${g.floatRightM}`}>To increase the attach rate, we first had to understand which of our products was primary and which one was secondary.
           </blockquote>
 
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>We couldn’t lock ourselves into a single pricing strategy while the company was exploring product/market fit. We would need to increase the attach rate without simplifying pricing or changing products.</p>
@@ -171,7 +171,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </figure>
 
         <div className={`${g.maxWidth}`}>
-          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>Users viewing Classes were likely to view and purchase Kits, but users viewing Kits were not likely to view or purchase Classes. They were unlikely to look outside Kits.</p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>Users viewing Classes were likely to view and purchase Kits, but users viewing Kits were not likely to view or purchase Classes. They were unlikely to look outside the Kits page.</p>
         </div>
         <div className={`${g.maxWidth}`}>
           <h3 className={`${g.g9m} ${g.g6l} ${g.center}`}><strong>How People View Kits</strong></h3>
@@ -210,7 +210,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>People seeking Kits may not need or want instruction; they could simply want supplies for their projects. People interested in Classes, on the other hand, seemed to also want all the supplies they need to begin learning that craft. We needed to make it easier for those viewing Classes to purchase related Kits, and we needed to convince those looking at Kits to view Classes as well.</p>
 
           <h2 className={`${g.g9m} ${g.g6l} ${g.center} ${g.gMarginTopLarge}`}>Alerting Users About Classes</h2>
-          <p className={`${g.g9m} ${g.g6l} ${g.center} `}>For Kits that had a matching class, we added a callout that encourages users to view the class. Messaging was positioned around making sure a user’s project turned <span className={`${g.noWrap}`}>out well.</span></p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center} `}>For Kits that had a matching class, we added a callout that encourages users to view the class. Messaging was focused on making sure a user’s project turned <span className={`${g.noWrap}`}>out well.</span></p>
         </div>
 
         <figure className={`${g.maxWidth}`}>
@@ -235,7 +235,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
 
         <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Bundling Both Products</h2>
-          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>The Class page was designed by Krystle Cho<sup>1</sup>. It allows users to purchase both kits and classes in a <span className={`${g.noWrap}`}>single click.</span></p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>The Class page was designed by Krystle Cho.<sup>1</sup> It allows users to purchase both Kits and classes in a <span className={`${g.noWrap}`}>single click.</span></p>
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>On both pages, we removed content from the right rail so that only the add-to-cart <span className={`${g.noWrap}`}>module remained.</span></p>
         </div>
 

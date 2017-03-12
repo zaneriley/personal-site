@@ -7,6 +7,7 @@ import About from '../../../components/About';
 import IconChromeBar from '../../../components/IconChromeBar';
 import HorizontalScroll from '../../../components/HorizontalScroll';
 import Code from '../../../components/Code';
+import LazyLoader from '../../../components/LazyLoader';
 import g from '../../styles/grid.css';
 import v from '../../styles/aesthetics.css';
 import s from './styles.css';
@@ -16,8 +17,6 @@ import styleguide from '../../assets/images/styleguide-1680w.png';
 import SketchLapseWebm from '../../assets/images/sketch-time-lapse.webm';
 import SketchLapseMp4 from '../../assets/images/sketch-time-lapse.mp4';
 import SketchLapsePoster from '../../assets/images/sketch-time-lapse-3360w.jpg';
-import scaleBefore from '../../assets/images/before-scale.svg';
-import scaleAfter from '../../assets/images/after-scale.svg';
 import textInSketch from '../../assets/images/sketch-text-sizes-2560w.jpg'
 
 class BuildingADesignSystem extends React.Component {
@@ -36,11 +35,13 @@ class BuildingADesignSystem extends React.Component {
 
         <figure className={`${g.maxWidth} ${g.gMarginTopLarge} `}>
           <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
-            <IconChromeBar />
-            <video className={`${g.gNoMarginTop} ${g.center}`} autoPlay loop muted playsInline poster={SketchLapsePoster}>
-              <source src={SketchLapseWebm} type="video/webm" />
-              <source src={SketchLapseMp4} type="video/mp4" />
-            </video>
+              <IconChromeBar />
+              <LazyLoader height="50%" className={`${g.gNoMarginTop} ${g.center}`} >
+                <video autoPlay loop muted playsInline poster={SketchLapsePoster}>
+                  <source src={SketchLapseWebm} type="video/webm" />
+                  <source src={SketchLapseMp4} type="video/mp4" />
+                </video>
+              </LazyLoader>
           </div>
           <figcaption>Using the design system in Sketch</figcaption>
         </figure>
@@ -56,7 +57,9 @@ class BuildingADesignSystem extends React.Component {
         <figure className={`${g.maxWidth} $`}>
           <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
             <IconChromeBar />
-            <img src={styleguide} className={`${g.gNoMarginTop} ${g.center}`} />
+            <LazyLoader height="56.4%" className={`${g.gNoMarginTop} ${g.center}`} >
+              <img src={styleguide} />
+            </LazyLoader>
           </div>
           <figcaption>Online styleguide showing color palettes.</figcaption>
         </figure>
@@ -73,34 +76,117 @@ class BuildingADesignSystem extends React.Component {
           <p className={`${g.g6l} ${g.center}`}>To quote iA.net, <LinkExternal href="https://ia.net/topics/the-web-is-all-about-typography-period/">“Web Design is 95% Typography”</LinkExternal>, so it isn’t a surprise that so much of our design system is typography related.</p>
 
           <p className={`${g.g6l} ${g.center}`}>Throughout the audit, I noticed there were 17 different fontSizes (50 if you count unique values in the <abbr title='cascading style sheets'>CSS</abbr>). All were hardcoded pixel values.</p>
-
-          <figure className={`${s.fontSizes} ${g.gJustifyCenter} ${g.gFlexEnd}`}>
-
-            <div className={`${g.g6l}`}>
-              <p style={{"fontSize" : "0.667em", "lineHeight" : "1.1rem"}}>Font-size 12px</p>
-              <p style={{"fontSize" : "0.778em", "lineHeight" : "1.1rem"}}>Font-size 14px</p>
-              <p style={{"fontSize" : "0.833em", "lineHeight" : "1.1rem"}}>Font-size 15px</p>
-              <p style={{"fontSize" : "0.889em", "lineHeight" : "1.1rem"}}>Font-size 16px</p>
-              <p style={{"fontSize" : "0.944em", "lineHeight" : "1.1rem"}}>Font-size 17px</p>
-              <p style={{"fontSize" : "1em", "lineHeight" : "1.4rem"}}>Font-size 18px</p>
-              <p style={{"fontSize" : "1.111em", "lineHeight" : "1.4rem"}}>Font-size 20px</p>
-              <p style={{"fontSize" : "1.222em", "lineHeight" : "1.6rem"}}>Font-size 22px</p>
-              <p style={{"fontSize" : "1.333em", "lineHeight" : "1.6rem"}}>Font-size 24px</p>
-              <p style={{"fontSize" : "1.444em", "lineHeight" : "1.6rem"}}>Font-size 26px</p>
-              <p style={{"fontSize" : "1.5em", "lineHeight" : "1.8rem"}}>Font-size 27px</p>
-              <p style={{"fontSize" : "1.778em", "lineHeight" : "2rem"}}>Font-size 32px</p>
-              <p style={{"fontSize" : "1.889em", "lineHeight" : "2rem"}}>Font-size 34px</p>
-              <p style={{"fontSize" : "2.056em", "lineHeight" : "2rem"}}>Font-size 37px</p>
-            </div>
-
-          </figure>
         </div>
 
         <figure className={`${s.beforeScale}`}>
           <HorizontalScroll>
-            <svg className={`${g.center}`} xmlns="http://www.w3.org/2000/svg" width="599" height="97" viewBox="0 7 599 97" version="1.1"><title>Previous font sizes.</title><desc>This image shows Brit + Co's existing font sizes laid out on a scale.</desc><g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd"><path d="M0.3 59L597 59" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/><text fontFamily="inherit" fill="#202020"><tspan x="4.3" y="22">12</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="46.1" y="102">14</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="66" y="22">15</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="87.5" y="102">16</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="107.2" y="22">17</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="126.4" y="102">18</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="167.1" y="22">20</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="208.1" y="102">22</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="247.5" y="22">24</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="286.3" y="102">26</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="310.1" y="22">27</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="408.3" y="22">32</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="450.2" y="102">34</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="570.9" y="22">40</tspan></text><circle fill="#008EFE" cx="17" cy="58" r="6"/><circle fill="#008EFE" cx="57" cy="58" r="6"/><circle fill="#008EFE" cx="77" cy="58" r="6"/><circle fill="#008EFE" cx="98" cy="58" r="6"/><circle fill="#008EFE" cx="118" cy="58" r="6"/><circle fill="#008EFE" cx="138" cy="58" r="6"/><circle fill="#008EFE" cx="178" cy="58" r="6"/><circle fill="#008EFE" cx="219" cy="58" r="6"/><circle fill="#008EFE" cx="259" cy="58" r="6"/><circle fill="#008EFE" cx="299" cy="58" r="6"/><circle fill="#008EFE" cx="319" cy="58" r="6"/><circle fill="#008EFE" cx="420" cy="58" r="6"/><circle fill="#008EFE" cx="461" cy="58" r="6"/><circle fill="#008EFE" cx="583" cy="58" r="6"/></g></svg>
-            </HorizontalScroll>
-            <figcaption className={`${g.textCenter}`}>The number of existing font sizes <span className={`${g.noWrap}`}>on Brit + Co.</span></figcaption>
+            <svg xmlns="http://www.w3.org/2000/svg" width="1059" height="101" viewBox="0 19 1059 101" version="1.1">
+              <title>Previous font sizes.</title>
+              <desc>This image shows Brit + Co's existing font sizes laid out on a scale.</desc>
+              <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
+                  <path d="M8 75L1047 75" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="7" y="45" fontSize="12">a</tspan>
+                      <tspan x="0" y="116">12</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="10.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="75" y="45" fontSize="14">a</tspan>
+                      <tspan x="69" y="116">14</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="79.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="110" y="45" fontSize="15">a</tspan>
+                      <tspan x="104" y="116">15</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="114.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="144" y="45" fontSize="16">a</tspan>
+                      <tspan x="138" y="116">16</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="149.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="179" y="45" fontSize="17">a</tspan>
+                      <tspan x="173" y="116">17</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="183.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="212" y="45" fontSize="18">a</tspan>
+                      <tspan x="206" y="116">18</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="217.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="285" y="45" fontSize="20">a</tspan>
+                      <tspan x="277" y="116">20</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="290.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="355" y="45" fontSize="22">a</tspan>
+                      <tspan x="350" y="116">22</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="361.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="432" y="45" fontSize="24">a</tspan>
+                      <tspan x="426" y="116">24</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="438.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="508" y="45" fontSize="26">a</tspan>
+                      <tspan x="502" y="116">26</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="514.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="544" y="45" fontSize="27">a</tspan>
+                      <tspan x="540" y="116">27</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="551.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="732" y="45" fontSize="32">a</tspan>
+                      <tspan x="728" y="116">32</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="740.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="808" y="44" fontSize="34">a</tspan>
+                      <tspan x="805" y="116">34</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="817.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+              <g>
+                  <text>
+                      <tspan x="1037" y="40" fontSize="40">a</tspan>
+                      <tspan x="1034" y="116">40</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="1047.4" cy="74.5" rx="6.4" ry="6.5"/>
+              </g>
+          </svg>
+          </HorizontalScroll>
+            <figcaption className={`${g.maxWidth}`}>The number of existing font sizes <span className={`${g.noWrap}`}>on Brit + Co.</span></figcaption>
         </figure>
 
         <div className={`${g.maxWidth} $`}>
@@ -108,26 +194,66 @@ class BuildingADesignSystem extends React.Component {
           <p className={`${g.g6l} ${g.center}`}>I then chose an appropriate <LinkExternal href="http://www.modularscale.com/?18&px&1.2&web&text">modular scale</LinkExternal>. Each fontSize was simply multiplied by 1.2 to get the next size increase.</p>
 
           <p className={`${g.g6l} ${g.center}`}>Thus we reduced the site to just seven <span className={`${g.noWrap}`}>type sizes:</span></p>
-
-          <figure className={`${s.fontSizes} ${g.gJustifyCenter} ${g.gFlexEnd} $`}>
-
-            <div className={`${g.gMarginLeftL} ${g.g6l}`}>
-              <p style={{"fontSize" : "12px", "lineHeight" : "1.1rem"}}>Font-size 12px</p>
-              <p style={{"fontSize" : "15px", "lineHeight" : "1.1rem"}}>Font-size 15px</p>
-              <p style={{"fontSize" : "18px", "lineHeight" : "1.4rem"}}>Font-size 18px</p>
-              <p style={{"fontSize" : "22px", "lineHeight" : "1.6rem"}}>Font-size 22px</p>
-              <p style={{"fontSize" : "26px", "lineHeight" : "1.6rem"}}>Font-size 26px</p>
-              <p style={{"fontSize" : "32px", "lineHeight" : "2rem"}}>Font-size 31px</p>
-              <p style={{"fontSize" : "37px", "lineHeight" : "2rem"}}>Font-size 37px</p>
-            </div>
-          </figure>
         </div>
             
         <figure className={`${s.afterScale}`}>
           <HorizontalScroll>
-            <svg xmlns="http://www.w3.org/2000/svg" width="599" height="63" viewBox="0 6 599 63" version="1.1"><title>Font sizes using a modular scale</title><desc>This image shows Brit + Co's new font sizes laid out on a modular scale where each number is multipled by 1.2 to get the next fontSize.</desc><path d="M0.3 59L597 59" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/><text fontFamily="inherit" fill="#202020"><tspan x="11.3" y="22">12</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="72" y="22">15</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="133.4" y="22">18</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="210.1" y="22">22</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="293.3" y="22">26</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="394.5" y="22">31</tspan></text><text fontFamily="inherit" fill="#202020"><tspan x="510.3" y="22">37</tspan></text><circle fill="#008EFE" cx="21" cy="59" r="6"/><circle fill="#008EFE" cx="81" cy="59" r="6"/><circle fill="#008EFE" cx="143" cy="59" r="6"/><circle fill="#008EFE" cx="221" cy="59" r="6"/><circle fill="#008EFE" cx="305" cy="59" r="6"/><circle fill="#008EFE" cx="404" cy="59" r="6"/><circle fill="#008EFE" cx="521" cy="59" r="6"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="1060" height="91" viewBox="0 15 1060 91" version="1.1">
+              <title>Font sizes using a modular scale</title>
+              <desc>This image shows Brit + Co's new font sizes laid out on a modular scale where each number is multipled by 1.2 to get the next fontSize.</desc>
+              <path d="M15 61L1039.5 61" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/>
+                <g>
+                  <text fontFamily="inherit">
+                    <tspan x="7" y="35" fontSize="12">a</tspan>
+                    <tspan x="0" y="105">12</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="10.4" cy="60.5" rx="6.4" ry="6.5"/>
+                </g>
+                <g>
+                  <text fontFamily="inherit">
+                    <tspan x="114" y="35" fontSize="15">a</tspan>
+                    <tspan x="108" y="105">15</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="118.4" cy="60.5" rx="6.4" ry="6.5"/>
+                </g>
+                <g>
+                  <text fontFamily="inherit">
+                    <tspan x="250" y="35" fontSize="18">a</tspan>
+                    <tspan x="244" y="105">18</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="255.4" cy="60.5" rx="6.4" ry="6.5"/>
+                </g>
+                <g>
+                  <text fontFamily="inherit" >
+                    <tspan x="415" y="35" fontSize="22">a</tspan>
+                    <tspan x="409" y="105">22</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="421.4" cy="60.5" rx="6.4" ry="6.5"/>
+                </g>
+                <g>
+                  <text fontFamily="inherit" >
+                    <tspan x="585" y="35" fontSize="26">a</tspan>
+                    <tspan x="579" y="105" >26</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="591.4" cy="60.5" rx="6.4" ry="6.5"/>
+                </g>
+                <g>
+                  <text fontFamily="inherit">
+                    <tspan x="782" y="35" fontSize="31">a</tspan>
+                    <tspan x="780" y="105" >31</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="791.4" cy="60.5" rx="6.4" ry="6.5"/>
+                </g>
+                <g>
+                  <text fontFamily="inherit">
+                    <tspan x="1025" y="35" fontSize="37">a</tspan>
+                    <tspan x="1023" y="105">37</tspan>
+                  </text>
+                  <ellipse fill="#008EFE" fillRule="nonzero" cx="1035.4" cy="60.5" rx="6.4" ry="6.5"/>
+                </g>
+              </svg>
             </HorizontalScroll>
-            <figcaption className={`${g.textCenter}`}>Simplified font-sizes using a modular scale.</figcaption>
+            <figcaption className={`${g.maxWidth}`}>Simplified font-sizes using a modular scale.</figcaption>
         </figure>
 
         <div className={`${g.maxWidth} ${g.gMarginTop}`}>
@@ -142,7 +268,7 @@ class BuildingADesignSystem extends React.Component {
           <p className={`${g.g6l} ${g.center}`}>In code, you simply include type sizes <span className={`${g.noWrap}`}>like so</span>:
           </p>
 
-          <Code language="CSS" className={`${g.g8l} ${g.center}`}>
+          <Code language="CSS" filename="_typography.scss" className={`${g.g8l} ${g.center}`}>
 <span><span className="token selector">{`.header-large`} </span><span className="token punctuation">{`{`}</span></span>
   <span><span className="token keyword">{`  @include`}</span> <span className="token function"> typography</span><span className="token punctuation">{`(`}</span>xxx-large<span className="token punctuation">{`)`}</span><span className="token punctuation">{`;`}</span></span>
 <span><span className="token punctuation">{`{`}</span></span>
@@ -150,13 +276,18 @@ class BuildingADesignSystem extends React.Component {
 
           <p className={`${g.g6l} ${g.center}`}>When designing, you’d simply choose a text style with the same name as the code convention.</p>
 
-          <figure className={`${g.maxWidth}`}>
-            <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
-              <img src={textInSketch} alt="A screenshot of choosing text styles in Sketch. The text styles have the same naming as the code conventions."/>
-            </div>
-            <figcaption>Conventions are the same for both design and code.</figcaption>
-          </figure>
+        </div>
 
+        <figure className={`${g.maxWidth}`}>
+          <div className={`${v.shadow1} ${v.borderRadiusTop}`}>
+            <LazyLoader height="46.1%">
+              <img src={textInSketch} alt="A screenshot of choosing text styles in Sketch. The text styles have the same naming as the code conventions."/>
+            </LazyLoader>
+          </div>
+          <figcaption>Conventions are the same for both design and code.</figcaption>
+        </figure>
+
+        <div className={`${g.maxWidth}`}>
           <p className={`${g.g6l} ${g.center} $`}>This shared language compounds as design patterns get more complex:</p>
 
           <p className={`${g.g6l} ${g.center}`}>
@@ -167,7 +298,7 @@ class BuildingADesignSystem extends React.Component {
 
           <p className={`${g.g6l} ${g.center}`}>To enforce more rigorous coding standards, we introduced linting, continuous integration tooling, editor configs, Github pull request templates and more. Simple tools like opinionated linters further improved communication because IDE’s helped keep new code in check.</p>
 
-          <Code language="YAML" className={`${g.g8l} ${g.center} `}>
+          <Code language="YAML" filename="scsslint.yaml" className={`${g.g8l} ${g.center} `}>
 <span><span className="token key atrule">PropertyUnits</span><span className="token punctuation">:</span></span>
 <span><span className="token key atrule">  global</span><span className="token punctuation">:</span> <span className="token punctuation">{`[`}</span><span className="token string">'em'</span><span className="token punctuation">,</span> <span className="token string">'rem'</span><span className="token punctuation">,</span> <span className="token string">'%'</span><span className="token punctuation">,</span> <span className="token string">'vw'</span><span className="token punctuation">,</span> <span className="token string">'vh'</span><span className="token punctuation">,</span> <span className="token string">'vmin'</span><span className="token punctuation">,</span> <span className="token string">'vmax'</span><span className="token punctuation">{`]`}</span></span>
 <span><span className="token key atrule">  properties</span><span className="token punctuation">:</span></span>
@@ -185,7 +316,7 @@ class BuildingADesignSystem extends React.Component {
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Credits</h2>
 
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>
-            <LinkExternal href="https://angel.co/mskrys" >Krystle Cho</LinkExternal> – Product Designer <br />
+            <LinkExternal href="https://angel.co/mskrys">Krystle Cho</LinkExternal> – Product Designer <br />
             <LinkExternal href="http://www.emelynbaker.com/">Emelyn Baker</LinkExternal> – Product Designer<br />
             <LinkExternal href="https://twitter.com/threesided">Scott Gamble</LinkExternal> – Engineer
           </p>

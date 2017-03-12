@@ -55,8 +55,14 @@
   overflow: hidden;
 }
 
+.borderRadiusSmall {
+  border-radius: 2px;
+  overflow: hidden;
+}
+
 .borderRadiusTop {
   border-radius: 8px 8px 0 0;
+  overflow: hidden;
 }
 
 .dropCap::first-letter {

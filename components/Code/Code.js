@@ -8,15 +8,21 @@ class Code extends React.Component {
 
   static propTypes = {
     className: PropTypes.string,
+    filename: PropTypes.string.isRequired,
   };
 
 
   render() {
-    const { className, children } = this.props;
+    const { className, children, filename} = this.props;
     return (
-      <pre className={className + ` ${v.shadow1}`}>
-        <code>{ children }</code>
-      </pre>
+      <div className={cx(v.shadow1, v.borderRadiusSmall, className) + ``}>
+        <div className={`${s.header}`}>
+          <small><span>{filename}</span></small>
+        </div>
+        <pre className={`${g.gNoMarginTop}`}>
+          <code>{ children }</code>
+        </pre>
+      </div>
     );
   }
   

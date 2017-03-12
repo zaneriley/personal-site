@@ -25,7 +25,7 @@ class Panel extends React.Component {
 
       return (
 
-      <div className={cx(s.panel, g.gFlexContainer, g.gPositionRelative, this.props.className) + ' ' + (this.props.panelPage.disabled ? s.disabled : z.shadow2)}>
+      <div className={cx(s.panel, z.borderRadiusSmall, g.gFlexContainer, g.gPositionRelative, this.props.className) + ' ' + (this.props.panelPage.disabled ? s.disabled : z.shadow2)}>
 
         {!this.props.panelPage.disabled && 
           <Link to={this.props.panelPage.path} className={`${g.gPositionAbsolute}`} />

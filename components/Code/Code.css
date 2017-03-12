@@ -1,7 +1,19 @@
 @import '../../src/styles/variables.css';
 
-tt, code, kbd, samp {
+tt,
+code,
+kbd,
+samp {
   font-family: inherit;
+}
+
+.header {
+  padding: 0 var(--baseline-small);
+  background-color: #dce8fa;
+
+  & small {
+    vertical-align: text-bottom;
+  }
 }
 
 pre {

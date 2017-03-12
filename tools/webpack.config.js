@@ -179,6 +179,7 @@ const config = {
               options: 10000,
               mozjpeg: {
                 progressive: true,
+                quality: 65,
               },
               gifsicle: {
                 interlaced: false,
