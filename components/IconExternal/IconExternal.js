@@ -8,10 +8,13 @@ class IconExternal extends React.Component {
     className: PropTypes.string,
   };
 
+  shouldComponentUpdate() {
+    return false;
+  }
 
   render() {
 
-      const { className } = this.props;
+    const { className } = this.props;
 
     return (
 

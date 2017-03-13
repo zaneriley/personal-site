@@ -9,9 +9,11 @@ class IconChromeBar extends React.Component {
     className: PropTypes.string,
   };
 
+  shouldComponentUpdate() {
+    return false;
+  }
 
   render() {
-
 
     return (
       <div className={`${s.bar}`}>
