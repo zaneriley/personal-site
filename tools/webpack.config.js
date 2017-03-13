@@ -43,10 +43,10 @@ const config = {
 
   // Options affecting the output of the compilation
   output: {
-    path: path.resolve(__dirname, '../public/dist'),
-    publicPath: isDebug ? `http://localhost:${process.env.PORT || 3000}/dist/` : '/dist/',
-    filename: isDebug ? '[name].js?[hash]' : '[name].[hash].js',
-    chunkFilename: isDebug ? '[id].js?[chunkhash]' : '[id].[chunkhash].js',
+    path: isDebug ? path.resolve(__dirname, '../public/dist') : path.resolve(__dirname, '../public/'),
+    publicPath: isDebug ? `http://localhost:${process.env.PORT || 3000}/dist` : '',
+    filename: isDebug ? '[name].js?[hash]' : '/dist/[name].[hash].js',
+    chunkFilename: isDebug ? '[id].js?[chunkhash]' : '/dist/[id].[chunkhash].js',
     sourcePrefix: '  ',
   },
 
@@ -85,9 +85,16 @@ const config = {
       minimize: !isDebug,
     }),
     new OfflinePlugin({
-      output: {
-        path: __dirname + '../public'
-      }
+      ServiceWorker: {
+        navigateFallbackURL: '../public/index.html',
+        events: true,
+        entry: '../public/sw-handler.js',
+      },
+      Appcache: {
+        FALLBACK: '/',
+        events: true,
+      },
+
     }),
   ],
 
@@ -162,17 +169,14 @@ const config = {
         test: /\.(woff|woff2|gif|png|jpe?g|svg)$/,
         loaders: [
           {
-            loader: 'url-loader',
-            options: {
-              limit: 10000,
-            },
+            loader: 'url-loader?limit=10000&name=' + (isDebug ? '[name].[ext]?[hash]' : '/dist/[name].[hash].[ext]'),
           },
           {
             loader: 'image-webpack-loader',
             query: {
               mozjpeg: {
                 progressive: true,
-                quality: 65,
+                quality: 60,
               },
               gifsicle: {
                 interlaced: false,
@@ -181,20 +185,16 @@ const config = {
                 optimizationLevel: 4,
               },
               pngquant: {
-                quality: '75-90',
-                speed: 3,
+                quality: '65-85',
+                speed: 2,
               },
             }
-          }
+          },
         ],
       },
       {
-        test: /\.(eot|ttf|wav|mp3)$/,
-        loader: 'file-loader',
-      },
-      {
-        test: /\.(webm|mp4)$/,
-        loader: 'file-loader',
+        test: /\.(eot|ttf|wav|mp3|webm|mp4)$/,
+        loader: 'file-loader?name=' + (isDebug ? '[name].[ext]?[hash]' : '/dist/[name].[hash].[ext]'),
       },
     ],
   }
