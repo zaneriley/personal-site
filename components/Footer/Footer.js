@@ -23,6 +23,7 @@ import iconAngellist from '../../src/assets/images/angellist.svg';
 import iconLinkedIn from '../../src/assets/images/linkedin.svg';
 
 function Footer() {
+
   return (
     <footer className={`${g.gMarginTopLarge}`}>
       <div className={`${g.maxWidth}`}>

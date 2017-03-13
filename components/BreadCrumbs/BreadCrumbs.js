@@ -13,6 +13,10 @@ class BreadCrumbs extends React.Component {
     className: PropTypes.string,
     pageLocation: PropTypes.string,
   };
+  
+  shouldComponentUpdate() {
+    return false;
+  }
 
   render() {
 

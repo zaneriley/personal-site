@@ -11,6 +11,9 @@ class Code extends React.Component {
     filename: PropTypes.string.isRequired,
   };
 
+  shouldComponentUpdate() {
+    return false;
+  }
 
   render() {
     const { className, children, filename} = this.props;

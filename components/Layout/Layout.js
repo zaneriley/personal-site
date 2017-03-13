@@ -15,7 +15,6 @@ import Footer from '../Footer';
 import Header from '../Header';
 import BreadCrumbs from '../BreadCrumbs';
 import UpNext from '../UpNext';
-import PageTransition from '../PageTransition';
 import s from './Layout.css';
 import g from '../../src/styles/grid.css';
 import z from '../../src/styles/aesthetics.css';

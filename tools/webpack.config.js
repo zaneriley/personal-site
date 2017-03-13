@@ -159,24 +159,17 @@ const config = {
         loader: path.resolve(__dirname, './markdown-loader.js'),
       },
       {
-        test: /\.(woff|woff2|svg|jpe?g|gif)$/,
-        loader: 'url-loader',
-        options: {
-          limit: 10000,
-        },
-      },
-      {
-        test: /\.(eot|ttf|wav|mp3)$/,
-        loader: 'file-loader',
-      },
-      {
-        test: /.*\.(gif|png|jpe?g|svg)$/i,
+        test: /\.(woff|woff2|gif|png|jpe?g|svg)$/,
         loaders: [
-          'file-loader',
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 10000,
+            },
+          },
           {
             loader: 'image-webpack-loader',
             query: {
-              options: 10000,
               mozjpeg: {
                 progressive: true,
                 quality: 65,
@@ -193,7 +186,11 @@ const config = {
               },
             }
           }
-        ]
+        ],
+      },
+      {
+        test: /\.(eot|ttf|wav|mp3)$/,
+        loader: 'file-loader',
       },
       {
         test: /\.(webm|mp4)$/,

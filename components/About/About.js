@@ -17,6 +17,10 @@ class About extends React.Component {
     readingLength: PropTypes.string,
   };
 
+  shouldComponentUpdate() {
+    return false;
+  }
+  
   render() {
     const { title, about, role, result } = this.props;
     
