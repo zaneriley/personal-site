@@ -43,6 +43,10 @@ a {
   & svg {
     outline: none;
   }
+
+  & > :--headers {
+    opacity: inherit;
+  }
 }
 
 :global(.wf-loaded) a {

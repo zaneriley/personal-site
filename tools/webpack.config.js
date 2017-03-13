@@ -159,7 +159,7 @@ const config = {
         loader: path.resolve(__dirname, './markdown-loader.js'),
       },
       {
-        test: /\.(woff|woff2)$/,
+        test: /\.(woff|woff2|svg|jpe?g|gif)$/,
         loader: 'url-loader',
         options: {
           limit: 10000,

@@ -46,7 +46,7 @@ class BuildingADesignSystem extends React.Component {
           <figcaption>Using the design system in Sketch</figcaption>
         </figure>
 
-        <div className={`${g.maxWidth} $`}>
+        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
 
           <p className={`${g.g6l} ${g.center} ${v.dropCap}`}>The Brit + Co design system is a collection of reusable design patterns and visual styles. These help us create a better product by allowing us to focus on higher-level thinking.</p>
 
@@ -198,7 +198,7 @@ class BuildingADesignSystem extends React.Component {
             
         <figure className={`${s.afterScale}`}>
           <HorizontalScroll>
-            <svg xmlns="http://www.w3.org/2000/svg" width="1060" height="91" viewBox="0 15 1060 91" version="1.1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1060" height="100" viewBox="0 15 1048 95" version="1.1">
               <title>Font sizes using a modular scale</title>
               <desc>This image shows Brit + Co's new font sizes laid out on a modular scale where each number is multipled by 1.2 to get the next fontSize.</desc>
               <path d="M15 61L1039.5 61" stroke="#DCE8FA" strokeWidth="2" strokeLinecap="square"/>

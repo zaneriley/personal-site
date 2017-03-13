@@ -115,7 +115,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>One interesting piece of data helped shape our solution: How users viewed each product.</p>
         </div>
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth}`}>
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>User Flows</h2>
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>Users took different paths through the site depending on which product they were initially looking at. Take a look at the flow of</p>
         </div>
@@ -205,11 +205,11 @@ class ImprovingPurchaseProcessPage extends React.Component {
           </HorizontalScroll>
         </figure>
 
-        <div className={`${g.maxWidth}`}>
+        <div className={`${g.maxWidth} ${g.gMarginTopSmall}`}>
 
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>People seeking Kits may not need or want instruction; they could simply want supplies for their projects. People interested in Classes, on the other hand, seemed to also want all the supplies they need to begin learning that craft. We needed to make it easier for those viewing Classes to purchase related Kits, and we needed to convince those looking at Kits to view Classes as well.</p>
 
-          <h2 className={`${g.g9m} ${g.g6l} ${g.center} ${g.gMarginTopLarge}`}>Alerting Users About Classes</h2>
+          <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Alerting Users About Classes</h2>
           <p className={`${g.g9m} ${g.g6l} ${g.center} `}>For Kits that had a matching class, we added a callout that encourages users to view the class. Messaging was focused on making sure a user’s project turned <span className={`${g.noWrap}`}>out well.</span></p>
         </div>
 
@@ -233,7 +233,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
         </figure>
 
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth}`}>
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Bundling Both Products</h2>
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>The Class page was designed by Krystle Cho.<sup>1</sup> It allows users to purchase both Kits and classes in a <span className={`${g.noWrap}`}>single click.</span></p>
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}>On both pages, we removed content from the right rail so that only the add-to-cart <span className={`${g.noWrap}`}>module remained.</span></p>
@@ -255,7 +255,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
           <figcaption>A new add-to-cart module that allows for purchasing <span className={`${g.noWrap}`}>both products.</span></figcaption>
         </figure>
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth}`}>
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>User Testing</h2>
           <p className={`${g.g9m} ${g.g6l} ${g.center}`}> This was a clear direction, but we still needed to validate it with users, so I conducted a round of in-person user tests with 5 people.</p>
 
@@ -285,7 +285,7 @@ class ImprovingPurchaseProcessPage extends React.Component {
           <figcaption className={`${g.textCenter}`}>On the left, user testing the initial design. The revised design <span className={`${g.noWrap}`}>on right.</span></figcaption>
         </figure>
 
-        <div className={`${g.maxWidth} ${g.gMarginTopLarge}`}>
+        <div className={`${g.maxWidth}`}>
           <p className={`${g.g9m} ${g.g9m} ${g.g6l} ${g.center}`}>Simplifying the product pages and removing friction to purchase both the class and kit increased the attachment rate by 3.5%. We did it without inhibiting new strategy exploration for the rest of the  team, and we saved engineering resources  by building and deploying our own  prototype.</p>
 
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>Credits</h2>

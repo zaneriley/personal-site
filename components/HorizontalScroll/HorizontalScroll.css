@@ -21,5 +21,12 @@
     display: inline-block;
     vertical-align: middle;
     flex-shrink: 0;
+
+    &:last-of-type {
+      @media (--small-bp-max) {
+        box-sizing: content-box;
+        padding-right: 1rem;
+      }
+    }
   }
 }

@@ -15,7 +15,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import FastClick from 'fastclick';
 import { Provider } from 'react-redux';
-
 import store from './store';
 import router from './router';
 import history from './history';

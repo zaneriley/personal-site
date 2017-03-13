@@ -15,7 +15,7 @@ class Code extends React.Component {
   render() {
     const { className, children, filename} = this.props;
     return (
-      <div className={cx(v.shadow1, v.borderRadiusSmall, className) + ``}>
+      <div className={cx(v.shadow1, v.borderRadiusSmall, g.code, className) + ``}>
         <div className={`${s.header}`}>
           <small><span>{filename}</span></small>
         </div>

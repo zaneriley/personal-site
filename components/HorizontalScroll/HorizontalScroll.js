@@ -10,13 +10,13 @@ class HorizontalScroll extends React.Component {
 
   render() {
 
-    const { className } = this.props;
+    const { className, children } = this.props;
 
     return ( 
 
       <div className={cx(s.horizontalScrollOuterWrapper, className) + ``}>
         <div className={`${s.horizontalScrollInnerWrapper}`}>
-          {this.props.children}
+          {children}
         </div>
       </div>
     );

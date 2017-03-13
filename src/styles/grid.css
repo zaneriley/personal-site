@@ -28,7 +28,8 @@ main {
 * + *,
 * + .gMarginTop,
 pre + p,
-figure + p {
+figure + p,
+.code + p {
   margin-top: var(--gutter);
 }
 
