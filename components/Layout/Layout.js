@@ -25,7 +25,7 @@ class Layout extends React.Component {
     breadCrumbs: '',
     recommendedPageFirst: {title: ''},
     recommendedPageSecond: {},
-    hasHeader: true,
+    hasHeader: false,
   };
 
   static propTypes = {
