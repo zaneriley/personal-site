@@ -38,6 +38,7 @@ h1 {
 
 p {
   font-variant-numeric: oldstyle-nums;
+  hanging-punctuation: first allow-end;
 }
 
 h2,
@@ -56,6 +57,7 @@ blockquote {
 }
 
 blockquote {
+  hanging-punctuation: first allow-end;
   color: inherit;
 
   @media (--small-bp) {
@@ -82,6 +84,7 @@ small {
 }
 
 abbr {
+  font-feature-settings: 'c2sc', 'smcp';
   letter-spacing: 0.05em;
   cursor: help;
 }

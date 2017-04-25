@@ -117,7 +117,8 @@ class ImprovingPurchaseProcessPage extends React.Component {
 
         <div className={`${g.maxWidth}`}>
           <h2 className={`${g.g9m} ${g.g6l} ${g.center}`}>User Flows</h2>
-          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>Users took different paths through the site depending on which product they were initially looking at. Take a look at the flow of</p>
+          <p className={`${g.g9m} ${g.g6l} ${g.center}`}>Users took different paths through the site depending on which product they were initially looking at. Take a look at the two flows below:
+          </p>
         </div>
 
         <div className={`${g.maxWidth}`}>
