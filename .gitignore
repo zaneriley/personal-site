@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Assets
+/public/fonts/*
+
 # dependencies
 /node_modules
 /.pnp
