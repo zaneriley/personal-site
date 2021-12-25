@@ -5,7 +5,7 @@ import getFluidType from "./fluid-type";
 import { TYPEFACES, BREAKPOINTS } from "../css-variables";
 
 export default function getFontSize(int, typeface) {
-  if (!typeface) typeface = TYPEFACES.sourceSansPro;
+  if (!typeface) typeface = TYPEFACES.gtFlexa;
 
   const CAPITAL_HEIGHT_SMALL = getModularScale(
     "typography",
@@ -24,13 +24,13 @@ export default function getFontSize(int, typeface) {
     pxToRem(CAPITAL_HEIGHT_LARGE)
   );
 
-  /* compute font-size to get capital height equal desired font-size 
+  /* compute font-size to get capital height equal desired font-size
    * (e.g. 12 * 0.66 = 18)
    */
-  const calculatedFontSize = capitalHeight =>
+  const calculatedFontSize = (capitalHeight) =>
     capitalHeight / typeface.fmCapitalHeight;
 
-  /* The font-size converted into REM. 
+  /* The font-size converted into REM.
    * (18 / 16 * 1rem = 1.125rem)
    */
   const FONT_SIZE_SMALL = pxToRem(calculatedFontSize(CAPITAL_HEIGHT_SMALL));

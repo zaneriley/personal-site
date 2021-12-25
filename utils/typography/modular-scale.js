@@ -18,9 +18,9 @@ export default function getModularScale(
   if (!sizeOfScale) sizeOfScale = "small";
   if (!unit) unit = "rem";
 
-  let modularSize = modularSize;
-  let baseSize = baseSize;
-  let scale = scale;
+  let modularSize = 0;
+  let baseSize = 0;
+  let scale = 0;
 
   if (typeOfScale === "typography") {
     if (sizeOfScale === "small") {
@@ -40,7 +40,7 @@ export default function getModularScale(
   }
 
   if (direction < 0) {
-    modularSize = baseSize / (scale * direction) * -1;
+    modularSize = (baseSize / (scale * direction)) * -1;
   } else if (direction === 0) {
     modularSize = baseSize;
   } else if (direction > 0) {
