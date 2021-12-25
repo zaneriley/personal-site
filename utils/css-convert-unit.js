@@ -15,10 +15,10 @@ export const parseUnit = (str, out) => {
 const baseFontSize = "16px";
 
 // Emulate the sass function "unit"
-const unit = length => parseUnit(length)[1];
+const unit = (length) => parseUnit(length)[1];
 
 // Emulate the sass function "unitless"
-const unitLess = length => parseUnit(length)[0];
+const unitLess = (length) => parseUnit(length)[0];
 
 // Convert any CSS <length> or <percentage> value to any another.
 //
@@ -46,7 +46,7 @@ export default function convertUnit(
   if (baseFontSize == null) {
     baseFontSize = baseFontSize;
   }
-  return function(length, toUnit, fromContext, toContext) {
+  return function (length, toUnit, fromContext, toContext) {
     if (fromContext == null) {
       fromContext = baseFontSize;
     }

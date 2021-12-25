@@ -6,7 +6,7 @@ export const BREAKPOINTS = {
   medium: 770,
   large: 890,
   larger: 1248,
-  largest: 1440
+  largest: 1440,
 };
 
 /* Typeface-specific data, mostly used for optical adjustments. */
@@ -15,20 +15,20 @@ export const TYPEFACES = {
   gtFlexa: {
     fmCapitalHeight: 0.7,
     fmDescender: 0.233,
-    fmAscender: 0.982
+    fmAscender: 0.982,
   },
 
   cheee: {
     fmCapitalHeight: 0.64,
     fmDescender: 0.238,
-    fmAscender: 1.164
+    fmAscender: 1.164,
   },
 
   temeraire: {
     fmCapitalHeight: 0.714,
     fmDescender: 0.515,
-    fmAscender: 1.028
-  }
+    fmAscender: 1.028,
+  },
 };
 
 /* Base units of typography system.
@@ -39,16 +39,16 @@ export const TYPEUNITS = {
   bodyFont: {
     small: 12,
     large: 12,
-    lineHeight: 28
+    lineHeight: 28,
   },
   typographyScale: {
     small: 1.38,
-    large: 1.5
+    large: 1.5,
   },
   spacingScale: {
     small: 1.5,
-    large: 2
-  }
+    large: 2,
+  },
 };
 
 export const TYPESTYLES = {
@@ -86,10 +86,10 @@ export const TYPESTYLES = {
 
   largest: `
       ${getFontSize(3, TYPEFACES.gtFlexa)}
-      font-family: var(--font-family-serif);
+      font-family: var(--font-family-sans);
       font-weight: var(--font-weight-bold);
       --line-height: 1.4;
-    `
+    `,
 };
 
 export const COLORS = {
@@ -100,26 +100,26 @@ export const COLORS = {
     base: `#D3D8E9`,
     dark: `#74758C`,
     darker: `#424773`,
-    darkest: `#000000`
+    darkest: `#000000`,
   },
 
   primary: {
     light: `#FFE3D9`,
-    base: `hsla(245, 99%, 64%, 1)`
+    base: `hsla(245, 99%, 64%, 1)`,
   },
 
   success: {
-    base: `#00E3AB`
+    base: `#00E3AB`,
   },
 
   accent: {
     lighter: `#FFF3E2`,
     light: `#FFE2BC`,
     base: `#FFD099`,
-    dark: `#D67200`
-  }
+    dark: `#D67200`,
+  },
 };
 
 export const SHADOWS = {
-  inset: `inset 0 2px 4px 0 rgba(66,71,115,0.08)`
+  inset: `inset 0 2px 4px 0 rgba(66,71,115,0.08)`,
 };

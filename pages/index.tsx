@@ -1,13 +1,14 @@
-import Head from 'next/head'
-import Link from 'next/link'
+import Link from "next/link";
+import {H1} from "../components/typography";
 
 export default function Home() {
   return (
-    <div> 
+    <div>
       <main>
-        <h1>
-          Zane Riley is a senior product designer focusing on tackling problems outside the screen
-        </h1>
+        <H1>
+          Zane Riley is a senior product designer focusing on tackling problems
+          outside the screen
+        </H1>
 
         <Link href="/case-studies/helping-people-find-healthcare">
           <a>Helping people find healthcare</a>
@@ -24,5 +25,5 @@ export default function Home() {
 
       <footer />
     </div>
-  )
+  );
 }
