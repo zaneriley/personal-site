@@ -1,18 +1,25 @@
-# My personal site & product design portfolio
+# My product design portfolio
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+View live on [my portfolio here.](https://zaneriley)
 
 ## Getting Started
 
-First, run the development server:
+After you clone this repo, you'll want to install any dependencies.
+
+```bash
+npm install
+```
+
+You can then run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Thanks
+
+Built using [Next.js](https://nextjs.org/) and [Styled-components](https://styled-components.com/). 
+
 
