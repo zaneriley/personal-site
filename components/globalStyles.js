@@ -9,31 +9,31 @@ const BASE_LINE_UNIT = pxToRem(TYPEUNITS.bodyFont.lineHeight);
 const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'GT Flexa';
-    src: url('fonts/GT-Flexa-Standard-Regular.woff2') format('woff2');
+    src: url('/fonts/GT-Flexa-Standard-Regular.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
   }
   @font-face {
     font-family: 'GT Flexa Extended';
-    src: url('fonts/GT-Flexa-Extended-Medium.woff2') format('woff2');
+    src: url('/fonts/GT-Flexa-Extended-Medium.woff2') format('woff2');
     font-weight: 800;
     font-style: normal;
   }
   @font-face {
     font-family: 'GT Flexa Condensed';
-    src: url('fonts/GT-Flexa-Extended-Medium.woff2') format('woff2');
+    src: url('/fonts/GT-Flexa-Extended-Medium.woff2') format('woff2');
     font-weight: 800;
     font-style: normal;
   }
   @font-face {
     font-family: 'Cheee';
-    src: url('fonts/Cheee-Small.woff2') format('woff2');
+    src: url('/fonts/Cheee-Small.woff2') format('woff2');
     font-weight: 800;
     font-style: normal;
   }
   @font-face {
     font-family: 'Temairaire';
-    src: url('fonts/Temeraire-Italic.woff2') format('woff2');
+    src: url('/fonts/Temeraire-Italic.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
   }
@@ -43,7 +43,7 @@ const GlobalStyle = createGlobalStyle`
     --font-body-large:        ${pxToRem(TYPEUNITS.bodyFont.large)}rem;
     --font-family-fallback:   -apple-system, system-ui, blinkmacsystemfont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans';
     --font-family-serif:      'Temairaire', 'Georgia', 'Times New Roman';
-    --font-family-sans:       'GT Flexa Regular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-family-sans:       'GT Flexa', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --font-family-mono:       'Cheee', Apercu, 'Fira Mono', Courier, monospace;
     --font-weight-bold:       800;
   

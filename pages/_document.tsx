@@ -1,5 +1,6 @@
 import Document, { Html, Head, Main, NextScript } from "next/document";
 import { ServerStyleSheet } from "styled-components";
+import Logo from "../components/logo";
 
 export default class MyDocument extends Document {
   static async getInitialProps(ctx) {
@@ -65,6 +66,7 @@ export default class MyDocument extends Document {
           />
         </Head>
         <body>
+          <Logo />
           <Main />
           <NextScript />
         </body>

@@ -53,11 +53,8 @@ export const TYPEUNITS = {
 
 export const TYPESTYLES = {
   small: `
-      ${getFontSize(-1, TYPEFACES.cheee)}
-      font-family: var(--font-family-sans);
-      font-weight: var(--font-weight-bold);
-      font-feature-settings: "c2sc" 1, "smcp" 1;
-      font-variant: all-small-caps;
+      ${getFontSize(0, TYPEFACES.cheee)}
+      font-family: var(--font-family-mono);
       text-transform: uppercase;
       letter-spacing: var(--letter-spacing);
       --line-height: 1.575;
