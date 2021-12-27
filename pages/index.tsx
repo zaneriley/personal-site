@@ -1,9 +1,10 @@
 import Link from "next/link";
 import {H1} from "../components/typography";
+import React from "react";
 
 export default function Home() {
   return (
-    <div>
+    <React.Fragment>
       <main>
         <H1>
           Zane Riley is a senior product designer focusing on tackling problems
@@ -22,8 +23,7 @@ export default function Home() {
           <a>Improving an ecommerce flow</a>
         </Link>
       </main>
-
       <footer />
-    </div>
+    </React.Fragment>
   );
 }

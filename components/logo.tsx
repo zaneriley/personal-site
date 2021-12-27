@@ -1,6 +1,4 @@
-import React from "react";
-import Link from "next/link";
-import styled from "styled-components";
+import React, { Fragment } from "react";
 import { COLORS } from "../utils/css-variables";
 
 const Kana = () => (
@@ -97,13 +95,14 @@ const Alphabet = () => (
 );
 
 class Logo extends React.Component {
+
     randomize(logoRandomizer) {
         return logoRandomizer[Math.floor(Math.random() * logoRandomizer.length)];
     }
 
     render() {
-      var logoarray = [<Kana />, <Signature />, <Alphabet />];
-      return <Link href="/">{this.randomize(logoarray)}</Link>;
+      const logoarray = [<Kana />, <Signature />, <Alphabet />];
+      return <React.Fragment>{this.randomize(logoarray)}</React.Fragment>;
     }
 };
 

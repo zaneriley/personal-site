@@ -1,17 +1,16 @@
 import Link from "next/Link";
 import {H1,P, Cheee} from "../../components/typography";
-import Logo from "../../components/logo";
+import {Grid} from "../../components/grid";
 
 export default function BuildingCohesiveProducts() {
   return (
-    <main>
+    <Grid>
       <H1>Building cohesive products through design ops</H1>
       <h2>
         <Link href="/">
           <a>Back to home</a>
         </Link>
       </h2>
-      <
   
       <P typeface="Cheee">
         <Cheee>NerdWallet</Cheee> wanted to grow from giving financial advice to helping people manage their finances, and 
@@ -51,8 +50,7 @@ export default function BuildingCohesiveProducts() {
         
         [diagram showing fixing 1000 buttons at once vs 3–6 teams implementing different but similar looking buttons] (In a larger enterprise, there might be more of an expectation that designers understand the system) For NerdWallet, the design system needed to be as user-friendly as the products it was building, and the DS had to win on its own merit, not simply from an executive mandate. Nearly everyone that’s ever worked on a platform, horizontal team, or design system will acknowledge that their users aren’t necessarily the “end-user”. Rather, their colleagues are the people using it. When presenting to leadership, however, this fact often gets deemphasized to instead talk about “end-user” impact. Sure, and to be clear, that’s what matters. But it obfuscates and discourages a different form of prioritization, which is one focused on the team. One of the most interesting gains from this flip was that it limited the impact of the “bad cop” scenario that can play out with style guide “standards.” A horizontal team needs to reign in another’s team contribution, but either doesn’t have the rappor or is interrupting the other team’s product cycle. This pattern worsens relationships and negatively impacts both teams velocity. So instead, we worked with both designers and engineers to make adoption just as important as the developed standards. As an example, when developing the typographic and grid systems (more on that here), I built a sketch plugin that would allow you to quickly use and hide/show units of space. These can not only help less visually-focused designers quickly build attractive layouts, and allows engineers to see the primitives needed to implement them in code.
       </P>
-      </article>
 
-    </main>
+    </Grid>
   );
 }
