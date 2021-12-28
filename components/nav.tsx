@@ -6,7 +6,7 @@ import Logo from "./logo";
 class Nav extends React.Component {
 
   render() {
-    return <Grid><Link href="/"><a><Logo /></a></Link></Grid>;
+    return <Grid><Link href="/"><a><Logo logo={this.props.logo}/></a></Link></Grid>;
   }
 };
 

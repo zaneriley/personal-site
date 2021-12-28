@@ -1,4 +1,5 @@
 import React, { Fragment } from "react";
+import styled from "styled-components";
 import { COLORS } from "../utils/css-variables";
 
 const Kana = () => (
@@ -94,27 +95,26 @@ const Alphabet = () => (
   </svg>
 );
 
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+`;
+
 class Logo extends React.Component {
-  constructor(props) {
-    super(props)
+  logoDict = {
+    'kana': <Kana />,
+    'signature': <Signature />,
+    'alphabet': <Alphabet />
+  };
 
-    this.state = {
-      logos: ['hey', 'yo', 'sup'],
-      currentLogo: null,
-    }
+  getLogo(logoString) {
+    return this.logoDict[logoString]
   }
-
-  componentDidMount() {
-    let logoset = new Set(this.state.logos);
-    logoset.delete(this.state.currentLogo);
   
-    this.setState({
-      currentLogo: Array.from(logoset)[Math.floor(Math.random() * logoset.size)]
-    })
-  }
-
   render() {
-    return <React.Fragment>{this.state.currentLogo}</React.Fragment>;
+    return <LogoContainer>{this.getLogo(this.props.logo)}</LogoContainer>;
   }
 };
 
