@@ -32,10 +32,6 @@ I chose this tech stack almost entirely because I wanted to build something with
 - [Docker](https://www.docker.com/): For containerization and ensuring consistent development and production environments.
 - [GitHub Actions](https://github.com/features/actions): For CI/CD pipelines and automated deployment processes.
 
-## Local Development
-
-[Provide instructions on how to set up the portfolio project locally, including any prerequisites like Docker, Elixir, etc.]
-
 ## Acknowledgements
 
 A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio. 
