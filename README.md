@@ -4,9 +4,9 @@ This repository houses my product design portfolio, showcasing various projects 
 
 ## Portfolio Overview
 
-Extremely product-focussed designer with 10+ years of experience based in Tokyo, Japan. 
+Extremely product-focused designer with 10+ years of experience based in Tokyo, Japan. 
 
-The products I am most proud of help beyond the screen. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them. 
+Focused on building things that help people beyond the screen. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them. 
 
 ## Features
 
@@ -39,14 +39,3 @@ I chose this tech stack almost entirely because I wanted to build something with
 ## Acknowledgements
 
 A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio. 
-
-## About Me
-
-Introduce yourself briefly, your background, and your passion for product design. You can also include links to your social media or professional profiles (LinkedIn, Twitter, etc.).
-
-[Your Name] - [Your Website/LinkedIn/Twitter]
-
----
-
-[Feel free to include any other sections that are relevant to your portfolio, like 'Contact', 'Latest Projects', 'Design Philosophy', etc.]
-
