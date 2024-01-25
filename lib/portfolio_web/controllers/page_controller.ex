@@ -9,7 +9,7 @@ defmodule PortfolioWeb.PageController do
 
     conn
     |> assign(:page_title, gettext("Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"))
-    |> assign(:page_description, "A concise description of the home page")
+    |> assign(:page_description, gettext("Zane Riley is a experienced Product Designer based in Tokyo, with 10+ years of experience in a variety of industries including healthcare, finance, and more. Product-focused, Zane brings a strong technical background to the table, building products that help people beyond the screen."))
     |> render(:home,
       run_mode: run_mode,
       phoenix_ver: Application.spec(:phoenix, :vsn),

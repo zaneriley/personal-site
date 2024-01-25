@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <.live_title><%= assigns[:page_title] || "Docker + Phoenix" %></.live_title>
+    <.live_title><%= assigns[:page_title] || "Zane Riley's Product Design Portfolio" %></.live_title>
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <meta
-      name="description"
-      content="A production ready example Phoenix app that's using Docker and Docker Compose."
-    />
+    <meta name="description" content={assigns[:page_description] || 'Zane Riley is a seasoned product designer based in Tokyo, Japan'} />
 
     <link phx-track-static rel="stylesheet" href={url(~p"/css/app.css")} />
     <script

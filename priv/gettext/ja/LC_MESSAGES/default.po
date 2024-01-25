@@ -1,6 +1,9 @@
 msgid "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
 msgstr "ゼイン・ライリー：東京での10年以上の経験を持つUXデザインのエキスパート "
 
+msgid "Zane Riley is a experienced Product Designer based in Tokyo, with 10+ years of experience in a variety of industries including healthcare, finance, and more. Product-focused, Zane brings a strong technical background to the table, building products that help people beyond the screen."
+msgstr "ゼイン・ライリーは、東京を拠点とする経験豊富なプロダクトデザイナーです。医療、金融など多岐にわたる業界で10年以上の経験を持ち、プロダクトに焦点を当てたアプローチで、テクニカルなバックグラウンドを活かし、画面を超えて人々の役に立つ製品を創出します。"
+
 msgid "Product designer helping people beyond the screen"
 msgstr "画面を超えて人々を支援するプロダクトデザイナー"
 
