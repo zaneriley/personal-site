@@ -1,0 +1,11 @@
+msgid "Product designer helping people beyond the screen"
+msgstr "画面を超えて人々を支援するプロダクトデザイナー"
+
+msgid "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
+msgstr "東京を拠点に10年以上の経験を持つ。人々の生活を豊かにする製品を創造することを信じています。私の究極の目標は、人々が望む未来を形作るのを助けるものを作ることです、彼らに押し付けられた未来ではありません。"
+
+msgid "currently at google Helping people make informed healthcare choices and access care when they need it."
+msgstr "現在、グーグルで人々が情報に基づいた医療選択をし、必要なときにケアを受けられるよう支援しています。"
+
+msgid "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on Github. Remix freely in Figma."
+msgstr "東京の自宅ラボで自己ホスティング。フォントはGT Flexa、Meno、CHEEE、秀英、そしてTemeraireを使用。Githubでオープンソース。Figmaで自由にリミックスしてください。"
