@@ -1,11 +1,26 @@
+msgid "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
+msgstr "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
+
 msgid "Product designer helping people beyond the screen"
 msgstr "Product designer helping people beyond the screen"
 
 msgid "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
 msgstr "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
 
-msgid "currently at google Helping people make informed healthcare choices and access care when they need it."
-msgstr "currently at google Helping people make informed healthcare choices and access care when they need it."
+msgid "Helping people make informed healthcare choices and access care when they need it."
+msgstr "Helping people make informed healthcare choices and access care when they need it."
 
-msgid "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on Github. Remix freely in Figma."
-msgstr "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on Github. Remix freely in Figma."
+msgid "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on %{github_link}. Remix freely in %{figma_link}."
+msgstr "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on <a href='https://github.com/zaneriley/personal-site' target='_blank' rel='noopener noreferrer'>Github</a>. Remix freely in <a href='https://www.figma.com/file/zDOcBhnjTDCWmc6OFgeoUc/Portfolio-2021?node-id=463%3A4165' target='_blank' rel='noopener noreferrer'>Figma</a>."
+
+msgid "Change language"
+msgstr "Change language"
+
+msgid "English"
+msgstr "English"
+
+msgid "Japanese"
+msgstr "日本語"
+
+msgid "Colophon"
+msgstr "Colophon"

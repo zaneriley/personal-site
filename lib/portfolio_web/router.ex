@@ -32,8 +32,9 @@ defmodule PortfolioWeb.Router do
     get "/", PageController, :home
     get "/up/", UpController, :index
     get "/up/databases", UpController, :databases
-    # ... other routes
   end
+
+
 
   # Enables LiveDashboard only for development.
   #

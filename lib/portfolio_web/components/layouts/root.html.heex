@@ -19,17 +19,37 @@
       src={url(~p"/js/app.js")}
     />
 
+    <!-- Favicon and touch icons -->
     <link
       rel="apple-touch-icon"
       sizes="180x180"
       href={url(~p"/apple-touch-icon.png")}
     />
     <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href={url(~p"/favicon-32x32.png")}
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href={url(~p"/favicon-16x16.png")}
+    />
+    <link
       rel="mask-icon"
       href={url(~p"/safari-pinned-tab.svg")}
-      color="#384051"
+      color="#597099"
     />
-    <link rel="manifest" href={url(~p"/manifest.json")} />
+    <link
+      rel="manifest"
+      href={url(~p"/site.webmanifest")}
+    />
+
+    <!-- Color definitions -->
+    <meta name="msapplication-TileColor" content="#2b5797" />
+    <meta name="theme-color" content="#343334" />
   </head>
   <body class="flex flex-col h-screen justify-between">
     <div class="bg-gray-700">
@@ -43,6 +63,15 @@
               Phoenix <%= @phoenix_ver %> and Elixir <%= @elixir_ver %>
             </p>
           </div>
+          <div role="region" aria-label="{gettext('Language Switcher')}">
+            <input type="checkbox" id="lang-toggle" hidden aria-hidden="true" />
+            <label for="lang-toggle"  aria-hidden="true">
+              <span aria-label="{ gettext('English')}">English</span>
+              <span aria-label="{ gettext('Japanese')}">日本語</span>
+              <div class="toggle-switch"></div>
+            </label>
+          </div>
+
           <div class="mt-2 order-3 w-full sm:mt-0 sm:w-auto">
             <div class="rounded-md shadow-sm">
               <span class="flex items-center justify-center px-4 py-2 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-gray-500">
@@ -58,21 +87,16 @@
       <%= @inner_content %>
     </main>
 
-    <footer class="text-center mt-6 pb-6 h-10">
-      <p class="text-gray-500">
-        <a
-          class="border-b mb-1"
-          href="https://github.com/nickjj/docker-phoenix-example"
-        >
-          Coded
-        </a>
-        with
-        <Heroicons.heart class="h-5 w-5 text-red-600 inline" stroke-width="2" />
-        by
-        <a class="border-b mb-1" href="https://nickjanetakis.com">
-          Nick Janetakis
-        </a>
-      </p>
+    <footer class="bg-black text-white text-center py-10 px-5">
+        <div class="max-w-lg mx-auto">
+            <h2 class="text-xl font-semibold uppercase tracking-widest mb-4">
+                <%= gettext("Colophon") %>
+            </h2>
+            <p class="mb-4">
+                © <%= gettext("2011 – 2022") %>
+            </p>
+        </div>
     </footer>
+
   </body>
 </html>

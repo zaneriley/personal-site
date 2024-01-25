@@ -1,3 +1,6 @@
+msgid "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
+msgstr "ゼイン・ライリー：東京での10年以上の経験を持つUXデザインのエキスパート "
+
 msgid "Product designer helping people beyond the screen"
 msgstr "画面を超えて人々を支援するプロダクトデザイナー"
 
@@ -6,6 +9,18 @@ msgstr "東京を拠点に10年以上の経験を持つ。人々の生活を豊�
 
 msgid "currently at google Helping people make informed healthcare choices and access care when they need it."
 msgstr "現在、グーグルで人々が情報に基づいた医療選択をし、必要なときにケアを受けられるよう支援しています。"
+
+msgid "Language Switcher"
+msgstr "言語切替"
+
+msgid "English"
+msgstr "English"
+
+msgid "Japanese"
+msgstr "日本語"
+
+msgid "Colophon"
+msgstr "奥付"
 
 msgid "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on Github. Remix freely in Figma."
 msgstr "東京の自宅ラボで自己ホスティング。フォントはGT Flexa、Meno、CHEEE、秀英、そしてTemeraireを使用。Githubでオープンソース。Figmaで自由にリミックスしてください。"
