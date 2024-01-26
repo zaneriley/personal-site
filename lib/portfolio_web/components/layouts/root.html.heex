@@ -47,6 +47,22 @@
     <!-- Color definitions -->
     <meta name="msapplication-TileColor" content="#2b5797" />
     <meta name="theme-color" content="#343334" />
+
+    <!-- Dynamic Schema Markup -->
+    <%= if assigns[:person_schema] do %>
+      <script type="application/ld+json">
+        <%= Jason.encode!(assigns[:person_schema]) %>
+      </script>
+    <% end %>
+
+    <!-- Dynamic OG Meta -->
+    <%= if assigns[:og_meta] do %>
+      <meta property="og:title" content={ assigns[:og_meta][:title]} />
+      <meta property="og:type" content={ assigns[:og_meta][:type]} />
+      <meta property="og:image" content={ assigns[:og_meta][:image]} />
+      <meta property="og:description" content={ assigns[:og_meta][:description]} />
+    <% end %>
+
   </head>
   <body class="flex flex-col h-screen justify-between">
     <div class="bg-gray-700">
