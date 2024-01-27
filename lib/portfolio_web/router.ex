@@ -32,8 +32,15 @@ defmodule PortfolioWeb.Router do
     get "/", PageController, :home
     get "/up/", UpController, :index
     get "/up/databases", UpController, :databases
+
   end
 
+  # Catch-all route for unmatched paths
+  scope "/", PortfolioWeb do
+    pipe_through :browser
+
+    get "/*path", ErrorController, :render_404
+  end
 
 
   # Enables LiveDashboard only for development.
