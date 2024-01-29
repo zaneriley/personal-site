@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.Router do
   use PortfolioWeb, :router
   alias PortfolioWeb.Plugs.SetLocale
+  alias PortfolioWeb.Plugs.CommonMetadata
 
   pipeline :locale do
     plug SetLocale
@@ -13,6 +14,8 @@ defmodule PortfolioWeb.Router do
     plug :put_root_layout, {PortfolioWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug PortfolioWeb.Plugs.SetLocale
+    plug PortfolioWeb.Plugs.CommonMetadata
   end
 
   pipeline :api do
@@ -22,7 +25,6 @@ defmodule PortfolioWeb.Router do
   scope "/", PortfolioWeb do
     pipe_through :browser
 
-    # Handling root domain requests
     get "/", PageController, :root
   end
 
@@ -30,6 +32,7 @@ defmodule PortfolioWeb.Router do
     pipe_through [:browser, :locale]
 
     get "/", PageController, :home
+    get "/case-study/:url", CaseStudyController, :show
     get "/up/", UpController, :index
     get "/up/databases", UpController, :databases
 
@@ -38,8 +41,6 @@ defmodule PortfolioWeb.Router do
   # Catch-all route for unmatched paths
   scope "/", PortfolioWeb do
     pipe_through :browser
-
-    get "/*path", ErrorController, :render_404
   end
 
 

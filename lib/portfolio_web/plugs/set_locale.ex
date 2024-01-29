@@ -1,23 +1,14 @@
 defmodule PortfolioWeb.Plugs.SetLocale do
   import Phoenix.Controller, only: [redirect: 2]
   import Plug.Conn
-  import PortfolioWeb.Gettext
   alias PortfolioWeb, as: PW
   require Logger
 
   @supported_locales ["en", "ja"] # Define your supported locales
+  def supported_locales, do: @supported_locales
+
   @default_locale "en"
   @static_paths PW.static_paths()
-
-
-
-  # Add a structured logging function
-  defp log(level, message, metadata \\ %{}) do
-    Logger.log(level, fn ->
-      Map.put(metadata, :message, message)
-      |> Jason.encode!() # Ensure you have the Jason library as a dependency
-    end)
-  end
 
   def init(default), do: default
 
@@ -26,16 +17,13 @@ defmodule PortfolioWeb.Plugs.SetLocale do
       path: conn.request_path,
       action: "Determining if static asset or locale"
     })
+
     if is_static_asset?(conn.request_path) do
       Logger.debug("Static asset request bypassing locale processing", %{path: conn.request_path})
       conn
     else
       {locale_from_url, remaining_path} = extract_locale_from_path(conn.request_path)
 
-      # # Handle root path ("/") and redirect to default locale if needed
-      # if remaining_path == "" do
-      #   remaining_path = "/"
-      # end
 
       user_locale =
         cond do
@@ -44,7 +32,6 @@ defmodule PortfolioWeb.Plugs.SetLocale do
           get_preferred_language(conn) in @supported_locales -> get_preferred_language(conn)
           true -> @default_locale
         end
-
       Logger.debug("SetLocale: Detected user_locale", %{
         user_locale: user_locale,
         path: conn.request_path
@@ -61,7 +48,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
           detected_locale: user_locale,
           locale_from_url: locale_from_url
         })
-        conn = conn |> put_session("user_locale", user_locale)
+        _conn = conn |> put_session("user_locale", user_locale)
       else
         # If the locale is supported, check if we need to redirect (for example, if the locale was detected from the session or headers)
         if locale_from_url != user_locale do
@@ -71,7 +58,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
             to_path: redirect_path,
             reason: "Locale change detected"
           })
-          conn = conn
+          _conn = conn
             |> put_session("user_locale", user_locale)
             |> redirect(to: redirect_path)
           halt(conn)
@@ -84,6 +71,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
       })
       conn
       |> put_session("user_locale", user_locale)
+      |> assign(:supported_locales, @supported_locales)
     end
   end
 
@@ -134,4 +122,5 @@ defmodule PortfolioWeb.Plugs.SetLocale do
 
     Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PortfolioWeb.Gettext)}")
   end
+
 end

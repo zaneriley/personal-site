@@ -1,4 +1,3 @@
-
 defmodule PortfolioWeb.SchemaMarkup do
   @moduledoc """
   Module for generating schema markup data.

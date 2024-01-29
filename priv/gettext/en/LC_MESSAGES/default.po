@@ -1,3 +1,9 @@
+msgid "Zane Riley"
+msgstr "Zane Riley"
+
+msgid "Zane Riley | Product Design Portfolio"
+msgstr "Zane Riley | Product Design Portfolio"
+
 msgid "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
 msgstr "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
 

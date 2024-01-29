@@ -1,3 +1,9 @@
+msgid "Zane Riley"
+msgstr "ゼイン・ライリーy"
+
+msgid "Zane Riley | Product Design Portfolio"
+msgstr "ゼイン・ライリー | プロダクトデザインポートフォリオ"
+
 msgid "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
 msgstr "ゼイン・ライリー：東京での10年以上の経験を持つUXデザインのエキスパート "
 
