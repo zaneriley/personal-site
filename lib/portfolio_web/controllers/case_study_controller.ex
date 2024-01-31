@@ -1,6 +1,5 @@
 defmodule PortfolioWeb.CaseStudyController do
   use PortfolioWeb, :controller
-  alias PortfolioWeb.Gettext
   alias Portfolio.Content
   require Logger
 

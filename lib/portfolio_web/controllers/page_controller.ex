@@ -1,10 +1,7 @@
 defmodule PortfolioWeb.PageController do
   use PortfolioWeb, :controller
   require Logger
-
-  alias PortfolioWeb.Plugs.SetLocale
   alias Portfolio.Content
-  alias PortfolioWeb.UrlHelper
 
 
   def home(conn, params) do

@@ -3,7 +3,8 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   import Phoenix.Controller, only: [redirect: 2]
   require Logger
 
-  @supported_locales Application.compile_env(:portfolio, :supported_locales, ["en", "ja"])
+  @supported_locales Application.compile_env(:portfolio, :supported_locales)
+  @default_locale Application.compile_env(:portfolio, :default_locale)
 
   def init(default), do: default
 
@@ -29,10 +30,6 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
         |> redirect(to: redirect_path)
         |> halt()
     end
-  end
-
-  defp should_redirect?(request_path, locale_from_url, user_locale) do
-    request_path == "/" and (locale_from_url not in @supported_locales or locale_from_url == "")
   end
 
   defp determine_redirect_path(request_path, user_locale, _remaining_path) do

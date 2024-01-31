@@ -1,11 +1,10 @@
 defmodule PortfolioWeb.Plugs.SetLocale do
   import Plug.Conn
-  import Phoenix.Controller, only: [redirect: 2]
   alias PortfolioWeb, as: PW
   require Logger
 
-  @supported_locales Application.compile_env(:portfolio, :supported_locales, ["en", "ja"])
-  @default_locale "en"
+  @supported_locales Application.compile_env!(:portfolio, :supported_locales)
+  @default_locale Application.compile_env(:portfolio, :default_locale)
   @static_paths PW.static_paths()
 
   def init(default), do: default
