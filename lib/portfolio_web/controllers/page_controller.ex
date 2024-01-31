@@ -26,7 +26,6 @@ defmodule PortfolioWeb.PageController do
     |> assign(:page_description, gettext("Zane Riley is a experienced Product Designer based in Tokyo, with 10+ years of experience in a variety of industries including healthcare, finance, and more. Product-focused, Zane brings a strong technical background to the table, building products that help people beyond the screen."))
     |> assign(:current_year, current_year)
     |> assign(:case_studies, case_studies)
-    |> assign(:supported_locales, conn.assigns.supported_locales)
     |> render(:home,
       run_mode: run_mode,
       phoenix_ver: Application.spec(:phoenix, :vsn),
