@@ -19,7 +19,7 @@ defmodule PortfolioWeb.PageController do
 
     {date, _time} = :calendar.local_time()
     {current_year, _month, _day} = date
-    Logger.debug("Case Studies: #{inspect(case_studies)}")
+    # Logger.debug("Case Studies: #{inspect(case_studies)}")
 
     conn
     |> assign(:page_title, gettext("Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"))

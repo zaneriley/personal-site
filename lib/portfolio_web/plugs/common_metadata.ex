@@ -1,8 +1,6 @@
 defmodule PortfolioWeb.Plugs.CommonMetadata do
   import Plug.Conn
 
-  alias PortfolioWeb.Plugs.SetLocale
-
   def init(opts), do: opts
 
   def call(conn, _opts) do
@@ -11,6 +9,5 @@ defmodule PortfolioWeb.Plugs.CommonMetadata do
 
     conn
     |> assign(:current_year, current_year)
-    |> assign(:supported_locales, SetLocale.supported_locales())
   end
 end

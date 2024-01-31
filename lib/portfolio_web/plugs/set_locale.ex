@@ -1,89 +1,46 @@
 defmodule PortfolioWeb.Plugs.SetLocale do
-  import Phoenix.Controller, only: [redirect: 2]
   import Plug.Conn
+  import Phoenix.Controller, only: [redirect: 2]
   alias PortfolioWeb, as: PW
   require Logger
 
-  @supported_locales ["en", "ja"] # Define your supported locales
-  def supported_locales, do: @supported_locales
-
+  @supported_locales Application.compile_env(:portfolio, :supported_locales, ["en", "ja"])
   @default_locale "en"
   @static_paths PW.static_paths()
 
   def init(default), do: default
 
   def call(conn, _default) do
-    Logger.debug("SetLocale: Processing request", %{
-      path: conn.request_path,
-      action: "Determining if static asset or locale"
-    })
-
     if is_static_asset?(conn.request_path) do
-      Logger.debug("Static asset request bypassing locale processing", %{path: conn.request_path})
       conn
     else
-      {locale_from_url, remaining_path} = extract_locale_from_path(conn.request_path)
-
-      user_locale =
-        cond do
-          locale_from_url in @supported_locales -> locale_from_url
-          get_session(conn, "user_locale") -> get_session(conn, "user_locale")
-          get_preferred_language(conn) in @supported_locales -> get_preferred_language(conn)
-          true -> @default_locale
-        end
-      Logger.debug("SetLocale: Detected user_locale", %{
-        user_locale: user_locale,
-        path: conn.request_path
-      })
-
-      set_gettext_locale(user_locale)
-
-      if conn.request_path == "/" do
-        # If the request path is the root path, redirect to the user's locale
-        redirect_path = "/#{user_locale}/"
-        Logger.info("SetLocale: Root path redirect", %{
-          from_path: conn.request_path,
-          to_path: redirect_path,
-          reason: "Root path visited"
-        })
-        conn
-        |> put_session("user_locale", user_locale)
-        |> redirect(to: redirect_path)
-        |> halt()
-      else
-        # Redirect if the locale from the URL is unsupported or not present
-        if locale_from_url not in @supported_locales do
-          Logger.debug("SetLocale: Path is not a recognized locale, passing through", %{
-            path: conn.request_path,
-            detected_locale: user_locale,
-            locale_from_url: locale_from_url
-          })
-          conn = conn |> put_session("user_locale", user_locale)
-        else
-          if locale_from_url != user_locale do
-            redirect_path = "/#{user_locale}#{remaining_path}"
-            Logger.info("SetLocale: Locale redirect", %{
-              from_path: conn.request_path,
-              to_path: redirect_path,
-              reason: "Locale change detected"
-            })
-            conn = conn
-              |> put_session("user_locale", user_locale)
-              |> redirect(to: redirect_path)
-            halt(conn)
-          end
-        end
-        # Log the locale setting action
-        Logger.debug("SetLocale: Locale set", %{
-          locale: user_locale,
-          path: conn.request_path
-        })
-        conn
-        |> put_session("user_locale", user_locale)
-        |> assign(:user_locale, user_locale)
-        |> assign(:supported_locales, @supported_locales)
-      end
+      locale_data = extract_locale(conn)
+      set_locale(conn, locale_data)
     end
+  end
+
+
+  defp extract_locale(conn) do
+    {locale_from_url, remaining_path} = extract_locale_from_path(conn.request_path)
+    accept_language = get_preferred_language(conn)
+    Logger.debug("Accept-Language header: #{accept_language}")
+    user_locale =
+      cond do
+        locale_from_url in @supported_locales -> locale_from_url
+        get_session(conn, "user_locale") -> get_session(conn, "user_locale")
+        accept_language in @supported_locales -> accept_language
+        true -> @default_locale
+      end
+    {user_locale, remaining_path}
+  end
+
+  defp set_locale(conn, {user_locale, _remaining_path}) do
+    Gettext.put_locale(PW.Gettext, user_locale)
+    Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PW.Gettext)}")
+    conn
+    |> put_session("user_locale", user_locale)
+    |> assign(:user_locale, user_locale)
+    |> assign(:supported_locales, @supported_locales)
   end
 
   defp is_static_asset?(path) do
@@ -91,6 +48,18 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     |> Enum.any?(fn static_path ->
         Regex.match?(~r/^\/#{static_path}.*\.(png|jpg|jpeg|svg|ico)$/, path)
     end)
+  end
+
+  defp extract_locale_from_path(path) do
+    [_, possible_locale | remaining_parts] = String.split(path, "/")
+    {possible_locale, "/" <> Enum.join(remaining_parts, "/")}
+  end
+
+  defp get_preferred_language(conn) do
+    conn
+    |> get_req_header("accept-language")
+    |> List.first()
+    |> parse_accept_language_header()
   end
 
   defp parse_accept_language_header(header) do
@@ -104,34 +73,10 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   end
 
   defp handle_language_subtags(language_tag) do
-    case String.split(language_tag, "-") do
-      ["en" | _] -> "en"
-      ["ja" | _] -> "ja"
+    language_primary_tag = String.split(language_tag, "-") |> List.first()
+    case language_primary_tag do
+      tag when tag in @supported_locales -> tag
       _ -> @default_locale
     end
   end
-
-  defp get_preferred_language(conn) do
-    conn
-    |> Plug.Conn.get_req_header("accept-language")
-    |> List.first()
-    |> parse_accept_language_header()
-  end
-
-  defp extract_locale_from_path(path) do
-    [_, possible_locale | remaining_parts] = String.split(path, "/")
-    {possible_locale, "/" <> Enum.join(remaining_parts, "/")}
-  end
-
-  defp set_gettext_locale(locale) do
-    case locale do
-      "en" -> Gettext.put_locale(PW.Gettext, "en")
-      "ja" -> Gettext.put_locale(PW.Gettext, "ja")
-      _    -> Gettext.put_locale(PW.Gettext, @default_locale)
-    end
-
-    Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PW.Gettext)}")
-  end
-
-  # Other private helper functions below...
 end

@@ -1,10 +1,15 @@
 defmodule PortfolioWeb.Router do
   use PortfolioWeb, :router
   alias PortfolioWeb.Plugs.SetLocale
+  alias PortfolioWeb.Plugs.LocaleRedirection
   alias PortfolioWeb.Plugs.CommonMetadata
 
   pipeline :locale do
     plug SetLocale
+  end
+
+  pipeline :locale_redirection do
+    plug LocaleRedirection
   end
 
   pipeline :browser do
@@ -14,7 +19,7 @@ defmodule PortfolioWeb.Router do
     plug :put_root_layout, {PortfolioWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug PortfolioWeb.Plugs.CommonMetadata
+    plug CommonMetadata
   end
 
   pipeline :api do
@@ -22,13 +27,13 @@ defmodule PortfolioWeb.Router do
   end
 
   scope "/", PortfolioWeb do
-    pipe_through [:browser, :locale]
+    pipe_through [:browser, :locale, :locale_redirection]
 
     get "/", PageController, :root
   end
 
   scope "/:locale", PortfolioWeb do
-    pipe_through [:browser, :locale]
+    pipe_through [:browser, :locale, :locale_redirection]
 
     get "/", PageController, :home
     get "/case-study/:url", CaseStudyController, :show
