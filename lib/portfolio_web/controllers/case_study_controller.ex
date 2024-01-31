@@ -7,11 +7,9 @@ defmodule PortfolioWeb.CaseStudyController do
   def show(conn, %{"url" => url}) do
     Logger.info("Starting show action in CaseStudyController for URL: #{url}")
 
-    # Get the current locale from the connection assigns
-    locale = conn.assigns.user_locale || "en" # Default to "en" if not set
 
     # Use the correct function from the Content context module
-    {case_study, translations} = Content.get_content_with_translations(:case_study, url, locale)
+    {case_study, translations} = Content.get_content_with_translations(:case_study, url, conn.assigns.user_locale)
 
     case case_study do
       nil ->
