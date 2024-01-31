@@ -8,6 +8,7 @@ Extremely product-focused designer with 10+ years of experience based in Tokyo, 
 
 Focused on building things that help people beyond the screen. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them. 
 
+
 ## Features
 
 Still a WIP, but I hope to self-host this on my homelab here in Tokyo. Possibly on solar power and porting in self-reported weather data. Dunno if I can do it, and it's massive scope for a portfolio, but let's try it anyway.
@@ -35,3 +36,9 @@ I chose this tech stack almost entirely because I wanted to build something with
 ## Acknowledgements
 
 A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio. 
+
+## Previous portfolios
+- 2024 – Present: Built using Elixir, Phoenix, and Tailwind.
+- 2016 – 2024: Built using React, NextJS, and Styled-Components. [Code available here](https://github.com/zaneriley/personal-site/tree/Portfolio).
+- 2014 – 2016: Built using Vanilla JS. [View on Wayback Machine](https://web.archive.org/web/20150711234633/http://zaneriley.com/).
+- 2010: Built using Flash. RIP.
