@@ -24,7 +24,6 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     else
       {locale_from_url, remaining_path} = extract_locale_from_path(conn.request_path)
 
-
       user_locale =
         cond do
           locale_from_url in @supported_locales -> locale_from_url
@@ -39,40 +38,51 @@ defmodule PortfolioWeb.Plugs.SetLocale do
 
       set_gettext_locale(user_locale)
 
-      # Redirect if the locale from the URL is unsupported or not present
-      # If the first path segment is not a supported locale, pass through the connection
-      # This allows the router to handle the path and potentially return a 404
-      if locale_from_url not in @supported_locales do
-        Logger.debug("SetLocale: Path is not a recognized locale, passing through", %{
-          path: conn.request_path,
-          detected_locale: user_locale,
-          locale_from_url: locale_from_url
+      if conn.request_path == "/" do
+        # If the request path is the root path, redirect to the user's locale
+        redirect_path = "/#{user_locale}/"
+        Logger.info("SetLocale: Root path redirect", %{
+          from_path: conn.request_path,
+          to_path: redirect_path,
+          reason: "Root path visited"
         })
-        _conn = conn |> put_session("user_locale", user_locale)
+        conn
+        |> put_session("user_locale", user_locale)
+        |> redirect(to: redirect_path)
+        |> halt()
       else
-        # If the locale is supported, check if we need to redirect (for example, if the locale was detected from the session or headers)
-        if locale_from_url != user_locale do
-          redirect_path = "/#{user_locale}#{remaining_path}"
-          Logger.info("SetLocale: Locale redirect", %{
-            from_path: conn.request_path,
-            to_path: redirect_path,
-            reason: "Locale change detected"
+        # Redirect if the locale from the URL is unsupported or not present
+        if locale_from_url not in @supported_locales do
+          Logger.debug("SetLocale: Path is not a recognized locale, passing through", %{
+            path: conn.request_path,
+            detected_locale: user_locale,
+            locale_from_url: locale_from_url
           })
-          _conn = conn
-            |> put_session("user_locale", user_locale)
-            |> redirect(to: redirect_path)
-          halt(conn)
+          conn = conn |> put_session("user_locale", user_locale)
+        else
+          if locale_from_url != user_locale do
+            redirect_path = "/#{user_locale}#{remaining_path}"
+            Logger.info("SetLocale: Locale redirect", %{
+              from_path: conn.request_path,
+              to_path: redirect_path,
+              reason: "Locale change detected"
+            })
+            conn = conn
+              |> put_session("user_locale", user_locale)
+              |> redirect(to: redirect_path)
+            halt(conn)
+          end
         end
+        # Log the locale setting action
+        Logger.debug("SetLocale: Locale set", %{
+          locale: user_locale,
+          path: conn.request_path
+        })
+        conn
+        |> put_session("user_locale", user_locale)
+        |> assign(:user_locale, user_locale)
+        |> assign(:supported_locales, @supported_locales)
       end
-      # Log the locale setting action
-      Logger.debug("SetLocale:  Locale set", %{
-        locale: user_locale,
-        path: conn.request_path
-      })
-      conn
-      |> put_session("user_locale", user_locale)
-      |> assign(:user_locale, user_locale)
-      |> assign(:supported_locales, @supported_locales)
     end
   end
 
@@ -82,7 +92,6 @@ defmodule PortfolioWeb.Plugs.SetLocale do
         Regex.match?(~r/^\/#{static_path}.*\.(png|jpg|jpeg|svg|ico)$/, path)
     end)
   end
-
 
   defp parse_accept_language_header(header) do
     header
@@ -116,12 +125,13 @@ defmodule PortfolioWeb.Plugs.SetLocale do
 
   defp set_gettext_locale(locale) do
     case locale do
-      "en" -> Gettext.put_locale(PortfolioWeb.Gettext, "en")
-      "ja" -> Gettext.put_locale(PortfolioWeb.Gettext, "ja") # Ensure correct mapping here
-      _    -> Gettext.put_locale(PortfolioWeb.Gettext, "en") # default or 404
+      "en" -> Gettext.put_locale(PW.Gettext, "en")
+      "ja" -> Gettext.put_locale(PW.Gettext, "ja")
+      _    -> Gettext.put_locale(PW.Gettext, @default_locale)
     end
 
-    Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PortfolioWeb.Gettext)}")
+    Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PW.Gettext)}")
   end
 
+  # Other private helper functions below...
 end

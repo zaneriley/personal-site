@@ -32,9 +32,4 @@ defmodule PortfolioWeb.PageController do
       elixir_ver: System.version()
     )
   end
-  def root(conn, _params) do
-    conn
-    |> redirect(to: "/#{conn.assigns.user_locale}/")
-    |> halt()
-  end
 end
