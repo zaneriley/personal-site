@@ -28,8 +28,10 @@ msgstr "English"
 msgid "Japanese"
 msgstr "日本語"
 
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "分"
+msgstr[1] "分"
+
 msgid "Colophon"
 msgstr "奥付"
-
-msgid "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on Github. Remix freely in Figma."
-msgstr "東京の自宅ラボで自己ホスティング。フォントはGT Flexa、Meno、CHEEE、秀英、そしてTemeraireを使用。Githubでオープンソース。Figmaで自由にリミックスしてください。"

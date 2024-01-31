@@ -71,6 +71,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
       })
       conn
       |> put_session("user_locale", user_locale)
+      |> assign(:user_locale, user_locale)
       |> assign(:supported_locales, @supported_locales)
     end
   end

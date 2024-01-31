@@ -11,6 +11,8 @@ defmodule Portfolio.CaseStudy do
     field :platforms, {:array, :string}
     field :introduction, :string
 
+    has_many :translations, Portfolio.Translation, foreign_key: :translatable_id, where: [translatable_type: "CaseStudy"]
+
     timestamps()
   end
 
