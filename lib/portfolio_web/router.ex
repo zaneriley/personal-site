@@ -14,7 +14,6 @@ defmodule PortfolioWeb.Router do
     plug :put_root_layout, {PortfolioWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug PortfolioWeb.Plugs.SetLocale
     plug PortfolioWeb.Plugs.CommonMetadata
   end
 
@@ -23,7 +22,7 @@ defmodule PortfolioWeb.Router do
   end
 
   scope "/", PortfolioWeb do
-    pipe_through :browser
+    pipe_through [:browser, :locale]
 
     get "/", PageController, :root
   end

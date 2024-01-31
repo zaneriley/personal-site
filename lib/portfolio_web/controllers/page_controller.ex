@@ -12,7 +12,6 @@ defmodule PortfolioWeb.PageController do
 
     run_mode = if System.get_env("RELEASE_NAME"), do: "release", else: "mix"
 
-    supported_locales = SetLocale.supported_locales()
 
     page_number = params["page"] || 1  # Fetch page number from query params or default to 1
     case_studies = Content.get_all_case_studies(conn.assigns.user_locale, page_number)
@@ -27,7 +26,7 @@ defmodule PortfolioWeb.PageController do
     |> assign(:page_description, gettext("Zane Riley is a experienced Product Designer based in Tokyo, with 10+ years of experience in a variety of industries including healthcare, finance, and more. Product-focused, Zane brings a strong technical background to the table, building products that help people beyond the screen."))
     |> assign(:current_year, current_year)
     |> assign(:case_studies, case_studies)
-    |> assign(:supported_locales, supported_locales)
+    |> assign(:supported_locales, conn.assigns.supported_locales)
     |> render(:home,
       run_mode: run_mode,
       phoenix_ver: Application.spec(:phoenix, :vsn),
