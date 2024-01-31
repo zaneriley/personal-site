@@ -34,13 +34,8 @@ defmodule PortfolioWeb.PageController do
     )
   end
   def root(conn, _params) do
-    # Use the user_locale from conn.assigns set by SetLocale plug
-    redirect_locale = case conn.assigns.user_locale do
-      "ja" -> "jp"
-      locale -> locale
-    end
     conn
-    |> redirect(to: "/#{redirect_locale}/")
+    |> redirect(to: "/#{conn.assigns.user_locale}/")
     |> halt()
   end
 end
