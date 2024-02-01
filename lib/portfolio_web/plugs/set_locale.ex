@@ -40,6 +40,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     |> put_session("user_locale", user_locale)
     |> assign(:user_locale, user_locale)
     |> assign(:supported_locales, @supported_locales)
+    |> put_resp_header("content-language", user_locale)
   end
 
   defp is_static_asset?(path) do
