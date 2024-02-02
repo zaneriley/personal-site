@@ -56,21 +56,28 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   end
 
   defp get_preferred_language(conn) do
-    conn
-    |> get_req_header("accept-language")
-    |> List.first()
-    |> parse_accept_language_header()
+    header = conn
+             |> get_req_header("accept-language")
+             |> List.first()
+
+    Logger.debug("Original Accept-Language header: #{inspect(header)}")
+    parse_accept_language_header(header)
   end
 
   defp parse_accept_language_header(header) do
-    header
-    |> String.split(",")
-    |> Enum.map(&String.split(&1, ";"))
-    |> List.first()
-    |> List.first()
-    |> String.downcase()
-    |> handle_language_subtags()
+    if header in [nil, ""] do
+      @default_locale
+    else
+      header
+      |> String.split(",")
+      |> Enum.map(&String.split(&1, ";"))
+      |> List.first()
+      |> List.first()
+      |> String.downcase()
+      |> handle_language_subtags()
+    end
   end
+
 
   defp handle_language_subtags(language_tag) do
     language_primary_tag = String.split(language_tag, "-") |> List.first()
