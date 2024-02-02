@@ -8,7 +8,6 @@ defmodule PortfolioWeb.PageControllerTest do
     assert redirected_to(conn) == "/en/"
   end
 
-
   test "does not set locale for static assets", %{conn: conn} do
     conn = get(conn, "/favicon.ico")
     assert conn.assigns[:user_locale] == nil
