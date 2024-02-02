@@ -50,5 +50,6 @@ defmodule Portfolio.CaseStudy do
       :platforms,
       :introduction
     ])
+    |> unique_constraint(:url)
   end
 end
