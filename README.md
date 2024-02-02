@@ -1,4 +1,7 @@
 # Zane Riley's Product Design Portfolio
+![Website](https://img.shields.io/website?url=http%3A%2F%2Fzaneriley.com&up_message=online&style=flat&label=Portfolio)
+![GitHub License](https://img.shields.io/github/license/zaneriley/personal-site)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml)
 
 This repository houses my product design portfolio, showcasing various projects and designs I've worked on. The portfolio is built using Phoenix (PETAL stack basically). The foundation of this portfolio is based on the excellent example provided by Nick Janetakis' [docker-phoenix-example](https://github.com/nickjj/docker-phoenix-example), which offers a solid starting point for Phoenix applications with Docker.
 
@@ -15,7 +18,7 @@ Still a WIP, but I hope to self-host this on my homelab here in Tokyo. Possibly 
 
 ## Tech Stack
 
-I chose this tech stack almost entirely because I wanted to build something with Elixir. 
+I thought Elixir would be fun, and with enough time I could make a transitional app!
 
 ### Back-end
 
@@ -25,8 +28,8 @@ I chose this tech stack almost entirely because I wanted to build something with
 ### Front-end
 
 - [esbuild](https://esbuild.github.io/): For an extremely fast JavaScript bundler and minifier.
-- [TailwindCSS](https://tailwindcss.com/): For utility-first CSS framework for rapidly building custom designs.
-- [Heroicons](https://heroicons.com/): For beautifully crafted SVG icons.
+- [TailwindCSS](https://tailwindcss.com/): For utility-first CSS framework.
+- [Heroicons](https://heroicons.com/): For SVG icons.
 
 ### Additional Technologies
 
@@ -41,4 +44,4 @@ A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the
 - 2024 – Present: Built using Elixir, Phoenix, and Tailwind.
 - 2016 – 2024: Built using React, NextJS, and Styled-Components. [Code available here](https://github.com/zaneriley/personal-site/tree/Portfolio).
 - 2014 – 2016: Built using Vanilla JS. [View on Wayback Machine](https://web.archive.org/web/20150711234633/http://zaneriley.com/).
-- 2010: Built using Flash. RIP.
+- 2010: Built using Flash.
