@@ -31,7 +31,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     end
   end
 
-  defp extract_locale(conn) do
+  def extract_locale(conn) do
     {locale_from_url, remaining_path} =
       extract_locale_from_path(conn.request_path)
 
@@ -68,8 +68,13 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   end
 
   defp extract_locale_from_path(path) do
+    Logger.debug("Path before extraction: #{path}")
     [_, possible_locale | remaining_parts] = String.split(path, "/")
-    {possible_locale, "/" <> Enum.join(remaining_parts, "/")}
+    Logger.debug("Possible locale: #{possible_locale}")
+    Logger.debug("Remaining parts before joining: #{inspect(remaining_parts)}")
+    remaining_path = "/" <> Enum.join(remaining_parts, "/")
+    Logger.debug("Remaining path after extraction: #{remaining_path}")
+    {possible_locale, remaining_path}
   end
 
   defp get_preferred_language(conn) do

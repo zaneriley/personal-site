@@ -15,14 +15,10 @@
           ~c"Zane Riley is a seasoned product designer based in Tokyo, Japan"
       }
     />
-    <!-- Generate a list of locales the application supports -->
-    <%= for locale <- @supported_locales do %>
-      <link
-        rel="alternate"
-        hreflang={locale}
-        href={PortfolioWeb.Router.Helpers.page_url(@conn, :home, locale)}
-      />
-    <% end %>
+     <!-- href langs -->
+    <%= hreflang_tags(@conn) %>
+
+
     <!-- Favicon and touch icons -->
     <link
       rel="apple-touch-icon"
