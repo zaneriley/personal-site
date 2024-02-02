@@ -19,5 +19,6 @@ Repo.insert!(%CaseStudy{
   timeline: "Test Timeline",
   read_time: 14,
   platforms: ["Google Search, Google Maps"],
-  introduction: "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence."
+  introduction:
+    "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence."
 })

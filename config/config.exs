@@ -10,7 +10,16 @@ config :portfolio,
   generators: [timestamp_type: :utc_datetime],
   default_locale: "en",
   supported_locales: ["en", "ja"],
-  static_asset_extensions: ["png", "jpg", "jpeg", "svg", "ico", "xml", "woff", "woff2"]
+  static_asset_extensions: [
+    "png",
+    "jpg",
+    "jpeg",
+    "svg",
+    "ico",
+    "xml",
+    "woff",
+    "woff2"
+  ]
 
 config :portfolio, PortfolioWeb.Endpoint,
   # Enable both ipv4 and ipv6 on all interfaces. By the way, the port is

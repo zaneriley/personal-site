@@ -18,13 +18,16 @@ defmodule PortfolioWeb.PageControllerTest do
     assert conn.assigns[:user_locale] == "en"
   end
 
-  test "sets locale from Accept-Language header when no locale in URL", %{conn: conn} do
+  test "sets locale from Accept-Language header when no locale in URL", %{
+    conn: conn
+  } do
     conn = put_req_header(conn, "accept-language", "ja")
     conn = get(conn, "/")
     assert conn.assigns[:user_locale] == "ja"
   end
 
-  test "sets default locale when no Accept-Language header and no locale in URL", %{conn: conn} do
+  test "sets default locale when no Accept-Language header and no locale in URL",
+       %{conn: conn} do
     conn = get(conn, "/")
     assert conn.assigns[:user_locale] == @default_locale
   end

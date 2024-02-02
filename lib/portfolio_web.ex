@@ -18,7 +18,8 @@ defmodule PortfolioWeb do
   """
 
   def static_paths,
-    do: ~w(css fonts images js favicon.ico favicon-32x32.png favicon-16x16.png site.webmanifest mstile
+    do:
+      ~w(css fonts images js favicon.ico favicon-32x32.png favicon-16x16.png site.webmanifest mstile
         robots.txt 502.html maintenance.html
         apple-touch android-chrome browserconfig manifest.json mstile
         safari-pinned-tab.svg)

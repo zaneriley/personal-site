@@ -1,18 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <.live_title><%= assigns[:page_title] || "Zane Riley's Product Design Portfolio" %></.live_title>
+    <.live_title>
+      <%= assigns[:page_title] || "Zane Riley's Product Design Portfolio" %>
+    </.live_title>
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <meta name="description" content={assigns[:page_description] || 'Zane Riley is a seasoned product designer based in Tokyo, Japan'} />
-  
+    <meta
+      name="description"
+      content={
+        assigns[:page_description] ||
+          ~c"Zane Riley is a seasoned product designer based in Tokyo, Japan"
+      }
+    />
     <!-- Generate a list of locales the application supports -->
     <%= for locale <- @supported_locales do %>
-      <link rel="alternate" hreflang={locale} href={PortfolioWeb.Router.Helpers.page_url(@conn, :home, locale)} />
+      <link
+        rel="alternate"
+        hreflang={locale}
+        href={PortfolioWeb.Router.Helpers.page_url(@conn, :home, locale)}
+      />
     <% end %>
-
     <!-- Favicon and touch icons -->
     <link
       rel="apple-touch-icon"
@@ -36,26 +46,20 @@
       href={url(~p"/safari-pinned-tab.svg")}
       color="#597099"
     />
-    <link
-      rel="manifest"
-      href={url(~p"/site.webmanifest")}
-    />
-
+    <link rel="manifest" href={url(~p"/site.webmanifest")} />
     <!-- Color definitions -->
     <meta name="msapplication-TileColor" content="#2b5797" />
     <meta name="theme-color" content="#343334" />
-
     <!-- Dynamic Schema Markup -->
     <script type="application/ld+json">
       <%= Jason.encode!(assigns[:person_schema]) %>
     </script>
-
     <!-- Dynamic OG Meta -->
     <%= if assigns[:og_meta] do %>
-      <meta property="og:title" content={ assigns[:og_meta][:title]} />
-      <meta property="og:type" content={ assigns[:og_meta][:type]} />
-      <meta property="og:image" content={ assigns[:og_meta][:image]} />
-      <meta property="og:description" content={ assigns[:og_meta][:description]} />
+      <meta property="og:title" content={assigns[:og_meta][:title]} />
+      <meta property="og:type" content={assigns[:og_meta][:type]} />
+      <meta property="og:image" content={assigns[:og_meta][:image]} />
+      <meta property="og:description" content={assigns[:og_meta][:description]} />
     <% end %>
 
     <link phx-track-static rel="stylesheet" href={url(~p"/css/app.css")} />
@@ -72,7 +76,7 @@
         <div class="flex items-center justify-between flex-wrap">
           <div role="region" aria-label="{gettext('Language Switcher')}">
             <input type="checkbox" id="lang-toggle" hidden aria-hidden="true" />
-            <label for="lang-toggle"  aria-hidden="true">
+            <label for="lang-toggle" aria-hidden="true">
               <span aria-label="{ gettext('English')}">English</span>
               <span aria-label="{ gettext('Japanese')}">日本語</span>
               <div class="toggle-switch"></div>
@@ -87,15 +91,14 @@
     </main>
 
     <footer class="bg-black text-white text-center py-10 px-5">
-        <div class="max-w-lg mx-auto">
-            <h2 class="text-xl font-semibold uppercase tracking-widest mb-4">
-                <%= gettext("Colophon") %>
-            </h2>
-            <p class="mb-4">
-              &copy; 2010 – <%= @current_year %>
-            </p>
-        </div>
+      <div class="max-w-lg mx-auto">
+        <h2 class="text-xl font-semibold uppercase tracking-widest mb-4">
+          <%= gettext("Colophon") %>
+        </h2>
+        <p class="mb-4">
+          &copy; 2010 – <%= @current_year %>
+        </p>
+      </div>
     </footer>
-
   </body>
 </html>

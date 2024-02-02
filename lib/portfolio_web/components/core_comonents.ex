@@ -217,7 +217,10 @@ defmodule PortfolioWeb.CoreComponents do
       <.flash_group flash={@flash} />
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
-  attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
+
+  attr :id, :string,
+    default: "flash-group",
+    doc: "the optional id of flash container"
 
   def flash_group(assigns) do
     ~H"""

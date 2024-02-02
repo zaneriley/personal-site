@@ -16,7 +16,7 @@ defmodule PortfolioWeb.SchemaMarkup do
       sameAs: [
         "https://www.linkedin.com/in/zaneriley",
         "https://github.com/zaneriley",
-        "https://twitter.com/zaneriley",
+        "https://twitter.com/zaneriley"
       ],
       address: %{
         "@type" => "PostalAddress",
