@@ -1,5 +1,5 @@
 # Zane Riley's Product Design Portfolio
-![Website](https://img.shields.io/website?url=http%3A%2F%2Fzaneriley.com&up_message=online&style=flat&label=Portfolio)
+![Website](https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio)
 ![GitHub License](https://img.shields.io/github/license/zaneriley/personal-site)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml)
 
