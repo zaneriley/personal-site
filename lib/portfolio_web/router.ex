@@ -3,14 +3,13 @@ defmodule PortfolioWeb.Router do
   alias PortfolioWeb.Plugs.SetLocale
   alias PortfolioWeb.Plugs.LocaleRedirection
   alias PortfolioWeb.Plugs.CommonMetadata
+  import Phoenix.LiveView.Router
 
   pipeline :locale do
     plug SetLocale
-  end
-
-  pipeline :locale_redirection do
     plug LocaleRedirection
   end
+
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -22,40 +21,66 @@ defmodule PortfolioWeb.Router do
     plug CommonMetadata
   end
 
+  #TODO: Is a white list the best way to handle avoiding :locale?
+  pipeline :admin do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, {PortfolioWeb.Layouts, :root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug CommonMetadata
+    # Do not include the LocaleRedirection plug here
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
 
   scope "/", PortfolioWeb do
-    pipe_through [:browser, :locale, :locale_redirection]
+    pipe_through [:browser, :locale]
 
     get "/", PageController, :root
   end
 
   scope "/:locale", PortfolioWeb do
-    pipe_through [:browser, :locale, :locale_redirection]
+    pipe_through [:browser, :locale]
 
     get "/", PageController, :home
     get "/case-study/:url", CaseStudyController, :show
-    get "/up/", UpController, :index
-    get "/up/databases", UpController, :databases
+
   end
 
   # Catch-all route for unmatched paths
   scope "/", PortfolioWeb do
     pipe_through :browser
+    get "/up/", UpController, :index
+    get "/up/databases", UpController, :databases
   end
 
   # Enables LiveDashboard only for development.
   #
   # If you want to use the LiveDashboard in production, you should put
   # it behind authentication and allow only admins to access it.
+  # Conditional block for development-only routes
   if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
+    scope "/admin", PortfolioWeb do
+      pipe_through [:admin] # Use the :admin pipeline
 
-    scope "/" do
-      pipe_through :browser
+      # Admin routes for /up and /dashboard
+      get "/up/", UpController, :index
+      get "/up/databases", UpController, :databases
+
+      # LiveDashboard route
+      import Phoenix.LiveDashboard.Router
       live_dashboard "/dashboard", metrics: PortfolioWeb.Telemetry
+
+      # LiveView routes for Case Studies
+      live "/case-study", CaseStudyLive.Index, :index
+      live "/case-study/new", CaseStudyLive.Index, :new
+      live "/case-study/:id/edit", CaseStudyLive.Index, :edit
+      live "/case-study/:id", CaseStudyLive.Show, :show
+      live "/case-study/:id/show/edit", CaseStudyLive.Show, :edit
     end
   end
 

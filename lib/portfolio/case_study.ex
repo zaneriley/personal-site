@@ -21,6 +21,7 @@ defmodule Portfolio.CaseStudy do
     field :read_time, :integer
     field :platforms, {:array, :string}
     field :introduction, :string
+    field :content, :string
 
     has_many :translations, Portfolio.Translation,
       foreign_key: :translatable_id,
@@ -39,7 +40,8 @@ defmodule Portfolio.CaseStudy do
       :timeline,
       :read_time,
       :platforms,
-      :introduction
+      :introduction,
+      :content
     ])
     |> validate_required([
       :title,
@@ -48,7 +50,8 @@ defmodule Portfolio.CaseStudy do
       :timeline,
       :read_time,
       :platforms,
-      :introduction
+      :introduction,
+      :content
     ])
     |> unique_constraint(:url)
   end

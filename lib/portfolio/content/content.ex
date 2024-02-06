@@ -15,6 +15,21 @@ defmodule Portfolio.Content do
   import Ecto.Query, only: [from: 2]
   require Logger
 
+  def create_case_study(attrs) do
+    %CaseStudy{}
+    |> CaseStudy.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def change_case_study(case_study) do
+    CaseStudy.changeset(case_study, %{})
+  end
+  # def create_note(attrs) do
+  #   %Note{}
+  #   |> Note.changeset(attrs)
+  #   |> Repo.insert()
+  # end
+
   # You can set this to what makes sense for your application
   @page_size 10
 
