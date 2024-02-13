@@ -19,7 +19,7 @@
   <:col :let={{_id, case_study}} label="Read time"><%= case_study.read_time %></:col>
   <:col :let={{_id, case_study}} label="Platforms"><%= case_study.platforms %></:col>
   <:col :let={{_id, case_study}} label="Introduction"><%= case_study.introduction %></:col>
-  <:col :let={{_id, case_study}} label="Content"><%= case_study.content %></:col>
+  <:col :let={{_id, case_study}} label="Content" ><%= case_study.content %></:col>
   <:action :let={{_id, case_study}}>
     <div class="sr-only">
       <.link navigate={~p"/#{@locale}/case-study/#{case_study.url}"}>Show</.link>
@@ -36,7 +36,7 @@
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new, :edit]} id="case_study-modal" show on_cancel={JS.patch(~p"/case-study")}>
+<.modal :if={@live_action in [:new, :edit]} id="case_study-modal" show on_cancel={JS.patch(Routes.case_study_index_path(@socket, :index))}>
   <.live_component
     module={PortfolioWeb.CaseStudyLive.FormComponent}
     id={@case_study.id || :new}

@@ -10,7 +10,6 @@ defmodule PortfolioWeb.Router do
     plug LocaleRedirection
   end
 
-
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -37,6 +36,33 @@ defmodule PortfolioWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Enables LiveDashboard only for development.
+  #
+  # If you want to use the LiveDashboard in production, you should put
+  # it behind authentication and allow only admins to access it.
+  # Conditional block for development-only routes
+  # We're defining these first as to not trigger the :locale redirection pipeline.
+  if Mix.env() in [:dev, :test] do
+    scope "/admin", PortfolioWeb do
+      pipe_through [:admin] # Use the :admin pipeline
+
+      # Admin routes for /up and /dashboard
+      get "/up/", UpController, :index
+      get "/up/databases", UpController, :databases
+
+      # LiveDashboard route
+      import Phoenix.LiveDashboard.Router
+      live_dashboard "/dashboard", metrics: PortfolioWeb.Telemetry
+
+      # LiveView routes for Case Studies
+      live "/case-study", CaseStudyLive.Index, :index
+      live "/case-study/new", CaseStudyLive.Index, :new
+      live "/case-study/:id/edit", CaseStudyLive.Index, :edit
+      live "/case-study/:id", CaseStudyLive.Show, :show
+      live "/case-study/:id/show/edit", CaseStudyLive.Show, :edit
+    end
+  end
+
   scope "/", PortfolioWeb do
     pipe_through [:browser, :locale]
 
@@ -58,31 +84,7 @@ defmodule PortfolioWeb.Router do
     get "/up/databases", UpController, :databases
   end
 
-  # Enables LiveDashboard only for development.
-  #
-  # If you want to use the LiveDashboard in production, you should put
-  # it behind authentication and allow only admins to access it.
-  # Conditional block for development-only routes
-  if Mix.env() in [:dev, :test] do
-    scope "/admin", PortfolioWeb do
-      pipe_through [:admin] # Use the :admin pipeline
 
-      # Admin routes for /up and /dashboard
-      get "/up/", UpController, :index
-      get "/up/databases", UpController, :databases
-
-      # LiveDashboard route
-      import Phoenix.LiveDashboard.Router
-      live_dashboard "/dashboard", metrics: PortfolioWeb.Telemetry
-
-      # LiveView routes for Case Studies
-      live "/case-study", CaseStudyLive.Index, :index
-      live "/case-study/new", CaseStudyLive.Index, :new
-      live "/case-study/:id/edit", CaseStudyLive.Index, :edit
-      live "/case-study/:id", CaseStudyLive.Show, :show
-      live "/case-study/:id/show/edit", CaseStudyLive.Show, :edit
-    end
-  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:new, :dev_routes) do

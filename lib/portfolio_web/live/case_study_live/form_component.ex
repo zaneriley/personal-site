@@ -3,6 +3,7 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
 
   alias Portfolio.Admin
 
+  # TODO: Add validation (currently suffering from poor perforamnce per keystroke)
   @impl true
   def render(assigns) do
     ~H"""
@@ -15,7 +16,6 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
         for={@form}
         id="case_study-form"
         phx-target={@myself}
-        phx-change="validate"
         phx-submit="save"
       >
         <.input field={@form[:title]} type="text" label="Title" />
@@ -28,10 +28,28 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
           type="select"
           multiple
           label="Platforms"
-          options={[{"Option 1", "option1"}, {"Option 2", "option2"}]}
+          options={[
+            {"Mobile", "mobile"},
+            {"Web", "web"},
+            {"Desktop", "desktop"},
+            {"Tablet", "tablet"},
+            {"iOS", "iOS"},
+            {"Android", "android"},
+            {"Smart TV", "smart_tv"},
+            {"Wearable", "wearable"},
+            {"Voice Assistant", "voice_assistant"},
+            {"Gaming Console", "gaming_console"},
+            {"VR", "VR"},
+            {"AR", "AR"},
+            {"Smart Home Devices", "smart_home_devices"},
+            {"Car Dashboard", "car_dashboard"},
+            {"Google Maps", "google_maps"},
+            {"Google Search", "google_search"},
+            {"Blockchain", "blockchain"}
+          ]}
         />
         <.input field={@form[:introduction]} type="text" label="Introduction" />
-        <.input field={@form[:content]} type="text" label="Content" />
+        <.input field={@form[:content]} type="textarea" label="Content" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Case study</.button>
         </:actions>
