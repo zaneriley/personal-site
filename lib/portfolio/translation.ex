@@ -26,11 +26,26 @@ defmodule Portfolio.Translation do
   @doc false
   def changeset(translation, attrs) do
     translation
-    |> cast(attrs, [:locale, :field_name, :field_value, :translatable_id, :translatable_type])
-    |> validate_required([:locale, :field_name, :field_value, :translatable_id, :translatable_type])
+    |> cast(attrs, [
+      :locale,
+      :field_name,
+      :field_value,
+      :translatable_id,
+      :translatable_type
+    ])
+    |> validate_required([
+      :locale,
+      :field_name,
+      :field_value,
+      :translatable_id,
+      :translatable_type
+    ])
     |> validate_length(:field_name, max: 255)
     |> validate_length(:field_value, max: 1000)
     |> validate_format(:locale, ~r/^[a-z]{2}(-[A-Z]{2})?$/)
-    |> unique_constraint([:translatable_id, :translatable_type, :locale, :field_name], name: :translations_unique_index)
+    |> unique_constraint(
+      [:translatable_id, :translatable_type, :locale, :field_name],
+      name: :translations_unique_index
+    )
   end
 end

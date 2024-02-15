@@ -19,9 +19,6 @@ msgstr "10+ years of experience based in Tokyo, Japan. I believe in creating pro
 msgid "Helping people make informed healthcare choices and access care when they need it."
 msgstr "Helping people make informed healthcare choices and access care when they need it."
 
-msgid "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on %{github_link}. Remix freely in %{figma_link}."
-msgstr "Self-hosted on my homelab in Tokyo. Type set in GT Flexa, Meno, CHEEE, 秀英 & Temeraire. Open source on <a href='https://github.com/zaneriley/personal-site' target='_blank' rel='noopener noreferrer'>Github</a>. Remix freely in <a href='https://www.figma.com/file/zDOcBhnjTDCWmc6OFgeoUc/Portfolio-2021?node-id=463%3A4165' target='_blank' rel='noopener noreferrer'>Figma</a>."
-
 msgid "Change language"
 msgstr "Change language"
 
@@ -38,3 +35,15 @@ msgstr[1] "minutes"
 
 msgid "Colophon"
 msgstr "Colophon"
+
+msgid "Self-hosted on my homelab in Tokyo."
+msgstr "Self-hosted on my homelab in Tokyo."
+
+msgid "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
+msgstr "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
+
+msgid "Open source on %{github} under aGPL."
+msgstr "Open source on %{github} under aGPL."
+
+msgid "Remix freely in %{figma}."
+msgstr "Remix freely in %{figma}."

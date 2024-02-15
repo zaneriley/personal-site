@@ -12,12 +12,10 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
 
     # Stream the case studies and assign the locale to the socket
     {:ok,
-      socket
-      |> assign(:locale, locale)
-      |> stream(:case_studies, Admin.list_case_studies())
-    }
+     socket
+     |> assign(:locale, locale)
+     |> stream(:case_studies, Admin.list_case_studies())}
   end
-
 
   @impl true
   def handle_params(params, _url, socket) do
@@ -43,7 +41,10 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   end
 
   @impl true
-  def handle_info({PortfolioWeb.CaseStudyLive.FormComponent, {:saved, case_study}}, socket) do
+  def handle_info(
+        {PortfolioWeb.CaseStudyLive.FormComponent, {:saved, case_study}},
+        socket
+      ) do
     {:noreply, stream_insert(socket, :case_studies, case_study)}
   end
 

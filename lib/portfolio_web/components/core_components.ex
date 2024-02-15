@@ -56,75 +56,55 @@ defmodule PortfolioWeb.CoreComponents do
       id={@id}
       phx-mounted={@show && show_modal(@id)}
       phx-remove={hide_modal(@id)}
-      class="relative z-50 hidden"
     >
+      <div id={"#{@id}-bg"} aria-hidden="true" />
       <div
-        id={"#{@id}-bg"}
-        class="fixed inset-0 bg-zinc-50/90 transition-opacity"
-        aria-hidden="true"
-      />
-      <div
-        class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
         aria-describedby={"#{@id}-description"}
         role="dialog"
         aria-modal="true"
         tabindex="0"
       >
-        <div class="flex min-h-full items-center justify-center">
-          <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
+        <div>
+          <div>
             <.focus_wrap
               id={"#{@id}-container"}
               phx-mounted={@show && show_modal(@id)}
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-white p-14 shadow-lg shadow-zinc-700/10 ring-1 ring-zinc-700/10 transition"
             >
-              <div class="absolute top-6 right-5">
+              <div>
                 <button
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
-                  class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
                   aria-label={gettext("close")}
                 >
-                  <Heroicons.x_mark solid class="h-5 w-5 stroke-current" />
+                  <Heroicons.x_mark solid />
                 </button>
               </div>
               <div id={"#{@id}-content"}>
                 <header :if={@title != []}>
-                  <h1
-                    id={"#{@id}-title"}
-                    class="text-lg font-semibold leading-8 text-zinc-800"
-                  >
+                  <h1 id={"#{@id}-title"}>
                     <%= render_slot(@title) %>
                   </h1>
-                  <p
-                    :if={@subtitle != []}
-                    id={"#{@id}-description"}
-                    class="mt-2 text-sm leading-6 text-zinc-600"
-                  >
+                  <p :if={@subtitle != []} id={"#{@id}-description"}>
                     <%= render_slot(@subtitle) %>
                   </p>
                 </header>
                 <%= render_slot(@inner_block) %>
-                <div
-                  :if={@confirm != [] or @cancel != []}
-                  class="ml-6 mb-4 flex items-center gap-5"
-                >
+                <div :if={@confirm != [] or @cancel != []}>
                   <.button
                     :for={confirm <- @confirm}
                     id={"#{@id}-confirm"}
                     phx-click={@on_confirm}
                     phx-disable-with
-                    class="py-2 px-3"
                   >
                     <%= render_slot(confirm) %>
                   </.button>
                   <.link
                     :for={cancel <- @cancel}
                     phx-click={hide_modal(@on_cancel, @id)}
-                    class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
                   >
                     <%= render_slot(cancel) %>
                   </.link>
@@ -185,25 +165,14 @@ defmodule PortfolioWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <p
-        :if={@title}
-        class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6"
-      >
-        <Heroicons.information_circle :if={@kind == :info} mini class="h-4 w-4" />
-        <Heroicons.exclamation_circle :if={@kind == :error} mini class="h-4 w-4" />
+      <p :if={@title}>
+        <Heroicons.information_circle :if={@kind == :info} mini />
+        <Heroicons.exclamation_circle :if={@kind == :error} mini />
         <%= @title %>
       </p>
-      <p class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
-      <button
-        :if={@close}
-        type="button"
-        class="group absolute top-2 right-1 p-2"
-        aria-label={gettext("close")}
-      >
-        <Heroicons.x_mark
-          solid
-          class="h-5 w-5 stroke-current opacity-40 group-hover:opacity-70"
-        />
+      <p><%= msg %></p>
+      <button :if={@close} type="button" aria-label={gettext("close")}>
+        <Heroicons.x_mark solid />
       </button>
     </div>
     """
@@ -236,8 +205,7 @@ defmodule PortfolioWeb.CoreComponents do
         phx-disconnected={show("#disconnected")}
         phx-connected={hide("#disconnected")}
       >
-        Attempting to reconnect
-        <Heroicons.arrow_path class="ml-1 w-3 h-3 inline animate-spin" />
+        Attempting to reconnect <Heroicons.arrow_path />
       </.flash>
     </div>
     """
@@ -272,12 +240,9 @@ defmodule PortfolioWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="space-y-8 bg-white mt-10">
+      <div>
         <%= render_slot(@inner_block, f) %>
-        <div
-          :for={action <- @actions}
-          class="mt-2 flex items-center justify-between gap-6"
-        >
+        <div :for={action <- @actions}>
           <%= render_slot(action, f) %>
         </div>
       </div>
@@ -291,7 +256,7 @@ defmodule PortfolioWeb.CoreComponents do
   ## Examples
 
       <.button>Send!</.button>
-      <.button phx-click="go" class="ml-2">Send!</.button>
+      <.button phx-click="go">Send!</.button>
   """
   attr :type, :string, default: nil
   attr :class, :string, default: nil
@@ -379,7 +344,7 @@ defmodule PortfolioWeb.CoreComponents do
 
     ~H"""
     <div phx-feedback-for={@name}>
-      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+      <label>
         <input type="hidden" name={@name} value="false" />
         <input
           type="checkbox"
@@ -387,7 +352,6 @@ defmodule PortfolioWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
           {@rest}
         />
         <%= @label %>
@@ -401,13 +365,7 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <div phx-feedback-for={@name}>
       <.label for={@id}><%= @label %></.label>
-      <select
-        id={@id}
-        name={@name}
-        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm"
-        multiple={@multiple}
-        {@rest}
-      >
+      <select id={@id} name={@name} multiple={@multiple} {@rest}>
         <option :if={@prompt} value=""><%= @prompt %></option>
         <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
       </select>
@@ -470,7 +428,7 @@ defmodule PortfolioWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for}>
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -483,11 +441,8 @@ defmodule PortfolioWeb.CoreComponents do
 
   def error(assigns) do
     ~H"""
-    <p class="phx-no-feedback:hidden mt-3 flex gap-3 text-sm leading-6 text-rose-600">
-      <Heroicons.exclamation_circle
-        mini
-        class="mt-0.5 h-5 w-5 flex-none fill-rose-500"
-      />
+    <p>
+      <Heroicons.exclamation_circle mini />
       <%= render_slot(@inner_block) %>
     </p>
     """
@@ -509,14 +464,14 @@ defmodule PortfolioWeb.CoreComponents do
       @class
     ]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1>
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <p :if={@subtitle != []}>
           <%= render_slot(@subtitle) %>
         </p>
       </div>
-      <div class="flex-none"><%= render_slot(@actions) %></div>
+      <div><%= render_slot(@actions) %></div>
     </header>
     """
   end
@@ -561,47 +516,42 @@ defmodule PortfolioWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
-      <table class="mt-11 w-[40rem] sm:w-full">
-        <thead class="text-left text-[0.8125rem] leading-6 text-zinc-500">
+    <div>
+      <table>
+        <thead>
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">
+            <th :for={col <- @col}>
               <%= col[:label] %>
             </th>
-            <th :if={@action != []} class="relative p-0 pb-4">
-              <span class="sr-only"><%= gettext("Actions") %></span>
+            <th :if={@action != []}>
+              <span><%= gettext("Actions") %></span>
             </th>
           </tr>
         </thead>
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
         >
-          <tr
-            :for={row <- @rows}
-            id={@row_id && @row_id.(row)}
-            class="group hover:bg-zinc-50 "
-          >
+          <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
             <td
               :for={{col, i} <- Enum.with_index(@col)}
               phx-click={@row_click && @row_click.(row)}
-              class={["relative p-0 align-top ", @row_click && "hover:cursor-pointer"]}
+              class={[
+                "relative p-0 align-top ",
+                @row_click && "hover:cursor-pointer"
+              ]}
             >
-              <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
+              <div>
+                <span />
                 <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
                   <%= render_slot(col, @row_item.(row)) %>
                 </span>
               </div>
             </td>
-            <td :if={@action != []} class="relative p-0 w-14">
-              <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-zinc-50 sm:rounded-r-xl" />
-                <span
-                  :for={action <- @action}
-                  class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
-                >
+            <td :if={@action != []}>
+              <div>
+                <span />
+                <span :for={action <- @action}>
                   <%= render_slot(action, @row_item.(row)) %>
                 </span>
               </div>
@@ -629,13 +579,13 @@ defmodule PortfolioWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100">
-        <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8">
-          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-zinc-500">
+    <div>
+      <dl>
+        <div :for={item <- @item}>
+          <dt>
             <%= item.title %>
           </dt>
-          <dd class="text-sm leading-6 text-zinc-700"><%= render_slot(item) %></dd>
+          <dd><%= render_slot(item) %></dd>
         </div>
       </dl>
     </div>
@@ -654,12 +604,9 @@ defmodule PortfolioWeb.CoreComponents do
 
   def back(assigns) do
     ~H"""
-    <div class="mt-16">
-      <.link
-        navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
-      >
-        <Heroicons.arrow_left solid class="w-3 h-3 stroke-current inline" />
+    <div>
+      <.link navigate={@navigate}>
+        <Heroicons.arrow_left solid />
         <%= render_slot(@inner_block) %>
       </.link>
     </div>

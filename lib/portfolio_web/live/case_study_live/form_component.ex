@@ -22,7 +22,11 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
         <.input field={@form[:url]} type="text" label="Slug" />
         <.input field={@form[:role]} type="text" label="Role" />
         <.input field={@form[:timeline]} type="text" label="Project timeline" />
-        <.input field={@form[:read_time]} type="number" label="Estimated Read Time (in minutes)" />
+        <.input
+          field={@form[:read_time]}
+          type="number"
+          label="Estimated Read Time (in minutes)"
+        />
         <.input
           field={@form[:platforms]}
           type="select"

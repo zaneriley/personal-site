@@ -8,7 +8,16 @@ defmodule Portfolio.AdminTest do
 
     import Portfolio.AdminFixtures
 
-    @invalid_attrs %{title: nil, url: nil, role: nil, timeline: nil, read_time: nil, platforms: nil, introduction: nil, content: nil}
+    @invalid_attrs %{
+      title: nil,
+      url: nil,
+      role: nil,
+      timeline: nil,
+      read_time: nil,
+      platforms: nil,
+      introduction: nil,
+      content: nil
+    }
 
     test "list_case_studies/0 returns all case_studies" do
       case_study = case_study_fixture()
@@ -21,9 +30,20 @@ defmodule Portfolio.AdminTest do
     end
 
     test "create_case_study/1 with valid data creates a case_study" do
-      valid_attrs = %{title: "some title", url: "some url", role: "some role", timeline: "some timeline", read_time: 42, platforms: ["option1", "option2"], introduction: "some introduction", content: "some content"}
+      valid_attrs = %{
+        title: "some title",
+        url: "some url",
+        role: "some role",
+        timeline: "some timeline",
+        read_time: 42,
+        platforms: ["option1", "option2"],
+        introduction: "some introduction",
+        content: "some content"
+      }
 
-      assert {:ok, %CaseStudy{} = case_study} = Admin.create_case_study(valid_attrs)
+      assert {:ok, %CaseStudy{} = case_study} =
+               Admin.create_case_study(valid_attrs)
+
       assert case_study.title == "some title"
       assert case_study.url == "some url"
       assert case_study.role == "some role"
@@ -35,14 +55,27 @@ defmodule Portfolio.AdminTest do
     end
 
     test "create_case_study/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Admin.create_case_study(@invalid_attrs)
+      assert {:error, %Ecto.Changeset{}} =
+               Admin.create_case_study(@invalid_attrs)
     end
 
     test "update_case_study/2 with valid data updates the case_study" do
       case_study = case_study_fixture()
-      update_attrs = %{title: "some updated title", url: "some updated url", role: "some updated role", timeline: "some updated timeline", read_time: 43, platforms: ["option1"], introduction: "some updated introduction", content: "some updated content"}
 
-      assert {:ok, %CaseStudy{} = case_study} = Admin.update_case_study(case_study, update_attrs)
+      update_attrs = %{
+        title: "some updated title",
+        url: "some updated url",
+        role: "some updated role",
+        timeline: "some updated timeline",
+        read_time: 43,
+        platforms: ["option1"],
+        introduction: "some updated introduction",
+        content: "some updated content"
+      }
+
+      assert {:ok, %CaseStudy{} = case_study} =
+               Admin.update_case_study(case_study, update_attrs)
+
       assert case_study.title == "some updated title"
       assert case_study.url == "some updated url"
       assert case_study.role == "some updated role"
@@ -55,14 +88,20 @@ defmodule Portfolio.AdminTest do
 
     test "update_case_study/2 with invalid data returns error changeset" do
       case_study = case_study_fixture()
-      assert {:error, %Ecto.Changeset{}} = Admin.update_case_study(case_study, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Admin.update_case_study(case_study, @invalid_attrs)
+
       assert case_study == Admin.get_case_study!(case_study.id)
     end
 
     test "delete_case_study/1 deletes the case_study" do
       case_study = case_study_fixture()
       assert {:ok, %CaseStudy{}} = Admin.delete_case_study(case_study)
-      assert_raise Ecto.NoResultsError, fn -> Admin.get_case_study!(case_study.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Admin.get_case_study!(case_study.id)
+      end
     end
 
     test "change_case_study/1 returns a case_study changeset" do

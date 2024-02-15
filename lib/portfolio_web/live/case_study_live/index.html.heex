@@ -10,25 +10,47 @@
 <.table
   id="case-study"
   rows={@streams.case_studies}
-  row_click={fn {_id, case_study} -> JS.navigate(Routes.case_study_path(@socket, :show, @locale, case_study.url)) end}
+  row_click={
+    fn {_id, case_study} ->
+      JS.navigate(
+        Routes.case_study_path(@socket, :show, @locale, case_study.url)
+      )
+    end
+  }
 >
   <:col :let={{_id, case_study}} label="Title"><%= case_study.title %></:col>
   <:col :let={{_id, case_study}} label="Url"><%= case_study.url %></:col>
   <:col :let={{_id, case_study}} label="Role"><%= case_study.role %></:col>
-  <:col :let={{_id, case_study}} label="Timeline"><%= case_study.timeline %></:col>
-  <:col :let={{_id, case_study}} label="Read time"><%= case_study.read_time %></:col>
-  <:col :let={{_id, case_study}} label="Platforms"><%= case_study.platforms %></:col>
-  <:col :let={{_id, case_study}} label="Introduction"><%= case_study.introduction %></:col>
-  <:col :let={{_id, case_study}} label="Content" ><%= case_study.content %></:col>
+  <:col :let={{_id, case_study}} label="Timeline">
+    <%= case_study.timeline %>
+  </:col>
+  <:col :let={{_id, case_study}} label="Read time">
+    <%= case_study.read_time %>
+  </:col>
+  <:col :let={{_id, case_study}} label="Platforms">
+    <%= case_study.platforms %>
+  </:col>
+  <:col :let={{_id, case_study}} label="Introduction">
+    <%= case_study.introduction %>
+  </:col>
+  <:col :let={{_id, case_study}} label="Content">
+    <%= case_study.content %>
+  </:col>
   <:action :let={{_id, case_study}}>
     <div class="sr-only">
-      <.link navigate={~p"/#{@locale}/case-study/#{case_study.url}"}>Show</.link>
+      <.link navigate={~p"/#{@locale}/case-study/#{case_study.url}"}>
+        Show
+      </.link>
     </div>
-    <.link patch={Routes.case_study_index_path(@socket, :edit, case_study.id)}>Edit</.link>
+    <.link patch={Routes.case_study_index_path(@socket, :edit, case_study.id)}>
+      Edit
+    </.link>
   </:action>
   <:action :let={{id, case_study}}>
     <.link
-      phx-click={JS.push("delete", value: %{id: case_study.id}) |> hide("##{id}")}
+      phx-click={
+        JS.push("delete", value: %{id: case_study.id}) |> hide("##{id}")
+      }
       data-confirm="Are you sure?"
     >
       Delete
@@ -36,7 +58,12 @@
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new, :edit]} id="case_study-modal" show on_cancel={JS.patch(Routes.case_study_index_path(@socket, :index))}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="case_study-modal"
+  show
+  on_cancel={JS.patch(Routes.case_study_index_path(@socket, :index))}
+>
   <.live_component
     module={PortfolioWeb.CaseStudyLive.FormComponent}
     id={@case_study.id || :new}

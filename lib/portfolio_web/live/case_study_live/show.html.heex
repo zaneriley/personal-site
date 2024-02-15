@@ -2,7 +2,10 @@
   Case study <%= @case_study.id %>
   <:subtitle>This is a case_study record from your database.</:subtitle>
   <:actions>
-    <.link patch={~p"/case_studies/#{@case_study}/show/edit"} phx-click={JS.push_focus()}>
+    <.link
+      patch={~p"/case_studies/#{@case_study}/show/edit"}
+      phx-click={JS.push_focus()}
+    >
       <.button>Edit case_study</.button>
     </.link>
   </:actions>
@@ -21,7 +24,12 @@
 
 <.back navigate={~p"/case_studies"}>Back to case_studies</.back>
 
-<.modal :if={@live_action == :edit} id="case_study-modal" show on_cancel={JS.patch(~p"/case_studies/#{@case_study}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="case_study-modal"
+  show
+  on_cancel={JS.patch(~p"/case_studies/#{@case_study}")}
+>
   <.live_component
     module={PortfolioWeb.CaseStudyLive.FormComponent}
     id={@case_study.id}

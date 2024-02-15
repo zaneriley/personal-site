@@ -1,33 +1,29 @@
-<h1 class="text-4xl font-bold mb-2">
+<h1>
   <!-- Gettext: Product designer helping people beyond the screen -->
   <%= gettext("Product designer helping people beyond the screen") %>
 </h1>
-<p class="text-lg mb-4">
+<p>
   <!-- Gettext: 10+ years of experience... -->
   <%= gettext(
     "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
   ) %>
 </p>
-<p class="text-sm mb-4 italic">
+<p>
   <!-- Gettext: currently at google... -->
   <%= gettext(
     "Helping people make informed healthcare choices and access care when they need it."
   ) %>
 </p>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+<div>
+  <div>
     <!-- Iterate over case studies -->
     <%= for {case_study, translations} <- @case_studies do %>
-      <div class="lg:col-span-1 space-y-4">
-        <div class="overflow-hidden rounded-lg shadow-lg">
+      <div>
+        <div>
           <!-- Use case_study fields to populate the content -->
-          <img
-            class="w-full h-24 object-cover"
-            src=""
-            alt={translations["title"] || case_study.title}
-          />
-          <div class="p-4 bg-white">
+          <img src="" alt={translations["title"] || case_study.title} />
+          <div>
             <!-- Wrap the title in an anchor tag -->
             <a
               href={
@@ -43,11 +39,11 @@
               }
               title={translations["title"] || case_study.title}
             >
-              <h3 class="font-bold text-md">
+              <h3>
                 <%= translations["title"] || case_study.title %>
               </h3>
             </a>
-            <p class="text-xs">
+            <p>
               <%= translations["introduction"] || case_study.introduction %>
             </p>
           </div>

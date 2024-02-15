@@ -4,9 +4,36 @@ defmodule PortfolioWeb.CaseStudyLiveTest do
   import Phoenix.LiveViewTest
   import Portfolio.AdminFixtures
 
-  @create_attrs %{title: "some title", url: "some url", role: "some role", timeline: "some timeline", read_time: 42, platforms: ["option1", "option2"], introduction: "some introduction", content: "some content"}
-  @update_attrs %{title: "some updated title", url: "some updated url", role: "some updated role", timeline: "some updated timeline", read_time: 43, platforms: ["option1"], introduction: "some updated introduction", content: "some updated content"}
-  @invalid_attrs %{title: nil, url: nil, role: nil, timeline: nil, read_time: nil, platforms: [], introduction: nil, content: nil}
+  @create_attrs %{
+    title: "some title",
+    url: "some url",
+    role: "some role",
+    timeline: "some timeline",
+    read_time: 42,
+    platforms: ["option1", "option2"],
+    introduction: "some introduction",
+    content: "some content"
+  }
+  @update_attrs %{
+    title: "some updated title",
+    url: "some updated url",
+    role: "some updated role",
+    timeline: "some updated timeline",
+    read_time: 43,
+    platforms: ["option1"],
+    introduction: "some updated introduction",
+    content: "some updated content"
+  }
+  @invalid_attrs %{
+    title: nil,
+    url: nil,
+    role: nil,
+    timeline: nil,
+    read_time: nil,
+    platforms: [],
+    introduction: nil,
+    content: nil
+  }
 
   defp create_case_study(_) do
     case_study = case_study_fixture()
@@ -49,7 +76,9 @@ defmodule PortfolioWeb.CaseStudyLiveTest do
     test "updates case_study in listing", %{conn: conn, case_study: case_study} do
       {:ok, index_live, _html} = live(conn, ~p"/case_studies")
 
-      assert index_live |> element("#case_studies-#{case_study.id} a", "Edit") |> render_click() =~
+      assert index_live
+             |> element("#case_studies-#{case_study.id} a", "Edit")
+             |> render_click() =~
                "Edit Case study"
 
       assert_patch(index_live, ~p"/case_studies/#{case_study}/edit")
@@ -72,7 +101,10 @@ defmodule PortfolioWeb.CaseStudyLiveTest do
     test "deletes case_study in listing", %{conn: conn, case_study: case_study} do
       {:ok, index_live, _html} = live(conn, ~p"/case_studies")
 
-      assert index_live |> element("#case_studies-#{case_study.id} a", "Delete") |> render_click()
+      assert index_live
+             |> element("#case_studies-#{case_study.id} a", "Delete")
+             |> render_click()
+
       refute has_element?(index_live, "#case_studies-#{case_study.id}")
     end
   end
@@ -87,7 +119,10 @@ defmodule PortfolioWeb.CaseStudyLiveTest do
       assert html =~ case_study.title
     end
 
-    test "updates case_study within modal", %{conn: conn, case_study: case_study} do
+    test "updates case_study within modal", %{
+      conn: conn,
+      case_study: case_study
+    } do
       {:ok, show_live, _html} = live(conn, ~p"/case_studies/#{case_study}")
 
       assert show_live |> element("a", "Edit") |> render_click() =~
