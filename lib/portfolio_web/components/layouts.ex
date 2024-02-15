@@ -1,8 +1,6 @@
 defmodule PortfolioWeb.Layouts do
   @moduledoc false
-
   use PortfolioWeb, :html
-
   embed_templates "layouts/*"
 
   @supported_locales Application.compile_env(:portfolio, :supported_locales)

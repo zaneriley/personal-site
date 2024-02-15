@@ -35,3 +35,15 @@ msgstr[1] "分"
 
 msgid "Colophon"
 msgstr "奥付"
+
+msgid "Self-hosted on my homelab in Tokyo."
+msgstr "東京の自宅サーバーで運用しています。"
+
+msgid "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
+msgstr "%{Font1}、%{Font2}、%{Font3}、そして%{Font4}でタイプセットしています。"
+
+msgid "Open source on %{github} under aGPL."
+msgstr "aGPLの下で[GitHub](https://github.com/zaneriley/personalsite)にオープンソースとしています。"
+
+msgid "Remix freely in %{figma}."
+msgstr "%{figma}で自由にリミックスしてください。"

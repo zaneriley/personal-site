@@ -66,32 +66,47 @@
       src={url(~p"/js/app.js")}
     />
   </head>
-  <body class="flex flex-col h-screen justify-between">
-    <div class="bg-gray-700">
-      <div class="max-w-screen-lg mx-auto py-3 px-3 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between flex-wrap">
+  <body >
+    <div >
+      <div >
+        <div >
           <div role="region" aria-label="{gettext('Language Switcher')}">
             <input type="checkbox" id="lang-toggle" hidden aria-hidden="true" />
             <label for="lang-toggle" aria-hidden="true">
               <span aria-label="{ gettext('English')}">English</span>
               <span aria-label="{ gettext('Japanese')}">日本語</span>
-              <div class="toggle-switch"></div>
+              <div ></div>
             </label>
           </div>
         </div>
       </div>
     </div>
 
-    <main class="max-w-screen-lg mx-auto mb-auto">
+    <main >
       <%= @inner_content %>
     </main>
 
-    <footer class="bg-black text-white text-center py-10 px-5">
-      <div class="max-w-lg mx-auto">
-        <h2 class="text-xl font-semibold uppercase tracking-widest mb-4">
+    <!-- FIX FOOTER SO IT'S ACTUALLY LINKING -->
+    <footer >
+      <div >
+        <h2 >
           <%= gettext("Colophon") %>
         </h2>
-        <p class="mb-4">
+        <p>
+
+          <%= gettext("Self-hosted on my homelab in Tokyo.") %>
+          <%= gettext("Type set in %{font1}, %{font2}, %{font3}, & %{font4}.") %>
+        </p>
+        <p>    
+          <%= gettext("Open source on %{github} under aGPL",
+            github: link(%{href: "https://github.com/zaneriley/personal-site", target: "_blank"}) |> Phoenix.HTML.Safe.to_iodata() |> to_string()
+          )
+          |> raw() %>
+        </p>
+        <p>
+          <%= gettext("Remix freely in Figma.") %>
+        </p>
+        <p >
           &copy; 2010 – <%= @current_year %>
         </p>
       </div>
