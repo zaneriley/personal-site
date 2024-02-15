@@ -10,7 +10,10 @@ defmodule PortfolioWeb.Layouts do
     remaining_path = String.trim_leading(remaining_path, "/")
     path_with_locale = "/#{locale}/#{remaining_path}"
     query_string = conn.query_string |> URI.decode_query()
-    query_part = if query_string == %{}, do: "", else: "?#{URI.encode_query(query_string)}"
+
+    query_part =
+      if query_string == %{}, do: "", else: "?#{URI.encode_query(query_string)}"
+
     final_url = "#{path_with_locale}#{query_part}"
     final_url
   end

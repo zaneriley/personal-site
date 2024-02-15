@@ -5,9 +5,11 @@ defmodule PortfolioWeb.LayoutsTest do
   @supported_locales Application.compile_env(:portfolio, :supported_locales)
 
   setup do
-    conn = build_conn()
-    |> put_private(:plug_session, %{})
-    |> fetch_session(%{})
+    conn =
+      build_conn()
+      |> put_private(:plug_session, %{})
+      |> fetch_session(%{})
+
     {:ok, conn: conn}
   end
 

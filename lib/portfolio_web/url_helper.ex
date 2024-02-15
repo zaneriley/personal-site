@@ -15,6 +15,7 @@ defmodule PortfolioWeb.UrlHelper do
     case current_path do
       "/case-study/" <> case_study_slug ->
         case_study_url(locale, case_study_slug)
+
       _ ->
         # Handle other types of URLs or default to a generic structure
         "#{current_path}"

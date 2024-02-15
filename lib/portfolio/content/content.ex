@@ -24,6 +24,7 @@ defmodule Portfolio.Content do
   def change_case_study(case_study) do
     CaseStudy.changeset(case_study, %{})
   end
+
   # def create_note(attrs) do
   #   %Note{}
   #   |> Note.changeset(attrs)

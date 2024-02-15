@@ -15,10 +15,8 @@
           ~c"Zane Riley is a seasoned product designer based in Tokyo, Japan"
       }
     />
-     <!-- href langs -->
+    <!-- href langs -->
     <%= hreflang_tags(@conn) %>
-
-
     <!-- Favicon and touch icons -->
     <link
       rel="apple-touch-icon"
@@ -85,7 +83,6 @@
     <main>
       <%= @inner_content %>
     </main>
-
     <!-- FIX FOOTER SO IT'S ACTUALLY LINKING -->
     <footer>
       <div>
@@ -93,7 +90,6 @@
           <%= gettext("Colophon") %>
         </h2>
         <p>
-
           <%= gettext("Self-hosted on my homelab in Tokyo.") %>
           <%= gettext("Type set in %{font1}, %{font2}, %{font3}, & %{font4}.") %>
         </p>

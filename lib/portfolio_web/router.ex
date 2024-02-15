@@ -20,7 +20,7 @@ defmodule PortfolioWeb.Router do
     plug CommonMetadata
   end
 
-  #TODO: Is a white list the best way to handle avoiding :locale?
+  # TODO: Is a white list the best way to handle avoiding :locale?
   pipeline :admin do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -44,7 +44,8 @@ defmodule PortfolioWeb.Router do
   # We're defining these first as to not trigger the :locale redirection pipeline.
   if Mix.env() in [:dev, :test] do
     scope "/admin", PortfolioWeb do
-      pipe_through [:admin] # Use the :admin pipeline
+      # Use the :admin pipeline
+      pipe_through [:admin]
 
       # Admin routes for /up and /dashboard
       get "/up/", UpController, :index
@@ -74,7 +75,6 @@ defmodule PortfolioWeb.Router do
 
     get "/", PageController, :home
     get "/case-study/:url", CaseStudyController, :show
-
   end
 
   # Catch-all route for unmatched paths
@@ -83,8 +83,6 @@ defmodule PortfolioWeb.Router do
     get "/up/", UpController, :index
     get "/up/databases", UpController, :databases
   end
-
-
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:new, :dev_routes) do
