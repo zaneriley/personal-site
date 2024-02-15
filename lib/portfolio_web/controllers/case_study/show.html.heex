@@ -1,27 +1,27 @@
-<main >
+<main>
   <article>
-    <nav >
-      <ul >
+    <nav>
+      <ul>
         <li>
           <a
             href="/"
             
-          >
+         >
             Home
           </a>
         </li>
         <li>
-          <span >/</span>
+          <span>/</span>
         </li>
         <li>Case Study</li>
       </ul>
     </nav>
     <!-- Title -->
-    <h1 >
+    <h1>
       <%= @translations["title"] || @case_study.title %>
     </h1>
     <!-- Meta Information -->
-    <div >
+    <div>
       <span><strong>Role:</strong> <%= @case_study.role %></span>
       | <span><strong>Timeline:</strong> <%= @case_study.timeline %></span>
       |
@@ -34,13 +34,13 @@
       </span>
     </div>
     <!-- Introduction -->
-    <p >
+    <p>
       <%= @translations["introduction"] || @case_study.introduction %>
     </p>
     <!-- Platforms -->
-    <div >
-      <strong >Platforms:</strong>
-      <ul >
+    <div>
+      <strong>Platforms:</strong>
+      <ul>
         <%= for platform <- @case_study.platforms do %>
           <li><%= platform %></li>
         <% end %>
@@ -48,7 +48,7 @@
     </div>
     
       <!-- Main Content -->
-    <div >
+    <div>
       <%= @translations["content"] || @case_study.content %>
     </div>
   </article>

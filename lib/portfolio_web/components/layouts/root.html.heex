@@ -66,30 +66,30 @@
       src={url(~p"/js/app.js")}
     />
   </head>
-  <body >
-    <div >
-      <div >
-        <div >
+  <body>
+    <div>
+      <div>
+        <div>
           <div role="region" aria-label="{gettext('Language Switcher')}">
             <input type="checkbox" id="lang-toggle" hidden aria-hidden="true" />
             <label for="lang-toggle" aria-hidden="true">
               <span aria-label="{ gettext('English')}">English</span>
               <span aria-label="{ gettext('Japanese')}">日本語</span>
-              <div ></div>
+              <div></div>
             </label>
           </div>
         </div>
       </div>
     </div>
 
-    <main >
+    <main>
       <%= @inner_content %>
     </main>
 
     <!-- FIX FOOTER SO IT'S ACTUALLY LINKING -->
-    <footer >
-      <div >
-        <h2 >
+    <footer>
+      <div>
+        <h2>
           <%= gettext("Colophon") %>
         </h2>
         <p>
@@ -97,16 +97,13 @@
           <%= gettext("Self-hosted on my homelab in Tokyo.") %>
           <%= gettext("Type set in %{font1}, %{font2}, %{font3}, & %{font4}.") %>
         </p>
-        <p>    
-          <%= gettext("Open source on %{github} under aGPL",
-            github: link(%{href: "https://github.com/zaneriley/personal-site", target: "_blank"}) |> Phoenix.HTML.Safe.to_iodata() |> to_string()
-          )
-          |> raw() %>
+        <p>
+          <%= gettext("Open source on %{github} under aGPL", github: "") %>
         </p>
         <p>
           <%= gettext("Remix freely in Figma.") %>
         </p>
-        <p >
+        <p>
           &copy; 2010 – <%= @current_year %>
         </p>
       </div>
