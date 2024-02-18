@@ -43,7 +43,7 @@ msgid "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
 msgstr "%{Font1}、%{Font2}、%{Font3}、そして%{Font4}でタイプセットしています。"
 
 msgid "Open source on %{github} under aGPL."
-msgstr "aGPLの下で[GitHub](https://github.com/zaneriley/personalsite)にオープンソースとしています。"
+msgstr "aGPLの下で%{github}にオープンソースとしています。"
 
 msgid "Remix freely in %{figma}."
 msgstr "%{figma}で自由にリミックスしてください。"

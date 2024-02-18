@@ -94,10 +94,10 @@
           <%= gettext("Type set in %{font1}, %{font2}, %{font3}, & %{font4}.") %>
         </p>
         <p>
-          <%= gettext("Open source on %{github} under aGPL", github: "") %>
+          <%= raw(gettext("Open source on %{github} under aGPL.", github: "<a href='https://github.com/zaneriley/personal-site' target='_blank'>Github</a>")) %>
         </p>
         <p>
-          <%= gettext("Remix freely in Figma.") %>
+          <%= raw(gettext("Remix freely in %{figma}.", figma: "<a href='https://www.figma.com/file/zDOcBhnjTDCWmc6OFgeoUc/Portfolio-2021?type=design&mode=design&t=fKcg1qZfy3SuqzuK-1' target='_blank'>Figma</a>")) %>
         </p>
         <p>
           &copy; 2010 – <%= @current_year %>
