@@ -19,7 +19,7 @@ defmodule Portfolio.MixProject do
   def application do
     [
       mod: {Portfolio.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :file_system]
     ]
   end
 
@@ -30,10 +30,12 @@ defmodule Portfolio.MixProject do
     [
       {:credo, "1.7.3", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.1.1"},
+      {:earmark, "~> 1.4"},
       {:ecto_sql, "3.11.1"},
       {:excoveralls, "0.18.0", only: [:dev, :test]},
       {:finch, "0.17.0"},
       {:floki, ">= 0.34.3", only: :test},
+      {:file_system,"~> 0.2.10", only: [:dev, :test]},
       {:gettext, "0.24.0"},
       {:heroicons, "0.5.3"},
       {:jason, "1.4.1"},

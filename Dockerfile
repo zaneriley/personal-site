@@ -1,6 +1,6 @@
 FROM node:20.6.1-bookworm-slim AS assets
 
-LABEL maintainer="Nick Janetakis <nick.janetakis@gmail.com>"
+LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
 WORKDIR /app/assets
 
@@ -33,7 +33,7 @@ RUN if [ "${NODE_ENV}" != "development" ]; then \
 ###############################################################################
 
 FROM elixir:1.16.0-slim AS dev
-LABEL maintainer="Nick Janetakis <nick.janetakis@gmail.com>"
+LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
 WORKDIR /app
 
@@ -79,7 +79,7 @@ CMD ["iex", "-S", "mix", "phx.server"]
 ###############################################################################
 
 FROM elixir:1.16.0-slim AS prod
-LABEL maintainer="Nick Janetakis <nick.janetakis@gmail.com>"
+LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
 WORKDIR /app
 

@@ -22,10 +22,13 @@ defmodule Portfolio.CaseStudy do
     field :platforms, {:array, :string}
     field :introduction, :string
     field :content, :string
+    field :index, :integer
+    field :file_path, :string
+    field :locale, :string
 
     has_many :translations, Portfolio.Translation,
-      foreign_key: :translatable_id,
-      where: [translatable_type: "CaseStudy"]
+    foreign_key: :translatable_id,
+    where: [translatable_type: "CaseStudy"]
 
     timestamps()
   end
@@ -33,26 +36,8 @@ defmodule Portfolio.CaseStudy do
   @doc false
   def changeset(case_study, attrs) do
     case_study
-    |> cast(attrs, [
-      :title,
-      :url,
-      :role,
-      :timeline,
-      :read_time,
-      :platforms,
-      :introduction,
-      :content
-    ])
-    |> validate_required([
-      :title,
-      :url,
-      :role,
-      :timeline,
-      :read_time,
-      :platforms,
-      :introduction,
-      :content
-    ])
+    |> cast(attrs, [:title, :url, :role, :timeline, :read_time, :platforms, :introduction, :content, :index, :file_path, :locale])
+    |> validate_required([:title, :url, :role, :timeline, :read_time, :platforms, :introduction, :index, :file_path, :locale])
     |> unique_constraint(:url)
   end
 end

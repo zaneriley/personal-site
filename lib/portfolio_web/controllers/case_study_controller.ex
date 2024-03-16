@@ -24,6 +24,7 @@ defmodule PortfolioWeb.CaseStudyController do
 
         %Portfolio.CaseStudy{} = cs ->
           Logger.info("Case study found for URL: #{url}")
+          Logger.debug("Case study before rendering: #{inspect(cs)}")
 
           {page_title, introduction} = set_page_metadata(cs, translations)
 

@@ -11,7 +11,6 @@ defmodule Portfolio.Content do
   alias Portfolio.Repo
   alias Portfolio.CaseStudy
   alias Portfolio.Translation
-  # Import the `from/2` function from Ecto.Query
   import Ecto.Query, only: [from: 2]
   require Logger
 
@@ -19,23 +18,25 @@ defmodule Portfolio.Content do
     %CaseStudy{}
     |> CaseStudy.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, case_study} -> Portfolio.ContentRendering.do_render(case_study)
+      {:error, reason}   -> {:error, reason}
+    end
   end
 
   def change_case_study(case_study) do
-    CaseStudy.changeset(case_study, %{})
+    changeset = CaseStudy.changeset(case_study, %{})
+
+    case Repo.update(changeset) do
+      {:ok, case_study} -> Portfolio.ContentRendering.do_render(case_study)
+      {:error, reason}   -> {:error, reason}
+    end
   end
 
-  # def create_note(attrs) do
-  #   %Note{}
-  #   |> Note.changeset(attrs)
-  #   |> Repo.insert()
-  # end
-
-  # You can set this to what makes sense for your application
   @page_size 10
 
-  # Function to fetch content and its translations
   def get_content_with_translations(content_type, identifier, locale) do
+    Logger.debug("get_content_with_translations/3 called with #{inspect(content_type)}, #{inspect(identifier)}, #{inspect(locale)}")
     content_query =
       case content_type do
         :case_study ->
@@ -43,12 +44,10 @@ defmodule Portfolio.Content do
           # Add clauses for other content types (e.g., :note)
       end
 
-    # Fetch the content
     content = Repo.one(content_query)
+    Logger.debug("Content fetched: #{inspect(content)}")
 
-    # Proceed only if content is found
     if content do
-      # Construct the query for translations
       translation_query =
         from t in Translation,
           where:
@@ -56,14 +55,34 @@ defmodule Portfolio.Content do
               t.translatable_type == ^Atom.to_string(content_type) and
               t.locale == ^locale
 
-      # Fetch translations based on the constructed query
       translations =
         Repo.all(translation_query)
         |> Enum.into(%{}, fn t -> {t.field_name, t.field_value} end)
+      Logger.debug("Translations fetched: #{inspect(translations)}")
+
+      Logger.debug("Content after attempting to update :content field: #{inspect(content)}")
 
       {content, translations}
     else
+      Logger.error("No content found for #{inspect(identifier)}")
+
       {nil, %{}}
+    end
+  end
+
+  def read_markdown_file(case_study) do
+    case case_study.file_path do
+      nil ->
+        Logger.error("File path is nil for case study: #{case_study.title}")
+        {:error, "File path is nil."}
+      file_path ->
+        Logger.debug("Reading markdown file: #{file_path}")
+        case File.read(file_path) do
+          {:ok, file_content} -> {:ok, file_content}
+          {:error, reason} ->
+            Logger.error("Failed to read file: #{file_path} with reason: #{reason}")
+            {:error, "Could not read file"}
+        end
     end
   end
 

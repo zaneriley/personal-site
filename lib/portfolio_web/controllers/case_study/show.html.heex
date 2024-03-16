@@ -45,7 +45,11 @@
     </div>
     <!-- Main Content -->
     <div>
-      <%= @translations["content"] || @case_study.content %>
+      <%= if @case_study.content do %>
+        <%= raw @case_study.content %>
+      <% else %>
+        <p>Content not available.</p>
+      <% end %>
     </div>
   </article>
 </main>

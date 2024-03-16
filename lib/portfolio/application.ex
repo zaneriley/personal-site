@@ -2,7 +2,6 @@ defmodule Portfolio.Application do
   @moduledoc false
 
   use Application
-
   @impl true
   def start(_type, _args) do
     children = [
@@ -12,13 +11,16 @@ defmodule Portfolio.Application do
        query: Application.get_env(:portfolio, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Portfolio.PubSub},
       {Finch, name: Portfolio.Finch},
-      PortfolioWeb.Endpoint
+      PortfolioWeb.Endpoint,
+      {Portfolio.ContentUpdater.FileSystemWatcher, Application.get_env(:portfolio, Portfolio.ContentUpdater.FileSystemWatcher)[:paths]},
+      Portfolio.ContentUpdater.Updater
       # Start a worker by calling: Portfolio.Worker.start_link(arg)
       # {Portfolio.Worker, arg}
     ]
 
     opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
     Supervisor.start_link(children, opts)
+
   end
 
   @impl true
