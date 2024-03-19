@@ -49,7 +49,8 @@ defmodule Portfolio.MixProject do
       {:postgrex, "0.17.4"},
       {:swoosh, "1.14.4"},
       {:telemetry_metrics, "0.6.2"},
-      {:telemetry_poller, "1.0.0"}
+      {:telemetry_poller, "1.0.0"},
+      {:yamerl, "~> 0.8.0", only: [:dev, :test]}
     ]
   end
 

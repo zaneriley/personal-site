@@ -2,8 +2,13 @@ defmodule Portfolio.Application do
   @moduledoc false
 
   use Application
+
   @impl true
   def start(_type, _args) do
+
+    # Can't be a child process for some reason
+    Application.start(:yamerl, [:dev, :test])
+
     children = [
       PortfolioWeb.Telemetry,
       Portfolio.Repo,
@@ -13,7 +18,6 @@ defmodule Portfolio.Application do
       {Finch, name: Portfolio.Finch},
       PortfolioWeb.Endpoint,
       {Portfolio.ContentUpdater.FileSystemWatcher, Application.get_env(:portfolio, Portfolio.ContentUpdater.FileSystemWatcher)[:paths]},
-      Portfolio.ContentUpdater.Updater
       # Start a worker by calling: Portfolio.Worker.start_link(arg)
       # {Portfolio.Worker, arg}
     ]
@@ -22,6 +26,7 @@ defmodule Portfolio.Application do
     Supervisor.start_link(children, opts)
 
   end
+
 
   @impl true
   def config_change(changed, _new, removed) do

@@ -11,29 +11,117 @@ defmodule Portfolio.Content do
   alias Portfolio.Repo
   alias Portfolio.CaseStudy
   alias Portfolio.Translation
+  alias Portfolio.ContentRendering
   import Ecto.Query, only: [from: 2]
   require Logger
 
-  def create_case_study(attrs) do
+  @doc """
+  Reads a Markdown file and extracts its frontmatter and content.
+  It returns a tuple with the frontmatter and content.
+
+  ## Examples
+
+      iex> Portfolio.Content.read_markdown_file("path/to/file.md")
+      {:ok, %{"title" => "My Case Study", "url" => "my-case-study"}, "My Markdown Content"}
+  """
+  def read_markdown_file(file_path) do
+    Logger.debug("read_markdown_file called with: #{file_path}")
+
+    case File.read(file_path) do
+      nil ->
+        Logger.error("File path is nil")
+        {:error, :file_path_missing}
+
+      {:ok, file_content} ->
+        Logger.debug("File read successfully. Contents: #{inspect(file_content)}")
+        with {:ok, metadata} <- extract_frontmatter(file_content),
+             {:ok, markdown} <- Portfolio.ContentRendering.extract_markdown(file_content) do
+          {:ok, metadata, markdown}
+        else
+          {:error, reason} ->
+            Logger.error("Error extracting content from file #{file_path}. Reason: #{reason}")
+            {:error, reason}
+        end
+
+      {:error, reason} ->
+        Logger.error("Failed to read file: #{file_path} with reason: #{reason}")
+        {:error, :file_read_failed}
+    end
+  end
+
+  @doc """
+  Separates a markdown file into its frontmatter and content.
+
+  ## Examples
+
+      iex> Portfolio.Content.extract_frontmatter("title: My Case Study\nurl: my-case-study\n---\nMy Markdown Content")
+      {:ok, %{"title" => "My Case Study", "url" => "my-case-study"}}
+  """
+  def extract_frontmatter(file_content) do
+    case String.split(file_content, "---", parts: 3) do
+      [_, frontmatter, _rest] ->
+        case :yamerl_constr.string(frontmatter) do
+          [metadata] ->
+            Logger.debug("Parsed frontmatter successfully: #{inspect(metadata)}")  # Add this line
+            {:ok, metadata}
+
+          error ->
+            Logger.error("YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}")  # Detailed error logging
+            {:error, {:yaml_parsing_failed, error}}
+        end
+
+      _ ->
+        {:error, :missing_frontmatter_delimiters}
+    end
+  end
+
+  def update_case_study_from_file(file_path) do
+    with {:ok, metadata, markdown} <- Portfolio.Content.read_markdown_file(file_path),
+          {:ok, case_study} <- get_or_create_case_study(metadata) do
+      update_case_study(case_study, metadata, markdown)
+    else
+      {:error, :file_processing_failed} ->
+        Logger.error("Failed to process case study file: #{file_path}")
+        {:error, :file_processing_failed}
+
+      {:error, reason} ->
+        Logger.error("Case study update (from file) failed. File: #{file_path}, Reason: #{inspect(reason)}")
+        {:error, reason}
+    end
+  end
+
+  defp get_or_create_case_study(metadata) do
+    case Repo.get_by(CaseStudy, url: metadata["url"]) do
+      nil -> create_case_study(metadata)
+      case_study -> {:ok, case_study}
+    end
+  end
+
+  defp create_case_study(metadata) do
     %CaseStudy{}
-    |> CaseStudy.changeset(attrs)
+    |> CaseStudy.changeset(metadata)
     |> Repo.insert()
     |> case do
-      {:ok, case_study} -> Portfolio.ContentRendering.do_render(case_study)
-      {:error, reason}   -> {:error, reason}
+          {:ok, case_study} -> {:ok, case_study}
+          {:error, reason} ->
+            Logger.error("Failed to create case study. Metadata: #{inspect(metadata)}, Reason: #{inspect(reason)}")
+            {:error, :case_study_creation_failed}
+        end
+  end
+
+  defp update_case_study(case_study, metadata, markdown) do
+    changeset = CaseStudy.changeset(case_study, metadata)
+    Repo.update(changeset)
+    |> case do
+      {:ok, updated_case_study} ->
+        Portfolio.ContentRendering.do_render(updated_case_study, markdown)
+      {:error, reason} ->
+        Logger.error("Failed to update case study (ID: #{case_study.id}). Changeset: #{inspect(changeset)}, Reason: #{inspect(reason)}")
+        {:error, :case_study_update_failed}
     end
   end
 
-  def change_case_study(case_study) do
-    changeset = CaseStudy.changeset(case_study, %{})
 
-    case Repo.update(changeset) do
-      {:ok, case_study} -> Portfolio.ContentRendering.do_render(case_study)
-      {:error, reason}   -> {:error, reason}
-    end
-  end
-
-  @page_size 10
 
   def get_content_with_translations(content_type, identifier, locale) do
     Logger.debug("get_content_with_translations/3 called with #{inspect(content_type)}, #{inspect(identifier)}, #{inspect(locale)}")
@@ -70,22 +158,7 @@ defmodule Portfolio.Content do
     end
   end
 
-  def read_markdown_file(case_study) do
-    case case_study.file_path do
-      nil ->
-        Logger.error("File path is nil for case study: #{case_study.title}")
-        {:error, "File path is nil."}
-      file_path ->
-        Logger.debug("Reading markdown file: #{file_path}")
-        case File.read(file_path) do
-          {:ok, file_content} -> {:ok, file_content}
-          {:error, reason} ->
-            Logger.error("Failed to read file: #{file_path} with reason: #{reason}")
-            {:error, "Could not read file"}
-        end
-    end
-  end
-
+  @page_size 10
   def get_all_case_studies(locale, page_number \\ 1) do
     case_studies_query =
       from c in CaseStudy,
@@ -114,4 +187,6 @@ defmodule Portfolio.Content do
       {case_study, translations}
     end)
   end
+
+
 end

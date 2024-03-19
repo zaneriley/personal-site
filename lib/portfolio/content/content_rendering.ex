@@ -1,10 +1,28 @@
 defmodule Portfolio.ContentRendering do
   @moduledoc """
-  Handles the rendering of Markdown case studies into HTML.
+  Handles the rendering of Markdown case studies into HTML and provides
+  support for extracting Markdown content from files.
+
+  Key responsibilities include:
+
+  * **Markdown to HTML Conversion:** Core function `do_render/1` takes a
+    `case_study` struct and a `markdown` string as input, and returns a
+    rendered HTML string.
+  * **Markdown Extraction:** The `extract_markdown/1` function is responsible
+    for extracting Markdown content from a file. It splits the file content
+    into three parts separated by three dashes (`---`), and returns the
+    second part, which contains the Markdown content.
   """
   alias Portfolio.Repo
   alias Portfolio.CaseStudy
   require Logger
+
+  def extract_markdown(file_content) do
+    case String.split(file_content, "---", parts: 3) do
+      [_, _, markdown] -> {:ok, markdown}
+      _ -> {:error, :no_markdown_content}
+    end
+  end
 
   def do_render(case_study) do
     case Portfolio.Content.read_markdown_file(case_study) do
@@ -29,7 +47,7 @@ defmodule Portfolio.ContentRendering do
   defp update_case_study_content(case_study, html_content) do
     Repo.transaction(fn ->
       changeset = CaseStudy.changeset(case_study, %{content: html_content})
-      case Repo.update(changeset) do # <--- Add detailed logging here
+      case Repo.update(changeset) do
         {:ok, updated_case_study} ->
           Logger.debug("Case study updated successfully")
           {:ok, updated_case_study}

@@ -42,20 +42,34 @@ defmodule Portfolio.ContentUpdater.FileSystemWatcher do
 
   """
   def handle_info({:file_event, watcher_pid, {path, events}}, %{watcher_pid: watcher_pid} = state) do
-    cond do
-      events in [:modified, :closed] ->
-        Logger.debug("File modified: #{path}")
-        # Trigger your content update logic here
+    # Enhanced logging: Include event information
+    Logger.info("File system event: File: #{path}, Events: #{inspect(events)}")
 
-      events == [:created] ->
-        Logger.debug("File created: #{path}")
-        # Optionally handle file creation if needed
+    if relevant_file_change?(path, events) do
+      Logger.info("relevant file change detected: #{path}")
+      case Portfolio.Content.update_case_study_from_file(path) do
+        {:ok, _} -> Logger.info("File change processed successfully")
 
-      true ->
-        # Other events – log them if it helps in development
-        Logger.debug("File system event: Path: #{path}, Events: #{inspect(events)}")
+        {:error, reason} ->
+          Logger.error("Failed to update case study from file: #{path}. Reason: #{inspect(reason)}")
+      end
+    else
+      # Original logging for non-relevant changes
+      Logger.debug("Not relevant file change: #{inspect(relevant_file_change?(path, events))}")
     end
 
     {:noreply, state}
+  end
+
+  def handle_info(unknown_message, state) do
+    Logger.warn("Received unknown message: #{inspect(unknown_message)}")
+    Logger.warn("State: #{inspect(state)}")
+    {:noreply, state}
+  end
+
+  defp relevant_file_change?(path, events) do
+    Path.extname(path) == ".md" and
+    events == [:modified, :closed] and
+    not String.starts_with?(path, ".")
   end
 end
