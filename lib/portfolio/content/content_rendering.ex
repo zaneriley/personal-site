@@ -25,24 +25,44 @@ defmodule Portfolio.ContentRendering do
   end
 
   def do_render(case_study) do
-    case Portfolio.Content.read_markdown_file(case_study) do
-      {:ok, markdown_content} ->
-        try do
-          html_content = Earmark.as_html!(markdown_content)
-          Logger.debug("Earmark conversion output: #{inspect(html_content)}")
-          Logger.info("Markdown converted to HTML successfully for CaseStudy ID: #{case_study.id}")
-          update_case_study_content(case_study, html_content)
-        rescue
-          exception ->
-            Logger.error("Failed to convert markdown to HTML for CaseStudy ID: #{case_study.id}. Exception: #{inspect(exception)}")
-            {:error, :conversion_failed}
-        end
+    with {:ok, markdown_content} <- Portfolio.Content.read_markdown_file(case_study),
+         {:ok, html_content} <- Earmark.as_html!(markdown_content),
+         {:ok, updated_case_study} <- update_case_study_content(case_study, html_content) do
+       {:ok, updated_case_study}
+    else
+      {:error, :file_processing_failed} ->
+        Logger.error("Markdown rendering failed for CaseStudy ID (file): #{case_study.id}")
+        {:error, :file_processing_failed}
+
+      {:error, :conversion_failed} ->
+        Logger.error("Failed to convert markdown to HTML for CaseStudy ID: #{case_study.id}")
+        {:error, :conversion_failed}
 
       {:error, reason} ->
-        Logger.error("Markdown rendering failed for CaseStudy ID: #{case_study.id}. Reason: #{reason}")
+        Logger.error("Markdown rendering failed for CaseStudy ID (unknown error): #{case_study.id}. Reason: #{reason}")
         {:error, reason}
     end
+
   end
+  # def do_render(case_study) do
+  #   case Portfolio.Content.read_markdown_file(case_study) do
+  #     {:ok, markdown_content} ->
+  #       try do
+  #         html_content = Earmark.as_html!(markdown_content)
+  #         Logger.debug("Earmark conversion output: #{inspect(html_content)}")
+  #         Logger.info("Markdown converted to HTML successfully for CaseStudy ID: #{case_study.id}")
+  #         update_case_study_content(case_study, html_content)
+  #       rescue
+  #         exception ->
+  #           Logger.error("Failed to convert markdown to HTML for CaseStudy ID: #{case_study.id}. Exception: #{inspect(exception)}")
+  #           {:error, :conversion_failed}
+  #       end
+
+  #     {:error, reason} ->
+  #       Logger.error("Markdown rendering failed for CaseStudy ID: #{case_study.id}. Reason: #{reason}")
+  #       {:error, reason}
+  #   end
+  # end
 
   defp update_case_study_content(case_study, html_content) do
     Repo.transaction(fn ->

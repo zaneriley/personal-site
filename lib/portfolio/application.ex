@@ -7,7 +7,7 @@ defmodule Portfolio.Application do
   def start(_type, _args) do
 
     # Can't be a child process for some reason
-    Application.start(:yamerl, [:dev, :test])
+    Application.start(:yamerl)
 
     children = [
       PortfolioWeb.Telemetry,
@@ -17,7 +17,7 @@ defmodule Portfolio.Application do
       {Phoenix.PubSub, name: Portfolio.PubSub},
       {Finch, name: Portfolio.Finch},
       PortfolioWeb.Endpoint,
-      {Portfolio.ContentUpdater.FileSystemWatcher, Application.get_env(:portfolio, Portfolio.ContentUpdater.FileSystemWatcher)[:paths]},
+      {Portfolio.Content.FileSystemWatcher, Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[:paths]},
       # Start a worker by calling: Portfolio.Worker.start_link(arg)
       # {Portfolio.Worker, arg}
     ]

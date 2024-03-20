@@ -24,30 +24,22 @@ defmodule Portfolio.Content do
       iex> Portfolio.Content.read_markdown_file("path/to/file.md")
       {:ok, %{"title" => "My Case Study", "url" => "my-case-study"}, "My Markdown Content"}
   """
-  def read_markdown_file(file_path) do
-    Logger.debug("read_markdown_file called with: #{file_path}")
+def read_markdown_file(file_path) do
+  with {:ok, file_content} <- File.read(file_path),
+       {:ok, metadata} <- extract_frontmatter(file_content),
+       {:ok, markdown} <- Portfolio.ContentRendering.extract_markdown(file_content) do
+    {:ok, metadata, markdown}
+  else
+    {:error, :file_path_missing} -> # When File.read returns {:error, nil}
+      Logger.error("File path is nil")
+      {:error, :file_path_missing}
 
-    case File.read(file_path) do
-      nil ->
-        Logger.error("File path is nil")
-        {:error, :file_path_missing}
-
-      {:ok, file_content} ->
-        Logger.debug("File read successfully. Contents: #{inspect(file_content)}")
-        with {:ok, metadata} <- extract_frontmatter(file_content),
-             {:ok, markdown} <- Portfolio.ContentRendering.extract_markdown(file_content) do
-          {:ok, metadata, markdown}
-        else
-          {:error, reason} ->
-            Logger.error("Error extracting content from file #{file_path}. Reason: #{reason}")
-            {:error, reason}
-        end
-
-      {:error, reason} ->
-        Logger.error("Failed to read file: #{file_path} with reason: #{reason}")
-        {:error, :file_read_failed}
-    end
+    {:error, reason} ->
+      Logger.error("Error extracting content from file #{file_path}. Reason: #{reason}")
+      {:error, reason}
   end
+end
+
 
   @doc """
   Separates a markdown file into its frontmatter and content.

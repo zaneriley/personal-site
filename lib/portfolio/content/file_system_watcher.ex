@@ -1,4 +1,4 @@
-defmodule Portfolio.ContentUpdater.FileSystemWatcher do
+defmodule Portfolio.Content.FileSystemWatcher do
   use GenServer
   require Logger
 
@@ -19,7 +19,7 @@ defmodule Portfolio.ContentUpdater.FileSystemWatcher do
     {:ok, pid} where pid is the process ID of the file watcher.
   """
   def init(paths) do
-    paths = Application.get_env(:portfolio, Portfolio.ContentUpdater.FileSystemWatcher)[:paths]
+    paths = Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[:paths]
     {:ok, watcher_pid} = FileSystem.start_link(dirs: paths)
     Logger.info("File system watcher started, watching paths: #{inspect(paths)}")
     FileSystem.subscribe(watcher_pid)
