@@ -54,11 +54,26 @@ end
       [_, frontmatter, _rest] ->
         case :yamerl_constr.string(frontmatter) do
           [metadata] ->
-            Logger.debug("Parsed frontmatter successfully: #{inspect(metadata)}")  # Add this line
-            {:ok, metadata}
+            Logger.debug("Parsed frontmatter without conversions: #{inspect(metadata)}")
 
+            metadata = Enum.into(metadata, %{}, fn
+              {charlist_key, charlist_value} when is_list(charlist_key) and is_list(charlist_value) ->
+                key = String.to_existing_atom(List.to_string(charlist_key))
+                value = if is_list(List.first(charlist_value)), do: Enum.map(charlist_value, &List.to_string/1), else: List.to_string(charlist_value)
+                {key, value}
+
+              {key, charlist_value} when is_list(charlist_value) ->
+                {key, List.to_string(charlist_value)}
+
+              {charlist_key, value} when is_list(charlist_key) ->
+                {String.to_existing_atom(List.to_string(charlist_key)), value}
+
+              {key, value} ->
+                {key, value}
+            end)
+            {:ok, metadata}
           error ->
-            Logger.error("YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}")  # Detailed error logging
+            Logger.error("YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}")
             {:error, {:yaml_parsing_failed, error}}
         end
 
@@ -69,7 +84,7 @@ end
 
   def update_case_study_from_file(file_path) do
     with {:ok, metadata, markdown} <- Portfolio.Content.read_markdown_file(file_path),
-          {:ok, case_study} <- get_or_create_case_study(metadata) do
+         {:ok, case_study} <- get_or_create_case_study(metadata) do
       update_case_study(case_study, metadata, markdown)
     else
       {:error, :file_processing_failed} ->
@@ -77,29 +92,40 @@ end
         {:error, :file_processing_failed}
 
       {:error, reason} ->
-        Logger.error("Case study update (from file) failed. File: #{file_path}, Reason: #{inspect(reason)}")
+        Logger.error("Case study update (from file) failed. File: #{file_path}. \nReason: #{inspect(reason)}")
         {:error, reason}
     end
   end
 
   defp get_or_create_case_study(metadata) do
-    case Repo.get_by(CaseStudy, url: metadata["url"]) do
-      nil -> create_case_study(metadata)
-      case_study -> {:ok, case_study}
+    Logger.debug(inspect(metadata))
+
+    url = get_in(metadata, [:url])
+
+    case url do
+      nil ->
+        {:error, :missing_url_in_metadata}
+      url ->
+        case Repo.get_by(CaseStudy, url: url) do
+          nil -> create_case_study(metadata)
+          case_study -> {:ok, case_study}
+        end
     end
   end
+
 
   defp create_case_study(metadata) do
     %CaseStudy{}
     |> CaseStudy.changeset(metadata)
     |> Repo.insert()
     |> case do
-          {:ok, case_study} -> {:ok, case_study}
-          {:error, reason} ->
-            Logger.error("Failed to create case study. Metadata: #{inspect(metadata)}, Reason: #{inspect(reason)}")
-            {:error, :case_study_creation_failed}
-        end
+        {:ok, case_study} -> {:ok, case_study}
+        {:error, reason} ->
+          Logger.error("Failed to create case study. Metadata: #{inspect(metadata)}, Reason: #{inspect(reason)}")
+          {:error, :case_study_creation_failed}
+    end
   end
+
 
   defp update_case_study(case_study, metadata, markdown) do
     changeset = CaseStudy.changeset(case_study, metadata)

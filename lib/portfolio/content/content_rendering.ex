@@ -24,11 +24,32 @@ defmodule Portfolio.ContentRendering do
     end
   end
 
-  def do_render(case_study) do
-    with {:ok, markdown_content} <- Portfolio.Content.read_markdown_file(case_study),
-         {:ok, html_content} <- Earmark.as_html!(markdown_content),
+  @doc """
+  Converts Markdown content to HTML and updates the given case study with the rendered HTML.
+
+  This function takes a `case_study` struct and a string containing Markdown content as arguments. It first converts the Markdown content to HTML using the Earmark library. If the conversion is successful, it then updates the `case_study` with the rendered HTML content.
+
+  ## Parameters
+
+    - `case_study`: The case study struct to be updated with the rendered HTML content.
+    - `markdown_content`: A string containing the Markdown content to be converted to HTML.
+
+  ## Returns
+
+    - `{:ok, updated_case_study}` on successful conversion and update.
+    - `{:error, reason}` if an error occurs during the process, where `reason` is the error description.
+
+  ## Examples
+
+      iex> case_study = %Portfolio.CaseStudy{id: 1, content: nil}
+      iex> markdown_content = "# Title\\nContent here"
+      iex> Portfolio.ContentRendering.do_render(case_study, markdown_content)
+      {:ok, %Portfolio.CaseStudy{id: 1, content: "<h1>Title</h1>\\n<p>Content here</p>"}}
+  """
+  def do_render(case_study, markdown_content) do
+    with {:ok, html_content, warnings} <- Earmark.as_html(markdown_content),
          {:ok, updated_case_study} <- update_case_study_content(case_study, html_content) do
-       {:ok, updated_case_study}
+      {:ok, updated_case_study}
     else
       {:error, :file_processing_failed} ->
         Logger.error("Markdown rendering failed for CaseStudy ID (file): #{case_study.id}")
