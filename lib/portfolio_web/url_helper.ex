@@ -10,7 +10,6 @@ defmodule PortfolioWeb.UrlHelper do
   def current_page_url(conn, locale) do
     # Get the current path and params
     current_path = conn.request_path
-    current_params = conn.params
 
     case current_path do
       "/case-study/" <> case_study_slug ->

@@ -1,4 +1,19 @@
 defmodule Portfolio.Content.FileSystemWatcher do
+  @moduledoc """
+  A GenServer that monitors a specified directory for file changes, particularly Markdown files.
+
+  The GenServer is responsible for handling file system events and triggering content updates when relevant files are detected.
+
+  ## Usage
+
+  To use the FileSystemWatcher, start the GenServer with the `paths` option set to the directory paths you want to monitor. The GenServer will then monitor the specified directories for file changes and trigger content updates when relevant files are detected.
+
+  ## Implementation
+
+  - Utilizes the `FileSystem` library for watching file system events.
+  - Filters events to react only to modifications of Markdown files that are not hidden.
+  - Updates the content of the relevant case studies based on the file changes.
+  """
   use GenServer
   require Logger
 
@@ -18,15 +33,26 @@ defmodule Portfolio.Content.FileSystemWatcher do
   Returns:
     {:ok, pid} where pid is the process ID of the file watcher.
   """
-  def init(paths) do
-    paths = Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[:paths]
+  def init(_paths) do
+    paths =
+      Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[
+        :paths
+      ]
+
     {:ok, watcher_pid} = FileSystem.start_link(dirs: paths)
-    Logger.info("File system watcher started, watching paths: #{inspect(paths)}")
+
+    Logger.info(
+      "File system watcher started, watching paths: #{inspect(paths)}"
+    )
+
     FileSystem.subscribe(watcher_pid)
     {:ok, %{watcher_pid: watcher_pid}}
   end
 
-  def handle_info({:file_event, watcher_pid, :stop}, %{watcher_pid: watcher_pid}=state) do
+  def handle_info(
+        {:file_event, watcher_pid, :stop},
+        %{watcher_pid: watcher_pid} = state
+      ) do
     Logger.warning("File system watcher stopped unexpectedly")
     {:noreply, state}
   end
@@ -41,35 +67,44 @@ defmodule Portfolio.Content.FileSystemWatcher do
     * state: The current state of the file watcher GenServer.
 
   """
-  def handle_info({:file_event, watcher_pid, {path, events}}, %{watcher_pid: watcher_pid} = state) do
+  def handle_info(
+        {:file_event, watcher_pid, {path, events}},
+        %{watcher_pid: watcher_pid} = state
+      ) do
     # Enhanced logging: Include event information
     Logger.info("File system event: File: #{path}, Events: #{inspect(events)}")
 
     if relevant_file_change?(path, events) do
       Logger.info("relevant file change detected: #{path}")
+
       case Portfolio.Content.update_case_study_from_file(path) do
-        {:ok, _} -> Logger.info("File change processed successfully")
+        {:ok, _} ->
+          Logger.info("File change processed successfully")
 
         {:error, reason} ->
-          Logger.error("Failed to update case study from file: #{path}. Reason: #{inspect(reason)}")
+          Logger.error(
+            "Failed to update case study from file: #{path}. Reason: #{inspect(reason)}"
+          )
       end
     else
       # Original logging for non-relevant changes
-      Logger.debug("Not relevant file change: #{inspect(relevant_file_change?(path, events))}")
+      Logger.debug(
+        "Not relevant file change: #{inspect(relevant_file_change?(path, events))}"
+      )
     end
 
     {:noreply, state}
   end
 
   def handle_info(unknown_message, state) do
-    Logger.warn("Received unknown message: #{inspect(unknown_message)}")
-    Logger.warn("State: #{inspect(state)}")
+    Logger.warning("Received unknown message: #{inspect(unknown_message)}")
+    Logger.warning("State: #{inspect(state)}")
     {:noreply, state}
   end
 
   defp relevant_file_change?(path, events) do
     Path.extname(path) == ".md" and
-    events == [:modified, :closed] and
-    not String.starts_with?(path, ".")
+      events == [:modified, :closed] and
+      not String.starts_with?(path, ".")
   end
 end

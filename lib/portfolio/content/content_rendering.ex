@@ -47,24 +47,34 @@ defmodule Portfolio.ContentRendering do
       {:ok, %Portfolio.CaseStudy{id: 1, content: "<h1>Title</h1>\\n<p>Content here</p>"}}
   """
   def do_render(case_study, markdown_content) do
-    with {:ok, html_content, warnings} <- Earmark.as_html(markdown_content),
-         {:ok, updated_case_study} <- update_case_study_content(case_study, html_content) do
+    with {:ok, html_content, _warnings} <- Earmark.as_html(markdown_content),
+         {:ok, updated_case_study} <-
+           update_case_study_content(case_study, html_content) do
       {:ok, updated_case_study}
     else
       {:error, :file_processing_failed} ->
-        Logger.error("Markdown rendering failed for CaseStudy ID (file): #{case_study.id}")
+        Logger.error(
+          "Markdown rendering failed for CaseStudy ID (file): #{case_study.id}"
+        )
+
         {:error, :file_processing_failed}
 
       {:error, :conversion_failed} ->
-        Logger.error("Failed to convert markdown to HTML for CaseStudy ID: #{case_study.id}")
+        Logger.error(
+          "Failed to convert markdown to HTML for CaseStudy ID: #{case_study.id}"
+        )
+
         {:error, :conversion_failed}
 
       {:error, reason} ->
-        Logger.error("Markdown rendering failed for CaseStudy ID (unknown error): #{case_study.id}. Reason: #{reason}")
+        Logger.error(
+          "Markdown rendering failed for CaseStudy ID (unknown error): #{case_study.id}. Reason: #{reason}"
+        )
+
         {:error, reason}
     end
-
   end
+
   # def do_render(case_study) do
   #   case Portfolio.Content.read_markdown_file(case_study) do
   #     {:ok, markdown_content} ->
@@ -88,10 +98,12 @@ defmodule Portfolio.ContentRendering do
   defp update_case_study_content(case_study, html_content) do
     Repo.transaction(fn ->
       changeset = CaseStudy.changeset(case_study, %{content: html_content})
+
       case Repo.update(changeset) do
         {:ok, updated_case_study} ->
           Logger.debug("Case study updated successfully")
           {:ok, updated_case_study}
+
         {:error, reason} ->
           Logger.error("Case study update failed: #{inspect(reason)}")
           {:error, reason}

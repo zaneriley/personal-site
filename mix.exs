@@ -35,7 +35,7 @@ defmodule Portfolio.MixProject do
       {:excoveralls, "0.18.0", only: [:dev, :test]},
       {:finch, "0.17.0"},
       {:floki, ">= 0.34.3", only: :test},
-      {:file_system,"~> 0.2.10", only: [:dev, :test]},
+      {:file_system, "~> 0.2.10", only: [:dev, :test]},
       {:gettext, "0.24.0"},
       {:heroicons, "0.5.3"},
       {:jason, "1.4.1"},

@@ -11,7 +11,6 @@ defmodule Portfolio.Content do
   alias Portfolio.Repo
   alias Portfolio.CaseStudy
   alias Portfolio.Translation
-  alias Portfolio.ContentRendering
   import Ecto.Query, only: [from: 2]
   require Logger
 
@@ -24,22 +23,26 @@ defmodule Portfolio.Content do
       iex> Portfolio.Content.read_markdown_file("path/to/file.md")
       {:ok, %{"title" => "My Case Study", "url" => "my-case-study"}, "My Markdown Content"}
   """
-def read_markdown_file(file_path) do
-  with {:ok, file_content} <- File.read(file_path),
-       {:ok, metadata} <- extract_frontmatter(file_content),
-       {:ok, markdown} <- Portfolio.ContentRendering.extract_markdown(file_content) do
-    {:ok, metadata, markdown}
-  else
-    {:error, :file_path_missing} -> # When File.read returns {:error, nil}
-      Logger.error("File path is nil")
-      {:error, :file_path_missing}
+  def read_markdown_file(file_path) do
+    with {:ok, file_content} <- File.read(file_path),
+         {:ok, metadata} <- extract_frontmatter(file_content),
+         {:ok, markdown} <-
+           Portfolio.ContentRendering.extract_markdown(file_content) do
+      {:ok, metadata, markdown}
+    else
+      # When File.read returns {:error, nil}
+      {:error, :file_path_missing} ->
+        Logger.error("File path is nil")
+        {:error, :file_path_missing}
 
-    {:error, reason} ->
-      Logger.error("Error extracting content from file #{file_path}. Reason: #{reason}")
-      {:error, reason}
+      {:error, reason} ->
+        Logger.error(
+          "Error extracting content from file #{file_path}. Reason: #{reason}"
+        )
+
+        {:error, reason}
+    end
   end
-end
-
 
   @doc """
   Separates a markdown file into its frontmatter and content.
@@ -54,26 +57,36 @@ end
       [_, frontmatter, _rest] ->
         case :yamerl_constr.string(frontmatter) do
           [metadata] ->
-            Logger.debug("Parsed frontmatter without conversions: #{inspect(metadata)}")
+            metadata =
+              Enum.into(metadata, %{}, fn
+                {charlist_key, charlist_value}
+                when is_list(charlist_key) and is_list(charlist_value) ->
+                  key = String.to_existing_atom(List.to_string(charlist_key))
 
-            metadata = Enum.into(metadata, %{}, fn
-              {charlist_key, charlist_value} when is_list(charlist_key) and is_list(charlist_value) ->
-                key = String.to_existing_atom(List.to_string(charlist_key))
-                value = if is_list(List.first(charlist_value)), do: Enum.map(charlist_value, &List.to_string/1), else: List.to_string(charlist_value)
-                {key, value}
+                  value =
+                    if is_list(List.first(charlist_value)),
+                      do: Enum.map(charlist_value, &List.to_string/1),
+                      else: List.to_string(charlist_value)
 
-              {key, charlist_value} when is_list(charlist_value) ->
-                {key, List.to_string(charlist_value)}
+                  {key, value}
 
-              {charlist_key, value} when is_list(charlist_key) ->
-                {String.to_existing_atom(List.to_string(charlist_key)), value}
+                {key, charlist_value} when is_list(charlist_value) ->
+                  {key, List.to_string(charlist_value)}
 
-              {key, value} ->
-                {key, value}
-            end)
+                {charlist_key, value} when is_list(charlist_key) ->
+                  {String.to_existing_atom(List.to_string(charlist_key)), value}
+
+                {key, value} ->
+                  {key, value}
+              end)
+
             {:ok, metadata}
+
           error ->
-            Logger.error("YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}")
+            Logger.error(
+              "YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}"
+            )
+
             {:error, {:yaml_parsing_failed, error}}
         end
 
@@ -83,7 +96,8 @@ end
   end
 
   def update_case_study_from_file(file_path) do
-    with {:ok, metadata, markdown} <- Portfolio.Content.read_markdown_file(file_path),
+    with {:ok, metadata, markdown} <-
+           Portfolio.Content.read_markdown_file(file_path),
          {:ok, case_study} <- get_or_create_case_study(metadata) do
       update_case_study(case_study, metadata, markdown)
     else
@@ -92,7 +106,10 @@ end
         {:error, :file_processing_failed}
 
       {:error, reason} ->
-        Logger.error("Case study update (from file) failed. File: #{file_path}. \nReason: #{inspect(reason)}")
+        Logger.error(
+          "Case study update (from file) failed. File: #{file_path}. \nReason: #{inspect(reason)}"
+        )
+
         {:error, reason}
     end
   end
@@ -105,6 +122,7 @@ end
     case url do
       nil ->
         {:error, :missing_url_in_metadata}
+
       url ->
         case Repo.get_by(CaseStudy, url: url) do
           nil -> create_case_study(metadata)
@@ -113,36 +131,45 @@ end
     end
   end
 
-
   defp create_case_study(metadata) do
     %CaseStudy{}
     |> CaseStudy.changeset(metadata)
     |> Repo.insert()
     |> case do
-        {:ok, case_study} -> {:ok, case_study}
-        {:error, reason} ->
-          Logger.error("Failed to create case study. Metadata: #{inspect(metadata)}, Reason: #{inspect(reason)}")
-          {:error, :case_study_creation_failed}
+      {:ok, case_study} ->
+        {:ok, case_study}
+
+      {:error, reason} ->
+        Logger.error(
+          "Failed to create case study. Metadata: #{inspect(metadata)}, Reason: #{inspect(reason)}"
+        )
+
+        {:error, :case_study_creation_failed}
     end
   end
 
-
   defp update_case_study(case_study, metadata, markdown) do
     changeset = CaseStudy.changeset(case_study, metadata)
+
     Repo.update(changeset)
     |> case do
       {:ok, updated_case_study} ->
         Portfolio.ContentRendering.do_render(updated_case_study, markdown)
+
       {:error, reason} ->
-        Logger.error("Failed to update case study (ID: #{case_study.id}). Changeset: #{inspect(changeset)}, Reason: #{inspect(reason)}")
+        Logger.error(
+          "Failed to update case study (ID: #{case_study.id}). Changeset: #{inspect(changeset)}, Reason: #{inspect(reason)}"
+        )
+
         {:error, :case_study_update_failed}
     end
   end
 
-
-
   def get_content_with_translations(content_type, identifier, locale) do
-    Logger.debug("get_content_with_translations/3 called with #{inspect(content_type)}, #{inspect(identifier)}, #{inspect(locale)}")
+    Logger.debug(
+      "get_content_with_translations/3 called with #{inspect(content_type)}, #{inspect(identifier)}, #{inspect(locale)}"
+    )
+
     content_query =
       case content_type do
         :case_study ->
@@ -164,9 +191,12 @@ end
       translations =
         Repo.all(translation_query)
         |> Enum.into(%{}, fn t -> {t.field_name, t.field_value} end)
+
       Logger.debug("Translations fetched: #{inspect(translations)}")
 
-      Logger.debug("Content after attempting to update :content field: #{inspect(content)}")
+      Logger.debug(
+        "Content after attempting to update :content field: #{inspect(content)}"
+      )
 
       {content, translations}
     else
@@ -205,6 +235,4 @@ end
       {case_study, translations}
     end)
   end
-
-
 end

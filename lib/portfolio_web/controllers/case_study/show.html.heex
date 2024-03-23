@@ -46,7 +46,7 @@
     <!-- Main Content -->
     <div>
       <%= if @case_study.content do %>
-        <%= raw @case_study.content %>
+        <%= raw(@case_study.content) %>
       <% else %>
         <p>Content not available.</p>
       <% end %>

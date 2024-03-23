@@ -1,7 +1,6 @@
 defmodule PortfolioWeb.HomeLive do
   use Phoenix.LiveView
   use PortfolioWeb, :controller
-  alias Portfolio.Content
   require Logger
 
   def mount(_params, %{"user_locale" => user_locale} = _session, socket) do

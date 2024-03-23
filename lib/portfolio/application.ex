@@ -5,7 +5,6 @@ defmodule Portfolio.Application do
 
   @impl true
   def start(_type, _args) do
-
     # Can't be a child process for some reason
     Application.start(:yamerl)
 
@@ -17,16 +16,17 @@ defmodule Portfolio.Application do
       {Phoenix.PubSub, name: Portfolio.PubSub},
       {Finch, name: Portfolio.Finch},
       PortfolioWeb.Endpoint,
-      {Portfolio.Content.FileSystemWatcher, Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[:paths]},
+      {Portfolio.Content.FileSystemWatcher,
+       Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[
+         :paths
+       ]}
       # Start a worker by calling: Portfolio.Worker.start_link(arg)
       # {Portfolio.Worker, arg}
     ]
 
     opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
     Supervisor.start_link(children, opts)
-
   end
-
 
   @impl true
   def config_change(changed, _new, removed) do
