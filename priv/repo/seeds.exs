@@ -4,19 +4,20 @@ alias Portfolio.Repo
 alias Portfolio.CaseStudy
 alias Portfolio.Translation
 
-case_study = Repo.insert!(%CaseStudy{
-  title: "Helping people find the healthcare they need",
-  url: "helping-people-find-healthcare",
-  role: "Lead designer",
-  timeline: "Test Timeline",
-  read_time: 14,
-  platforms: ["Google Search", "Google Maps"],
-  introduction: "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence.",
-  index: 1,
-  file_path: "priv/posts/en/helping-people-find-healthcare-en.md",
-  locale: "en"
-})
-
+case_study =
+  Repo.insert!(%CaseStudy{
+    title: "Helping people find the healthcare they need",
+    url: "helping-people-find-healthcare",
+    role: "Lead designer",
+    timeline: "Test Timeline",
+    read_time: 14,
+    platforms: ["Google Search", "Google Maps"],
+    introduction:
+      "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence.",
+    index: 1,
+    file_path: "priv/posts/en/helping-people-find-healthcare-en.md",
+    locale: "en"
+  })
 
 Repo.insert!(%Translation{
   locale: "ja",

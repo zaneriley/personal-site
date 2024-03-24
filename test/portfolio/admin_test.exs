@@ -41,8 +41,8 @@ defmodule Portfolio.AdminTest do
         content: "some content"
       }
 
-      assert {:ok, %CaseStudy{} = case_study} =
-               Admin.create_case_study(valid_attrs)
+      assert {:ok, %Portfolio.CaseStudy{} = case_study} =
+        Admin.create_case_study(valid_attrs)
 
       assert case_study.title == "some title"
       assert case_study.url == "some url"
@@ -73,8 +73,8 @@ defmodule Portfolio.AdminTest do
         content: "some updated content"
       }
 
-      assert {:ok, %CaseStudy{} = case_study} =
-               Admin.update_case_study(case_study, update_attrs)
+      assert {:ok, %Portfolio.CaseStudy{} = case_study} =
+        Admin.update_case_study(case_study, update_attrs)
 
       assert case_study.title == "some updated title"
       assert case_study.url == "some updated url"
@@ -97,7 +97,7 @@ defmodule Portfolio.AdminTest do
 
     test "delete_case_study/1 deletes the case_study" do
       case_study = case_study_fixture()
-      assert {:ok, %CaseStudy{}} = Admin.delete_case_study(case_study)
+      assert {:ok, %Portfolio.CaseStudy{}} = Admin.delete_case_study(case_study)
 
       assert_raise Ecto.NoResultsError, fn ->
         Admin.get_case_study!(case_study.id)
