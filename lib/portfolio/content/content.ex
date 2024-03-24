@@ -98,6 +98,13 @@ defmodule Portfolio.Content do
   def update_case_study_from_file(file_path) do
     with {:ok, metadata, markdown} <-
            Portfolio.Content.read_markdown_file(file_path),
+           # TODO: This is a hack to get the locale from the file path
+           #       Ideally we get this from elsewhere.
+           locale = Regex.run(~r{case-study/(en|ja)/}, file_path, capture: :first) |> List.first(),
+           derived_metadata = Map.merge(metadata, %{
+             file_path: file_path,
+             locale: locale
+           }),
          {:ok, case_study} <- get_or_create_case_study(metadata) do
       update_case_study(case_study, metadata, markdown)
     else
@@ -149,7 +156,9 @@ defmodule Portfolio.Content do
   end
 
   defp update_case_study(case_study, metadata, markdown) do
-    changeset = CaseStudy.changeset(case_study, metadata)
+    fields = CaseStudy.__schema__(:fields)
+    filtered_metadata = Map.take(metadata, fields)
+    changeset = CaseStudy.changeset(case_study, filtered_metadata)
 
     Repo.update(changeset)
     |> case do
