@@ -84,6 +84,10 @@ defmodule PortfolioWeb.Router do
     get "/up/databases", UpController, :databases
   end
 
+  scope "/api", PortfolioWeb do
+    post "/light-dark-mode/toggle", LightDarkModeController, :toggle
+  end
+
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:new, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put

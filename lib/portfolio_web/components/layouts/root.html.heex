@@ -66,18 +66,20 @@
   </head>
   <body>
     <div>
-      <div>
-        <div>
           <div role="region" aria-label="{gettext('Language Switcher')}">
             <input type="checkbox" id="lang-toggle" hidden aria-hidden="true" />
             <label for="lang-toggle" aria-hidden="true">
               <span aria-label="{ gettext('English')}">English</span>
               <span aria-label="{ gettext('Japanese')}">日本語</span>
-              <div></div>
             </label>
           </div>
-        </div>
-      </div>
+          <div role="region" aria-label="{gettext('Theme Switcher')}">
+            <input type="checkbox" id="theme-toggle" hidden aria-hidden="true" />
+            <label for="theme-toggle" aria-hidden="true">
+              <span aria-label="{gettext('Light Mode')}">☀️</span> 
+              <span aria-label="{gettext('Dark Mode')}">🌙</span>
+            </label>
+          </div>
     </div>
 
     <main>
