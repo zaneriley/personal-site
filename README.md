@@ -12,18 +12,21 @@ Extremely product-focused designer with 10+ years of experience based in Tokyo, 
 Focused on building things that help people beyond the screen. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them. 
 
 
-# Portfolio Overview
+# Prtfolio overview
 
-For portfolios, I try not to make engineering tradeoffs and just build what I want, even if I haven't implemented it before. This is my first project with elixir, and basically this entire stack, and infact really my first heavy backend project. There's also a lot of design and UX choices that don't scale well to large teams (e.g. writing my own optically-aligned typographic system).
+For portfolios, I prioritize building exactly what I envision, even if it involves learning new technologies or techniques. This is my first major project built with Elixir or Phoenix. I also incorporated features (like a custom optically-aligned typographic "engine") that might be less practical in large-team settings or with less technical designers.
 
-- Provides internationalization support for English (/en) and Japanese (/ja)
-- Create case studies from an admin interface or from a markdown file with live updates.
-- Light/Dark mode support that persists across sessions.
+Features include:
+
+- Internationalization support for English (/en) and Japanese (/ja)
+- Admin interface and Markdown-based system for creating case studies with live reloading.
+- Light/dark mode with real-time updates across sessions and preferences stored in local storage.
+
 
 ## Tech Stack
 
-This a [Phoenix](https://phoenixframework.org/) app, which is written in [Elixir](https://elixir-lang.org/). While not the most conventional choice for a largely static site, the developer experience is great which helped me build a number of features really quickly.
-
+This project utilizies [Phoenix](https://phoenixframework.org/), a framework written in [Elixir](https://elixir-lang.org/). While an unconventional choice for a largely static site, Phoenix's great developer experience helped me build a number of features really quickly.
+ content, Phoenix's outstanding developer experience enabled the rapid development of several key features.
 ### Back-end
 
 - [Elixir and Phoenix](https://www.phoenixframework.org/): For server-side logic and web page rendering.
@@ -40,13 +43,13 @@ This a [Phoenix](https://phoenixframework.org/) app, which is written in [Elixir
 ### Internationalization
 
 #### Detecting the user's preferred language
-- Uses the [Accept-Language header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) to determine whether the users language
+- Uses the [Accept-Language header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) to determine whether the users language is supported (english or japanese in our case)
 - Sets a session key to maintain that language setting, allowing user to override and choose another language.
 - Sets hreflang tags, and sets a language response header
 
 #### Translating content
---- For application and landing page content, we use [Gettext](https://hexdocs.pm/gettext/Gettext.html) to translate content into multiple languages. 
---- For case studies, we have separate markdown files for each language.
+- For application and landing page content, we use [Gettext](https://hexdocs.pm/gettext/Gettext.html) to translate content into multiple languages. 
+- For case studies, we have separate markdown files for each language.
 
 ### Light/Dark Mode
 
