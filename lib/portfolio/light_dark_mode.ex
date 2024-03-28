@@ -1,45 +1,66 @@
 defmodule LightDarkMode.GenServer do
-  use GenServer
+  @moduledoc """
+  A GenServer for managing the theme of the application on a per-user basis.
 
+  The GenServer keeps track of the current theme and provides functions for toggling between light and dark themes.
+
+  # Usage
+
+  To use the GenServer, start it in your application's supervision tree:
+
+      children = [
+        {Portfolio.LightDarkMode, []}
+      ]
+
+  Then, in your Phoenix controllers or views, you can use the `get_theme/1` and `toggle_theme/1` functions to get and toggle the current theme:
+
+      current_theme = LightDarkMode.get_theme(user_id)
+      LightDarkMode.toggle_theme(user_id)
+
+  The `get_theme/1` function returns the current theme as an atom (`:light` or `:dark`), and the `toggle_theme/1` function toggles the theme between `:light` and `:dark`.
+
+  """
+  use GenServer
   require Logger
 
-  def start_link(initial_theme) do
-    GenServer.start_link(__MODULE__, initial_theme, name: __MODULE__)
+  # Start the GenServer with an empty map as the initial state
+  def start_link(_opts \\ []) do
+    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
-  # Define the initial state of the GenServer
-  def init(initial_theme) do
-    Logger.debug("Initializing theme state: #{initial_theme}")
-    {:ok, initial_theme}
+  # Initial state setup with an empty map
+  def init(_initial_args) do
+    Logger.debug("Initializing theme state with an empty map")
+    {:ok, %{}}
   end
 
-  def handle_call(:get_theme, _from, state) do
-    Logger.debug("Received :get_theme call, current theme: #{state}")
-    {:reply, state, state}
+  # Handling requests to get the current theme for a specific user
+  def handle_call({:get_theme, user_id}, _from, state) do
+    theme = Map.get(state, user_id, :light) # Default to :light if not set
+    Logger.debug("Getting theme for user #{user_id}: #{theme}")
+    {:reply, theme, state}
   end
 
-  def handle_cast({:toggle, current_theme}, state) do
-    Logger.info("Toggling theme from #{current_theme}")
-    new_state = toggle_theme(current_theme)
-    Logger.debug("New theme state: #{new_state}")
+  # Toggling the theme for a specific user
+  def handle_cast({:toggle, user_id}, state) do
+    current_theme = Map.get(state, user_id, :light)
+    new_theme = switch_theme(current_theme)
+    new_state = Map.put(state, user_id, new_theme)
+    Logger.info("Theme toggled for user #{user_id} to #{new_theme}")
     {:noreply, new_state}
   end
 
-  def handle_cast({:system_preference_changed, preference}, state) do
-    Logger.info("System preference changed to #{preference}")
-    new_state = case preference do
-      :light -> :light
-      :dark -> :dark
-      _ -> state
-    end
-    {:noreply, new_state}
+  # Public API to get the current theme for a specific user
+  def get_theme(user_id) do
+    GenServer.call(__MODULE__, {:get_theme, user_id})
   end
 
-  # Optional: Handle storage errors and clear preference
-  # These can be implemented based on specific requirements
+  # Public API to toggle the theme for a specific user
+  def toggle_theme(user_id) do
+    GenServer.cast(__MODULE__, {:toggle, user_id})
+  end
 
   # Helper function to toggle the theme
-  defp toggle_theme(:light), do: :dark
-  defp toggle_theme(:dark), do: :light
-  defp toggle_theme(_), do: :light  # Default to light if state is :system or undefined
+  defp switch_theme(:light), do: :dark
+  defp switch_theme(:dark), do: :light
 end

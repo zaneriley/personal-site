@@ -85,7 +85,7 @@ defmodule PortfolioWeb.Router do
   end
 
   scope "/api", PortfolioWeb do
-    post "/light-dark-mode/toggle", LightDarkModeController, :toggle
+    post "/session/generate", SessionController, :generate
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

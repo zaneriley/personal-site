@@ -3,22 +3,26 @@
 ![GitHub License](https://img.shields.io/github/license/zaneriley/personal-site)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml)
 
-This repository houses my product design portfolio, showcasing various projects and designs I've worked on. The portfolio is built using Phoenix (PETAL stack basically). The foundation of this portfolio is based on the excellent example provided by Nick Janetakis' [docker-phoenix-example](https://github.com/nickjj/docker-phoenix-example), which offers a solid starting point for Phoenix applications with Docker.
+This repository houses my product design portfolio, showcasing various projects and designs I've worked on. The portfolio is built using Phoenix (PETAL stack basically). The foundation of this portfolio is based on the excellent example provided by Nick Janetakis' [docker-phoenix-example](https://github.com/nickjj/docker-phoenix-example), which offers a great starting point for Phoenix applications with Docker.
 
-## Portfolio Overview
+## About me
 
 Extremely product-focused designer with 10+ years of experience based in Tokyo, Japan. 
 
 Focused on building things that help people beyond the screen. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them. 
 
 
-## Features
+# Portfolio Overview
 
-Still a WIP, but I hope to self-host this on my homelab here in Tokyo. Possibly on solar power and porting in self-reported weather data. Dunno if I can do it, and it's massive scope for a portfolio, but let's try it anyway.
+For portfolios, I try not to make engineering tradeoffs and just build what I want, even if I haven't implemented it before. This is my first project with elixir, and basically this entire stack, and infact really my first heavy backend project. There's also a lot of design and UX choices that don't scale well to large teams (e.g. writing my own optically-aligned typographic system).
+
+- Provides internationalization support for English (/en) and Japanese (/ja)
+- Create case studies from an admin interface or from a markdown file with live updates.
+- Light/Dark mode support that persists across sessions.
 
 ## Tech Stack
 
-I thought Elixir would be fun, and with enough time I could make a transitional app!
+This a [Phoenix](https://phoenixframework.org/) app, which is written in [Elixir](https://elixir-lang.org/). While not the most conventional choice for a largely static site, the developer experience is great which helped me build a number of features really quickly.
 
 ### Back-end
 
@@ -31,10 +35,32 @@ I thought Elixir would be fun, and with enough time I could make a transitional 
 - [TailwindCSS](https://tailwindcss.com/): For utility-first CSS framework.
 - [Heroicons](https://heroicons.com/): For SVG icons.
 
-### Additional Technologies
+## Feature details
 
-- [Docker](https://www.docker.com/): For containerization and ensuring consistent development and production environments.
-- [GitHub Actions](https://github.com/features/actions): For CI/CD pipelines and automated deployment processes.
+### Internationalization
+
+#### Detecting the user's preferred language
+- Uses the [Accept-Language header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) to determine whether the users language
+- Sets a session key to maintain that language setting, allowing user to override and choose another language.
+- Sets hreflang tags, and sets a language response header
+
+#### Translating content
+--- For application and landing page content, we use [Gettext](https://hexdocs.pm/gettext/Gettext.html) to translate content into multiple languages. 
+--- For case studies, we have separate markdown files for each language.
+
+### Light/Dark Mode
+
+Of course we need dark mode, but this is overengineered to real-time update across all a users sessions (e.g. in our case, their open tabs). If you put a user auth system in place, you could make this a setting and update aross all their devices. Additionally, we update instantly client-side first, and then debounce updates to the server.
+
+Here's a quick breakdown:
+
+1. **Theme storage:** Each user's theme choice (light or dark) is saved both in the browser's localStorage (for quick access) and on the server using a combination of Elixir's GenServer and your choice of database.
+
+2. **Real-time Updates:** We use Phoenix Channels to make sure that if a user changes their theme on one tab, it updates automatically on any other open tabs. (This is just a portfolio, so theres no need for a user auth system where you could track user sessions across devices.)
+
+3. **Server-side Logic:** The core logic for managing theme preferences lives in an Elixir module called `LightDarkMode.GenServer`. This module is responsible for storing a user's theme preference, handling requests to toggle the theme, and sending out updates.
+
+4. **Front-end:** The JavaScript part of the code handles: Connecting to a user's specific Phoenix channel, listening for theme changes from the server, applying the correct CSS classes to the page to switch between light and dark modes, and sending theme change requests to the server when the user toggles the theme switch.
 
 ## Acknowledgements
 

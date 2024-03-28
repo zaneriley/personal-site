@@ -12,8 +12,10 @@ config :portfolio, PortfolioWeb.Endpoint,
       ~r"lib/portfolio_web/(controllers|live|components)/.*(ex|heex)$",
       ~r"priv/case-study/.*(md)$"
     ]
-  ]
+  ],
+  token_salt: System.get_env("DEV_TOKEN_SALT")
 
+  #Updating dev
 config :portfolio, dev_routes: true
 
 config :portfolio, Portfolio.Repo, show_sensitive_data_on_connection_error: true
