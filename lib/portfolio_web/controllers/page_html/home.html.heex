@@ -1,0 +1,54 @@
+<h1>
+  <!-- Gettext: Product designer helping people beyond the screen -->
+  <%= gettext("Product designer helping people beyond the screen") %>
+</h1>
+<p>
+  <!-- Gettext: 10+ years of experience... -->
+  <%= gettext(
+    "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
+  ) %>
+</p>
+<p>
+  <!-- Gettext: currently at google... -->
+  <%= gettext(
+    "Helping people make informed healthcare choices and access care when they need it."
+  ) %>
+</p>
+
+<div>
+  <div>
+    <!-- Iterate over case studies -->
+    <%= for {case_study, translations} <- @case_studies do %>
+      <div>
+        <div>
+          <!-- Use case_study fields to populate the content -->
+          <img src="" alt={translations["title"] || case_study.title} />
+          <div>
+            <!-- Wrap the title in an anchor tag -->
+            <a
+              href={
+                PortfolioWeb.UrlHelper.case_study_url(
+                  @user_locale,
+                  case_study.url
+                )
+              }
+              aria-label={
+                gettext("Read more about %{title}",
+                  title: translations["title"] || case_study.title
+                )
+              }
+              title={translations["title"] || case_study.title}
+            >
+              <h3>
+                <%= translations["title"] || case_study.title %>
+              </h3>
+            </a>
+            <p>
+              <%= translations["introduction"] || case_study.introduction %>
+            </p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

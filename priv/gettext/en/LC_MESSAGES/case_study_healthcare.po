@@ -1,0 +1,8 @@
+msgid "Helping people find the healthcare they need"
+msgstr "Helping people find the healthcare they need"
+
+msgid "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence."
+msgstr "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence."
+
+msgid "14 minute read"
+msgstr "14 minute read"

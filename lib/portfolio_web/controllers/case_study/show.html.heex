@@ -1,0 +1,55 @@
+<main>
+  <article>
+    <nav>
+      <ul>
+        <li>
+          <a href="/">
+            Home
+          </a>
+        </li>
+        <li>
+          <span>/</span>
+        </li>
+        <li>Case Study</li>
+      </ul>
+    </nav>
+    <!-- Title -->
+    <h1>
+      <%= @translations["title"] || @case_study.title %>
+    </h1>
+    <!-- Meta Information -->
+    <div>
+      <span><strong>Role:</strong> <%= @case_study.role %></span>
+      | <span><strong>Timeline:</strong> <%= @case_study.timeline %></span>
+      |
+      <span>
+        <strong>Read Time:</strong> <%= @case_study.read_time %> <%= ngettext(
+          "minute",
+          "minutes",
+          @case_study.read_time
+        ) %>
+      </span>
+    </div>
+    <!-- Introduction -->
+    <p>
+      <%= @translations["introduction"] || @case_study.introduction %>
+    </p>
+    <!-- Platforms -->
+    <div>
+      <strong>Platforms:</strong>
+      <ul>
+        <%= for platform <- @case_study.platforms do %>
+          <li><%= platform %></li>
+        <% end %>
+      </ul>
+    </div>
+    <!-- Main Content -->
+    <div>
+      <%= if @case_study.content do %>
+        <%= raw(@case_study.content) %>
+      <% else %>
+        <p>Content not available.</p>
+      <% end %>
+    </div>
+  </article>
+</main>
