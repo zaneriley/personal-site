@@ -26,7 +26,13 @@ defmodule PortfolioWeb.ConnCase do
 
       import Plug.Conn
       import Phoenix.ConnTest
+
       import PortfolioWeb.ConnCase
+
+      def session_conn() do
+        build_conn() |> Plug.Test.init_test_session(%{})
+      end
+
     end
   end
 
@@ -37,20 +43,6 @@ defmodule PortfolioWeb.ConnCase do
       )
 
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
-
-
-    conn = Phoenix.ConnTest.build_conn()
-
-    session_options = [
-      store: :cookie,
-      key: "_portfolio_key",
-      signing_salt: "XCu9aYUeZ",
-      encryption_salt: "jIOxYIG2l"
-    ]
-
-    # Manually add session handling with the correct options
-    conn = Plug.Session.call(conn, Plug.Session.init(session_options))
-
-    {:ok, conn: conn}
+    {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end
