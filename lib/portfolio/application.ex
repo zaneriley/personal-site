@@ -20,7 +20,7 @@ defmodule Portfolio.Application do
        Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[
          :paths
        ]},
-      {LightDarkMode.GenServer, :light},
+      {LightDarkMode.GenServer, :light}
       # Start a worker by calling: Portfolio.Worker.start_link(arg)
       # {Portfolio.Worker, arg}
     ]

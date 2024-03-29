@@ -21,6 +21,10 @@ liveSocket.connect()
 window.liveSocket = liveSocket
 
 
+// -----------------------------------------------------------------------------
+// Theme toggle
+// TODO: Figure out if we want to use a JS framework
+// -----------------------------------------------------------------------------
 let userThemeChannel; 
 
 async function manageConnection() {

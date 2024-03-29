@@ -38,6 +38,19 @@ defmodule PortfolioWeb.ConnCase do
 
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
 
-    {:ok, conn: Phoenix.ConnTest.build_conn()}
+
+    conn = Phoenix.ConnTest.build_conn()
+
+    session_options = [
+      store: :cookie,
+      key: "_portfolio_key",
+      signing_salt: "XCu9aYUeZ",
+      encryption_salt: "jIOxYIG2l"
+    ]
+
+    # Manually add session handling with the correct options
+    conn = Plug.Session.call(conn, Plug.Session.init(session_options))
+
+    {:ok, conn: conn}
   end
 end

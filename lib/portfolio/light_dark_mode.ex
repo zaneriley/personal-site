@@ -36,7 +36,8 @@ defmodule LightDarkMode.GenServer do
 
   # Handling requests to get the current theme for a specific user
   def handle_call({:get_theme, user_id}, _from, state) do
-    theme = Map.get(state, user_id, :light) # Default to :light if not set
+    # Default to :light if not set
+    theme = Map.get(state, user_id, :light)
     Logger.debug("Getting theme for user #{user_id}: #{theme}")
     {:reply, theme, state}
   end

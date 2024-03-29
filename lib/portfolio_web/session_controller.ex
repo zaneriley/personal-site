@@ -7,7 +7,7 @@ defmodule PortfolioWeb.SessionController do
   def generate(conn, _params) do
     # we don't need real user_ids for our application,
     # but in the future we might want to convert these to real user auth
-    user_id = :rand.uniform(1000000)
+    user_id = :rand.uniform(1_000_000)
     salt = @salt
     token = Phoenix.Token.sign(PortfolioWeb.Endpoint, salt, user_id)
     Logger.info("New token generated for user_id: #{user_id}, token: #{token}")

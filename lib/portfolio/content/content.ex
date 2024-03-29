@@ -98,14 +98,15 @@ defmodule Portfolio.Content do
   def update_case_study_from_file(file_path) do
     with {:ok, metadata, markdown} <-
            Portfolio.Content.read_markdown_file(file_path),
-           locale_match = Regex.run(~r/case-study\/(\w{2})\//, file_path),
-           true = is_list(locale_match) and length(locale_match) == 2,
-           locale = List.last(locale_match),
-           derived_metadata = Map.merge(metadata, %{
+         locale_match = Regex.run(~r/case-study\/(\w{2})\//, file_path),
+         true = is_list(locale_match) and length(locale_match) == 2,
+         locale = List.last(locale_match),
+         derived_metadata =
+           Map.merge(metadata, %{
              file_path: file_path,
              locale: locale
            }),
-           Logger.debug("Derived metadata: #{inspect(derived_metadata)}"),
+         Logger.debug("Derived metadata: #{inspect(derived_metadata)}"),
          {:ok, case_study} <- get_or_create_case_study(derived_metadata) do
       update_case_study(case_study, derived_metadata, markdown)
     else

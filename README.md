@@ -14,7 +14,7 @@ Focused on building things that help people beyond the screen. My ultimate goal 
 
 # Prtfolio overview
 
-For portfolios, I prioritize building exactly what I envision, even if it involves learning new technologies or techniques. This is my first major project built with Elixir or Phoenix. I also incorporated features (like a custom optically-aligned typographic "engine") that might be less practical in large-team settings or with less technical designers.
+For portfolios, I try to build exactly what I envision and not make technical tradeoffs, even if it involves learning new technologies or techniques. This is my first major project built with Elixir or Phoenix. I also incorporated features (like a custom optically-aligned typographic "engine") that might be less practical in large-team settings or with less technical designers.
 
 Features include:
 

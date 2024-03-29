@@ -15,7 +15,7 @@ config :portfolio, PortfolioWeb.Endpoint,
   ],
   token_salt: System.get_env("DEV_TOKEN_SALT")
 
-  #Updating dev
+# Updating dev
 config :portfolio, dev_routes: true
 
 config :portfolio, Portfolio.Repo, show_sensitive_data_on_connection_error: true

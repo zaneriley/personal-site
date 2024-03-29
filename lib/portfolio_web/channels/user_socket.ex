@@ -23,16 +23,17 @@ defmodule PortfolioWeb.UserSocket do
   @impl true
   def connect(%{"token" => token}, socket, _connect_info) do
     salt = @salt
-    case Phoenix.Token.verify(socket, salt, token, max_age: 86400) do
+
+    case Phoenix.Token.verify(socket, salt, token, max_age: 86_400) do
       {:ok, user_id} ->
         Logger.debug("User connected with user_id: #{user_id}")
         {:ok, assign(socket, :user_id, user_id)}
+
       {:error, _reason} ->
         Logger.error("User connection failed due to invalid token")
         {:error, %{reason: "invalid_token"}}
     end
   end
-
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #
