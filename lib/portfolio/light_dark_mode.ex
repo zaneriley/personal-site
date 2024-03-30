@@ -23,18 +23,15 @@ defmodule LightDarkMode.GenServer do
   use GenServer
   require Logger
 
-  # Start the GenServer with an empty map as the initial state
   def start_link(_opts \\ []) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
-  # Initial state setup with an empty map
   def init(_initial_args) do
     Logger.debug("Initializing theme state with an empty map")
     {:ok, %{}}
   end
 
-  # Handling requests to get the current theme for a specific user
   def handle_call({:get_theme, user_id}, _from, state) do
     # Default to :light if not set
     theme = Map.get(state, user_id, :light)
@@ -42,13 +39,16 @@ defmodule LightDarkMode.GenServer do
     {:reply, theme, state}
   end
 
-  # Toggling the theme for a specific user
   def handle_cast({:toggle, user_id}, state) do
     current_theme = Map.get(state, user_id, :light)
     new_theme = switch_theme(current_theme)
     new_state = Map.put(state, user_id, new_theme)
     Logger.info("Theme toggled for user #{user_id} to #{new_theme}")
     {:noreply, new_state}
+  end
+
+  def handle_cast(:reset_state, _state) do
+    {:noreply, %{}}
   end
 
   # Public API to get the current theme for a specific user
@@ -61,7 +61,10 @@ defmodule LightDarkMode.GenServer do
     GenServer.cast(__MODULE__, {:toggle, user_id})
   end
 
-  # Helper function to toggle the theme
   defp switch_theme(:light), do: :dark
   defp switch_theme(:dark), do: :light
+
+  def reset_state do
+    GenServer.cast(__MODULE__, :reset_state)
+  end
 end
