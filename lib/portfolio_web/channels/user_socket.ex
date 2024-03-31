@@ -4,9 +4,7 @@ defmodule PortfolioWeb.UserSocket do
   @salt Application.compile_env(:portfolio, PortfolioWeb.Endpoint)[:token_salt]
 
   ## Channels
-  # channel "room:*", PortfolioWeb.RoomChannel
   channel "theme:lobby", PortfolioWeb.ThemeChannel
-  # Add this line to handle dynamic user theme channels
   channel "user_theme:*", PortfolioWeb.ThemeChannel
 
   # Socket params are passed from the client and can
