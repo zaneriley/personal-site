@@ -1,6 +1,6 @@
 defmodule PortfolioWeb.I18nHelpers do
-
   import Plug.Conn
+
   def set_accept_language_header(conn, locale) do
     put_req_header(conn, "accept-language", locale)
   end

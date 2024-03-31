@@ -2,9 +2,6 @@ defmodule PortfolioWeb.LocaleRedirectionTest do
   use PortfolioWeb.ConnCase
   import Plug.Conn
 
-
-
-
   describe "LocaleRedirection plug" do
     test "allows request to proceed with supported locale in URL", %{conn: conn} do
       conn = get(conn, "/en/")
@@ -18,13 +15,16 @@ defmodule PortfolioWeb.LocaleRedirectionTest do
     end
 
     test "redirects to user's preferred locale when no locale in URL" do
-      conn = session_conn()
-      |> put_session("user_locale", "ja")
-      |> get("/")
+      conn =
+        session_conn()
+        |> put_session("user_locale", "ja")
+        |> get("/")
+
       assert redirected_to(conn) == "/ja/"
     end
 
-    test "redirects to default locale when no locale in URL and no user preference", %{conn: conn} do
+    test "redirects to default locale when no locale in URL and no user preference",
+         %{conn: conn} do
       conn = get(conn, "/")
       assert redirected_to(conn) == "/en/"
     end
@@ -37,7 +37,8 @@ defmodule PortfolioWeb.LocaleRedirectionTest do
     end
 
     @tag :skip
-    test "does not respond with 404 for unsupported locale as non-first segment", %{conn: conn} do
+    test "does not respond with 404 for unsupported locale as non-first segment",
+         %{conn: conn} do
       conn = get(conn, "/case-study/helping-people-find-healthcare")
       assert conn.status != 404
     end
@@ -49,5 +50,4 @@ defmodule PortfolioWeb.LocaleRedirectionTest do
       assert conn.halted == false
     end
   end
-
 end

@@ -3,7 +3,7 @@ defmodule PortfolioWeb.SessionControllerTest do
 
   describe "generate/2" do
     test "generates a token and user_id", %{conn: conn} do
-      conn = post conn, "/api/session/generate"
+      conn = post(conn, "/api/session/generate")
       assert json_response(conn, 200)
       response = json_response(conn, 200)
       assert is_map(response)
@@ -13,5 +13,4 @@ defmodule PortfolioWeb.SessionControllerTest do
       assert is_integer(response["user_id"])
     end
   end
-
 end

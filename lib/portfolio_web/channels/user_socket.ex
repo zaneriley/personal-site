@@ -25,6 +25,7 @@ defmodule PortfolioWeb.UserSocket do
     case params do
       %{"token" => token} ->
         verify_token_and_connect(token, socket)
+
       _ ->
         Logger.debug("Unauthenticated user connected")
         {:ok, socket}
@@ -33,10 +34,14 @@ defmodule PortfolioWeb.UserSocket do
 
   defp verify_token_and_connect(token, socket) do
     salt = @salt
-    case Phoenix.Token.verify(PortfolioWeb.Endpoint, salt, token, max_age: 86_400) do
+
+    case Phoenix.Token.verify(PortfolioWeb.Endpoint, salt, token,
+           max_age: 86_400
+         ) do
       {:ok, user_id} ->
         Logger.debug("User connected with user_id: #{user_id}")
         {:ok, assign(socket, :user_id, user_id)}
+
       {:error, reason} ->
         Logger.error("User connection failed due to invalid token: #{reason}")
         {:error, %{reason: "invalid_token"}}

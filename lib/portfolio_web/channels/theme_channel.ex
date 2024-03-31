@@ -8,13 +8,15 @@ defmodule PortfolioWeb.ThemeChannel do
   use Phoenix.Channel
   require Logger
 
-  @spec join(String.t(), map(), Phoenix.Socket.t()) :: {:ok, Phoenix.Socket.t()} | {:error, map()}
+  @spec join(String.t(), map(), Phoenix.Socket.t()) ::
+          {:ok, Phoenix.Socket.t()} | {:error, map()}
   def join("theme:lobby", _payload, socket) do
     send(self(), :after_join)
     {:ok, socket}
   end
 
-  @spec join(String.t(), map(), Phoenix.Socket.t()) :: {:ok, Phoenix.Socket.t()} | {:error, map()}
+  @spec join(String.t(), map(), Phoenix.Socket.t()) ::
+          {:ok, Phoenix.Socket.t()} | {:error, map()}
   def join("user_theme:" <> user_id, _payload, socket) do
     if socket.assigns.user_id == String.to_integer(user_id) do
       send(self(), :after_join)
@@ -24,7 +26,8 @@ defmodule PortfolioWeb.ThemeChannel do
     end
   end
 
-  @spec handle_info(atom(), Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
+  @spec handle_info(atom(), Phoenix.Socket.t()) ::
+          {:noreply, Phoenix.Socket.t()}
   def handle_info(:after_join, socket) do
     user_id = socket.assigns.user_id
     current_theme = LightDarkMode.GenServer.get_theme(user_id)
@@ -32,7 +35,8 @@ defmodule PortfolioWeb.ThemeChannel do
     {:noreply, socket}
   end
 
-  @spec handle_in(String.t(), map(), Phoenix.Socket.t()) :: {:noreply, Phoenix.Socket.t()}
+  @spec handle_in(String.t(), map(), Phoenix.Socket.t()) ::
+          {:noreply, Phoenix.Socket.t()}
   def handle_in("toggle_theme", %{"theme" => theme}, socket) do
     user_id = socket.assigns.user_id
     LightDarkMode.GenServer.toggle_theme(user_id)

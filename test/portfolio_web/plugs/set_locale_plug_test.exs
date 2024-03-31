@@ -10,7 +10,11 @@ defmodule PortfolioWeb.SetLocalePlugTest do
       conn = I18nHelpers.set_accept_language_header(conn, "ja")
       conn = get(conn, "/")
       assert get_session(conn, "user_locale") == "ja"
-      assert conn.resp_headers |> Enum.any?(fn {key, value} -> key == "content-language" and value == "ja" end)
+
+      assert conn.resp_headers
+             |> Enum.any?(fn {key, value} ->
+               key == "content-language" and value == "ja"
+             end)
     end
 
     test "sets the locale based on the URL path segment", %{conn: conn} do
@@ -18,35 +22,42 @@ defmodule PortfolioWeb.SetLocalePlugTest do
       assert get_session(conn, "user_locale") == "en"
     end
 
-
     # TODO: We need to implement cookies for language switching
     # in order to make this test pass
     @tag :skip
-    test "prioritizes the session locale over the URL path segment and Accept-Language header", %{conn: _conn} do
-      conn = session_conn()
-      |> fetch_session() # Fetch the session before attempting to write to it
-      |> put_session("user_locale", "ja")
-      |> I18nHelpers.set_accept_language_header("en")
-      |> get("/en")
+    test "prioritizes the session locale over the URL path segment and Accept-Language header",
+         %{conn: _conn} do
+      conn =
+        session_conn()
+        # Fetch the session before attempting to write to it
+        |> fetch_session()
+        |> put_session("user_locale", "ja")
+        |> I18nHelpers.set_accept_language_header("en")
+        |> get("/en")
 
       assert get_session(conn, "user_locale") == "ja"
     end
 
-    test "sets the locale based on the Accept-Language header when no session or URL locale is set", %{conn: conn} do
+    test "sets the locale based on the Accept-Language header when no session or URL locale is set",
+         %{conn: conn} do
       conn = I18nHelpers.set_accept_language_header(conn, "ja")
       conn = get(conn, "/")
       assert get_session(conn, "user_locale") == "ja"
     end
 
-    test "falls back to the default locale if no locale is specified", %{conn: conn} do
+    test "falls back to the default locale if no locale is specified", %{
+      conn: conn
+    } do
       conn = get(conn, "/")
-      assert get_session(conn, "user_locale") == "en" # Assuming "en" is the default locale
+      # Assuming "en" is the default locale
+      assert get_session(conn, "user_locale") == "en"
     end
 
     test "sets the default locale for unsupported locales", %{conn: conn} do
       conn = I18nHelpers.set_accept_language_header(conn, "unsupported_locale")
       conn = get(conn, "/unsupported_locale/")
-      assert get_session(conn, "user_locale") == "en" # Assuming "en" is the default locale
+      # Assuming "en" is the default locale
+      assert get_session(conn, "user_locale") == "en"
     end
 
     test "does not set locale for static asset requests", %{conn: conn} do
@@ -57,7 +68,11 @@ defmodule PortfolioWeb.SetLocalePlugTest do
     test "sets the Content-Language response header correctly", %{conn: conn} do
       conn = I18nHelpers.set_accept_language_header(conn, "ja")
       conn = get(conn, "/")
-      assert conn.resp_headers |> Enum.any?(fn {key, value} -> key == "content-language" and value == "ja" end)
+
+      assert conn.resp_headers
+             |> Enum.any?(fn {key, value} ->
+               key == "content-language" and value == "ja"
+             end)
     end
   end
 end

@@ -30,6 +30,7 @@ defmodule LightDarkModeTest do
 
     test "handles concurrent toggles for multiple users" do
       user_ids = 1..10
+
       Enum.each(user_ids, fn user_id ->
         GenServer.toggle_theme(user_id)
       end)
@@ -38,6 +39,5 @@ defmodule LightDarkModeTest do
         assert GenServer.get_theme(user_id) == :dark
       end)
     end
-
   end
 end

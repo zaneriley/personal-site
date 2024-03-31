@@ -32,7 +32,6 @@ defmodule PortfolioWeb.ConnCase do
       def session_conn() do
         build_conn() |> Plug.Test.init_test_session(%{})
       end
-
     end
   end
 
