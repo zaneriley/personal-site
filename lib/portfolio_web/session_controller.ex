@@ -4,6 +4,7 @@ defmodule PortfolioWeb.SessionController do
 
   @salt Application.compile_env(:portfolio, PortfolioWeb.Endpoint)[:token_salt]
 
+  @spec generate(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def generate(conn, _params) do
     # we don't need real user_ids for our application,
     # but in the future we might want to convert these to real user auth

@@ -20,13 +20,7 @@ defmodule PortfolioWeb.Plugs.CommonMetadata do
     {date, _time} = :calendar.local_time()
     {current_year, _month, _day} = date
 
-    footer_links = %{
-      github: "https://github.com/zaneriley/personal-site",
-      figma: "https://www.figma.com/"
-    }
-
     conn
-    |> assign(:footer_links, footer_links)
     |> assign(:current_year, current_year)
   end
 end

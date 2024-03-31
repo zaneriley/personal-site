@@ -21,16 +21,24 @@ defmodule PortfolioWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(%{"token" => token}, socket, _connect_info) do
-    salt = @salt
+  def connect(params, socket, _connect_info) do
+    case params do
+      %{"token" => token} ->
+        verify_token_and_connect(token, socket)
+      _ ->
+        Logger.debug("Unauthenticated user connected")
+        {:ok, socket}
+    end
+  end
 
-    case Phoenix.Token.verify(socket, salt, token, max_age: 86_400) do
+  defp verify_token_and_connect(token, socket) do
+    salt = @salt
+    case Phoenix.Token.verify(PortfolioWeb.Endpoint, salt, token, max_age: 86_400) do
       {:ok, user_id} ->
         Logger.debug("User connected with user_id: #{user_id}")
         {:ok, assign(socket, :user_id, user_id)}
-
-      {:error, _reason} ->
-        Logger.error("User connection failed due to invalid token")
+      {:error, reason} ->
+        Logger.error("User connection failed due to invalid token: #{reason}")
         {:error, %{reason: "invalid_token"}}
     end
   end
