@@ -22,8 +22,6 @@ defmodule PortfolioWeb.SetLocalePlugTest do
       assert get_session(conn, "user_locale") == "en"
     end
 
-    # TODO: We need to implement cookies for language switching
-    # in order to make this test pass
     @tag :skip
     test "prioritizes the session locale over the URL path segment and Accept-Language header",
          %{conn: _conn} do

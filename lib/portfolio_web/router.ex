@@ -20,7 +20,6 @@ defmodule PortfolioWeb.Router do
     plug CommonMetadata
   end
 
-  # TODO: Is a white list the best way to handle avoiding :locale?
   pipeline :admin do
     plug :accepts, ["html"]
     plug :fetch_session

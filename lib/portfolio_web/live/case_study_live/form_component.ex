@@ -3,7 +3,6 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
 
   alias Portfolio.Admin
 
-  # TODO: Add validation (currently suffering from poor perforamnce per keystroke)
   @impl true
   def render(assigns) do
     ~H"""
