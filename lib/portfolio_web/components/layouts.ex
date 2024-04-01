@@ -22,11 +22,10 @@ defmodule PortfolioWeb.Layouts do
     {_, remaining_path} = PortfolioWeb.Plugs.SetLocale.extract_locale(conn)
 
     @supported_locales
-    |> Enum.map_join(fn locale ->
+    |> Enum.map_join("\n", fn locale ->
       locale_url = locale_url(conn, locale, remaining_path)
       ~s(<link rel="alternate" hreflang="#{locale}" href="#{locale_url}" />)
     end)
-    |> Enum.join("\n")
     |> Phoenix.HTML.raw()
   end
 end
