@@ -1,4 +1,7 @@
 defmodule PortfolioWeb.I18nHelpers do
+  @moduledoc """
+  Helper functions for working with translations in tests.
+  """
   import Plug.Conn
 
   def set_accept_language_header(conn, locale) do
