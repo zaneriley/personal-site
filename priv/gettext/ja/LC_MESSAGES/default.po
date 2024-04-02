@@ -19,7 +19,7 @@ msgstr "東京を拠点に10年以上の経験を持つ。人々の生活を豊�
 msgid "currently at google Helping people make informed healthcare choices and access care when they need it."
 msgstr "現在、グーグルで人々が情報に基づいた医療選択をし、必要なときにケアを受けられるよう支援しています。"
 
-msgid "Language Switcher"
+msgid "Language switcher"
 msgstr "言語切替"
 
 msgid "English"
@@ -27,6 +27,15 @@ msgstr "English"
 
 msgid "Japanese"
 msgstr "日本語"
+
+msgid "Theme switcher"
+msgstr "テーマ切替"
+
+msgid "Light mode"
+msgstr "ライトモード"
+
+msgid "Dark mode"
+msgstr "ダークモード"
 
 msgid "minute"
 msgid_plural "minutes"

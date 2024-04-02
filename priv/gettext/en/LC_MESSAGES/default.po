@@ -22,11 +22,24 @@ msgstr "Helping people make informed healthcare choices and access care when the
 msgid "Change language"
 msgstr "Change language"
 
+msgid "Language switcher"
+msgstr "Language switcher"
+
 msgid "English"
 msgstr "English"
 
 msgid "Japanese"
 msgstr "日本語"
+
+msgid "Theme switcher"
+msgstr "Theme switcher"
+
+msgid "Light mode"
+msgstr "Light mode"
+
+msgid "Dark mode"
+msgstr "Dark mode"
+
 
 msgid "minute"
 msgid_plural "minutes"
@@ -47,3 +60,4 @@ msgstr "Open source on %{github} under aGPL."
 
 msgid "Remix freely in %{figma}."
 msgstr "Remix freely in %{figma}."
+
