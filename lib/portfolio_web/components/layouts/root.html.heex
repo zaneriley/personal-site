@@ -64,29 +64,29 @@
       src={url(~p"/js/app.js")}
     />
   </head>
-  <body>
-    <div>
-      <div role="region" aria-label="{gettext('Language Switcher')}">
+  <body class="min-h-screen">
+    <nav class="flex items-center justify-between w-full">
+      <div role="region" aria-label={gettext("Language switcher")}>
         <input type="checkbox" id="lang-toggle" hidden aria-hidden="true" />
         <label for="lang-toggle" aria-hidden="true">
-          <span aria-label="{ gettext('English')}">English</span>
-          <span aria-label="{ gettext('Japanese')}">日本語</span>
+          <span aria-label={gettext("English")}>English</span>
+          <span aria-label={gettext("Japanese")}>日本語</span>
         </label>
       </div>
-      <div role="region" aria-label="{gettext('Theme Switcher')}">
+      <div role="region" aria-label={gettext("Theme switcher")}>
         <input type="checkbox" id="theme-toggle" hidden aria-hidden="true" />
         <label for="theme-toggle" aria-hidden="true">
-          <span aria-label="{gettext('Light Mode')}">☀️</span>
-          <span aria-label="{gettext('Dark Mode')}">🌙</span>
+          <span aria-label={gettext("Light mode")}>☀️</span>
+          <span aria-label={gettext("Dark mode")}>🌙</span>
         </label>
       </div>
-    </div>
+    </nav>
 
     <main>
       <%= @inner_content %>
     </main>
     <!-- FIX FOOTER SO IT'S ACTUALLY LINKING -->
-    <footer>
+    <footer role="contentinfo" class="flex items-center justify-center text-center sticky top-[100vh]">
       <div>
         <h2>
           <%= gettext("Colophon") %>
