@@ -79,7 +79,7 @@ defmodule Portfolio.Content do
   end
 
   defp transform_metadata({charlist_key, charlist_value})
-       when is_list(charlist_key) and is_list(charlist_value) do
+      when is_list(charlist_key) and is_list(charlist_value) do
     key = String.to_atom(List.to_string(charlist_key))
     value = transform_value(charlist_value)
     {key, value}
@@ -96,34 +96,29 @@ defmodule Portfolio.Content do
   defp transform_value([first | _] = charlist_value) when is_list(first) do
     Enum.map(charlist_value, &List.to_string/1)
   end
+
   defp transform_value(charlist_value) when is_list(charlist_value) do
     List.to_string(charlist_value)
   end
 
   def update_case_study_from_file(file_path) do
-    with {:ok, metadata, markdown} <-
-           Portfolio.Content.read_markdown_file(file_path),
-         locale_match = Regex.run(~r/case-study\/(\w{2})\//, file_path),
-         true = is_list(locale_match) and length(locale_match) == 2,
-         locale = List.last(locale_match),
-         derived_metadata =
-           Map.merge(metadata, %{
-             file_path: file_path,
-             locale: locale
-           }),
-         Logger.debug("Derived metadata: #{inspect(derived_metadata)}"),
+    with {:ok, metadata, markdown} <- Portfolio.Content.read_markdown_file(file_path),
+         [_, locale] <- Regex.run(~r/case-study\/(\w{2})\//, file_path),
+         derived_metadata = Map.merge(metadata, %{file_path: file_path, locale: locale}),
          {:ok, case_study} <- get_or_create_case_study(derived_metadata) do
       update_case_study(case_study, derived_metadata, markdown)
+      update_or_create_translation(case_study, locale, markdown)
     else
+      {:error, :file_path_missing} ->
+        Logger.error("File path is missing for: #{file_path}")
+        {:error, :file_path_missing}
+
       {:error, :file_processing_failed} ->
         Logger.error("Failed to process case study file: #{file_path}")
         {:error, :file_processing_failed}
 
       {:error, reason} ->
-        Logger.error(
-          "Case study update (from file) failed. File: #{file_path}. \nReason: #{inspect(reason)}"
-        )
-
+        Logger.error("Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -179,6 +174,28 @@ defmodule Portfolio.Content do
 
         {:error, :case_study_update_failed}
     end
+  end
+
+  defp update_or_create_translation(case_study, locale, content) do
+    translation = Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
+
+    changeset = case translation do
+      nil -> Translation.changeset(%Translation{}, %{translatable_id: case_study.id, locale: locale, content: content})
+      _ -> Translation.changeset(translation, %{content: content})
+    end
+
+    Repo.insert_or_update(changeset)
+  end
+
+  defp update_or_create_translation(case_study, locale, content) do
+    translation = Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
+
+    changeset = case translation do
+      nil -> Translation.changeset(%Translation{}, %{translatable_id: case_study.id, locale: locale, content: content})
+      _ -> Translation.changeset(translation, %{content: content})
+    end
+
+    Repo.insert_or_update(changeset)
   end
 
   def get_content_with_translations(content_type, identifier, locale) do

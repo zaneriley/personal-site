@@ -1,20 +1,46 @@
-/*
- * Your custom CSS goes here but before adding a lot of CSS check this out:
- *   https://tailwindcss.com/docs/extracting-components
-*/
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+:root {
+  --fs-base: clamp(1.13rem, 0vi + 1.13rem, 1.13rem);
+  --grid-max-width: 69.75rem;
+  --grid-gutter: 3rem;
+  --grid-columns: 12;
+}
+
+.u-container {
+  max-width: var(--grid-max-width);
+  padding-inline: var(--grid-gutter);
+  margin-inline: auto;
+}
+
+.u-grid {
+  display: grid;
+  gap: var(--grid-gutter);
+}
+
+.col-span-12-children > *{
+  grid-column: span 12;
+}
+
+body {
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Dev styles to be deleted later */
 body {
     background-color: rgba(5, 0, 59, 1);
     color: white;
-    min-height: 100vh;
 }
+
 .dark-mode {
     background: black;
     color: white;
 }
+
 .light-mode {
     background: rgb(75, 75, 75);
     color: #fff;

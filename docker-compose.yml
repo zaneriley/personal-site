@@ -1,12 +1,12 @@
 x-app: &default-app
   build:
     context: "."
-    target: "${MIX_ENV:-prod}"
+    target: "${MIX_ENV:-dev}"
     args:
       - "UID=${UID:-1000}"
       - "GID=${GID:-1000}"
-      - "MIX_ENV=${MIX_ENV:-prod}"
-      - "NODE_ENV=${NODE_ENV:-production}"
+      - "MIX_ENV=${MIX_ENV:-dev}"
+      - "NODE_ENV=${NODE_ENV:-development}"
   depends_on:
     postgres:
       condition: "service_started"

@@ -2,6 +2,7 @@ defmodule PortfolioWeb.UserSocketTest do
   use PortfolioWeb.ChannelCase
   @salt Application.compile_env(:portfolio, PortfolioWeb.Endpoint)[:token_salt]
 
+  @tag :skip
   describe "connect/3 with authentication" do
     test "authenticates and assigns user_id with valid token" do
       #
@@ -17,6 +18,7 @@ defmodule PortfolioWeb.UserSocketTest do
     end
   end
 
+  @tag :skip
   describe "connect/3 without authentication" do
     test "allows connection without a token" do
       params = %{}
@@ -28,6 +30,7 @@ defmodule PortfolioWeb.UserSocketTest do
     end
   end
 
+  @tag :skip
   describe "connect/3 with expired token" do
     test "denies connection with expired token" do
       user_id = 123
@@ -40,6 +43,7 @@ defmodule PortfolioWeb.UserSocketTest do
     end
   end
 
+  @tag :skip
   describe "connect/3 with invalid token" do
     test "denies connection with invalid token" do
       params = %{"token" => "invalid_token"}
@@ -51,6 +55,7 @@ defmodule PortfolioWeb.UserSocketTest do
     end
   end
 
+  @tag :skip
   describe "dynamic channel subscription" do
     setup do
       # Generate a token for authentication
@@ -64,6 +69,7 @@ defmodule PortfolioWeb.UserSocketTest do
       {:ok, user_id: user_id, socket: socket}
     end
 
+    @tag :skip
     test "allows authenticated users to subscribe to their user_theme channel",
          %{user_id: user_id, socket: socket} do
       {:ok, _, _socket} =

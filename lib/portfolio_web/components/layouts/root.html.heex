@@ -64,18 +64,18 @@
       src={url(~p"/js/app.js")}
     />
   </head>
-  <body class="min-h-screen">
+  <body class="min-h-screen text-md">
     <nav class="flex items-center justify-between w-full">
-      <div role="region" aria-label={gettext("Language switcher")}>
+      <div role="region" aria-label={gettext("Language switcher")} class="">
         <input type="checkbox" id="lang-toggle" hidden aria-hidden="true" />
-        <label for="lang-toggle" aria-hidden="true">
+        <label for="lang-toggle" aria-hidden="true" class="space-x-md">
           <span aria-label={gettext("English")}>English</span>
           <span aria-label={gettext("Japanese")}>日本語</span>
         </label>
       </div>
-      <div role="region" aria-label={gettext("Theme switcher")}>
+      <div role="region" aria-label={gettext("Theme switcher")} >
         <input type="checkbox" id="theme-toggle" hidden aria-hidden="true" />
-        <label for="theme-toggle" aria-hidden="true">
+        <label for="theme-toggle" aria-hidden="true" class="space-x-md">
           <span aria-label={gettext("Light mode")}>☀️</span>
           <span aria-label={gettext("Dark mode")}>🌙</span>
         </label>

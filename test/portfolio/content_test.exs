@@ -1,6 +1,8 @@
 defmodule Portfolio.ContentTest do
   use ExUnit.Case, async: true
   alias Portfolio.Content
+  import ExUnit.CaptureLog
+
 
   describe "read_markdown_file/1" do
     test "reads markdown file successfully" do
@@ -15,14 +17,20 @@ defmodule Portfolio.ContentTest do
     end
 
     test "returns error for non-existent file" do
-      assert {:error, _reason} = Content.read_markdown_file("non_existent.md")
+      assert capture_log(fn ->
+        assert {:error, _reason} = Content.read_markdown_file("non_existent.md")
+      end) =~ "Error extracting content from file non_existent.md"
     end
 
     test "returns error for invalid content format" do
-      assert {:error, :missing_frontmatter_delimiters} =
-               Content.read_markdown_file(
-                 "priv/case-study/en/testing_case_study_malformed.md"
-               )
+      # Capturing the log to keep the error message from polluting the console
+      # This error means the test is passing
+      assert capture_log(fn ->
+        assert {:error, :missing_frontmatter_delimiters} =
+                 Content.read_markdown_file(
+                   "priv/case-study/en/testing_case_study_malformed.md"
+                 )
+      end) =~ "Error extracting content"
     end
   end
 

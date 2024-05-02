@@ -16,13 +16,14 @@ defmodule Portfolio.CaseStudy do
   schema "case_studies" do
     field :title, :string
     field :url, :string
+    field :company, :string
     field :role, :string
     field :timeline, :string
     field :read_time, :integer
     field :platforms, {:array, :string}
     field :introduction, :string
     field :content, :string
-    field :index, :integer
+    field :sort_order, :integer
     field :file_path, :string
     field :locale, :string
 
@@ -39,27 +40,29 @@ defmodule Portfolio.CaseStudy do
     |> cast(attrs, [
       :title,
       :url,
+      :company,
       :role,
       :timeline,
       :read_time,
       :platforms,
       :introduction,
       :content,
-      :index,
+      :sort_order,
       :file_path,
-      :locale
+      :locale,
     ])
     |> validate_required([
       :title,
       :url,
+      :company,
       :role,
       :timeline,
       :read_time,
       :platforms,
       :introduction,
-      :index,
+      :sort_order,
       :file_path,
-      :locale
+      :locale,
     ])
     |> unique_constraint(:url)
   end

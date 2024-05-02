@@ -55,6 +55,11 @@ defmodule PortfolioWeb.Router do
       live_dashboard "/dashboard", metrics: PortfolioWeb.Telemetry
 
       # LiveView routes for Case Studies
+
+      live "/notes/new", NoteLive.Index, :new
+      live "/notes/:id/edit", NoteLive.Index, :edit
+      live "/notes/:id/show/edit", NoteLive.Show, :edit
+
       live "/case-study", CaseStudyLive.Index, :index
       live "/case-study/new", CaseStudyLive.Index, :new
       live "/case-study/:id/edit", CaseStudyLive.Index, :edit
@@ -74,6 +79,8 @@ defmodule PortfolioWeb.Router do
 
     get "/", PageController, :home
     get "/case-study/:url", CaseStudyController, :show
+    live "/notes", NoteLive.Index, :index
+    live "/notes/:id", NoteLive.Show, :show
   end
 
   # Catch-all route for unmatched paths

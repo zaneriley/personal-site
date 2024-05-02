@@ -29,6 +29,7 @@ defmodule Portfolio.MixProject do
   defp deps do
     [
       {:credo, "1.7.3", only: [:dev, :test], runtime: false},
+      # {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.1.1"},
       {:earmark, "~> 1.4"},
       {:ecto_sql, "3.11.1"},
