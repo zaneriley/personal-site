@@ -1,23 +1,10 @@
+require Logger
+
 defmodule PortfolioWeb.UrlHelper do
-  @moduledoc """
-  Provides helper functions to generate URLs for the portfolio application.
-  """
-
-  def case_study_url(locale, case_study_url) do
-    "/#{locale}/case-study/#{case_study_url}"
-  end
-
-  def current_page_url(conn, locale) do
-    # Get the current path and params
-    current_path = conn.request_path
-
-    case current_path do
-      "/case-study/" <> case_study_slug ->
-        case_study_url(locale, case_study_slug)
-
-      _ ->
-        # Handle other types of URLs or default to a generic structure
-        "#{current_path}"
-    end
+  def sigil_i(path, _) do
+    Logger.info("sigil_i called with #{inspect(path)}")
+    locale = Gettext.get_locale(PortfolioWeb.Gettext)
+    Logger.info("Locale: #{locale}, Path: #{path}")
+    "#{path}"
   end
 end

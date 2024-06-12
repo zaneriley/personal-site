@@ -34,7 +34,11 @@ defmodule Portfolio.BlogTest do
 
     test "update_note/2 with valid data updates the note" do
       note = note_fixture()
-      update_attrs = %{title: "some updated title", content: "some updated content"}
+
+      update_attrs = %{
+        title: "some updated title",
+        content: "some updated content"
+      }
 
       assert {:ok, %Note{} = note} = Blog.update_note(note, update_attrs)
       assert note.title == "some updated title"
@@ -43,7 +47,10 @@ defmodule Portfolio.BlogTest do
 
     test "update_note/2 with invalid data returns error changeset" do
       note = note_fixture()
-      assert {:error, %Ecto.Changeset{}} = Blog.update_note(note, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Blog.update_note(note, @invalid_attrs)
+
       assert note == Blog.get_note!(note.id)
     end
 

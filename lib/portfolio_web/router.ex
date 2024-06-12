@@ -60,7 +60,6 @@ defmodule PortfolioWeb.Router do
       live "/notes/:id/edit", NoteLive.Index, :edit
       live "/notes/:id/show/edit", NoteLive.Show, :edit
 
-      live "/case-study", CaseStudyLive.Index, :index
       live "/case-study/new", CaseStudyLive.Index, :new
       live "/case-study/:id/edit", CaseStudyLive.Index, :edit
       live "/case-study/:id", CaseStudyLive.Show, :show
@@ -71,16 +70,17 @@ defmodule PortfolioWeb.Router do
   scope "/", PortfolioWeb do
     pipe_through [:browser, :locale]
 
-    get "/", PageController, :root
+    live "/", HomeLive
   end
 
   scope "/:locale", PortfolioWeb do
     pipe_through [:browser, :locale]
 
-    get "/", PageController, :home
-    get "/case-study/:url", CaseStudyController, :show
+    live "/", HomeLive, :index
+    live "/case-studies", CaseStudyLive.Index, :index
+    live "/case-study/:url", CaseStudyLive.Show, :show
     live "/notes", NoteLive.Index, :index
-    live "/notes/:id", NoteLive.Show, :show
+    live "/note/:id", NoteLive.Show, :show
   end
 
   # Catch-all route for unmatched paths

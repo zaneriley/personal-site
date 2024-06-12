@@ -1,4 +1,4 @@
-<.header>
+<%!-- <.header>
   Case study <%= @case_study.id %>
   <:subtitle>This is a case_study record from your database.</:subtitle>
   <:actions>
@@ -9,33 +9,57 @@
       <.button>Edit case_study</.button>
     </.link>
   </:actions>
-</.header>
+</.header> --%>
 
-<.list>
-  <:item title="Title"><%= @case_study.title %></:item>
-  <:item title="Url"><%= @case_study.url %></:item>
-  <:item title="Role"><%= @case_study.role %></:item>
-  <:item title="Timeline"><%= @case_study.timeline %></:item>
-  <:item title="Read time"><%= @case_study.read_time %></:item>
-  <:item title="Platforms"><%= @case_study.platforms %></:item>
-  <:item title="Introduction"><%= @case_study.introduction %></:item>
-  <:item title="Content"><%= @case_study.content %></:item>
-</.list>
 
-<.back navigate={~p"/case_studies"}>Back to case_studies</.back>
-
-<.modal
-  :if={@live_action == :edit}
-  id="case_study-modal"
-  show
-  on_cancel={JS.patch(~p"/case_studies/#{@case_study}")}
->
-  <.live_component
-    module={PortfolioWeb.CaseStudyLive.FormComponent}
-    id={@case_study.id}
-    title={@page_title}
-    action={@live_action}
-    case_study={@case_study}
-    patch={~p"/case_studies/#{@case_study}"}
-  />
-</.modal>
+<main class="u-container">
+  <article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
+    <nav class="text-sm">
+      <li><.back navigate={Routes.home_path(@socket, :index, @locale)}>
+                  <%= gettext("Case Study") %>
+          </.back>
+      </li><Heroicons.chevron_double_right class="inline-block h-4 w-4" />
+      <li><%= @case_study.company %></li>
+    </nav>
+    <!-- Title -->
+    <h1 class="text-4xl">
+      <%= @translations["title"] || @case_study.title %>
+    </h1>
+    <h2 class="text-2xl">
+      <%= @translations["introduction"] || @case_study.introduction %>
+    </h2>
+    <!-- Meta Information -->
+    <div class="grid grid-cols-subgrid">
+      <span class="col-span-3">
+        <strong>Role:</strong> <br /><%= @case_study.role %>
+      </span>
+      <span class="col-span-3">
+        <strong>Timeline:</strong> <br /><%= @case_study.timeline %>
+      </span>
+      <span class="col-span-3">
+        <strong>Read Time:</strong>
+        <br /><%= @case_study.read_time %> <%= ngettext(
+          "minute",
+          "minutes",
+          @case_study.read_time
+        ) %>
+      </span>
+      <div class="col-span-3">
+        <strong>Platforms:</strong>
+        <ul>
+          <%= for platform <- @case_study.platforms do %>
+            <li><%= platform %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+    <!-- Main Content -->
+    <div class="space-y-md">
+      <%= if @case_study.content do %>
+        <%= raw(@case_study.content) %>
+      <% else %>
+        <p>We ran into an issue loading this case study!</p>
+      <% end %>
+    </div>
+  </article>
+</main>

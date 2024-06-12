@@ -35,10 +35,17 @@ defmodule PortfolioWeb.UserSocketTest do
     test "denies connection with expired token" do
       user_id = 123
       salt = @salt
-      expired_token = Phoenix.Token.sign(PortfolioWeb.Endpoint, salt, user_id, signed_at: System.system_time(:second) - 86_400 * 2)
+
+      expired_token =
+        Phoenix.Token.sign(PortfolioWeb.Endpoint, salt, user_id,
+          signed_at: System.system_time(:second) - 86_400 * 2
+        )
+
       params = %{"token" => expired_token}
 
-      assert {:error, reason} = PortfolioWeb.UserSocket.connect(params, %Phoenix.Socket{}, %{})
+      assert {:error, reason} =
+               PortfolioWeb.UserSocket.connect(params, %Phoenix.Socket{}, %{})
+
       assert reason == %{reason: "invalid_token"}
     end
   end

@@ -1,27 +1,27 @@
 defmodule PortfolioWeb.NoteLiveTest do
-  # use PortfolioWeb.ConnCase
+  use PortfolioWeb.ConnCase
 
-  # import Phoenix.LiveViewTest
-  # import Portfolio.BlogFixtures
+  import Phoenix.LiveViewTest
+  import Portfolio.BlogFixtures
 
-  # @create_attrs %{title: "some title", content: "some content"}
-  # @update_attrs %{title: "some updated title", content: "some updated content"}
-  # @invalid_attrs %{title: nil, content: nil}
+  @create_attrs %{title: "some title", content: "some content"}
+  @update_attrs %{title: "some updated title", content: "some updated content"}
+  @invalid_attrs %{title: nil, content: nil}
 
-  # defp create_note(_) do
-  #   note = note_fixture()
-  #   %{note: note}
-  # end
+  defp create_note(_) do
+    note = note_fixture()
+    %{note: note}
+  end
 
-  # describe "Index" do
-  #   setup [:create_note]
+  describe "Index" do
+    setup [:create_note]
 
-  #   test "lists all notes", %{conn: conn, note: note} do
-  #     {:ok, _index_live, html} = live(conn, ~p"/notes")
+    test "lists all notes", %{conn: conn, note: note} do
+      {:ok, _index_live, html} = live(conn, ~p"/notes")
 
-  #     assert html =~ "Listing Notes"
-  #     assert html =~ note.title
-  #   end
+      assert html =~ "Listing Notes"
+      assert html =~ note.title
+    end
 
   #   test "saves new note", %{conn: conn} do
   #     {:ok, index_live, _html} = live(conn, ~p"/notes")
@@ -44,7 +44,7 @@ defmodule PortfolioWeb.NoteLiveTest do
   #     html = render(index_live)
   #     assert html =~ "Note created successfully"
   #     assert html =~ "some title"
-  #   end
+    end
 
   #   test "updates note in listing", %{conn: conn, note: note} do
   #     {:ok, index_live, _html} = live(conn, ~p"/notes")

@@ -34,7 +34,7 @@ defmodule PortfolioWeb.PageController do
       )
     )
     |> assign(:current_year, current_year)
-    |> assign(:case_studies, case_studies)
+    # |> assign(:case_studies, case_studies)
     |> render(:home,
       run_mode: run_mode,
       phoenix_ver: Application.spec(:phoenix, :vsn),

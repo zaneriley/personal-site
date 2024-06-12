@@ -79,7 +79,7 @@ defmodule Portfolio.Content do
   end
 
   defp transform_metadata({charlist_key, charlist_value})
-      when is_list(charlist_key) and is_list(charlist_value) do
+       when is_list(charlist_key) and is_list(charlist_value) do
     key = String.to_atom(List.to_string(charlist_key))
     value = transform_value(charlist_value)
     {key, value}
@@ -102,9 +102,11 @@ defmodule Portfolio.Content do
   end
 
   def update_case_study_from_file(file_path) do
-    with {:ok, metadata, markdown} <- Portfolio.Content.read_markdown_file(file_path),
+    with {:ok, metadata, markdown} <-
+           Portfolio.Content.read_markdown_file(file_path),
          [_, locale] <- Regex.run(~r/case-study\/(\w{2})\//, file_path),
-         derived_metadata = Map.merge(metadata, %{file_path: file_path, locale: locale}),
+         derived_metadata =
+           Map.merge(metadata, %{file_path: file_path, locale: locale}),
          {:ok, case_study} <- get_or_create_case_study(derived_metadata) do
       update_case_study(case_study, derived_metadata, markdown)
       update_or_create_translation(case_study, locale, markdown)
@@ -118,7 +120,10 @@ defmodule Portfolio.Content do
         {:error, :file_processing_failed}
 
       {:error, reason} ->
-        Logger.error("Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(reason)}")
+        Logger.error(
+          "Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(reason)}"
+        )
+
         {:error, reason}
     end
   end
@@ -177,23 +182,41 @@ defmodule Portfolio.Content do
   end
 
   defp update_or_create_translation(case_study, locale, content) do
-    translation = Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
+    translation =
+      Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
 
-    changeset = case translation do
-      nil -> Translation.changeset(%Translation{}, %{translatable_id: case_study.id, locale: locale, content: content})
-      _ -> Translation.changeset(translation, %{content: content})
-    end
+    changeset =
+      case translation do
+        nil ->
+          Translation.changeset(%Translation{}, %{
+            translatable_id: case_study.id,
+            locale: locale,
+            content: content
+          })
+
+        _ ->
+          Translation.changeset(translation, %{content: content})
+      end
 
     Repo.insert_or_update(changeset)
   end
 
   defp update_or_create_translation(case_study, locale, content) do
-    translation = Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
+    translation =
+      Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
 
-    changeset = case translation do
-      nil -> Translation.changeset(%Translation{}, %{translatable_id: case_study.id, locale: locale, content: content})
-      _ -> Translation.changeset(translation, %{content: content})
-    end
+    changeset =
+      case translation do
+        nil ->
+          Translation.changeset(%Translation{}, %{
+            translatable_id: case_study.id,
+            locale: locale,
+            content: content
+          })
+
+        _ ->
+          Translation.changeset(translation, %{content: content})
+      end
 
     Repo.insert_or_update(changeset)
   end

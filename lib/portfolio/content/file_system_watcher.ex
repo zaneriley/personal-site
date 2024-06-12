@@ -67,15 +67,20 @@ defmodule Portfolio.Content.FileSystemWatcher do
     * state: The current state of the file watcher GenServer.
 
   """
-  def handle_info({:file_event, watcher_pid, {path, events}}, %{watcher_pid: watcher_pid} = state) do
+  def handle_info(
+        {:file_event, watcher_pid, {path, events}},
+        %{watcher_pid: watcher_pid} = state
+      ) do
     Logger.info("File system event: File: #{path}, Events: #{inspect(events)}")
 
     case {relevant_file_change?(path, events), events} do
       {true, [:modified, :closed]} ->
         process_file_change(path, state)
+
       {false, _} ->
         Logger.debug("Ignored file change: #{path}")
         {:noreply, state}
+
       _ ->
         Logger.error("Unhandled file event pattern: #{inspect(events)}")
         {:noreply, state}
@@ -84,10 +89,12 @@ defmodule Portfolio.Content.FileSystemWatcher do
 
   def process_file_change(path, state) do
     Logger.info("Processing file change for: #{path}")
+
     case Portfolio.Content.update_case_study_from_file(path) do
       {:ok, _} ->
         Logger.info("File change processed successfully for: #{path}")
         {:noreply, state}
+
       {:error, reason} ->
         handle_error(reason, state)
     end

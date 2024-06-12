@@ -49,7 +49,7 @@ defmodule Portfolio.CaseStudy do
       :content,
       :sort_order,
       :file_path,
-      :locale,
+      :locale
     ])
     |> validate_required([
       :title,
@@ -62,7 +62,7 @@ defmodule Portfolio.CaseStudy do
       :introduction,
       :sort_order,
       :file_path,
-      :locale,
+      :locale
     ])
     |> unique_constraint(:url)
   end
