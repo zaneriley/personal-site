@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <.live_title>
-      <%= assigns[:page_title] || "Zane Riley's Product Design Portfolio" %>
+      <%= assigns[:page_title] || "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience" %>
     </.live_title>
 
     <meta charset="utf-8" />
@@ -12,7 +12,7 @@
       name="description"
       content={
         assigns[:page_description] ||
-          ~c"Zane Riley is a seasoned product designer based in Tokyo, Japan"
+          ~c"Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
       }
     />
     <!-- href langs -->
@@ -45,9 +45,7 @@
     <meta name="msapplication-TileColor" content="#2b5797" />
     <meta name="theme-color" content="#343334" />
     <!-- Dynamic Schema Markup -->
-    <script type="application/ld+json">
-      <%= Jason.encode!(assigns[:person_schema]) %>
-    </script>
+
     <!-- Dynamic OG Meta -->
     <%= if assigns[:og_meta] do %>
       <meta property="og:title" content={assigns[:og_meta][:title]} />

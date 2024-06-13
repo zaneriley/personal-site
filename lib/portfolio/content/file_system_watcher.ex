@@ -105,7 +105,7 @@ defmodule Portfolio.Content.FileSystemWatcher do
     {:noreply, Map.put(state, :last_error, reason)}
   end
 
-  def relevant_file_change?(path, events) do
+  def relevant_file_change?(path, _events) do
     Path.extname(path) == ".md" and
       not String.starts_with?(path, ".")
   end

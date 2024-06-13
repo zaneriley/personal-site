@@ -15,7 +15,7 @@
 <main class="u-container">
   <article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
     <nav class="text-sm">
-      <li><.back navigate={Routes.home_path(@socket, :index, @locale)}>
+      <li><.back navigate={Routes.home_path(@socket, :index, @user_locale)}>
                   <%= gettext("Case Study") %>
           </.back>
       </li><Heroicons.chevron_double_right class="inline-block h-4 w-4" />

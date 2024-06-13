@@ -1,14 +1,15 @@
 defmodule PortfolioWeb.CaseStudyLive.Show do
+  require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true
   def mount(%{"url" => url}, session, socket) do
-    locale = session["locale"] || Application.get_env(:portfolio, :default_locale)
-
+    user_locale = session["user_locale"] || Application.get_env(:portfolio, :default_locale)
+    Logger.info("Locale for CaseStudyLive.Show: #{user_locale}")
     if valid_slug?(url) do
-      {case_study, translations} = Content.get_content_with_translations(:case_study, url, locale)
+      {case_study, translations} = Content.get_content_with_translations(:case_study, url, user_locale)
 
       case case_study do
         nil ->
@@ -17,7 +18,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
         %Portfolio.CaseStudy{} = cs ->
           {page_title, introduction} = set_page_metadata(cs, translations)
-          {:ok, assign(socket, case_study: cs, translations: translations, page_title: page_title, page_description: introduction, locale: locale)}
+          {:ok, assign(socket, case_study: cs, translations: translations, page_title: page_title, page_description: introduction, user_locale: user_locale)}
       end
     else
       Logger.error("Invalid URL format: #{url}")

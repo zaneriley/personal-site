@@ -26,6 +26,7 @@ x-assets: &default-assets
     args:
       - "UID=${UID:-1000}"
       - "GID=${GID:-1000}"
+      # - "MIX_ENV=${MIX_ENV:-dev}"
       - "NODE_ENV=${NODE_ENV:-production}"
   env_file:
     - ".env"

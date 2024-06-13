@@ -201,25 +201,6 @@ defmodule Portfolio.Content do
     Repo.insert_or_update(changeset)
   end
 
-  defp update_or_create_translation(case_study, locale, content) do
-    translation =
-      Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
-
-    changeset =
-      case translation do
-        nil ->
-          Translation.changeset(%Translation{}, %{
-            translatable_id: case_study.id,
-            locale: locale,
-            content: content
-          })
-
-        _ ->
-          Translation.changeset(translation, %{content: content})
-      end
-
-    Repo.insert_or_update(changeset)
-  end
 
   def get_content_with_translations(content_type, identifier, locale) do
     Logger.debug(
@@ -234,7 +215,6 @@ defmodule Portfolio.Content do
       end
 
     content = Repo.one(content_query)
-    Logger.debug("Content fetched: #{inspect(content)}")
 
     if content do
       translation_query =
@@ -249,10 +229,6 @@ defmodule Portfolio.Content do
         |> Enum.into(%{}, fn t -> {t.field_name, t.field_value} end)
 
       Logger.debug("Translations fetched: #{inspect(translations)}")
-
-      Logger.debug(
-        "Content after attempting to update :content field: #{inspect(content)}"
-      )
 
       {content, translations}
     else
@@ -273,7 +249,7 @@ defmodule Portfolio.Content do
     case_studies = Repo.all(case_studies_query)
 
     Enum.map(case_studies, fn case_study ->
-      Logger.debug("Fetching translations for CaseStudy ID: #{case_study.id}")
+      # Logger.debug("Fetching translations for CaseStudy ID: #{case_study.id}")
 
       translation_query =
         from t in Translation,
@@ -282,7 +258,7 @@ defmodule Portfolio.Content do
               t.translatable_type == ^"CaseStudy" and
               t.locale == ^locale
 
-      Logger.debug("Translation Query: #{inspect(translation_query)}")
+      # Logger.debug("Translation Query: #{inspect(translation_query)}")
 
       translations =
         Repo.all(translation_query)

@@ -19,13 +19,20 @@ defmodule PortfolioWeb.Layouts do
   end
 
   def hreflang_tags(conn) do
-    {_, remaining_path} = PortfolioWeb.Plugs.SetLocale.extract_locale(conn)
+    {user_locale, remaining_path} = PortfolioWeb.Plugs.SetLocale.extract_locale(conn)
 
-    @supported_locales
-    |> Enum.map_join("\n", fn locale ->
-      locale_url = locale_url(conn, locale, remaining_path)
-      ~s(<link rel="alternate" hreflang="#{locale}" href="#{locale_url}" />)
-    end)
+    tags =
+      @supported_locales
+      |> Enum.map(fn locale ->
+        locale_url = PortfolioWeb.Router.Helpers.url(conn) <> locale_url(conn, locale, remaining_path)
+        ~s(<link rel="alternate" hreflang="#{locale}" href="#{locale_url}" />)
+      end)
+
+    default_url = PortfolioWeb.Router.Helpers.url(conn)
+    default_tag = ~s(<link rel="alternate" hreflang="x-default" href="#{default_url}" />)
+
+    (tags ++ [default_tag])
+    |> Enum.join("\n")
     |> Phoenix.HTML.raw()
   end
 end

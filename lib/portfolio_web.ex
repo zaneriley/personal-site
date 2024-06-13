@@ -106,7 +106,6 @@ defmodule PortfolioWeb do
         endpoint: PortfolioWeb.Endpoint,
         router: PortfolioWeb.Router,
         statics: PortfolioWeb.static_paths()
-      import PortfolioWeb.UrlHelper
       end
   end
 

@@ -13,7 +13,6 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   Static assets are not affected by this plug, as their paths are matched against predefined static paths and served without setting a locale.
   """
   import Plug.Conn
-  import PortfolioWeb
   require Logger
 
   @supported_locales Application.compile_env!(:portfolio, :supported_locales)

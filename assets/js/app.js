@@ -13,6 +13,17 @@ topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(500))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
+window.addEventListener("phx:page-loading-start", info => {
+    if (info.detail.kind === "redirect") {
+      document.querySelector("body").classList.add("phx-page-loading")
+    }
+  })
+  
+
+window.addEventListener("phx:page-loading-stop", info => {
+    document.querySelector("body").classList.remove("phx-page-loading")
+})
+
 liveSocket.connect()
 // Expose liveSocket on window for console debug logs and latency simulation:
 >> liveSocket.enableDebug()
