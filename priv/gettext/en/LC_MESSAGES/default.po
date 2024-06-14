@@ -4,11 +4,11 @@ msgstr "Zane Riley"
 msgid "Zane Riley | Product Design Portfolio"
 msgstr "Zane Riley | Product Design Portfolio"
 
-msgid "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
-msgstr "Zane Riley: Expert Product Designer in Tokyo with 10+ Years of Experience"
+msgid "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
+msgstr "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
 
-msgid "Zane Riley is a experienced Product Designer based in Tokyo, with 10+ years of experience in a variety of industries including healthcare, finance, and more. Product-focused, Zane brings a strong technical background to the table, building products that help people beyond the screen."
-msgstr "Zane Riley is a experienced Product Designer based in Tokyo, with 10+ years of experience in a variety of industries including healthcare, finance, and more. Product-focused, Zane brings a strong technical background to the table, building products that help people beyond the screen."
+msgid "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+msgstr "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
 
 msgid "Product designer helping people beyond the screen"
 msgstr "Product designer helping people beyond the screen"
@@ -40,6 +40,8 @@ msgstr "Light mode"
 msgid "Dark mode"
 msgstr "Dark mode"
 
+msgid "Case Study"
+msgstr "Case Study"
 
 msgid "minute"
 msgid_plural "minutes"

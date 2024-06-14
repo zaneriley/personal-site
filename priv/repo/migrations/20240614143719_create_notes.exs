@@ -5,6 +5,7 @@ defmodule Portfolio.Repo.Migrations.CreateNotes do
     create table(:notes) do
       add :title, :string
       add :content, :text
+      add :url, :string
 
       timestamps(type: :utc_datetime)
     end
