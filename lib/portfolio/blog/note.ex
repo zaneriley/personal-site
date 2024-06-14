@@ -5,6 +5,7 @@ defmodule Portfolio.Blog.Note do
   schema "notes" do
     field :title, :string
     field :content, :string
+    field :url, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -14,5 +15,6 @@ defmodule Portfolio.Blog.Note do
     note
     |> cast(attrs, [:title, :content])
     |> validate_required([:title, :content])
+    |> unique_constraint(:url)
   end
 end
