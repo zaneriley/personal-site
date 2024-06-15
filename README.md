@@ -65,6 +65,22 @@ Here's a quick breakdown:
 
 4. **Front-end:** The JavaScript part of the code handles: Connecting to a user's specific Phoenix channel, listening for theme changes from the server, applying the correct CSS classes to the page to switch between light and dark modes, and sending theme change requests to the server when the user toggles the theme switch.
 
+
+## Known issues
+### You can't run `mix ecto.drop` while the app is running.
+One hotfix for this is to stop the web app:
+`docker compose YOURAPP-web-1 stop`
+then run `mix ecto.drop`
+
+If that still doesn't work, as a last resort you terminate all the connections to the database with:
+```bash
+`docker exec -it YOURAPP-postgres-1 psql -U YOURUSER -d YOURDATABASE -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'YOURDATABASE' AND pid <> pg_backend_pid();"
+```
+Then drop your database with:
+```bash
+docker exec -it YOURAPP-postgres-1 psql -U YOURAPP -d postgres -c "DROP DATABASE YOURDATABASE;"
+```
+
 ## Acknowledgements
 
 A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio. 

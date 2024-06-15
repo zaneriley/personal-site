@@ -201,7 +201,6 @@ defmodule Portfolio.Content do
     Repo.insert_or_update(changeset)
   end
 
-
   def get_content_with_translations(content_type, identifier, locale) do
     Logger.debug(
       "get_content_with_translations/3 called with #{inspect(content_type)}, #{inspect(identifier)}, #{inspect(locale)}"
@@ -242,7 +241,7 @@ defmodule Portfolio.Content do
   def get_all_case_studies(locale, page_number \\ 1) do
     case_studies_query =
       from c in CaseStudy,
-        order_by: [desc: c.inserted_at],
+        order_by: [desc: c.sort_order],
         limit: ^@page_size,
         offset: ^((page_number - 1) * @page_size)
 
@@ -266,5 +265,36 @@ defmodule Portfolio.Content do
 
       {case_study, translations}
     end)
+  end
+
+  def convert_case_study_to_markdown(case_study) do
+    frontmatter = """
+    ---
+    title: "#{case_study.title}"
+    url: "#{case_study.url}"
+    company: "#{case_study.company}"
+    role: "#{case_study.role}"
+    timeline: "#{case_study.timeline}"
+    read_time: #{case_study.read_time}
+    platforms: #{inspect(case_study.platforms)}
+    sort_order: #{case_study.sort_order}
+    introduction: "#{case_study.introduction}"
+    ---
+    """
+
+    content = case_study.content
+
+    frontmatter <> "\n\n" <> content
+  end
+
+  def save_case_studies_to_markdown() do
+    case_studies = get_all_case_studies("en", 1)
+
+    for {case_study, _translations} <- case_studies do
+      file_path = "priv/case-study/en/#{case_study.url}.md"
+      markdown = convert_case_study_to_markdown(case_study)
+
+      File.write!(file_path, markdown)
+    end
   end
 end

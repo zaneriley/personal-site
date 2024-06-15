@@ -15,8 +15,7 @@ defmodule Portfolio.Repo.Migrations.CreateCaseStudies do
       add :content, :text
       add :company, :string
       add :sort_order, :integer
-
-      timestamps()
+      timestamps(type: :utc_datetime)
     end
 
     create unique_index(:case_studies, [:url], name: :unique_case_study_urls)
