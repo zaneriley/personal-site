@@ -19,5 +19,6 @@ defmodule Portfolio.Repo.Migrations.CreateCaseStudies do
     end
 
     create unique_index(:case_studies, [:url], name: :unique_case_study_urls)
+    create index(:case_studies, [:locale])
   end
 end
