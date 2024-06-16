@@ -27,7 +27,7 @@ window.addEventListener("phx:page-loading-stop", info => {
 liveSocket.connect()
 // Expose liveSocket on window for console debug logs and latency simulation:
 >> liveSocket.enableDebug()
-// >> liveSocket.enableLatencySim(1000)  // active for current browser session
+>> liveSocket.enableLatencySim(1000)  // active for current browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 
