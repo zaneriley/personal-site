@@ -1,6 +1,5 @@
 # Mostly created by https://www.gitignore.io
 
-
 ### App #######################################################################
 
 priv/static/*

@@ -1,14 +1,15 @@
 ---
-index: 100
-title: "Test case study. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと
-    ！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ YAHAHAHA!"
+title: "Test case study. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと ！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ YAHAHAHA!"
 url: "testing-case-study"
+company: ""
 role: "Lead designer"
 timeline: "Test Timeline"
 read_time: 14
 platforms: ["List", "of", "strings"]
+sort_order: 100
 introduction: "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence."
 ---
+
 # Heading Level 1
 
 ## Heading Level 2

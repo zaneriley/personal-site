@@ -44,7 +44,11 @@ module.exports = {
     '/app/lib/portfolio_web/**/*.*ex',
   ],
   corePlugins: {},
-  plugins: [],
+  plugins: [
+    ({ addVariant }) => {
+      addVariant('phx-page-loading', ['.phx-page-loading&', '.phx-page-loading &']);
+    },
+  ],
   theme: {
     fontSize: {
       "2xs":  [typeSizes.find(size => size.label === '2xs').clamp, 1.2],
@@ -54,6 +58,21 @@ module.exports = {
       "2xl":  [typeSizes.find(size => size.label === '2xl').clamp, 1],
       "3xl":  [typeSizes.find(size => size.label === '3xl').clamp, 1],
       "4xl":  [typeSizes.find(size => size.label === '4xl').clamp, 1],
-    }
+    },
+    extend: {
+      // Add transition properties for the fade effect
+      transitionProperty: {
+        'opacity': 'opacity',
+      },
+      transitionDuration: {
+        '500': '500ms',
+      },
+      transitionTimingFunction: {
+        'ease': 'ease',
+      },
+      opacity: {
+        '0': '0',
+      },
+    },
   },
 };

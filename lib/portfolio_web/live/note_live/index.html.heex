@@ -30,7 +30,12 @@
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new, :edit]} id="note-modal" show on_cancel={JS.patch(~p"/notes")}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="note-modal"
+  show
+  on_cancel={JS.patch(~p"/notes")}
+>
   <.live_component
     module={PortfolioWeb.NoteLive.FormComponent}
     id={@note.id || :new}

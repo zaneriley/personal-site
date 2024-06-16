@@ -28,8 +28,9 @@ defmodule Portfolio.MixProject do
 
   defp deps do
     [
+      {:cowboy, "~> 2.11.0"},
       {:credo, "1.7.3", only: [:dev, :test], runtime: false},
-      # {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.1.1"},
       {:earmark, "~> 1.4"},
       {:ecto_sql, "3.11.1"},
@@ -47,7 +48,7 @@ defmodule Portfolio.MixProject do
       {:phoenix_live_dashboard, "0.8.3"},
       {:phoenix_live_reload, "1.4.1", only: :dev},
       {:phoenix_live_view, "0.20.3"},
-      {:plug_cowboy, "2.6.1"},
+      {:plug_cowboy, "~> 2.1"},
       {:postgrex, "0.17.4"},
       {:swoosh, "1.14.4"},
       {:telemetry_metrics, "0.6.2"},

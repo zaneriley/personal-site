@@ -73,6 +73,6 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
   defp extract_locale_from_path(path) do
     [_, possible_locale | remaining_parts] = String.split(path, "/")
-    {possible_locale, "/" <> Enum.join(remaining_parts, "/")}
+    {String.downcase(possible_locale), "/" <> Enum.join(remaining_parts, "/")}
   end
 end

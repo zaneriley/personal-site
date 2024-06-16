@@ -27,6 +27,7 @@ defmodule Portfolio.CaseStudy do
     field :file_path, :string
     field :locale, :string
 
+
     has_many :translations, Portfolio.Translation,
       foreign_key: :translatable_id,
       where: [translatable_type: "CaseStudy"]
@@ -49,7 +50,7 @@ defmodule Portfolio.CaseStudy do
       :content,
       :sort_order,
       :file_path,
-      :locale,
+      :locale
     ])
     |> validate_required([
       :title,
@@ -62,7 +63,7 @@ defmodule Portfolio.CaseStudy do
       :introduction,
       :sort_order,
       :file_path,
-      :locale,
+      :locale
     ])
     |> unique_constraint(:url)
   end

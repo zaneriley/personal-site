@@ -106,7 +106,7 @@ defmodule PortfolioWeb do
         endpoint: PortfolioWeb.Endpoint,
         router: PortfolioWeb.Router,
         statics: PortfolioWeb.static_paths()
-    end
+      end
   end
 
   @doc """

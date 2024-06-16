@@ -79,7 +79,7 @@ defmodule Portfolio.Content do
   end
 
   defp transform_metadata({charlist_key, charlist_value})
-      when is_list(charlist_key) and is_list(charlist_value) do
+       when is_list(charlist_key) and is_list(charlist_value) do
     key = String.to_atom(List.to_string(charlist_key))
     value = transform_value(charlist_value)
     {key, value}
@@ -102,9 +102,11 @@ defmodule Portfolio.Content do
   end
 
   def update_case_study_from_file(file_path) do
-    with {:ok, metadata, markdown} <- Portfolio.Content.read_markdown_file(file_path),
+    with {:ok, metadata, markdown} <-
+           Portfolio.Content.read_markdown_file(file_path),
          [_, locale] <- Regex.run(~r/case-study\/(\w{2})\//, file_path),
-         derived_metadata = Map.merge(metadata, %{file_path: file_path, locale: locale}),
+         derived_metadata =
+           Map.merge(metadata, %{file_path: file_path, locale: locale}),
          {:ok, case_study} <- get_or_create_case_study(derived_metadata) do
       update_case_study(case_study, derived_metadata, markdown)
       update_or_create_translation(case_study, locale, markdown)
@@ -118,7 +120,10 @@ defmodule Portfolio.Content do
         {:error, :file_processing_failed}
 
       {:error, reason} ->
-        Logger.error("Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(reason)}")
+        Logger.error(
+          "Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(reason)}"
+        )
+
         {:error, reason}
     end
   end
@@ -177,23 +182,21 @@ defmodule Portfolio.Content do
   end
 
   defp update_or_create_translation(case_study, locale, content) do
-    translation = Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
+    translation =
+      Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
 
-    changeset = case translation do
-      nil -> Translation.changeset(%Translation{}, %{translatable_id: case_study.id, locale: locale, content: content})
-      _ -> Translation.changeset(translation, %{content: content})
-    end
+    changeset =
+      case translation do
+        nil ->
+          Translation.changeset(%Translation{}, %{
+            translatable_id: case_study.id,
+            locale: locale,
+            content: content
+          })
 
-    Repo.insert_or_update(changeset)
-  end
-
-  defp update_or_create_translation(case_study, locale, content) do
-    translation = Repo.get_by(Translation, translatable_id: case_study.id, locale: locale)
-
-    changeset = case translation do
-      nil -> Translation.changeset(%Translation{}, %{translatable_id: case_study.id, locale: locale, content: content})
-      _ -> Translation.changeset(translation, %{content: content})
-    end
+        _ ->
+          Translation.changeset(translation, %{content: content})
+      end
 
     Repo.insert_or_update(changeset)
   end
@@ -211,7 +214,6 @@ defmodule Portfolio.Content do
       end
 
     content = Repo.one(content_query)
-    Logger.debug("Content fetched: #{inspect(content)}")
 
     if content do
       translation_query =
@@ -227,10 +229,6 @@ defmodule Portfolio.Content do
 
       Logger.debug("Translations fetched: #{inspect(translations)}")
 
-      Logger.debug(
-        "Content after attempting to update :content field: #{inspect(content)}"
-      )
-
       {content, translations}
     else
       Logger.error("No content found for #{inspect(identifier)}")
@@ -243,14 +241,14 @@ defmodule Portfolio.Content do
   def get_all_case_studies(locale, page_number \\ 1) do
     case_studies_query =
       from c in CaseStudy,
-        order_by: [desc: c.inserted_at],
+        order_by: [desc: c.sort_order],
         limit: ^@page_size,
         offset: ^((page_number - 1) * @page_size)
 
     case_studies = Repo.all(case_studies_query)
 
     Enum.map(case_studies, fn case_study ->
-      Logger.debug("Fetching translations for CaseStudy ID: #{case_study.id}")
+      # Logger.debug("Fetching translations for CaseStudy ID: #{case_study.id}")
 
       translation_query =
         from t in Translation,
@@ -259,7 +257,7 @@ defmodule Portfolio.Content do
               t.translatable_type == ^"CaseStudy" and
               t.locale == ^locale
 
-      Logger.debug("Translation Query: #{inspect(translation_query)}")
+      # Logger.debug("Translation Query: #{inspect(translation_query)}")
 
       translations =
         Repo.all(translation_query)
@@ -267,5 +265,36 @@ defmodule Portfolio.Content do
 
       {case_study, translations}
     end)
+  end
+
+  def convert_case_study_to_markdown(case_study) do
+    frontmatter = """
+    ---
+    title: "#{case_study.title}"
+    url: "#{case_study.url}"
+    company: "#{case_study.company}"
+    role: "#{case_study.role}"
+    timeline: "#{case_study.timeline}"
+    read_time: #{case_study.read_time}
+    platforms: #{inspect(case_study.platforms)}
+    sort_order: #{case_study.sort_order}
+    introduction: "#{case_study.introduction}"
+    ---
+    """
+
+    content = case_study.content
+
+    frontmatter <> "\n\n" <> content
+  end
+
+  def save_case_studies_to_markdown() do
+    case_studies = get_all_case_studies("en", 1)
+
+    for {case_study, _translations} <- case_studies do
+      file_path = "priv/case-study/en/#{case_study.url}.md"
+      markdown = convert_case_study_to_markdown(case_study)
+
+      File.write!(file_path, markdown)
+    end
   end
 end

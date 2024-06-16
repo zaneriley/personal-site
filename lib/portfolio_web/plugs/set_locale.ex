@@ -13,12 +13,11 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   Static assets are not affected by this plug, as their paths are matched against predefined static paths and served without setting a locale.
   """
   import Plug.Conn
-  alias PortfolioWeb, as: PW
   require Logger
 
   @supported_locales Application.compile_env!(:portfolio, :supported_locales)
   @default_locale Application.compile_env(:portfolio, :default_locale)
-  @static_paths PW.static_paths()
+  @static_paths PortfolioWeb.static_paths()
 
   def init(default), do: default
 
@@ -50,8 +49,8 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   end
 
   defp set_locale(conn, {user_locale, _remaining_path}) do
-    Gettext.put_locale(PW.Gettext, user_locale)
-    Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PW.Gettext)}")
+    Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
+    Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PortfolioWeb.Gettext)}")
 
     conn
     |> put_session("user_locale", user_locale)
