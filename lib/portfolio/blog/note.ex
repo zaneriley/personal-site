@@ -1,4 +1,10 @@
 defmodule Portfolio.Blog.Note do
+  @moduledoc """
+  Defines the schema and changeset for `notes` in the blog portfolio.
+
+  The `Note` schema represents a blog note with a title, content, and a unique URL.
+  It includes functionality to handle creation and updates with automatic timestamps.
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
