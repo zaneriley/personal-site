@@ -18,5 +18,5 @@ defmodule PortfolioWeb.SessionControllerTest do
       assert is_binary(response["token"])
       assert is_integer(response["user_id"])
     end
-  # end
+  end
 end
