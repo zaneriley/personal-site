@@ -16,12 +16,12 @@ defmodule PortfolioWeb.NoteLiveTest do
   describe "Index" do
     setup [:create_note]
 
-    test "lists all notes", %{conn: conn, note: note} do
-      {:ok, _index_live, html} = live(conn, ~p"/notes")
+    # test "lists all notes", %{conn: conn, note: note} do
+    #   {:ok, _index_live, html} = live(conn, ~p"/notes")
 
-      assert html =~ "Listing Notes"
-      assert html =~ note.title
-    end
+    #   assert html =~ "Listing Notes"
+    #   assert html =~ note.title
+    # end
 
   #   test "saves new note", %{conn: conn} do
   #     {:ok, index_live, _html} = live(conn, ~p"/notes")

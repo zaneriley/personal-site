@@ -8,7 +8,7 @@ defmodule Portfolio.ContentTest do
       # Assuming a valid file path
       assert {:ok, metadata, markdown} =
                Content.read_markdown_file(
-                 "priv/case-study/en/testing_case_study.md"
+                 "priv/case-study/en/testing-case-study.md"
                )
 
       assert is_map(metadata)
@@ -18,8 +18,8 @@ defmodule Portfolio.ContentTest do
     test "returns error for non-existent file" do
       assert capture_log(fn ->
                assert {:error, _reason} =
-                        Content.read_markdown_file("non_existent.md")
-             end) =~ "Error extracting content from file non_existent.md"
+                        Content.read_markdown_file("non-existent.md")
+             end) =~ "Error extracting content from file non-existent.md"
     end
 
     test "returns error for invalid content format" do
@@ -28,7 +28,7 @@ defmodule Portfolio.ContentTest do
       assert capture_log(fn ->
                assert {:error, :missing_frontmatter_delimiters} =
                         Content.read_markdown_file(
-                          "priv/case-study/en/testing_case_study_malformed.md"
+                          "priv/case-study/en/testing-case-study-malformed.md"
                         )
              end) =~ "Error extracting content"
     end
