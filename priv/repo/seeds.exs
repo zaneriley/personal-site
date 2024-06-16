@@ -1,68 +1,37 @@
-# Script for populating the database with case study records
-
 alias Portfolio.Repo
 alias Portfolio.CaseStudy
-alias Portfolio.Translation
 
-case_study =
-  Repo.insert!(%CaseStudy{
-    title: "Helping people find the healthcare they need",
-    url: "helping-people-find-healthcare",
-    role: "Lead designer",
-    timeline: "Test Timeline",
-    read_time: 14,
-    platforms: ["Google Search", "Google Maps"],
-    introduction:
-      "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence.",
-    index: 1,
-    file_path: "priv/posts/en/helping-people-find-healthcare-en.md",
-    locale: "en"
-  })
+case_studies = [
+  %CaseStudy{
+    title: "Case Study 1",
+    url: "case-study-1",
+    role: "Developer",
+    timeline: "2021",
+    read_time: 15,
+    platforms: ["Web", "Mobile"],
+    introduction: "Introduction to Case Study 1",
+    file_path: "/files/case_study_1.pdf",
+    locale: "en",
+    content: "Detailed content of Case Study 1",
+    company: "Company A",
+    sort_order: 1
+  },
+  %CaseStudy{
+    title: "Case Study 2",
+    url: "case-study-2",
+    role: "Project Manager",
+    timeline: "2022",
+    read_time: 10,
+    platforms: ["Web"],
+    introduction: "Introduction to Case Study 2",
+    file_path: "/files/case_study_2.pdf",
+    locale: "en",
+    content: "Detailed content of Case Study 2",
+    company: "Company B",
+    sort_order: 2
+  }
+]
 
-Repo.insert!(%Translation{
-  locale: "ja",
-  field_name: "title",
-  field_value: "ヘルプする人たちの健康診断をするために",
-  translatable_id: case_study.id,
-  translatable_type: "CaseStudy"
-})
-
-Repo.insert!(%Translation{
-  locale: "ja",
-  field_name: "role",
-  field_value: "デザイナー",
-  translatable_id: case_study.id,
-  translatable_type: "CaseStudy"
-})
-
-Repo.insert!(%Translation{
-  locale: "ja",
-  field_name: "timeline",
-  field_value: "テストのタイムライン",
-  translatable_id: case_study.id,
-  translatable_type: "CaseStudy"
-})
-
-Repo.insert!(%Translation{
-  locale: "ja",
-  field_name: "read_time",
-  field_value: "14",
-  translatable_id: case_study.id,
-  translatable_type: "CaseStudy"
-})
-
-Repo.insert!(%Translation{
-  locale: "ja",
-  field_name: "platforms",
-  field_value: "Google Search, Google Maps",
-  translatable_id: case_study.id,
-  translatable_type: "CaseStudy"
-})
-
-Repo.insert!(%Translation{
-  locale: "ja",
-  field_name: "introduction",
-  field_value: "私たちのクロスファクタリングチームが、人々がローカルの健康診断をするために、プロダクトストラテジーを開発している。",
-  translatable_id: case_study.id,
-  translatable_type: "CaseStudy"
-})
+Enum.each(case_studies, fn cs ->
+  Repo.insert!(cs)
+end)
