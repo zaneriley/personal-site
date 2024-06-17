@@ -50,7 +50,10 @@ defmodule PortfolioWeb.Plugs.SetLocale do
 
   defp set_locale(conn, {user_locale, _remaining_path}) do
     Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
-    Logger.debug("Set locale for Gettext: #{Gettext.get_locale(PortfolioWeb.Gettext)}")
+
+    Logger.debug(
+      "Set locale for Gettext: #{Gettext.get_locale(PortfolioWeb.Gettext)}"
+    )
 
     conn
     |> put_session("user_locale", user_locale)

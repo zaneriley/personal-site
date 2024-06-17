@@ -4,18 +4,31 @@ defmodule PortfolioWeb.HomeLive do
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   def mount(_params, session, socket) do
-    user_locale = session["user_locale"] || Application.get_env(:portfolio, :default_locale)
+    user_locale =
+      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
+
     Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
 
     page_number = 1
-    case_studies = Portfolio.Content.get_all_case_studies(user_locale, page_number)
+
+    case_studies =
+      Portfolio.Content.get_all_case_studies(user_locale, page_number)
+
     Logger.debug("User locale assigned to socket: #{user_locale}")
 
-    page_title = gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience")
-    page_description = gettext("Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search.")
+    page_title =
+      gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience")
 
-    socket = assign(socket, case_studies: case_studies, user_locale: user_locale)
-    socket = assign(socket, page_title: page_title, page_description: page_description)
+    page_description =
+      gettext(
+        "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+      )
+
+    socket =
+      assign(socket, case_studies: case_studies, user_locale: user_locale)
+
+    socket =
+      assign(socket, page_title: page_title, page_description: page_description)
 
     {:ok, socket}
   end
@@ -41,8 +54,6 @@ defmodule PortfolioWeb.HomeLive do
   #   end
   # end
 
-
-
   def render(assigns) do
     ~H"""
     <main class="u-container">
@@ -59,7 +70,15 @@ defmodule PortfolioWeb.HomeLive do
         <div class="space-y-md">
           <%= for {case_study, translations} <- @case_studies do %>
             <div class="space-y-sm">
-            <.link navigate={Routes.case_study_show_path(@socket, :show, @user_locale, case_study.url)}
+              <.link
+                navigate={
+                  Routes.case_study_show_path(
+                    @socket,
+                    :show,
+                    @user_locale,
+                    case_study.url
+                  )
+                }
                 aria-label={
                   gettext("Read more about %{title}",
                     title: translations["title"] || case_study.title
@@ -86,7 +105,6 @@ defmodule PortfolioWeb.HomeLive do
         </div>
       </div>
     </main>
-
     """
   end
 end

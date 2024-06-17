@@ -8,7 +8,8 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   @impl true
   def mount(_params, session, socket) do
     # Extract the locale from the session or default to 'en'
-    locale = session["locale"] || Application.get_env(:portfolio, :default_locale)
+    locale =
+      session["locale"] || Application.get_env(:portfolio, :default_locale)
 
     # Stream the case studies and assign the locale to the socket
     {:ok,

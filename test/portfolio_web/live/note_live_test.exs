@@ -23,28 +23,28 @@ defmodule PortfolioWeb.NoteLiveTest do
     #   assert html =~ note.title
     # end
 
-  #   test "saves new note", %{conn: conn} do
-  #     {:ok, index_live, _html} = live(conn, ~p"/notes")
+    #   test "saves new note", %{conn: conn} do
+    #     {:ok, index_live, _html} = live(conn, ~p"/notes")
 
-  #     assert index_live |> element("a", "New Note") |> render_click() =~
-  #              "New Note"
+    #     assert index_live |> element("a", "New Note") |> render_click() =~
+    #              "New Note"
 
-  #     assert_patch(index_live, ~p"/notes/new")
+    #     assert_patch(index_live, ~p"/notes/new")
 
-  #     assert index_live
-  #            |> form("#note-form", note: @invalid_attrs)
-  #            |> render_change() =~ "can&#39;t be blank"
+    #     assert index_live
+    #            |> form("#note-form", note: @invalid_attrs)
+    #            |> render_change() =~ "can&#39;t be blank"
 
-  #     assert index_live
-  #            |> form("#note-form", note: @create_attrs)
-  #            |> render_submit()
+    #     assert index_live
+    #            |> form("#note-form", note: @create_attrs)
+    #            |> render_submit()
 
-  #     assert_patch(index_live, ~p"/notes")
+    #     assert_patch(index_live, ~p"/notes")
 
-  #     html = render(index_live)
-  #     assert html =~ "Note created successfully"
-  #     assert html =~ "some title"
-    end
+    #     html = render(index_live)
+    #     assert html =~ "Note created successfully"
+    #     assert html =~ "some title"
+  end
 
   #   test "updates note in listing", %{conn: conn, note: note} do
   #     {:ok, index_live, _html} = live(conn, ~p"/notes")

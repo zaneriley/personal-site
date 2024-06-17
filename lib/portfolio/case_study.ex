@@ -27,7 +27,6 @@ defmodule Portfolio.CaseStudy do
     field :file_path, :string
     field :locale, :string
 
-
     has_many :translations, Portfolio.Translation,
       foreign_key: :translatable_id,
       where: [translatable_type: "CaseStudy"]

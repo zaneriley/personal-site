@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <.live_title>
-      <%= assigns[:page_title] || "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience" %>
+      <%= assigns[:page_title] ||
+        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience" %>
     </.live_title>
 
     <meta charset="utf-8" />
@@ -53,7 +54,15 @@
       <meta property="og:image" content={assigns[:og_meta][:image]} />
       <meta property="og:description" content={assigns[:og_meta][:description]} />
     <% end %>
-
+    <link phx-track-static rel="stylesheet" href={url(~p"/css/critical.css")} />
+    <!-- TODO: Figure out how to gen the critical CSS from the tailwind config -->
+    <!-- Critical CSS -->
+    <%= if File.exists?("../assets/css/critical.css") do %>
+      <style>
+        <%= File.read!("../assets/css/critical.css") %>
+      </style>
+    <% end %>
+    <!-- FUll CSS -->
     <link phx-track-static rel="stylesheet" href={url(~p"/css/app.css")} />
     <script
       defer
@@ -63,7 +72,7 @@
     />
   </head>
   <body class="min-h-screen text-md transition-opacity duration-500 ease-in-out phx-page-loading:opacity-0">
-      <%= @inner_content %>
+    <%= @inner_content %>
     <!-- FIX FOOTER SO IT'S ACTUALLY LINKING -->
     <footer
       role="contentinfo"
