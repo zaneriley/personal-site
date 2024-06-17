@@ -22,6 +22,11 @@ defmodule Portfolio.Repo.Migrations.CreateTranslations do
     create index(:translations, [:translatable_id])
     create index(:translations, [:translatable_type])
     create index(:translations, [:locale])
-    create unique_index(:translations, [:translatable_id, :translatable_type, :locale, :field_name], name: :translations_unique_index)
+
+    create unique_index(
+             :translations,
+             [:translatable_id, :translatable_type, :locale, :field_name],
+             name: :translations_unique_index
+           )
   end
 end
