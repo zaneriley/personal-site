@@ -6,6 +6,7 @@ config :portfolio, PortfolioWeb.Endpoint,
   check_origin: false,
   watchers: [],
   live_reload: [
+    web_console_logger: true,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",

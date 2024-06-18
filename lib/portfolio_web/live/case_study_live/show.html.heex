@@ -13,14 +13,20 @@
 
 <main class="u-container">
   <article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
-    <nav class="text-sm">
-      <li>
-        <.back navigate={Routes.home_path(@socket, :index, @user_locale)}>
-          <%= gettext("Case Study") %>
-        </.back>
-      </li>
-      <Heroicons.chevron_double_right class="inline-block h-4 w-4" />
-      <li><%= @case_study.company %></li>
+    <nav aria-label="Breadcrumb" class="text-sm">
+      <ol class="flex items-center space-x-2">
+        <li>
+          <.back navigate={Routes.home_path(@socket, :index, @user_locale)}>
+            <%= ngettext("Case Study", "Case Studies", 1) %>
+          </.back>
+        </li>
+        <li aria-hidden="true">
+          <Heroicons.chevron_double_right class="inline-block h-4 w-4" />
+        </li>
+        <li aria-current="page">
+          <%= @case_study.company %>
+        </li>
+      </ol>
     </nav>
     <!-- Title -->
     <h1 class="text-4xl">

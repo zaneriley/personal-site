@@ -47,7 +47,9 @@ msgid "Dark mode"
 msgstr "Dark mode"
 
 msgid "Case Study"
-msgstr "Case Study"
+msgid_plural "Case Studies"
+msgstr[0] "Case Study"
+msgstr[1] "Case Studies"
 
 msgid "minute"
 msgid_plural "minutes"

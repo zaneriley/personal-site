@@ -44,7 +44,9 @@ msgid "Dark mode"
 msgstr "ダークモード"
 
 msgid "Case Study"
-msgstr "ケーススタディ"
+msgid_plural "Case Studies"
+msgstr[0] "ケーススタディ"
+msgstr[1] "ケーススタディ"
 
 msgid "minute"
 msgid_plural "minutes"
