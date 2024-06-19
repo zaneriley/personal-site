@@ -16,63 +16,79 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   def init(default), do: default
 
   def call(conn, _default) do
-    {locale_from_url, remaining_path} =
-      extract_locale_from_path(conn.request_path)
+    Logger.debug("LocaleRedirection: Starting redirection logic.")
+    {locale_from_url, remaining_path} = extract_locale_from_path(conn.request_path)
+    Logger.debug("LocaleRedirection: Extracted locale '#{locale_from_url}' and path '#{remaining_path}'.")
 
-    user_locale =
-      conn.assigns[:user_locale] || get_session(conn, "user_locale") ||
-        @default_locale
+    user_locale = conn.assigns[:user_locale] || get_session(conn, "user_locale") || @default_locale
+    Logger.debug("LocaleRedirection: Using user locale '#{user_locale}'.")
 
-    case {locale_from_url, remaining_path} do
-      {locale, _} when locale in @supported_locales ->
-        Logger.debug(
-          "LocaleRedirection: Supported locale #{locale} found in URL."
-        )
-
+    cond do
+      # Case 1: Supported Locale in URL
+      locale_from_url in @supported_locales ->
+        log_supported_locale(locale_from_url)
         conn
 
-      {locale, _} when locale not in @supported_locales and locale != "" ->
-        Logger.info(
-          "LocaleRedirection: Unsupported locale #{locale} found in URL, responding with 404."
-        )
+      # Case 2: Unsupported Locale in URL
+      locale_from_url != "" ->
+        if is_valid_route?(conn, remaining_path) do
+          log_valid_route(remaining_path)
+          conn
+        else
+          log_unsupported_locale(locale_from_url)
+          send_resp(conn, 404, "Not Found") |> halt()
+        end
 
-        conn
-        |> send_resp(404, "Not Found")
-        |> halt()
-
-      {"", _} ->
-        redirect_path =
-          determine_redirect_path(
-            conn.request_path,
-            user_locale,
-            remaining_path
-          )
-
-        Logger.info("LocaleRedirection: Redirecting to #{redirect_path}")
-
-        conn
-        |> redirect(to: redirect_path)
-        |> halt()
+        true ->
+          redirect_path = build_path_with_locale(remaining_path, user_locale)
+          if is_valid_route?(conn, redirect_path) do
+            log_redirect(redirect_path)
+            redirect(conn, to: redirect_path) |> halt()
+          else
+            send_resp(conn, 404, "Not Found") |> halt()
+          end
     end
   end
 
-  defp determine_redirect_path(request_path, user_locale, _remaining_path) do
-    # If the request path is the root path, redirect to the user's locale root
-    # or to the default locale if the user's locale is not supported.
-    if request_path == "/" do
-      locale_to_redirect =
-        if user_locale in @supported_locales,
-          do: user_locale,
-          else: @default_locale
-
-      "/#{locale_to_redirect}/"
-    else
-      request_path
-    end
+  defp is_valid_route?(conn, path) do
+    Phoenix.Router.route_info(PortfolioWeb.Router, conn.method, path, conn.host) != :error
   end
+
+  defp log_valid_route(path) do
+    Logger.debug(
+      "LocaleRedirection: Valid route found for path #{path}, allowing request to proceed."
+    )
+  end
+
+  defp log_supported_locale(locale),
+    do:
+      Logger.debug(
+        "LocaleRedirection: Supported locale #{locale} found in URL."
+      )
+
+  defp log_unsupported_locale(locale),
+    do:
+      Logger.info(
+        "LocaleRedirection: Unsupported locale #{locale} found in URL, responding with 404."
+      )
+
+  defp log_redirect(redirect_path),
+    do: Logger.info("LocaleRedirection: Redirecting to #{redirect_path}")
+
+    defp build_path_with_locale("/", user_locale), do: "/#{locale_to_redirect(user_locale)}/"
+    defp build_path_with_locale(request_path, user_locale), do: "/#{locale_to_redirect(user_locale)}#{request_path}"
+
+  defp locale_to_redirect(user_locale) when user_locale in @supported_locales,
+    do: user_locale
+
+  defp locale_to_redirect(_), do: @default_locale
 
   defp extract_locale_from_path(path) do
     [_, possible_locale | remaining_parts] = String.split(path, "/")
-    {String.downcase(possible_locale), "/" <> Enum.join(remaining_parts, "/")}
+    if possible_locale in @supported_locales do
+      {String.downcase(possible_locale), "/" <> Enum.join(remaining_parts, "/")}
+    else
+      {"", path}
+    end
   end
 end

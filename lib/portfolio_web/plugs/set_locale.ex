@@ -48,20 +48,44 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     {user_locale, remaining_path}
   end
 
-  defp set_locale(conn, {user_locale, _remaining_path}) do
-    Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
+  defp set_locale(conn, {user_locale, remaining_path}) do
+    case Phoenix.Router.route_info(
+           PortfolioWeb.Router,
+           conn.method,
+           remaining_path,
+           conn.host
+         ) do
+      %{} ->
+        Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
 
-    Logger.debug(
-      "Set locale for Gettext: #{Gettext.get_locale(PortfolioWeb.Gettext)}"
-    )
+        Logger.debug(
+          "Set locale for Gettext: #{Gettext.get_locale(PortfolioWeb.Gettext)}"
+        )
 
-    conn
-    |> put_session("user_locale", user_locale)
-    |> assign(:user_locale, user_locale)
-    |> assign(:supported_locales, @supported_locales)
-    |> put_resp_header("content-language", user_locale)
+        conn
+        |> put_session("user_locale", user_locale)
+        |> assign(:user_locale, user_locale)
+        |> assign(:supported_locales, @supported_locales)
+        |> put_resp_header("content-language", user_locale)
+
+      :error ->
+        conn
+
+    end
   end
+  defp get_format(conn) do
+    case get_req_header(conn, "accept") do
+      [accept_header | _] ->
+        if String.contains?(accept_header, "json") do
+          "json"
+        else
+          "html"
+        end
 
+      _ ->
+        "html"
+    end
+  end
   defp static_asset?(path) do
     @static_paths
     |> Enum.any?(fn static_path ->

@@ -81,6 +81,7 @@ defmodule PortfolioWeb.Router do
     live "/case-study/:url", CaseStudyLive.Show, :show
     live "/notes", NoteLive.Index, :index
     live "/note/:id", NoteLive.Show, :show
+    live "/about", AboutLive, :index
   end
 
   # Catch-all route for unmatched paths

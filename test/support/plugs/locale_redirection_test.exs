@@ -29,21 +29,22 @@ defmodule PortfolioWeb.LocaleRedirectionTest do
       assert redirected_to(conn) == "/en/"
     end
 
-    @tag :skip
+    test "redirects while preserving path segments", %{conn: conn} do
+      conn =
+        session_conn()
+        |> put_session("user_locale", "ja")
+        |> get("/case-study/helping-people-find-healthcare")
+
+      assert redirected_to(conn) ==
+               "/ja/case-study/helping-people-find-healthcare"
+    end
+
     test "ignores empty path segments and processes request", %{conn: conn} do
       conn = get(conn, "//en/")
       assert conn.status != 404
       assert conn.halted == false
     end
 
-    @tag :skip
-    test "does not respond with 404 for unsupported locale as non-first segment",
-         %{conn: conn} do
-      conn = get(conn, "/case-study/helping-people-find-healthcare")
-      assert conn.status != 404
-    end
-
-    @tag :skip
     test "handles supported locale case sensitivity", %{conn: conn} do
       conn = get(conn, "/EN/")
       assert conn.status != 404
