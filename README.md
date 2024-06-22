@@ -1,93 +1,162 @@
+<p align="center">
+  <img src="logo.png" alt="Zane Riley Portfolio Logo" width="500"/>
+</p>
+
 # Zane Riley's Product Design Portfolio
-![Website](https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio)
-![GitHub License](https://img.shields.io/github/license/zaneriley/personal-site)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml)
 
-This repository houses my product design portfolio, showcasing various projects and designs I've worked on. The portfolio is built using Phoenix (PETAL stack basically). The foundation of this portfolio is based on the excellent example provided by Nick Janetakis' [docker-phoenix-example](https://github.com/nickjj/docker-phoenix-example), which offers a great starting point for Phoenix applications with Docker.
+<p align="center">
+  <img src="https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio" alt="Website Status" />
+  <img src="https://img.shields.io/github/license/zaneriley/personal-site" alt="GitHub License" />
+  <img src="https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml" alt="GitHub Actions Workflow Status" />
+  <img src="https://img.shields.io/github/stars/zaneriley/personal-site?style=social" alt="Github Stars" />
+</p>
 
-## About me
+<p align="center">
+  <img src="https://img.shields.io/badge/Elixir-4B275F?style=flat&logo=elixir&logoColor=white" alt="Elixir" />
+  <img src="https://img.shields.io/badge/Phoenix-FD4F00?style=flat&logo=phoenix-framework&logoColor=white" alt="Phoenix Framework" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="TailwindCSS" />
+</p>
 
-Extremely product-focused designer with 10+ years of experience based in Tokyo, Japan. 
+<p align="center">
+  <a href="#introduction">Introduction</a> •
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#technical-details">Technical Details</a> •
+  <a href="#development-and-deployment">Development and Deployment</a> •
+  <a href="#contributing">Contributing</a> •
+  <a href="#license">License</a>
+</p>
 
-Focused on building things that help people beyond the screen. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them. 
+## [Introduction](/)
 
+This repository houses my product design portfolio, showcasing various projects and designs I've worked on. It's built using Phoenix.
 
-# Prtfolio overview
+I'm an extremely product-focused designer with 10+ years of experience, based in Tokyo, Japan (prev in San Francisco) 
 
-For portfolios, I try to build exactly what I envision and not make technical tradeoffs, even if it involves learning new technologies or techniques. This is my first major project built with Elixir or Phoenix. I also incorporated features (like a custom optically-aligned typographic "engine") that might be less practical in large-team settings or with less technical designers.
+**Why all this for a website?**
+- For portfolios, you can build what you want without compromises. For example, I was able to incorporate features like a custom optically-aligned typographic "engine" that might be less practical in large-team settings or with less technical designers.
+- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something with a lot more infra (e.g. admin interface, metrics, gitops)
+- I have plans to utilize reuse all this infra.
 
-Features include:
+## [Features](/features)
 
-- Internationalization support for English (/en) and Japanese (/ja)
-- Admin interface and Markdown-based system for creating case studies with live reloading.
-- Light/dark mode with real-time updates across sessions and preferences stored in local storage.
+### [Internationalization](/features/internationalization)
 
+The portfolio supports both English (/en) and Japanese (/ja) languages. It uses the Accept-Language header to detect the user's preferred language and sets a session key to maintain that preference. For application and landing page content, we use Gettext for translations. Case studies have separate markdown files for each language.
 
-## Tech Stack
+### [Admin Interface](/features/admin-interface)
 
-This project utilizies [Phoenix](https://phoenixframework.org/), a framework written in [Elixir](https://elixir-lang.org/). While an unconventional choice for a largely static site, Phoenix's great developer experience helped me build a number of features really quickly.
- content, Phoenix's outstanding developer experience enabled the rapid development of several key features.
-### Back-end
+An admin interface with a Markdown-based system allows for creating case studies with live reloading. This feature is only accessible in the development environment and is not exposed in production.
 
-- [Elixir and Phoenix](https://www.phoenixframework.org/): For server-side logic and web page rendering.
-- [PostgreSQL](https://www.postgresql.org/): As the database for storing project data and user interactions.
+### [Light/Dark Mode](/features/light-dark-mode)
 
-### Front-end
+The portfolio includes a light/dark mode feature with real-time updates across sessions. Preferences are stored in local storage and on the server using Elixir's GenServer. Phoenix Channels ensure that theme changes on one tab update automatically on any other open tabs.
 
-- [esbuild](https://esbuild.github.io/): For an extremely fast JavaScript bundler and minifier.
-- [TailwindCSS](https://tailwindcss.com/): For utility-first CSS framework.
-- [Heroicons](https://heroicons.com/): For SVG icons.
+### [Custom Typography Engine](/features/typography-engine)
 
-## Feature details
+A custom optically-aligned typographic "engine" takes into account line-height box and typeface characteristics. It optically subtracts space so that typography aligns to a baseline, ensuring any two objects are equally spaced optically.
 
-### Internationalization
+## [Technical Details](/technical-details)
 
-#### Detecting the user's preferred language
-- Uses the [Accept-Language header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language) to determine whether the users language is supported (english or japanese in our case)
-- Sets a session key to maintain that language setting, allowing user to override and choose another language.
-- Sets hreflang tags, and sets a language response header
+### [Backend](/technical-details/backend)
 
-#### Translating content
-- For application and landing page content, we use [Gettext](https://hexdocs.pm/gettext/Gettext.html) to translate content into multiple languages. 
-- For case studies, we have separate markdown files for each language.
+The backend is built with Elixir and Phoenix. PostgreSQL is used as the database for storing project data and user interactions. Obviously not super relevant and overkill for what's basically a website, but it was fun to make and I get to use the infra for other projects.
 
-### Light/Dark Mode
+### [Frontend](/technical-details/frontend)
 
-Of course we need dark mode, but this is overengineered to real-time update across all a users sessions (e.g. in our case, their open tabs). If you put a user auth system in place, you could make this a setting and update aross all their devices. Additionally, we update instantly client-side first, and then debounce updates to the server.
+On the frontend, we use:
+- esbuild: An extremely fast JavaScript bundler and minifier
+- TailwindCSS: A utility-first CSS framework
+- Heroicons: For SVG icons
 
-Here's a quick breakdown:
+### [Database and Content Management](/technical-details/database-content-management)
 
-1. **Theme storage:** Each user's theme choice (light or dark) is saved both in the browser's localStorage (for quick access) and on the server using a combination of Elixir's GenServer and your choice of database.
+PostgreSQL is used for data storage. A file watcher looks for markdown files with the correct frontmatter key-value pairs to update records in the database.
 
-2. **Real-time Updates:** We use Phoenix Channels to make sure that if a user changes their theme on one tab, it updates automatically on any other open tabs. (This is just a portfolio, so theres no need for a user auth system where you could track user sessions across devices.)
+## [Development and Deployment](/development-deployment)
 
-3. **Server-side Logic:** The core logic for managing theme preferences lives in an Elixir module called `LightDarkMode.GenServer`. This module is responsible for storing a user's theme preference, handling requests to toggle the theme, and sending out updates.
+### [Local Development](/development-deployment/local-development)
 
-4. **Front-end:** The JavaScript part of the code handles: Connecting to a user's specific Phoenix channel, listening for theme changes from the server, applying the correct CSS classes to the page to switch between light and dark modes, and sending theme change requests to the server when the user toggles the theme switch.
+To set up the project locally:
 
+1. Clone the repository
+2. Ensure you have Docker installed
+3. Run `docker-compose up -d` to start the application
+4. Visit `localhost:8000` in your browser
 
-## Known issues
-### You can't run `mix ecto.drop` while the app is running.
-One hotfix for this is to stop the web app:
-`docker compose YOURAPP-web-1 stop`
-then run `mix ecto.drop`
+### [Deployment](/development-deployment/deployment)
 
-If that still doesn't work, as a last resort you terminate all the connections to the database with:
+Deployment details are still being finalized. The project uses GitHub Actions for CI/CD, as indicated by the workflow status badge at the top of this README.
+
+### [Troubleshooting](/development-deployment/troubleshooting)
+
+If you encounter issues running `mix ecto.drop` while the app is running, try stopping the web app first:
 ```bash
-`docker exec -it YOURAPP-postgres-1 psql -U YOURUSER -d YOURDATABASE -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'YOURDATABASE' AND pid <> pg_backend_pid();"
+docker compose YOURAPP-web-1 stop
 ```
-Then drop your database with:
+If that doesn't work:
+```bash
+docker exec -it YOURAPP-postgres-1 psql -U YOURUSER -d YOURDATABASE -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'YOURDATABASE' AND pid <> pg_backend_pid();"
+```
+Then drop your database:
 ```bash
 docker exec -it YOURAPP-postgres-1 psql -U YOURAPP -d postgres -c "DROP DATABASE YOURDATABASE;"
 ```
+
 After that, run your app again with `docker compose up -d` and then do `./run mix ecto.setup`.
 
-## Acknowledgements
+## [Future Improvements](/future-improvements)
 
-A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio. 
+Planned enhancements include:
+- Image optimization and minification
+- OG graph image generation
+- Performance optimizations
+- Full implementation of telemetry
 
-## Previous portfolios
-- 2024 – Present: Built using Elixir, Phoenix, and Tailwind.
+## [Acknowledgements and Version History](/acknowledgements-history)
+
+A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio.
+
+Previous portfolio versions:
 - 2016 – 2024: Built using React, NextJS, and Styled-Components. [Code available here](https://github.com/zaneriley/personal-site/tree/Portfolio).
 - 2014 – 2016: Built using Vanilla JS. [View on Wayback Machine](https://web.archive.org/web/20150711234633/http://zaneriley.com/).
 - 2010: Built using Flash.
+
+# Using This Project
+
+This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE. You are free to use, modify, and distribute this code for any purpose, including commercial use, with one important exception:
+
+### For Portfolio Use
+
+If you're using this project as a base for your own portfolio website, I ask that you provide credit for the original work. Here's how you can do that:
+
+1. Include a comment in your main layout file (e.g., `root.html.heex`) that says:
+```
+<!-- Based on Zane Riley's Portfolio: https://github.com/zaneriley/personal-site -->
+```
+2. Add a line to your README.md file:
+```markdown
+This project is based on [Zane Riley's Portfolio](https://github.com/zaneriley/personal-site).
+```
+
+By providing credit, you help support open-source projects and allow others to discover and learn from the original work. Thank you for your consideration!
+
+### For Non-Portfolio Use
+
+For all other uses, including commercial applications, you are free to use this code without the need for attribution, as per the terms of the GNU AFFERO GENERAL PUBLIC LICENSE. **However, you must include the full text of the license and make your source code available if you distribute the software.**
+
+## License
+
+This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE - see the [LICENSE](LICENSE) file for details.
+
+
+## Contributing
+
+Contributions are welcome, but obviously since this is my personal site I'd be amazed if anyone would want to.
+
+## Contact
+
+Project Link: [https://github.com/zaneriley/personal-site](https://github.com/zaneriley/personal-site)
+
+---
