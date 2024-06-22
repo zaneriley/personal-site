@@ -10,45 +10,64 @@ defmodule Portfolio.Content do
       Logger.error("File path is nil")
       {:error, :file_path_missing}
     else
-      with {:ok, metadata, markdown} <- FileReader.read_markdown_file(file_path),
+      with {:ok, metadata, markdown} <-
+             FileReader.read_markdown_file(file_path),
            [_, locale] <- Regex.run(~r/case-study\/(\w{2})\//, file_path),
-           derived_metadata = Map.merge(metadata, %{file_path: file_path, locale: locale}),
-           {:ok, case_study} <- CaseStudyManager.get_or_create_case_study(derived_metadata) do
-        CaseStudyManager.update_case_study(case_study, derived_metadata, markdown)
-        TranslationManager.update_or_create_translation(case_study, locale, markdown)
+           derived_metadata =
+             Map.merge(metadata, %{file_path: file_path, locale: locale}),
+           {:ok, case_study} <-
+             CaseStudyManager.get_or_create_case_study(derived_metadata) do
+        if locale == "en" do
+          CaseStudyManager.update_case_study(
+            case_study,
+            derived_metadata,
+            markdown
+          )
+        else
+          case TranslationManager.update_or_create_translation(
+                 case_study,
+                 locale,
+                 derived_metadata,
+                 markdown
+               ) do
+            translations
+            when is_list(translations) and length(translations) > 0 ->
+              {:ok, case_study}
+
+            _ ->
+              {:error, :translation_update_failed}
+          end
+        end
       else
-        {:error, :file_path_missing} ->
-          Logger.error("File path is missing for: #{file_path}")
-          {:error, :file_path_missing}
-        {:error, :file_processing_failed} ->
-          Logger.error("Failed to process case study file: #{file_path}")
-          {:error, :file_processing_failed}
-        {:error, reason} ->
-          Logger.error("Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(reason)}")
-          {:error, reason}
+        error ->
+          Logger.error(
+            "Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(error)}"
+          )
+
+          error
       end
     end
   end
 
   def get_content_with_translations(content_type, identifier, locale) do
-    Logger.debug("get_content_with_translations/3 called with #{inspect(content_type)}, #{inspect(identifier)}, #{inspect(locale)}")
-
     content_query =
       case content_type do
         :case_study ->
-          from c in CaseStudy, where: c.url == ^identifier
-        # Add clauses for other content types (e.g., :note)
+          from c in CaseStudy,
+            where: c.url == ^identifier,
+            left_join: t in assoc(c, :translations),
+            on: t.locale == ^locale,
+            preload: [translations: t]
       end
 
-    content = Repo.one(content_query)
+    case Repo.one(content_query) do
+      nil ->
+        Logger.error("No content found for #{inspect(identifier)}")
+        {nil, %{}}
 
-    if content do
-      translations = TranslationManager.get_translations(content, content_type, locale)
-      Logger.debug("Translations fetched: #{inspect(translations)}")
-      {content, translations}
-    else
-      Logger.error("No content found for #{inspect(identifier)}")
-      {nil, %{}}
+      content ->
+        translations = TranslationManager.merge_translations(content, locale)
+        {content, translations}
     end
   end
 
@@ -63,7 +82,13 @@ defmodule Portfolio.Content do
     case_studies = Repo.all(case_studies_query)
 
     Enum.map(case_studies, fn case_study ->
-      translations = TranslationManager.get_translations(case_study, :case_study, locale)
+      translations =
+        TranslationManager.get_translations(
+          case_study,
+          CaseStudy.translatable_type(),
+          locale
+        )
+
       {case_study, translations}
     end)
   end

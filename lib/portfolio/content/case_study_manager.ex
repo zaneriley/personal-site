@@ -6,8 +6,11 @@ defmodule Portfolio.Content.CaseStudyManager do
   def get_or_create_case_study(metadata) do
     Logger.debug(inspect(metadata))
     url = get_in(metadata, [:url])
+
     case url do
-      nil -> {:error, :missing_url_in_metadata}
+      nil ->
+        {:error, :missing_url_in_metadata}
+
       url ->
         case Repo.get_by(CaseStudy, url: url) do
           nil -> create_case_study(metadata)
@@ -21,9 +24,14 @@ defmodule Portfolio.Content.CaseStudyManager do
     |> CaseStudy.changeset(metadata)
     |> Repo.insert()
     |> case do
-      {:ok, case_study} -> {:ok, case_study}
+      {:ok, case_study} ->
+        {:ok, case_study}
+
       {:error, reason} ->
-        Logger.error("Failed to create case study. Metadata: #{inspect(metadata)}, Reason: #{inspect(reason)}")
+        Logger.error(
+          "Failed to create case study. Metadata: #{inspect(metadata)}, Reason: #{inspect(reason)}"
+        )
+
         {:error, :case_study_creation_failed}
     end
   end
@@ -37,8 +45,12 @@ defmodule Portfolio.Content.CaseStudyManager do
     |> case do
       {:ok, updated_case_study} ->
         Portfolio.ContentRenderer.do_render(updated_case_study, markdown)
+
       {:error, reason} ->
-        Logger.error("Failed to update case study (ID: #{case_study.id}). Changeset: #{inspect(changeset)}, Reason: #{inspect(reason)}")
+        Logger.error(
+          "Failed to update case study (ID: #{case_study.id}). Changeset: #{inspect(changeset)}, Reason: #{inspect(reason)}"
+        )
+
         {:error, :case_study_update_failed}
     end
   end

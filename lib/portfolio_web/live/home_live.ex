@@ -81,18 +81,14 @@ defmodule PortfolioWeb.HomeLive do
                 }
                 aria-label={
                   gettext("Read more about %{title}",
-                    title: translations["title"] || case_study.title
+                    title: translations[:title] || case_study.title
                   )
                 }
-                title={translations["title"] || case_study.title}
+                title={translations[:title] || case_study.title}
               >
-                <h3>
-                  <%= translations["title"] || case_study.title %>
-                </h3>
+                <h3><%= translations[:title] || case_study.title %></h3>
               </.link>
-              <p>
-                <%= translations["introduction"] || case_study.introduction %>
-              </p>
+              <p><%= translations[:introduction] || case_study.introduction %></p>
               <p>
                 <%= case_study.read_time %> <%= ngettext(
                   "minute",

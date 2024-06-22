@@ -34,7 +34,6 @@ defmodule PortfolioWeb.AboutLive do
       <h1 class="text-2xl">
         <%= gettext("Product designer helping people beyond the screen") %>
       </h1>
-
     </main>
     """
   end

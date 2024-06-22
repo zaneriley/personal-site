@@ -73,20 +73,35 @@
     <a href="#main-content" class="sr-only" tabindex="0">
       <%= gettext("Skip to main content") %>
     </a>
-<div class="min-h-screen flex items-center justify-center">
-  <div class="text-center">
-    <h1 style="filter: url('#waves');transform: translateY(-0.25rem) translateX(calc(-1rem));" class="text-6xl text-balanced">404<br/>
-    The page you seek is lost in the fog of your mind.
-    </h1>
-    <svg class="waves" xmlns="http://www.w3.org/2000/svg" version="1.1">
-      <defs>
-        <filter id="waves">
-          <feturbulence baseFrequency="0.0020" numOctaves="3" result="noise" seed="2"></feturbulence>
-          <fedisplacementmap id="displacement" in="SourceGraphic" in2="noise" scale="110"></fedisplacementmap>
-        </filter>
-      </defs>
-    </svg>
-  </div>
-</div>
-</body>
+    <div class="min-h-screen flex items-center justify-center">
+      <div class="text-center">
+        <h1
+          style="filter: url('#waves');transform: translateY(-0.25rem) translateX(calc(-1rem));"
+          class="text-6xl text-balanced"
+        >
+          404<br /> The page you seek is lost in the fog of your mind.
+        </h1>
+        <svg class="waves" xmlns="http://www.w3.org/2000/svg" version="1.1">
+          <defs>
+            <filter id="waves">
+              <feturbulence
+                baseFrequency="0.0020"
+                numOctaves="3"
+                result="noise"
+                seed="2"
+              >
+              </feturbulence>
+              <fedisplacementmap
+                id="displacement"
+                in="SourceGraphic"
+                in2="noise"
+                scale="110"
+              >
+              </fedisplacementmap>
+            </filter>
+          </defs>
+        </svg>
+      </div>
+    </div>
+  </body>
 </html>
