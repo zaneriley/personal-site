@@ -11,7 +11,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
   @supported_locales Application.compile_env!(:portfolio, :supported_locales)
   @default_locale Application.compile_env!(:portfolio, :default_locale)
-  @max_redirects 3
+  @max_redirects 5
 
   @type locale :: String.t()
   @type path :: String.t()
