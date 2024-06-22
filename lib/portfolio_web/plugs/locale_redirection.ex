@@ -2,95 +2,166 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   @moduledoc """
   A plug that handles locale-based redirections for incoming requests.
 
-  This plug checks the initial segment of the request path to determine if it corresponds to a supported locale. If the locale is not supported, and it is not an empty string, the plug responds with a 404 status code. If the path does not contain a locale, the plug redirects the user to a path that includes their preferred locale, which is determined by the user's session or the application's default locale.
-
-  The redirection is particularly useful for root paths, ensuring that users are always served content in their preferred or default locale.
+  This plug checks the initial segment of the request path to determine if it corresponds to a supported locale.
+  If the locale is not supported or missing, it redirects the user to a path that includes their preferred locale.
   """
   import Plug.Conn
   import Phoenix.Controller, only: [redirect: 2]
   require Logger
 
-  @supported_locales Application.compile_env(:portfolio, :supported_locales)
-  @default_locale Application.compile_env(:portfolio, :default_locale)
+  @supported_locales Application.compile_env!(:portfolio, :supported_locales)
+  @default_locale Application.compile_env!(:portfolio, :default_locale)
+  @max_redirects 3
 
-  def init(default), do: default
+  @type locale :: String.t()
+  @type path :: String.t()
 
-  def call(conn, _default) do
-    Logger.debug("LocaleRedirection: Starting redirection logic.")
-    {locale_from_url, remaining_path} = extract_locale_from_path(conn.request_path)
-    Logger.debug("LocaleRedirection: Extracted locale '#{locale_from_url}' and path '#{remaining_path}'.")
+  def init(opts), do: opts
 
-    user_locale = conn.assigns[:user_locale] || get_session(conn, "user_locale") || @default_locale
-    Logger.debug("LocaleRedirection: Using user locale '#{user_locale}'.")
+  @spec call(Plug.Conn.t(), any()) :: Plug.Conn.t()
+  def call(conn, _opts) do
+    normalized_path = normalize_path(conn.request_path)
 
+    {locale_from_url, remaining_path} =
+      extract_locale_from_path(normalized_path)
+
+    user_locale = get_user_locale(conn)
+
+    handle_locale(conn, locale_from_url, remaining_path, user_locale)
+  end
+
+  @spec handle_locale(Plug.Conn.t(), locale(), path(), locale()) ::
+          Plug.Conn.t()
+  defp handle_locale(conn, locale_from_url, remaining_path, user_locale) do
     cond do
-      # Case 1: Supported Locale in URL
       locale_from_url in @supported_locales ->
-        log_supported_locale(locale_from_url)
+        log(:debug, "Supported locale #{locale_from_url} found in URL.")
         conn
 
-      # Case 2: Unsupported Locale in URL
-      locale_from_url != "" ->
-        if is_valid_route?(conn, remaining_path) do
-          log_valid_route(remaining_path)
-          conn
+      true ->
+        log(
+          :info,
+          "Unsupported or missing locale in URL, redirecting to user locale."
+        )
+
+        handle_missing_locale(conn, remaining_path, user_locale)
+    end
+  end
+
+  @spec handle_missing_locale(Plug.Conn.t(), path(), locale()) :: Plug.Conn.t()
+  defp handle_missing_locale(conn, path, user_locale) do
+    redirect_path = build_path_with_locale(path, user_locale)
+
+    if is_valid_route?(conn, redirect_path) do
+      redirect_to_locale(conn, redirect_path, user_locale)
+    else
+      log(:warning, "Invalid route after adding locale: #{redirect_path}")
+      conn
+    end
+  end
+
+  @spec redirect_to_locale(Plug.Conn.t(), path(), locale()) :: Plug.Conn.t()
+  defp redirect_to_locale(conn, path, locale) do
+    redirect_count = get_redirect_count(conn)
+
+    if redirect_count >= @max_redirects do
+      log(:error, "Max redirects reached. Path: #{path}")
+      conn
+    else
+      redirect_path = build_path_with_locale(path, locale)
+
+      if is_valid_route?(conn, redirect_path) do
+        log(:info, "Redirecting to: #{redirect_path}")
+        do_redirect(conn, redirect_path, redirect_count + 1)
+      else
+        log(:warning, "Invalid route after adding locale: #{redirect_path}")
+        conn
+      end
+    end
+  end
+
+  @spec do_redirect(Plug.Conn.t(), path(), integer()) :: Plug.Conn.t()
+  defp do_redirect(conn, path, redirect_count) do
+    conn
+    |> put_session(:redirect_count, redirect_count)
+    |> put_status(:moved_permanently)
+    |> redirect(to: path)
+    |> halt()
+  end
+
+  @spec is_valid_route?(Plug.Conn.t(), path()) :: boolean()
+  defp is_valid_route?(conn, path) do
+    log(:debug, "Checking if route is valid: #{path}")
+
+    result =
+      Phoenix.Router.route_info(
+        PortfolioWeb.Router,
+        conn.method,
+        path,
+        conn.host
+      ) != :error
+
+    log(:debug, "Route #{path} is #{if result, do: "valid", else: "invalid"}")
+    result
+  end
+
+  @spec normalize_path(path()) :: path()
+  defp normalize_path(path) do
+    path
+    |> String.replace(~r/\/+/, "/")
+    |> String.trim_trailing("/")
+  end
+
+  @spec extract_locale_from_path(path()) :: {locale(), path()}
+  defp extract_locale_from_path(path) do
+    case String.split(path, "/", parts: 2, trim: true) do
+      [possible_locale | remaining_parts] ->
+        if String.downcase(possible_locale) in Enum.map(
+             @supported_locales,
+             &String.downcase/1
+           ) do
+          {String.downcase(possible_locale),
+           "/" <> Enum.join(remaining_parts, "/")}
         else
-          log_unsupported_locale(locale_from_url)
-          send_resp(conn, 404, "Not Found") |> halt()
+          {"", path}
         end
 
-        true ->
-          redirect_path = build_path_with_locale(remaining_path, user_locale)
-          if is_valid_route?(conn, redirect_path) do
-            conn
-            |> put_status(:moved_permanently)
-            |> redirect(to: redirect_path)
-            |> halt()
-          else
-            send_resp(conn, 404, "Not Found") |> halt()
-          end
+      _ ->
+        {"", path}
     end
   end
 
-  defp is_valid_route?(conn, path) do
-    Phoenix.Router.route_info(PortfolioWeb.Router, conn.method, path, conn.host) != :error
+  @spec get_user_locale(Plug.Conn.t()) :: locale()
+  defp get_user_locale(conn) do
+    conn.assigns[:user_locale] ||
+      get_session(conn, "user_locale") ||
+      @default_locale
   end
 
-  defp log_valid_route(path) do
-    Logger.debug(
-      "LocaleRedirection: Valid route found for path #{path}, allowing request to proceed."
-    )
+  @spec build_path_with_locale(path(), locale()) :: path()
+  defp build_path_with_locale(request_path, user_locale) do
+    # Remove any invalid locale from the beginning of the path
+    cleaned_path =
+      request_path
+      |> String.split("/", parts: 2)
+      |> Enum.at(1, "")
+      |> then(&"/#{&1}")
+
+    locale =
+      if user_locale in @supported_locales,
+        do: user_locale,
+        else: @default_locale
+
+    "/#{locale}#{cleaned_path}"
   end
 
-  defp log_supported_locale(locale),
-    do:
-      Logger.debug(
-        "LocaleRedirection: Supported locale #{locale} found in URL."
-      )
+  @spec get_redirect_count(Plug.Conn.t()) :: integer()
+  defp get_redirect_count(conn) do
+    get_session(conn, :redirect_count) || 0
+  end
 
-  defp log_unsupported_locale(locale),
-    do:
-      Logger.info(
-        "LocaleRedirection: Unsupported locale #{locale} found in URL, responding with 404."
-      )
-
-  defp log_redirect(redirect_path),
-    do: Logger.info("LocaleRedirection: Redirecting to #{redirect_path}")
-
-    defp build_path_with_locale("/", user_locale), do: "/#{locale_to_redirect(user_locale)}/"
-    defp build_path_with_locale(request_path, user_locale), do: "/#{locale_to_redirect(user_locale)}#{request_path}"
-
-  defp locale_to_redirect(user_locale) when user_locale in @supported_locales,
-    do: user_locale
-
-  defp locale_to_redirect(_), do: @default_locale
-
-  defp extract_locale_from_path(path) do
-    [_, possible_locale | remaining_parts] = String.split(path, "/")
-    if possible_locale in @supported_locales do
-      {String.downcase(possible_locale), "/" <> Enum.join(remaining_parts, "/")}
-    else
-      {"", path}
-    end
+  @spec log(atom(), String.t()) :: :ok
+  defp log(level, message) do
+    Logger.log(level, fn -> "[LocaleRedirection] #{message}" end)
   end
 end

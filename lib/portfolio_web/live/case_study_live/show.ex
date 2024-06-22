@@ -13,7 +13,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     )
 
     if valid_slug?(url) do
-      {case_study, translations} = Content.get_content_with_translations(:case_study, url, user_locale)
+      {case_study, translations} =
+        Content.get_content_with_translations(:case_study, url, user_locale)
 
       case case_study do
         nil ->

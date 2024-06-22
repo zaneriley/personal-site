@@ -80,12 +80,12 @@ defmodule Portfolio.Content.TranslationManager do
   end
 
   def get_translations(content, content_type, locale) do
-    Logger.debug(
-      "Fetching translations for content_id: #{content.id}, content_type: #{content_type}, locale: #{locale}"
-    )
+    # Logger.debug(
+    #   "Fetching translations for content_id: #{content.id}, content_type: #{content_type}, locale: #{locale}"
+    # )
 
     translatable_type = CaseStudy.translatable_type_string()
-    Logger.debug("Using translatable_type: #{translatable_type}")
+    # Logger.debug("Using translatable_type: #{translatable_type}")
 
     translation_query =
       from t in Translation,
@@ -94,16 +94,16 @@ defmodule Portfolio.Content.TranslationManager do
             t.translatable_type == ^translatable_type and
             t.locale == ^locale
 
-    Logger.debug("Translation query: #{inspect(translation_query)}")
+    # Logger.debug("Translation query: #{inspect(translation_query)}")
 
     translations = Repo.all(translation_query)
-    Logger.debug("Fetched translations: #{inspect(translations)}")
+    # Logger.debug("Fetched translations: #{inspect(translations)}")
 
     case translations do
       [] ->
-        Logger.warn(
-          "TranslationManager.get_translations/3 No translations found for content_id: #{content.id}, content_type: #{content_type}, locale: #{locale}"
-        )
+        # Logger.warn(
+        #   "TranslationManager.get_translations/3 No translations found for content_id: #{content.id}, content_type: #{content_type}, locale: #{locale}"
+        # )
 
         %{}
 
