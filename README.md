@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="Zane Riley Portfolio Logo" width="500"/>
+  <img src="https://github.com/zaneriley/personal-site/blob/main/logo.png" alt="Zane Riley Portfolio Logo" width="500"/>
 </p>
 
 # Zane Riley's Product Design Portfolio
