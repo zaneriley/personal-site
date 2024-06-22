@@ -21,14 +21,18 @@
 <p align="center">
   <a href="#introduction">Introduction</a> •
   <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
   <a href="#technical-details">Technical Details</a> •
   <a href="#development-and-deployment">Development and Deployment</a> •
+  <a href="#future-improvements">Future Improvements</a> •
+  <a href="#acknowledgements-and-version-history">Acknowledgements & Version History</a> •
+  <a href="#using-this-project">Using This Project</a> •
+  <a href="#license">License</a> •
   <a href="#contributing">Contributing</a> •
-  <a href="#license">License</a>
+  <a href="#contact">Contact</a>
 </p>
 
-## [Introduction](/)
+
+## Introduction
 
 This repository houses my product design portfolio, showcasing various projects and designs I've worked on. It's built using Phoenix.
 
@@ -39,44 +43,44 @@ I'm an extremely product-focused designer with 10+ years of experience, based in
 - I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something with a lot more infra (e.g. admin interface, metrics, gitops)
 - I have plans to utilize reuse all this infra.
 
-## [Features](/features)
+## Features
 
-### [Internationalization](/features/internationalization)
+### Internationalization
 
 The portfolio supports both English (/en) and Japanese (/ja) languages. It uses the Accept-Language header to detect the user's preferred language and sets a session key to maintain that preference. For application and landing page content, we use Gettext for translations. Case studies have separate markdown files for each language.
 
-### [Admin Interface](/features/admin-interface)
+### Admin Interface
 
 An admin interface with a Markdown-based system allows for creating case studies with live reloading. This feature is only accessible in the development environment and is not exposed in production.
 
-### [Light/Dark Mode](/features/light-dark-mode)
+### Light/Dark Mode
 
 The portfolio includes a light/dark mode feature with real-time updates across sessions. Preferences are stored in local storage and on the server using Elixir's GenServer. Phoenix Channels ensure that theme changes on one tab update automatically on any other open tabs.
 
-### [Custom Typography Engine](/features/typography-engine)
+### Custom Typography Engine
 
 A custom optically-aligned typographic "engine" takes into account line-height box and typeface characteristics. It optically subtracts space so that typography aligns to a baseline, ensuring any two objects are equally spaced optically.
 
-## [Technical Details](/technical-details)
+## Technical Details
 
-### [Backend](/technical-details/backend)
+### Backend
 
 The backend is built with Elixir and Phoenix. PostgreSQL is used as the database for storing project data and user interactions. Obviously not super relevant and overkill for what's basically a website, but it was fun to make and I get to use the infra for other projects.
 
-### [Frontend](/technical-details/frontend)
+### Frontend
 
 On the frontend, we use:
 - esbuild: An extremely fast JavaScript bundler and minifier
 - TailwindCSS: A utility-first CSS framework
 - Heroicons: For SVG icons
 
-### [Database and Content Management](/technical-details/database-content-management)
+### Database and Content Management
 
 PostgreSQL is used for data storage. A file watcher looks for markdown files with the correct frontmatter key-value pairs to update records in the database.
 
-## [Development and Deployment](/development-deployment)
+## Development and Deployment
 
-### [Local Development](/development-deployment/local-development)
+### Local Development
 
 To set up the project locally:
 
@@ -85,11 +89,11 @@ To set up the project locally:
 3. Run `docker-compose up -d` to start the application
 4. Visit `localhost:8000` in your browser
 
-### [Deployment](/development-deployment/deployment)
+### Deployment
 
 Deployment details are still being finalized. The project uses GitHub Actions for CI/CD, as indicated by the workflow status badge at the top of this README.
 
-### [Troubleshooting](/development-deployment/troubleshooting)
+### Troubleshooting
 
 If you encounter issues running `mix ecto.drop` while the app is running, try stopping the web app first:
 ```bash
@@ -106,7 +110,7 @@ docker exec -it YOURAPP-postgres-1 psql -U YOURAPP -d postgres -c "DROP DATABASE
 
 After that, run your app again with `docker compose up -d` and then do `./run mix ecto.setup`.
 
-## [Future Improvements](/future-improvements)
+## Future Improvements
 
 Planned enhancements include:
 - Image optimization and minification
@@ -114,7 +118,7 @@ Planned enhancements include:
 - Performance optimizations
 - Full implementation of telemetry
 
-## [Acknowledgements and Version History](/acknowledgements-history)
+## Acknowledgements and Version History
 
 A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio.
 
@@ -123,7 +127,7 @@ Previous portfolio versions:
 - 2014 – 2016: Built using Vanilla JS. [View on Wayback Machine](https://web.archive.org/web/20150711234633/http://zaneriley.com/).
 - 2010: Built using Flash.
 
-# Using This Project
+## Using This Project
 
 This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE. You are free to use, modify, and distribute this code for any purpose, including commercial use, with one important exception:
 
@@ -150,9 +154,7 @@ For all other uses, including commercial applications, you are free to use this 
 
 This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE - see the [LICENSE](LICENSE) file for details.
 
-
 ## Contributing
-
 Contributions are welcome, but obviously since this is my personal site I'd be amazed if anyone would want to.
 
 ## Contact
