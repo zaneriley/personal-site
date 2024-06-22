@@ -22,61 +22,50 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   def call(conn, _opts) do
     normalized_path = normalize_path(conn.request_path)
 
-    {locale_from_url, remaining_path} =
+    {locale_from_url, _remaining_path} =
       extract_locale_from_path(normalized_path)
 
     user_locale = get_user_locale(conn)
 
-    handle_locale(conn, locale_from_url, remaining_path, user_locale)
+    handle_locale(conn, locale_from_url, normalized_path, user_locale)
   end
 
-  @spec handle_locale(Plug.Conn.t(), locale(), path(), locale()) ::
-          Plug.Conn.t()
-  defp handle_locale(conn, locale_from_url, remaining_path, user_locale) do
+  @spec handle_locale(Plug.Conn.t(), locale(), path(), locale()) :: Plug.Conn.t()
+  defp handle_locale(conn, locale_from_url, path, user_locale) do
     cond do
       locale_from_url in @supported_locales ->
         log(:debug, "Supported locale #{locale_from_url} found in URL.")
         conn
 
       true ->
-        log(
-          :info,
-          "Unsupported or missing locale in URL, redirecting to user locale."
-        )
+        log(:info, "Unsupported or missing locale in URL, redirecting to user locale.")
+        redirect_paths = build_path_with_locale(path, user_locale)
 
-        handle_missing_locale(conn, remaining_path, user_locale)
+        valid_path = Enum.find(redirect_paths, fn path ->
+          is_valid_route?(conn, path)
+        end)
+
+        case valid_path do
+          nil ->
+            log(:warning, "No valid route found after adding locale.")
+            conn
+          path ->
+            redirect_to_locale(conn, path, user_locale)
+        end
     end
   end
 
-  @spec handle_missing_locale(Plug.Conn.t(), path(), locale()) :: Plug.Conn.t()
-  defp handle_missing_locale(conn, path, user_locale) do
-    redirect_path = build_path_with_locale(path, user_locale)
-
-    if is_valid_route?(conn, redirect_path) do
-      redirect_to_locale(conn, redirect_path, user_locale)
-    else
-      log(:warning, "Invalid route after adding locale: #{redirect_path}")
-      conn
-    end
-  end
 
   @spec redirect_to_locale(Plug.Conn.t(), path(), locale()) :: Plug.Conn.t()
-  defp redirect_to_locale(conn, path, locale) do
+  defp redirect_to_locale(conn, path, _locale) do
     redirect_count = get_redirect_count(conn)
 
     if redirect_count >= @max_redirects do
       log(:error, "Max redirects reached. Path: #{path}")
       conn
     else
-      redirect_path = build_path_with_locale(path, locale)
-
-      if is_valid_route?(conn, redirect_path) do
-        log(:info, "Redirecting to: #{redirect_path}")
-        do_redirect(conn, redirect_path, redirect_count + 1)
-      else
-        log(:warning, "Invalid route after adding locale: #{redirect_path}")
-        conn
-      end
+      log(:info, "Redirecting to: #{path}")
+      do_redirect(conn, path, redirect_count + 1)
     end
   end
 
@@ -138,22 +127,24 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
       @default_locale
   end
 
-  @spec build_path_with_locale(path(), locale()) :: path()
+  @spec build_path_with_locale(path(), locale()) :: [path()]
   defp build_path_with_locale(request_path, user_locale) do
-    # Remove any invalid locale from the beginning of the path
-    cleaned_path =
-      request_path
-      |> String.split("/", parts: 2)
-      |> Enum.at(1, "")
-      |> then(&"/#{&1}")
+    parts = String.split(request_path, "/", parts: 3, trim: true)
 
-    locale =
-      if user_locale in @supported_locales,
-        do: user_locale,
-        else: @default_locale
+    locale = if user_locale in @supported_locales, do: user_locale, else: @default_locale
 
-    "/#{locale}#{cleaned_path}"
+    case parts do
+      [] -> ["/#{locale}"]
+      [first | rest] when first in @supported_locales -> ["/#{locale}/#{Enum.join(rest, "/")}"]
+      _ ->
+        [
+          "/#{locale}/#{Enum.join(parts, "/")}",
+          "/#{locale}/#{Enum.join(tl(parts), "/")}",
+          "/#{locale}"
+        ]
+    end
   end
+
 
   @spec get_redirect_count(Plug.Conn.t()) :: integer()
   defp get_redirect_count(conn) do
