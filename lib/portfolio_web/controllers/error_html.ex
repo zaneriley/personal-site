@@ -18,7 +18,7 @@ defmodule PortfolioWeb.ErrorHTML do
 
   embed_templates "error_html/*"
 
-  def render(template, _assigns) do
-    Phoenix.Controller.status_message_from_template(template)
+  def render(embed_template, _assigns) do
+    Phoenix.Controller.status_message_from_template(embed_template)
   end
 end

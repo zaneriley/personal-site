@@ -1,7 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <.live_title>
+      <%= assigns[:page_title] ||
+        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience" %>
+    </.live_title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <meta
+      name="description"
+      content={
+        assigns[:page_description] ||
+          ~c"Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+      }
+    />
+
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href={url(~p"/apple-touch-icon.png")}
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href={url(~p"/favicon-32x32.png")}
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href={url(~p"/favicon-16x16.png")}
+    />
+    <link
+      rel="mask-icon"
+      href={url(~p"/safari-pinned-tab.svg")}
+      color="#597099"
+    />
+    <link rel="manifest" href={url(~p"/site.webmanifest")} />
+    <!-- Color definitions -->
+    <meta name="msapplication-TileColor" content="#2b5797" />
+    <meta name="theme-color" content="#343334" />
+    <!-- Dynamic Schema Markup -->
+
+    <!-- Dynamic OG Meta -->
+    <%= if assigns[:og_meta] do %>
+      <meta property="og:title" content={assigns[:og_meta][:title]} />
+      <meta property="og:type" content={assigns[:og_meta][:type]} />
+      <meta property="og:image" content={assigns[:og_meta][:image]} />
+      <meta property="og:description" content={assigns[:og_meta][:description]} />
+    <% end %>
+    <link phx-track-static rel="stylesheet" href={url(~p"/css/critical.css")} />
+    <!-- TODO: Figure out how to gen the critical CSS from the tailwind config -->
+    <!-- Critical CSS -->
+    <%= if File.exists?("../assets/css/critical.css") do %>
+      <style>
+        <%= File.read!("../assets/css/critical.css") %>
+      </style>
+    <% end %>
+    <!-- FUll CSS -->
+    <link phx-track-static rel="stylesheet" href={url(~p"/css/app.css")} />
+    <script
+      defer
+      phx-track-static
+      type="text/javascript"
+      src={url(~p"/js/app.js")}
+    />
+  </head>
+  <body class="min-h-screen text-md">
+    <a href="#main-content" class="sr-only" tabindex="0">
+      <%= gettext("Skip to main content") %>
+    </a>
 <div class="min-h-screen flex items-center justify-center">
   <div class="text-center">
-    <p class="text-6xl">404</p>
-    <p class="text-xl">Page Not Found</p>
-    Yahaha!
+    <h1 style="filter: url('#waves');transform: translateY(-0.25rem) translateX(calc(-1rem));" class="text-6xl text-balanced">404<br/>
+    The page you seek is lost in the fog of your mind.
+    </h1>
+    <svg class="waves" xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <defs>
+        <filter id="waves">
+          <feturbulence baseFrequency="0.0020" numOctaves="3" result="noise" seed="2"></feturbulence>
+          <fedisplacementmap id="displacement" in="SourceGraphic" in2="noise" scale="110"></fedisplacementmap>
+        </filter>
+      </defs>
+    </svg>
   </div>
 </div>
+</body>
+</html>

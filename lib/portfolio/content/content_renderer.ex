@@ -1,4 +1,4 @@
-defmodule Portfolio.ContentRendering do
+defmodule Portfolio.ContentRenderer do
   @moduledoc """
   Handles the rendering of Markdown case studies into HTML and provides
   support for extracting Markdown content from files.
@@ -43,7 +43,7 @@ defmodule Portfolio.ContentRendering do
 
       iex> case_study = %Portfolio.CaseStudy{id: 1, content: nil}
       iex> markdown_content = "# Title\\nContent here"
-      iex> Portfolio.ContentRendering.do_render(case_study, markdown_content)
+      iex> Portfolio.ContentRenderer.do_render(case_study, markdown_content)
       {:ok, %Portfolio.CaseStudy{id: 1, content: "<h1>Title</h1>\\n<p>Content here</p>"}}
   """
   def do_render(case_study, markdown_content) do

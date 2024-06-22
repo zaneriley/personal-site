@@ -42,8 +42,10 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
         true ->
           redirect_path = build_path_with_locale(remaining_path, user_locale)
           if is_valid_route?(conn, redirect_path) do
-            log_redirect(redirect_path)
-            redirect(conn, to: redirect_path) |> halt()
+            conn
+            |> put_status(:moved_permanently)
+            |> redirect(to: redirect_path)
+            |> halt()
           else
             send_resp(conn, 404, "Not Found") |> halt()
           end
