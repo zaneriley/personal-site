@@ -33,22 +33,33 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   @spec handle_locale(Plug.Conn.t(), locale(), path(), locale()) :: Plug.Conn.t()
   defp handle_locale(conn, locale_from_url, path, user_locale) do
     cond do
+      # If the URL already contains a supported locale, no redirection is needed
       locale_from_url in @supported_locales ->
         log(:debug, "Supported locale #{locale_from_url} found in URL.")
         conn |> put_session(:redirect_count, 0)  # Reset redirect count for supported locales
 
+      # Check if it's a single segment path that's not a locale
+      String.split(path, "/", trim: true) |> length() == 1 and not is_valid_route?(conn, path) ->
+        log(:info, "Single segment invalid path detected. Halting.")
+        conn |> send_resp(404, "Not Found") |> halt()
+
+      # If the locale is missing or unsupported, attempt to redirect
       true ->
         log(:info, "Unsupported or missing locale in URL, redirecting to user locale.")
+        # Generate possible redirect paths with the user's locale
         redirect_paths = build_path_with_locale(path, user_locale)
 
+        # Find the first valid path from the generated redirect paths
         valid_path = Enum.find(redirect_paths, fn path ->
           is_valid_route?(conn, path)
         end)
 
         case valid_path do
+          # If no valid path is found, log a warning and return the conn without redirecting
           nil ->
             log(:warning, "No valid route found after adding locale.")
-            conn
+            conn |> send_resp(404, "Not Found") |> halt()
+          # If a valid path is found, reset the redirect count and perform the redirection
           path ->
             conn = conn |> put_session(:redirect_count, 0)  # Reset redirect count before redirecting
             redirect_to_locale(conn, path, user_locale)
@@ -131,18 +142,20 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   @spec build_path_with_locale(path(), locale()) :: [path()]
   defp build_path_with_locale(request_path, user_locale) do
     parts = String.split(request_path, "/", parts: 3, trim: true)
-
     locale = if user_locale in @supported_locales, do: user_locale, else: @default_locale
 
     case parts do
-      [] -> ["/#{locale}"]  # No change needed here, as it doesn't have a trailing slash
+      [] ->
+        ["/#{locale}"]
+      [segment] when segment not in @supported_locales ->
+        # For single-segment paths that are not locales, only try adding the locale
+        ["/#{locale}/#{segment}"]
       [first | rest] when first in @supported_locales ->
         ["/#{locale}#{if rest == [], do: "", else: "/#{Enum.join(rest, "/")}"}"]
       _ ->
         [
           "/#{locale}#{if parts == [], do: "", else: "/#{Enum.join(parts, "/")}"}",
-          "/#{locale}#{if tl(parts) == [], do: "", else: "/#{Enum.join(tl(parts), "/")}"}",
-          "/#{locale}"
+          "/#{locale}#{if tl(parts) == [], do: "", else: "/#{Enum.join(tl(parts), "/")}"}"
         ]
     end
   end
