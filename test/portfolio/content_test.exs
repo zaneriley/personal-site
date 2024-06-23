@@ -11,9 +11,7 @@ defmodule Portfolio.ContentTest do
       %{case_study: case_study}
     end
 
-    test "updates case study successfully from a valid Markdown file", %{
-      case_study: case_study
-    } do
+    test "updates case study successfully from a valid Markdown file" do
       valid_file_path = "priv/case-study/en/testing-case-study.md"
 
       result = Content.update_case_study_from_file(valid_file_path)
