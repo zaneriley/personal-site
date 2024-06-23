@@ -11,7 +11,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
   @supported_locales Application.compile_env!(:portfolio, :supported_locales)
   @default_locale Application.compile_env!(:portfolio, :default_locale)
-  @max_redirects 5
+  @max_redirects 4
 
   @type locale :: String.t()
   @type path :: String.t()
@@ -35,7 +35,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
     cond do
       locale_from_url in @supported_locales ->
         log(:debug, "Supported locale #{locale_from_url} found in URL.")
-        conn
+        conn |> put_session(:redirect_count, 0)  # Reset redirect count for supported locales
 
       true ->
         log(:info, "Unsupported or missing locale in URL, redirecting to user locale.")
@@ -50,15 +50,16 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
             log(:warning, "No valid route found after adding locale.")
             conn
           path ->
+            conn = conn |> put_session(:redirect_count, 0)  # Reset redirect count before redirecting
             redirect_to_locale(conn, path, user_locale)
         end
     end
   end
 
-
   @spec redirect_to_locale(Plug.Conn.t(), path(), locale()) :: Plug.Conn.t()
   defp redirect_to_locale(conn, path, _locale) do
     redirect_count = get_redirect_count(conn)
+    log(:debug, "Current redirect count: #{redirect_count}")
 
     if redirect_count >= @max_redirects do
       log(:error, "Max redirects reached. Path: #{path}")
@@ -134,12 +135,13 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
     locale = if user_locale in @supported_locales, do: user_locale, else: @default_locale
 
     case parts do
-      [] -> ["/#{locale}"]
-      [first | rest] when first in @supported_locales -> ["/#{locale}/#{Enum.join(rest, "/")}"]
+      [] -> ["/#{locale}"]  # No change needed here, as it doesn't have a trailing slash
+      [first | rest] when first in @supported_locales ->
+        ["/#{locale}#{if rest == [], do: "", else: "/#{Enum.join(rest, "/")}"}"]
       _ ->
         [
-          "/#{locale}/#{Enum.join(parts, "/")}",
-          "/#{locale}/#{Enum.join(tl(parts), "/")}",
+          "/#{locale}#{if parts == [], do: "", else: "/#{Enum.join(parts, "/")}"}",
+          "/#{locale}#{if tl(parts) == [], do: "", else: "/#{Enum.join(tl(parts), "/")}"}",
           "/#{locale}"
         ]
     end

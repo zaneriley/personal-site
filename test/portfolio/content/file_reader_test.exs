@@ -6,7 +6,9 @@ defmodule Portfolio.Content.FileReaderTest do
   describe "read_markdown_file/1" do
     test "reads markdown file successfully" do
       assert {:ok, metadata, markdown} =
-               FileReader.read_markdown_file("priv/case-study/en/testing-case-study.md")
+               FileReader.read_markdown_file(
+                 "priv/case-study/en/testing-case-study.md"
+               )
 
       assert is_map(metadata)
       assert is_binary(markdown)
@@ -14,14 +16,17 @@ defmodule Portfolio.Content.FileReaderTest do
 
     test "returns error for non-existent file" do
       assert capture_log(fn ->
-               assert {:error, _reason} = FileReader.read_markdown_file("non-existent.md")
+               assert {:error, _reason} =
+                        FileReader.read_markdown_file("non-existent.md")
              end) =~ "Error extracting content from file non-existent.md"
     end
 
     test "returns error for invalid content format" do
       assert capture_log(fn ->
                assert {:error, :missing_frontmatter_delimiters} =
-                        FileReader.read_markdown_file("priv/case-study/en/testing-case-study-malformed.md")
+                        FileReader.read_markdown_file(
+                          "priv/case-study/en/testing-case-study-malformed.md"
+                        )
              end) =~ "Error extracting content"
     end
   end
@@ -50,7 +55,8 @@ defmodule Portfolio.Content.FileReaderTest do
       Content goes here.
       """
 
-      assert {:ok, frontmatter} = FileReader.extract_frontmatter(markdown_with_complex_fields)
+      assert {:ok, frontmatter} =
+               FileReader.extract_frontmatter(markdown_with_complex_fields)
 
       assert frontmatter[:title] == "Standard title in a simple string"
       assert frontmatter[:platforms] == ["list", "of", "strings"]

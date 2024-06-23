@@ -42,10 +42,13 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   def call(conn, _default) do
     start_time = System.monotonic_time()
 
+    normalized_path = normalize_path(conn.request_path)
+    conn = %{conn | request_path: normalized_path}
+
     result =
-      if static_asset?(conn.request_path) do
+      if static_asset?(normalized_path) do
         log(:debug, "Static asset detected, skipping locale setting",
-          path: conn.request_path
+          path: normalized_path
         )
 
         conn
@@ -117,12 +120,12 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     {user_locale, remaining_path}
   end
 
-  @doc """
-  Sets the locale for the connection.
 
-  It updates the Gettext locale, stores the locale in the session,
-  assigns it to the connection, and sets the Content-Language header.
-  """
+  # Sets the locale for the connection.
+
+  # It updates the Gettext locale, stores the locale in the session,
+  # assigns it to the connection, and sets the Content-Language header.
+
   @spec set_locale(Plug.Conn.t(), {locale(), path()}) :: Plug.Conn.t()
   defp set_locale(conn, {user_locale, remaining_path}) do
     start_time = System.monotonic_time()
@@ -164,9 +167,9 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     result
   end
 
-  @doc """
-  Determines if the given path is for a static asset.
-  """
+
+  # Determines if the given path is for a static asset.
+
   @spec static_asset?(path()) :: boolean()
   defp static_asset?(path) do
     @static_paths
@@ -175,9 +178,9 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     end)
   end
 
-  @doc """
-  Extracts the locale from the given path.
-  """
+
+  # Extracts the locale from the given path.
+
   @spec extract_locale_from_path(path()) :: {locale(), path()}
   defp extract_locale_from_path(path) do
     log(:debug, "Extracting locale from path", path: path)
@@ -200,9 +203,9 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     end
   end
 
-  @doc """
-  Gets the preferred language from the Accept-Language header.
-  """
+
+  # Gets the preferred language from the Accept-Language header.
+
   @spec get_preferred_language(Plug.Conn.t()) :: locale()
   defp get_preferred_language(conn) do
     header =
@@ -214,9 +217,9 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     parse_accept_language_header(header)
   end
 
-  @doc """
-  Parses the Accept-Language header to determine the preferred language.
-  """
+
+  # Parses the Accept-Language header to determine the preferred language.
+
   @spec parse_accept_language_header(String.t() | nil) :: locale()
   defp parse_accept_language_header(header) do
     if header in [nil, ""] do
@@ -243,9 +246,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     end
   end
 
-  @doc """
-  Handles language subtags, returning the primary tag if supported, or the default locale.
-  """
+  # Handles language subtags, returning the primary tag if supported, or the default locale.
   @spec handle_language_subtags(String.t()) :: locale()
   defp handle_language_subtags(language_tag) do
     language_primary_tag = String.split(language_tag, "-") |> List.first()
@@ -260,9 +261,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     result
   end
 
-  @doc """
-  Determines the source of the chosen locale.
-  """
+  # Determines the source of the chosen locale.
   @spec determine_locale_source(locale(), locale(), locale(), locale()) ::
           locale_source()
   defp determine_locale_source(
@@ -288,5 +287,12 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     )
 
     source
+  end
+
+  @spec normalize_path(path()) :: path()
+  defp normalize_path(path) do
+    path
+    |> String.replace(~r/\/+/, "/")
+    |> String.trim_trailing("/")
   end
 end
