@@ -112,6 +112,6 @@ defmodule Portfolio.Content.FileSystemWatcher do
   def relevant_file_change?(path, events) do
     Path.extname(path) == ".md" and
       not String.starts_with?(Path.basename(path), ".") and
-      (:modified in events or [:closed] == events)
+      (:modified in events or :created in events or [:closed] == events)
   end
 end
