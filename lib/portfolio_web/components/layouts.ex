@@ -1,22 +1,17 @@
 defmodule PortfolioWeb.Layouts do
   @moduledoc false
   use PortfolioWeb, :html
+  import PortfolioWeb.NavComponent
   alias PortfolioWeb.Router.Helpers, as: Routes
   embed_templates "layouts/*"
 
   @supported_locales Application.compile_env(:portfolio, :supported_locales)
 
-  # Function to construct the URL path for a given path and locale
-  def locale_url(conn, locale, remaining_path) do
-    remaining_path = String.trim_leading(remaining_path, "/")
-    path_with_locale = "/#{locale}/#{remaining_path}"
-    query_string = conn.query_string |> URI.decode_query()
-
-    query_part =
-      if query_string == %{}, do: "", else: "?#{URI.encode_query(query_string)}"
-
-    final_url = "#{path_with_locale}#{query_part}"
-    final_url
+  defp remove_locale_from_path(path) do
+    case String.split(path, "/", parts: 3) do
+      ["", locale, rest] when locale in @supported_locales -> "/#{rest}"
+      _ -> path
+    end
   end
 
   def hreflang_tags(conn) do

@@ -21,11 +21,11 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   @spec call(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def call(conn, _opts) do
     normalized_path = normalize_path(conn.request_path)
-
-    {locale_from_url, _remaining_path} =
-      extract_locale_from_path(normalized_path)
-
+    {locale_from_url, remaining_path} = extract_locale_from_path(normalized_path)
     user_locale = get_user_locale(conn)
+
+    conn = conn
+    |> assign(:path_without_locale, remaining_path)
 
     handle_locale(conn, locale_from_url, normalized_path, user_locale)
   end
@@ -61,7 +61,8 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
             conn |> send_resp(404, "Not Found") |> halt()
           # If a valid path is found, reset the redirect count and perform the redirection
           path ->
-            conn = conn |> put_session(:redirect_count, 0)  # Reset redirect count before redirecting
+            conn = conn
+            |> put_session(:redirect_count, 0)
             redirect_to_locale(conn, path, user_locale)
         end
     end
@@ -107,14 +108,14 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
   end
 
   @spec normalize_path(path()) :: path()
-  defp normalize_path(path) do
+  def normalize_path(path) do
     path
     |> String.replace(~r/\/+/, "/")
     |> String.trim_trailing("/")
   end
 
   @spec extract_locale_from_path(path()) :: {locale(), path()}
-  defp extract_locale_from_path(path) do
+  def extract_locale_from_path(path) do
     case String.split(path, "/", parts: 2, trim: true) do
       [possible_locale | remaining_parts] ->
         if String.downcase(possible_locale) in Enum.map(
@@ -168,6 +169,8 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
   @spec log(atom(), String.t()) :: :ok
   defp log(level, message) do
-    Logger.log(level, fn -> "[LocaleRedirection] #{message}" end)
+    Logger.log(level, fn -> "[#{message}" end)
   end
+  def supported_locales, do: @supported_locales
+  def default_locale, do: @default_locale
 end

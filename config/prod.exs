@@ -5,6 +5,9 @@ config :portfolio, PortfolioWeb.Endpoint,
   server: true,
   token_salt: System.get_env("PROD_TOKEN_SALT")
 
-config :logger, level: :info
+config :logger, :console,
+  format: {LogfmtEx, :format},
+  metadata: :all,
+  level: :info
 
 config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Portfolio.Finch

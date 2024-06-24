@@ -75,6 +75,9 @@
     <a href="#main-content" class="sr-only" tabindex="0">
       <%= gettext("Skip to main content") %>
     </a>
+    <div>
+      <.nav user_locale={@user_locale} conn={@conn} current_path={@conn.request_path} />
+    </div>
     <div
       data-main-view
       class="transition-opacity duration-500 ease-in-out phx-page-loading:opacity-0"

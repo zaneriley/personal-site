@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.HomeLive do
   require Logger
   use PortfolioWeb, :live_view
+  alias PortfolioWeb.DevToolbar
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   def mount(_params, session, socket) do
@@ -57,6 +58,13 @@ defmodule PortfolioWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <main class="u-container">
+      <%= if Mix.env() == :dev do %>
+      <div >
+      Debug: Gettext Locale: <%= Gettext.get_locale(PortfolioWeb.Gettext) %>,
+      Assign Locale: <%= @user_locale %>
+    </div>
+    <DevToolbar.render socket={@socket} locale={@user_locale} />
+      <% end %>
       <h1 class="text-2xl">
         <%= gettext("Product designer helping people beyond the screen") %>
       </h1>
@@ -88,8 +96,8 @@ defmodule PortfolioWeb.HomeLive do
               >
                 <h3><%= translations[:title] || case_study.title %></h3>
               </.link>
-              <p><%= translations[:introduction] || case_study.introduction %></p>
-              <p>
+              <p class="text-1xs"><%= translations[:introduction] || case_study.introduction %></p>
+              <p class="text-1xs">
                 <%= case_study.read_time %> <%= ngettext(
                   "minute",
                   "minutes",

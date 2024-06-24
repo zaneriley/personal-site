@@ -14,10 +14,14 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   """
   import Plug.Conn
   require Logger
+  import PortfolioWeb.Plugs.LocaleRedirection, only: [
+    normalize_path: 1,
+    extract_locale_from_path: 1
+  ]
 
   @telemetry_prefix [:portfolio, :plug, :set_locale]
-  @supported_locales Application.compile_env!(:portfolio, :supported_locales)
-  @default_locale Application.compile_env(:portfolio, :default_locale)
+  @supported_locales PortfolioWeb.Plugs.LocaleRedirection.supported_locales()
+  @default_locale PortfolioWeb.Plugs.LocaleRedirection.default_locale()
   @static_paths PortfolioWeb.static_paths()
 
   @type locale :: String.t()
@@ -99,15 +103,18 @@ defmodule PortfolioWeb.Plugs.SetLocale do
         accept_language
       )
 
-    log(:info, "Locale extracted",
-      event: :locale_extracted,
-      locale: user_locale,
-      locale_source: locale_source,
-      url_locale: locale_from_url,
-      session_locale: session_locale,
-      accept_language: accept_language,
-      path: remaining_path
-    )
+      params = %{
+        event: :locale_extracted,
+        locale: user_locale,
+        locale_source: locale_source,
+        url_locale: locale_from_url,
+        session_locale: session_locale,
+        accept_language: accept_language,
+        path: remaining_path
+      }
+
+      json_params = Jason.encode!(params)
+      Logger.info("Locale extracted: #{json_params}")
 
     duration = System.monotonic_time() - start_time
 
@@ -140,7 +147,8 @@ defmodule PortfolioWeb.Plugs.SetLocale do
         %{} ->
           Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
 
-          log(:debug, "Set locale for Gettext", locale: user_locale)
+          log(:debug, "Set Gettext locale", locale: user_locale, gettext_locale: Gettext.get_locale(PortfolioWeb.Gettext))
+
 
           conn
           |> put_session("user_locale", user_locale)
@@ -176,31 +184,6 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     |> Enum.any?(fn static_path ->
       Regex.match?(~r/^\/#{static_path}.*\.(png|jpg|jpeg|svg|ico)$/, path)
     end)
-  end
-
-
-  # Extracts the locale from the given path.
-
-  @spec extract_locale_from_path(path()) :: {locale(), path()}
-  defp extract_locale_from_path(path) do
-    log(:debug, "Extracting locale from path", path: path)
-
-    case String.split(path, "/", parts: 2) do
-      ["", possible_locale | _] when possible_locale in @supported_locales ->
-        remaining_path =
-          "/" <> (path |> String.split("/", parts: 3) |> Enum.at(2, ""))
-
-        log(:debug, "Extracted locale from path",
-          locale: possible_locale,
-          remaining_path: remaining_path
-        )
-
-        {possible_locale, remaining_path}
-
-      _ ->
-        log(:debug, "No valid locale found in path", path: path)
-        {"", path}
-    end
   end
 
 
@@ -289,10 +272,4 @@ defmodule PortfolioWeb.Plugs.SetLocale do
     source
   end
 
-  @spec normalize_path(path()) :: path()
-  defp normalize_path(path) do
-    path
-    |> String.replace(~r/\/+/, "/")
-    |> String.trim_trailing("/")
-  end
 end

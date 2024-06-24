@@ -3,6 +3,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   use PortfolioWeb, :live_view
   alias Portfolio.Content
   alias PortfolioWeb.Router.Helpers, as: Routes
+  alias PortfolioWeb.DevToolbar
 
   @impl true
   def mount(%{"locale" => user_locale, "url" => url}, _session, socket) do
@@ -11,6 +12,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
       locale: user_locale,
       url: url
     )
+
+    Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
 
     if valid_slug?(url) do
       {case_study, translations} =

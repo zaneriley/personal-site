@@ -41,7 +41,7 @@ I'm an extremely product-focused designer with 10+ years of experience, based in
 **Why all this for a website?**
 - For portfolios, you can build what you want without compromises. For example, I was able to incorporate features like a custom optically-aligned typographic "engine" that might be less practical in large-team settings or with less technical designers.
 - I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something with a lot more infra (e.g. admin interface, metrics, gitops)
-- I have plans to utilize reuse all this infra.
+- I have plans to utilize reuse all this infra.And in a way, this was sort of a homelab project for me.
 
 ## Features
 

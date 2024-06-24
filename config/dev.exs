@@ -21,7 +21,11 @@ config :portfolio, dev_routes: true
 
 config :portfolio, Portfolio.Repo, show_sensitive_data_on_connection_error: true
 
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console,
+  format: {Portfolio.LoggerFormatter, :format},
+  metadata: [:request_id, :user_id, :duration, :module, :function, :line],
+  level: :debug,
+  colors: [enabled: true]
 
 config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime
