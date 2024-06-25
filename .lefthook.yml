@@ -26,11 +26,11 @@ pre-commit:
         echo "Current directory: $(pwd)"
         echo "Staged files: {staged_files}"
         ./run mix format {staged_files}
-    format_js:
-      glob: "*.{js,jsx,ts,tsx}"
-      run: ./run yarn:build:js
-    stop_containers:
-      run: docker compose down
+    # format_js:
+    #   glob: "*.{js,jsx,ts,tsx}"
+    #   run: ./run yarn:build:js
+    # stop_containers:
+    #   run: docker compose down
 
 pre-push:
   parallel: false
