@@ -41,7 +41,6 @@ defmodule Portfolio.Translation do
       :translatable_type
     ])
     |> validate_length(:field_name, max: 255)
-    |> validate_length(:field_value, max: 1000)
     |> validate_format(:locale, ~r/^[a-z]{2}(-[A-Z]{2})?$/)
     |> unique_constraint(
       [:translatable_id, :translatable_type, :locale, :field_name],

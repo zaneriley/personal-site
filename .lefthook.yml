@@ -1,0 +1,69 @@
+pre-commit:
+  piped: true
+  commands:
+    start_containers:
+      priority: 1
+      run: docker compose up -d
+    wait_for_web:
+      priority: 2
+      run: |
+        for i in {1..30}; do
+          if curl -s http://localhost:8000/up >/dev/null; then
+            echo "Web service is up!"
+            exit 0
+          fi
+          echo "Waiting for web service... (attempt $i)"
+          sleep 1
+        done
+        echo "Web service did not come up in time. Checking logs:"
+        docker logs portfolio-web-1
+        exit 1
+    format_elixir:
+      priority: 3
+      glob: "*.{ex,exs}"
+      run: |
+        echo "Current user: $(id)"
+        echo "Current directory: $(pwd)"
+        echo "Staged files: {staged_files}"
+        ./run mix format {staged_files}
+    format_js:
+      glob: "*.{js,jsx,ts,tsx}"
+      run: ./run yarn:build:js
+    stop_containers:
+      run: docker compose down
+
+pre-push:
+  parallel: false
+  commands:
+    check_web_container:
+      run: docker ps --filter name=portfolio-web-1 --quiet
+      glob: ""
+    check_js_container:
+      run: docker ps --filter name=portfolio-js-1 --quiet
+      glob: ""
+    check_css_container:
+      run: docker ps --filter name=portfolio-css-1 --quiet
+      glob: ""
+    start_web_container:
+      run: |
+        if [ -z "$(lefthook exec check_web_container)" ]; then
+          docker compose up -d web
+        fi
+      glob: ""
+    format_check_elixir:
+      run: ./run mix format --check-formatted
+    lint_elixir:
+      run: ./run mix credo
+    test_elixir:
+      run: ./run test
+    format_check_js:
+      run: ./run yarn prettier --check .
+    lint_js:
+      run: ./run yarn eslint .
+    test_js:
+      run: ./run yarn test
+    stop_containers:
+      run: |
+        if [ -z "$(lefthook exec check_web_container)" ] && [ -z "$(lefthook exec check_js_container)" ]; then
+          docker compose down
+        fi

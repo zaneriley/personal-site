@@ -20,10 +20,13 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
+        class="grid grid-cols-1 gap-6"
       >
         <.input field={@form[:title]} type="text" label="Title" />
         <.input field={@form[:content]} type="text" label="Content" />
-        <:actions>
+        <.input field={@form[:url]} type="text" label="URL" />
+        <.input field={@form[:locale]} type="text" label="Locale" />
+        <:actions class="flex justify-end space-x-4">
           <.button phx-disable-with="Saving...">Save Note</.button>
         </:actions>
       </.simple_form>

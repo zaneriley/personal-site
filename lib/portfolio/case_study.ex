@@ -13,6 +13,8 @@ defmodule Portfolio.CaseStudy do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @translatable_type :case_study
+
   schema "case_studies" do
     field :title, :string
     field :url, :string
@@ -27,9 +29,7 @@ defmodule Portfolio.CaseStudy do
     field :file_path, :string
     field :locale, :string
 
-    has_many :translations, Portfolio.Translation,
-      foreign_key: :translatable_id,
-      where: [translatable_type: "CaseStudy"]
+    has_many :translations, Portfolio.Translation, foreign_key: :translatable_id
 
     timestamps()
   end
@@ -66,4 +66,7 @@ defmodule Portfolio.CaseStudy do
     ])
     |> unique_constraint(:url)
   end
+
+  def translatable_type, do: @translatable_type
+  def translatable_type_string, do: Atom.to_string(@translatable_type)
 end

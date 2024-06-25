@@ -36,8 +36,8 @@ config :portfolio, PortfolioWeb.Endpoint,
 config :portfolio, Portfolio.Repo, adapter: Ecto.Adapters.Postgres
 
 config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  format: {LogfmtEx, :format},
+  metadata: :all
 
 config :phoenix, :json_library, Jason
 

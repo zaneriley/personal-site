@@ -58,6 +58,15 @@ defmodule PortfolioWeb.SetLocalePlugTest do
       assert get_session(conn, "user_locale") == "en"
     end
 
+    test "sets the right locale on valid route but missing locale in URL", %{
+      conn: conn
+    } do
+      conn = I18nHelpers.set_accept_language_header(conn, "ja")
+      conn = get(conn, "/case-studies/")
+      # Assuming "en" is the default locale
+      assert get_session(conn, "user_locale") == "ja"
+    end
+
     test "does not set locale for static asset requests", %{conn: conn} do
       conn = get(conn, "/images/logo.png")
       refute conn.assigns[:user_locale]
@@ -71,6 +80,23 @@ defmodule PortfolioWeb.SetLocalePlugTest do
              |> Enum.any?(fn {key, value} ->
                key == "content-language" and value == "ja"
              end)
+    end
+
+    test "handles URLs with multiple path segments", %{conn: conn} do
+      conn = get(conn, "/en/case-studies/")
+      assert get_session(conn, "user_locale") == "en"
+    end
+
+    test "handles locales with region subtags", %{conn: conn} do
+      conn = I18nHelpers.set_accept_language_header(conn, "en-US")
+      conn = get(conn, "/")
+      assert get_session(conn, "user_locale") == "en"
+    end
+
+    test "handles multiple locales in Accept-Language header", %{conn: conn} do
+      conn = I18nHelpers.set_accept_language_header(conn, "en,ja;q=0.7")
+      conn = get(conn, "/")
+      assert get_session(conn, "user_locale") == "en"
     end
   end
 end

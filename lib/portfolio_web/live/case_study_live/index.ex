@@ -1,20 +1,23 @@
 defmodule PortfolioWeb.CaseStudyLive.Index do
   use PortfolioWeb, :live_view
-
+  require Logger
   alias Portfolio.Admin
   alias Portfolio.CaseStudy
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true
   def mount(_params, session, socket) do
+    env = Mix.env()
     # Extract the locale from the session or default to 'en'
-    locale =
-      session["locale"] || Application.get_env(:portfolio, :default_locale)
+    user_locale =
+      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
 
-    # Stream the case studies and assign the locale to the socket
+    Logger.debug("Case study index mounted with locale: #{user_locale}")
+    # Stream the case studies and assign the user_locale to the socket
     {:ok,
      socket
-     |> assign(:locale, locale)
+     |> assign(:user_locale, user_locale)
+     |> assign(:env, env)
      |> stream(:case_studies, Admin.list_case_studies())}
   end
 

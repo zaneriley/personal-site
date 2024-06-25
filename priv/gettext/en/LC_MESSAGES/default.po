@@ -19,6 +19,12 @@ msgstr "10+ years of experience based in Tokyo, Japan. I believe in creating pro
 msgid "Helping people make informed healthcare choices and access care when they need it."
 msgstr "Helping people make informed healthcare choices and access care when they need it."
 
+msgid "Skip to main content"
+msgstr "Skip to main content"
+
+msgid "Zane Riley Portfolio Logo"
+msgstr "Zane Riley Portfolio Logo"
+
 msgid "Change language"
 msgstr "Change language"
 
@@ -41,7 +47,9 @@ msgid "Dark mode"
 msgstr "Dark mode"
 
 msgid "Case Study"
-msgstr "Case Study"
+msgid_plural "Case Studies"
+msgstr[0] "Case Study"
+msgstr[1] "Case Studies"
 
 msgid "minute"
 msgid_plural "minutes"

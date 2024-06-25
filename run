@@ -35,6 +35,9 @@ function cmd {
 
 function mix {
   # Run any mix commands
+  echo "Running mix as user: $(id)"
+  echo "From directory: $(pwd)"
+  echo "Command: mix $*"
   cmd mix "${@}"
 }
 
@@ -109,6 +112,10 @@ function mix:outdated {
 function yarn:install {
   # Install yarn dependencies and write lock file
   _build_run_down js yarn install
+}
+function yarn:remove {
+  # Install yarn dependencies and write lock file
+  _build_run_down js yarn remove "$@"
 }
 
 function yarn:outdated {
