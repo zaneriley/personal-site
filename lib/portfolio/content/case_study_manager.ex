@@ -1,4 +1,10 @@
 defmodule Portfolio.Content.CaseStudyManager do
+  @moduledoc """
+  A module for managing case studies in the Portfolio application.
+
+  This module provides functions for managing case studies in the Portfolio application, including getting or creating case studies, updating case studies, and converting case studies to Markdown.
+
+  """
   alias Portfolio.Repo
   alias Portfolio.CaseStudy
   require Logger

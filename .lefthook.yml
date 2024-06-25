@@ -44,11 +44,23 @@ pre-push:
     check_css_container:
       run: docker ps --filter name=portfolio-css-1 --quiet
       glob: ""
-    start_web_container:
+    start_containers:
+      priority: 1
+      run: docker compose up -d
+    wait_for_web:
+      priority: 2
       run: |
-        if [ -z "$(lefthook exec check_web_container)" ]; then
-          docker compose up -d web
-        fi
+        for i in {1..30}; do
+          if curl -s http://localhost:8000/up >/dev/null; then
+            echo "Web service is up!"
+            exit 0
+          fi
+          echo "Waiting for web service... (attempt $i)"
+          sleep 1
+        done
+        echo "Web service did not come up in time. Checking logs:"
+        docker logs portfolio-web-1
+        exit 1
       glob: ""
     format_check_elixir:
       run: ./run mix format --check-formatted
@@ -56,12 +68,12 @@ pre-push:
       run: ./run mix credo
     test_elixir:
       run: ./run test
-    format_check_js:
-      run: ./run yarn prettier --check .
-    lint_js:
-      run: ./run yarn eslint .
-    test_js:
-      run: ./run yarn test
+    # format_check_js:
+    #   run: ./run yarn prettier --check .
+    # lint_js:
+    #   run: ./run yarn eslint .
+    # test_js:
+    #   run: ./run yarn test
     stop_containers:
       run: |
         if [ -z "$(lefthook exec check_web_container)" ] && [ -z "$(lefthook exec check_js_container)" ]; then

@@ -1,4 +1,16 @@
 defmodule PortfolioWeb.NavComponent do
+  @moduledoc """
+  A component for rendering the navigation menu.
+
+  This component is used to render the navigation menu for the Portfolio application. It includes links to various pages, such as the home page, case studies, notes, and about page.
+
+  ## Usage
+
+  To use the component, you can include it in your Phoenix templates or LiveViews. For example:
+
+      <.nav />
+
+  """
   use PortfolioWeb, :html
   alias PortfolioWeb.Router.Helpers, as: Routes
 

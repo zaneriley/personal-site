@@ -89,6 +89,17 @@ To set up the project locally:
 3. Run `docker-compose up -d` to start the application
 4. Visit `localhost:8000` in your browser
 
+### Code Quality and Git Hooks
+
+This project uses Lefthook for managing Git hooks to ensure code quality and consistency. The configuration can be found in `.lefthook.yml`. Here's a brief overview of what's included:
+
+- **Pre-commit hooks**: Format Elixir files and ensure containers are running.
+- **Pre-push hooks**: Run format checks, linting (Credo), and tests for Elixir code.
+
+To use these hooks, install Lefthook by following the instructions at [Lefthook's GitHub repository](https://github.com/evilmartians/lefthook).
+
+These hooks help maintain code quality, but you bypass the checks easily if you want to do it all in CI workflows.
+
 ### Deployment
 
 Deployment details are still being finalized. The project uses GitHub Actions for CI/CD, as indicated by the workflow status badge at the top of this README.

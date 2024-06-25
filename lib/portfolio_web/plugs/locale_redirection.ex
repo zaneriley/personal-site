@@ -46,7 +46,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
       # Check if it's a single segment path that's not a locale
       String.split(path, "/", trim: true) |> length() == 1 and
-          not is_valid_route?(conn, path) ->
+          not valid_route?(conn, path) ->
         log(:info, "Single segment invalid path detected. Halting.")
         conn |> send_resp(404, "Not Found") |> halt()
 
@@ -63,7 +63,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
         # Find the first valid path from the generated redirect paths
         valid_path =
           Enum.find(redirect_paths, fn path ->
-            is_valid_route?(conn, path)
+            valid_route?(conn, path)
           end)
 
         case valid_path do
@@ -106,8 +106,8 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
     |> halt()
   end
 
-  @spec is_valid_route?(Plug.Conn.t(), path()) :: boolean()
-  defp is_valid_route?(conn, path) do
+  @spec valid_route?(Plug.Conn.t(), path()) :: boolean()
+  defp valid_route?(conn, path) do
     log(:debug, "Checking if route is valid: #{path}")
 
     result =

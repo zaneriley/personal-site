@@ -1,4 +1,55 @@
 defmodule Portfolio.Content.TranslationManager do
+  @moduledoc """
+  A module for managing translations for case studies.
+
+  This module provides functions for managing translations for case studies, including updating or creating translations, merging translations, and getting translations.
+
+  ## Usage
+
+  To use the TranslationManager module, you can call the `update_or_create_translation/4` function with the necessary arguments. This function will return a list of translations.
+
+  For example, to update or create translations for a case study with the following metadata:
+
+      %{
+        title: "Case Study 1",
+        url: "case-study-1",
+        company: "TechCorp Solutions",
+        role: "Senior Software Engineer",
+        timeline: "January 2022 - June 2022",
+        read_time: 5,
+        platforms: ["Web", "Mobile", "Cloud"],
+        introduction: "Introduction to Case Study 1",
+        content: "Detailed content of Case Study 1",
+        sort_order: 1
+      }
+
+  You can use the following code to update or create translations:
+
+      translations = TranslationManager.update_or_create_translation(
+        case_study,
+        "en",
+        %{
+          title: "Case Study 1",
+          url: "case-study-1",
+          company: "TechCorp Solutions",
+          role: "Senior Software Engineer",
+          timeline: "January 2022 - June 2022",
+          read_time: 5,
+          platforms: ["Web", "Mobile", "Cloud"],
+          introduction: "Introduction to Case Study 1",
+          content: "Detailed content of Case Study 1",
+          sort_order: 1
+        },
+        "Detailed content of Case Study 1"
+      )
+
+  The `translations` variable will contain the updated or created translations.
+
+  ## Translations
+
+  Translations are used to provide localized versions of case studies. Each translation is associated with a specific locale and field, and contains the translated content.
+
+  """
   alias Portfolio.Repo
   alias Portfolio.CaseStudy
 
@@ -9,38 +60,48 @@ defmodule Portfolio.Content.TranslationManager do
   def update_or_create_translation(case_study, locale, metadata, content) do
     translatable_fields = [:title, :role, :company, :introduction, :timeline]
 
-    translations =
-      Enum.map(translatable_fields ++ [:content], fn field ->
-        attrs = %{
-          translatable_id: case_study.id,
-          translatable_type: CaseStudy.translatable_type_string(),
-          locale: locale,
-          field_name: Atom.to_string(field),
-          field_value:
-            if(field == :content, do: content, else: Map.get(metadata, field))
-        }
+    (translatable_fields ++ [:content])
+    |> Enum.map(&create_translation_attrs(case_study, locale, metadata, content, &1))
+    |> Enum.map(&upsert_translation/1)
+  end
 
-        case Repo.get_by(Translation,
-               translatable_id: case_study.id,
-               translatable_type: CaseStudy.translatable_type_string(),
-               locale: locale,
-               field_name: Atom.to_string(field)
-             ) do
-          nil ->
-            case Repo.insert(Translation.changeset(%Translation{}, attrs)) do
-              {:ok, translation} -> {:ok, translation}
-              {:error, changeset} -> {:error, changeset}
-            end
+   # Creates a map of attributes for a translation
+  # This function prepares the data for insertion or update in the database
+  defp create_translation_attrs(case_study, locale, metadata, content, field) do
+    %{
+      translatable_id: case_study.id,
+      translatable_type: CaseStudy.translatable_type_string(),
+      locale: locale,
+      field_name: Atom.to_string(field),
+      field_value: if(field == :content, do: content, else: Map.get(metadata, field))
+    }
+  end
 
-          existing ->
-            case Repo.update(Translation.changeset(existing, attrs)) do
-              {:ok, translation} -> {:ok, translation}
-              {:error, changeset} -> {:error, changeset}
-            end
-        end
-      end)
+  # Upserts a translation (inserts if not exists, updates if exists)
+  # This function checks if a translation exists and then calls the appropriate
+  # insert or update function
+  defp upsert_translation(attrs) do
+    case Repo.get_by(Translation,
+           translatable_id: attrs.translatable_id,
+           translatable_type: attrs.translatable_type,
+           locale: attrs.locale,
+           field_name: attrs.field_name
+         ) do
+      nil -> insert_translation(attrs)
+      existing -> update_translation(existing, attrs)
+    end
+  end
 
-    translations
+  defp insert_translation(attrs) do
+    %Translation{}
+    |> Translation.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp update_translation(existing, attrs) do
+    existing
+    |> Translation.changeset(attrs)
+    |> Repo.update()
   end
 
   def merge_translations(content, locale) do

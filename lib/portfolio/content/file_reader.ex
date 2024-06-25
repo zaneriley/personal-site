@@ -1,4 +1,45 @@
 defmodule Portfolio.Content.FileReader do
+  @moduledoc """
+  A module for reading Markdown files and extracting frontmatter and content.
+
+  This module provides functions for reading Markdown files, extracting frontmatter and content, and converting Markdown content to HTML.
+
+  ## Usage
+
+  To use the FileReader module, you can call the `read_markdown_file/1` function with a file path as an argument. This function will return a tuple containing the extracted frontmatter and content.
+
+  For example, to read a Markdown file at the path "/path/to/file.md", you can use the following code:
+
+      {:ok, metadata, markdown} = FileReader.read_markdown_file("/path/to/file.md")
+
+  The `metadata` variable will contain the extracted frontmatter, and the `markdown` variable will contain the extracted content.
+
+  ## Frontmatter
+
+  The frontmatter is a set of metadata that is extracted from the beginning of a Markdown file. It is defined by a specific format, which consists of three parts:
+
+  1. The first line is the title, which is extracted as the first element of the frontmatter.
+  2. The second line is the date, which is extracted as the second element of the frontmatter.
+  3. The rest of the file is the content, which is extracted as the third element of the frontmatter.
+
+  The frontmatter is separated from the content by a line containing three dashes (`---`). This line is used to separate the frontmatter from the content.
+
+  ## Content
+
+  The content is the actual content of the Markdown file, which is extracted after the frontmatter. The content is converted to HTML using the Earmark library.
+
+  ## Example
+
+  Consider the following Markdown file:
+
+      ---
+      title: Example Markdown File
+      date: 2023-01-01
+      ---
+      # Heading
+      Content goes here.
+
+  """
   require Logger
 
   def read_markdown_file(file_path) do

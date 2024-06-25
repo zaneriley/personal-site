@@ -1,4 +1,16 @@
 defmodule PortfolioWeb.DevToolbar do
+  @moduledoc """
+  A component for rendering a developer toolbar.
+
+  This component is used to display a toolbar with various debugging information, such as the current locale, the user's session, and the connection's request ID.
+
+  ## Usage
+
+  To use the component, you can include it in your Phoenix templates or LiveViews. For example:
+
+      <.dev_toolbar />
+
+  """
   use Phoenix.Component
   import Phoenix.LiveView
 

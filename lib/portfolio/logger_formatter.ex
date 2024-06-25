@@ -1,4 +1,21 @@
 defmodule Portfolio.LoggerFormatter do
+  @moduledoc """
+  A custom logger formatter for the Portfolio application.
+
+  This formatter is responsible for formatting log messages in a specific format that is consistent with the application's logging requirements.
+  """
+
+  @doc """
+  Formats a log message.
+
+  The formatter takes the following arguments:
+    - level: The log level of the message (e.g., :debug, :info, :warn, :error)
+    - message: The log message to be formatted
+    - timestamp: The timestamp of the log message
+    - metadata: Additional metadata associated with the log message
+
+  The formatter returns a formatted log message as a string.
+  """
   def format(level, message, timestamp, metadata) do
     [
       format_timestamp(timestamp),

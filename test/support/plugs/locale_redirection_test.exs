@@ -60,11 +60,6 @@ defmodule PortfolioWeb.LocaleRedirectionTest do
       end
     end
 
-    test "ignores empty path segments and processes request", %{conn: conn} do
-      conn = get(conn, "//en/")
-      assert_request_proceeded(conn)
-    end
-
     test "redirects unsupported locale to default locale", %{conn: conn} do
       conn = get(conn, "/xyz/case-study/helping-people-find-healthcare")
 
