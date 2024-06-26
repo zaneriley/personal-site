@@ -82,7 +82,7 @@ function test:coverage {
   
   if [ -z "$GITHUB_EVENT_PATH" ]; then
     echo "Running coverage locally without GitHub Actions environment"
-    _dc -e "MIX_ENV=test" web mix "${@}"
+    _dc -e "MIX_ENV=test" web mix coveralls "${@}"
   else
     echo "Running coverage in GitHub Actions environment"
     _dc -e "MIX_ENV=test" \
