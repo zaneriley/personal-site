@@ -142,11 +142,11 @@ Previous portfolio versions:
 - 2014 – 2016: Built using Vanilla JS. [View on Wayback Machine](https://web.archive.org/web/20150711234633/http://zaneriley.com/).
 - 2010: Built using Flash.
 
-## Using This Project
+## License
 
-This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE. You are free to use, modify, and distribute this code for any purpose, including commercial use, with one important exception:
+This project is licensed under AGPL-3.0. See the [LICENSE](LICENSE) file for details.
 
-### For Portfolio Use
+### Using this for your own portfolio
 
 If you're using this project as a base for your own portfolio website, I ask that you provide credit for the original work. Here's how you can do that:
 
@@ -158,16 +158,8 @@ If you're using this project as a base for your own portfolio website, I ask tha
 ```markdown
 This project is based on [Zane Riley's Portfolio](https://github.com/zaneriley/personal-site).
 ```
-
 By providing credit, you help support open-source projects and allow others to discover and learn from the original work. Thank you for your consideration!
 
-### For Non-Portfolio Use
-
-For all other uses, including commercial applications, you are free to use this code without the need for attribution, as per the terms of the GNU AFFERO GENERAL PUBLIC LICENSE. **However, you must include the full text of the license and make your source code available if you distribute the software.**
-
-## License
-
-This project is licensed under the GNU AFFERO GENERAL PUBLIC LICENSE - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 Contributions are welcome, but obviously since this is my personal site I'd be amazed if anyone would want to.
