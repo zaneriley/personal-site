@@ -21,6 +21,8 @@ jobs:
           ./run ci:install-deps
 
       - name: "Test"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
         run: |
           # Remove volumes in CI to avoid permission errors due to UID / GID.
           sed -i "s|.:/app|/tmp:/tmp|g" .env*

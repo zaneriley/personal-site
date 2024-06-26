@@ -79,7 +79,7 @@ function test {
 
 function test:coverage {
   # Get test coverage
-  _dc -e "MIX_ENV=test" web mix coveralls "${@}"
+  _dc -e "MIX_ENV=test" -e "GITHUB_TOKEN=${GITHUB_TOKEN}" web mix coveralls.github "${@}"
 }
 
 function test:coverage:details {
@@ -192,7 +192,7 @@ function ci:test {
   lint
   format:check
   mix ecto.setup
-  test "${@}"
+  test:coverage "${@}"
 }
 
 function help {
