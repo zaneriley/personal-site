@@ -22,7 +22,6 @@ jobs:
 
       - name: "Test"
         env:
-          MIX_ENV: test
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
         run: |
           # Remove volumes in CI to avoid permission errors due to UID / GID.
