@@ -18,7 +18,6 @@ x-app: &default-app
   tty: true
   volumes:
     - "${DOCKER_WEB_VOLUME:-./priv/static:/app/priv/static}"
-    - "${GITHUB_EVENT_PATH:-/tmp/github_event.json}:/tmp/github_event.json:ro"
 
 x-assets: &default-assets
   build:

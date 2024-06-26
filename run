@@ -87,8 +87,7 @@ function test:coverage {
     echo "Running coverage in GitHub Actions environment"
     _dc -e "MIX_ENV=test" \
        -e "GITHUB_TOKEN=${GITHUB_TOKEN}" \
-       -e "GITHUB_EVENT_PATH=/tmp/github_event.json" \
-       web mix coveralls.github "${@}"
+       web mix coveralls.json "${@}"
   fi
 }
 
