@@ -5,4 +5,5 @@ priv/static/
 .dockerignore
 .env*
 !.env.example
+.release-please-manifest.json
 docker-compose.override.yml

@@ -61,11 +61,13 @@ defmodule Portfolio.Content.TranslationManager do
     translatable_fields = [:title, :role, :company, :introduction, :timeline]
 
     (translatable_fields ++ [:content])
-    |> Enum.map(&create_translation_attrs(case_study, locale, metadata, content, &1))
+    |> Enum.map(
+      &create_translation_attrs(case_study, locale, metadata, content, &1)
+    )
     |> Enum.map(&upsert_translation/1)
   end
 
-   # Creates a map of attributes for a translation
+  # Creates a map of attributes for a translation
   # This function prepares the data for insertion or update in the database
   defp create_translation_attrs(case_study, locale, metadata, content, field) do
     %{
@@ -73,7 +75,8 @@ defmodule Portfolio.Content.TranslationManager do
       translatable_type: CaseStudy.translatable_type_string(),
       locale: locale,
       field_name: Atom.to_string(field),
-      field_value: if(field == :content, do: content, else: Map.get(metadata, field))
+      field_value:
+        if(field == :content, do: content, else: Map.get(metadata, field))
     }
   end
 

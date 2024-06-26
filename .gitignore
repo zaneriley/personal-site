@@ -1,7 +1,11 @@
 # Mostly created by https://www.gitignore.io
 
-# just for nwo
+# just for now
 *.md
+
+### Ops ###########################################################################
+.release-please-manifest.json
+
 ### Project #######################################################################
 *.ttf
 *.woff

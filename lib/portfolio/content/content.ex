@@ -33,12 +33,17 @@ defmodule Portfolio.Content do
   def update_case_study_from_file(file_path) do
     with {:ok, metadata, markdown} <- FileReader.read_markdown_file(file_path),
          {:ok, locale} <- extract_locale(file_path),
-         derived_metadata <- Map.merge(metadata, %{file_path: file_path, locale: locale}),
-         {:ok, case_study} <- CaseStudyManager.get_or_create_case_study(derived_metadata) do
+         derived_metadata <-
+           Map.merge(metadata, %{file_path: file_path, locale: locale}),
+         {:ok, case_study} <-
+           CaseStudyManager.get_or_create_case_study(derived_metadata) do
       update_case_study_content(case_study, derived_metadata, markdown, locale)
     else
       error ->
-        Logger.error("Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(error)}")
+        Logger.error(
+          "Case study update (from file) failed. File: #{file_path}. Reason: #{inspect(error)}"
+        )
+
         error
     end
   end
@@ -55,14 +60,19 @@ defmodule Portfolio.Content do
   end
 
   defp update_case_study_content(case_study, metadata, markdown, locale) do
-    case TranslationManager.update_or_create_translation(case_study, locale, metadata, markdown) do
+    case TranslationManager.update_or_create_translation(
+           case_study,
+           locale,
+           metadata,
+           markdown
+         ) do
       translations when is_list(translations) and length(translations) > 0 ->
         {:ok, case_study}
+
       _ ->
         {:error, :translation_update_failed}
     end
   end
-
 
   def get_content_with_translations(content_type, identifier, locale) do
     content_query =
