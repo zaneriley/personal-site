@@ -66,8 +66,10 @@ pre-push:
       glob: "*.{ex,exs}"
       run: ./run mix format
     lint_elixir:
+      glob: "*.{ex,exs}"
       run: ./run mix credo
     test_elixir:
+      glob: "*.{ex,exs}"
       run: ./run test
     # format_check_js:
     #   run: ./run yarn prettier --check .

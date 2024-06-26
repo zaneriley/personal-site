@@ -87,7 +87,6 @@ function test:coverage {
     _dc -e "MIX_ENV=test" web mix "${@}"
   else
     _dc -e "MIX_ENV=test" -e "GITHUB_TOKEN=${GITHUB_TOKEN}" -e "GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH}" web mix coveralls.github "${@}"
-    _dc web sh -c "ls -l ${GITHUB_EVENT_PATH} && cat ${GITHUB_EVENT_PATH}"
   fi
 }
 
