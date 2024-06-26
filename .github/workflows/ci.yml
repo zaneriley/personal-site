@@ -30,10 +30,40 @@ jobs:
           sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
           ./run ci:test
 
-      - name: Upload to Codecov
+      - name: DEBUG List directory contents
+        run: |
+          pwd
+          ls -la
+          
+      # - name: Upload to Codecov
+      #   env: 
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      #   run: |
+      #     curl -Os https://uploader.codecov.io/latest/linux/codecov
+      #     chmod +x codecov
+      #     ./codecov
+      - name: Debug and Upload to Codecov
         env: 
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
+          echo "Searching for coverage files:"
+          find . -name "*.json" -o -name "*.xml" -o -name "*.info"
+          echo "Downloading Codecov uploader:"
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
-          ./code-coverage
+          echo "Codecov uploader version:"
+          ./codecov --version
+          echo "Uploading to Codecov:"
+          ./codecov -v
+      - name: Debug code-coverage folder
+        run: |
+          if [ -d "code-coverage" ]; then
+            echo "Contents of code-coverage folder:"
+            ls -la code-coverage
+          else
+            echo "code-coverage folder not found"
+          fi
