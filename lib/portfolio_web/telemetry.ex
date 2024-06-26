@@ -23,6 +23,26 @@ defmodule PortfolioWeb.Telemetry do
 
   def metrics do
     [
+      # SetLocale Plug Metrics
+      summary("portfolio.plug.set_locale.call.duration",
+        unit: {:native, :millisecond},
+        description: "The time spent in the SetLocale plug's call function"
+      ),
+      summary("portfolio.plug.set_locale.extract_locale.duration",
+        unit: {:native, :millisecond},
+        description:
+          "The time spent extracting the locale in the SetLocale plug"
+      ),
+      summary("portfolio.plug.set_locale.set_locale.duration",
+        unit: {:native, :millisecond},
+        description: "The time spent setting the locale in the SetLocale plug"
+      ),
+      distribution("portfolio.plug.set_locale.extract_locale.source",
+        event_name: [:portfolio, :plug, :set_locale, :extract_locale],
+        measurement: :source,
+        description: "Distribution of locale sources"
+      ),
+
       # Phoenix Metrics
       summary("phoenix.endpoint.stop.duration",
         unit: {:native, :millisecond}

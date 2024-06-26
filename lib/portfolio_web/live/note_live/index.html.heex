@@ -1,7 +1,7 @@
 <.header>
   Listing Notes
   <:actions>
-    <.link patch={~p"/notes/new"}>
+    <.link patch={~p"/admin/notes/new"}>
       <.button>New Note</.button>
     </.link>
   </:actions>
@@ -16,9 +16,9 @@
   <:col :let={{_id, note}} label="Content"><%= note.content %></:col>
   <:action :let={{_id, note}}>
     <div class="sr-only">
-      <.link navigate={~p"/notes/#{note}"}>Show</.link>
+      <.link navigate={~p"/#{@user_locale}/notes/#{note}"}>Show</.link>
     </div>
-    <.link patch={~p"/notes/#{note}/edit"}>Edit</.link>
+    <.link patch={~p"/admin/notes/#{note}/edit"}>Edit</.link>
   </:action>
   <:action :let={{id, note}}>
     <.link

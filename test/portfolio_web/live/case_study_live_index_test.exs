@@ -1,4 +1,4 @@
-defmodule PortfolioWeb.HomeLiveTest do
+defmodule PortfolioWeb.CaseStudyLiveIndexTest do
   use PortfolioWeb.ConnCase
   import Plug.Conn
   require Logger
@@ -27,7 +27,7 @@ defmodule PortfolioWeb.HomeLiveTest do
 
     # Use the updated conn to perform the live navigation
     {:ok, _index_live, html} =
-      live(conn, Routes.home_path(conn, :index, user_locale))
+      live(conn, Routes.case_study_index_path(conn, :index, user_locale))
 
     # Assert that the HTML contains the expected content based on the locale
     assert html =~ "Colophon"
@@ -45,7 +45,7 @@ defmodule PortfolioWeb.HomeLiveTest do
 
     # Use the updated conn to perform the live navigation
     {:ok, _index_live, html} =
-      live(conn, Routes.home_path(conn, :index, user_locale))
+      live(conn, Routes.case_study_index_path(conn, :index, user_locale))
 
     # Assert that the HTML contains the expected content based on the locale
     # Check for Japanese translation

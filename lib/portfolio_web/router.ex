@@ -5,6 +5,36 @@ defmodule PortfolioWeb.Router do
   alias PortfolioWeb.Plugs.CommonMetadata
   import Phoenix.LiveView.Router
 
+  defp put_csp_header(conn, _opts) do
+    csp_config = Application.get_env(:portfolio, :csp, [])
+
+    base_url =
+      if is_function(csp_config[:build_url]),
+        do: csp_config[:build_url].(),
+        else: "http://localhost:8000"
+
+    csp =
+      "default-src 'self' #{base_url}; " <>
+        "script-src 'self' #{base_url} 'unsafe-inline'; " <>
+        "style-src 'self' #{base_url} 'unsafe-inline'; " <>
+        "img-src 'self' #{base_url} data:; " <>
+        "font-src 'self' #{base_url}; " <>
+        "connect-src 'self' #{base_url}; " <>
+        "frame-src 'none'; " <>
+        "object-src 'none'; " <>
+        "base-uri 'self'; " <>
+        "form-action 'self'; " <>
+        "frame-ancestors 'none'; " <>
+        "upgrade-insecure-requests;"
+
+    header_name =
+      if csp_config[:report_only],
+        do: "content-security-policy-report-only",
+        else: "content-security-policy"
+
+    put_resp_header(conn, header_name, csp)
+  end
+
   pipeline :locale do
     plug SetLocale
     plug LocaleRedirection
@@ -17,6 +47,7 @@ defmodule PortfolioWeb.Router do
     plug :put_root_layout, {PortfolioWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :put_csp_header
     plug CommonMetadata
   end
 
@@ -26,7 +57,11 @@ defmodule PortfolioWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, {PortfolioWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
+
+    plug :put_secure_browser_headers, %{
+      "content-security-policy" => "default-src 'self'"
+    }
+
     plug CommonMetadata
     # Do not include the LocaleRedirection plug here
   end
@@ -81,6 +116,7 @@ defmodule PortfolioWeb.Router do
     live "/case-study/:url", CaseStudyLive.Show, :show
     live "/notes", NoteLive.Index, :index
     live "/note/:id", NoteLive.Show, :show
+    live "/about", AboutLive, :index
   end
 
   # Catch-all route for unmatched paths

@@ -1,9 +1,11 @@
 <.header>
   Case Studies
   <:actions>
-    <.link patch={Routes.case_study_index_path(@socket, :new)}>
-      <.button>New case study</.button>
-    </.link>
+    <%= if @env != :dev do %>
+      <.link patch={Routes.case_study_index_path(@socket, :new)}>
+        <.button>New case study</.button>
+      </.link>
+    <% end %>
   </:actions>
 </.header>
 
@@ -13,7 +15,12 @@
   row_click={
     fn {_id, case_study} ->
       JS.navigate(
-        Routes.case_study_path(@socket, :show, @locale, case_study.url)
+        Routes.case_study_show_path(
+          @socket,
+          :show,
+          @user_locale,
+          case_study.url
+        )
       )
     end
   }
@@ -38,13 +45,17 @@
   </:col>
   <:action :let={{_id, case_study}}>
     <div class="sr-only">
-      <.link navigate={~p"/#{@locale}/case-study/#{case_study.url}"}>
+      <.link navigate={
+        Routes.case_study_show_path(
+          @socket,
+          :show,
+          @user_locale,
+          case_study.url
+        )
+      }>
         Show
       </.link>
     </div>
-    <.link patch={Routes.case_study_index_path(@socket, :edit, case_study.id)}>
-      Edit
-    </.link>
   </:action>
   <:action :let={{id, case_study}}>
     <.link

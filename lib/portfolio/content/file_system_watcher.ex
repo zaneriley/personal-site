@@ -74,6 +74,9 @@ defmodule Portfolio.Content.FileSystemWatcher do
     Logger.info("File system event: File: #{path}, Events: #{inspect(events)}")
 
     case {relevant_file_change?(path, events), events} do
+      {true, [:modified]} ->
+        process_file_change(path, state)
+
       {true, [:modified, :closed]} ->
         process_file_change(path, state)
 
@@ -82,7 +85,7 @@ defmodule Portfolio.Content.FileSystemWatcher do
         {:noreply, state}
 
       _ ->
-        Logger.error("Unhandled file event pattern: #{inspect(events)}")
+        Logger.debug("Unhandled file event pattern: #{inspect(events)}")
         {:noreply, state}
     end
   end
@@ -96,7 +99,8 @@ defmodule Portfolio.Content.FileSystemWatcher do
         {:noreply, state}
 
       {:error, reason} ->
-        handle_error(reason, state)
+        Logger.error("Error processing file change: #{inspect(reason)}")
+        {:noreply, Map.put(state, :last_error, reason)}
     end
   end
 
@@ -105,8 +109,9 @@ defmodule Portfolio.Content.FileSystemWatcher do
     {:noreply, Map.put(state, :last_error, reason)}
   end
 
-  def relevant_file_change?(path, _events) do
+  def relevant_file_change?(path, events) do
     Path.extname(path) == ".md" and
-      not String.starts_with?(path, ".")
+      not String.starts_with?(Path.basename(path), ".") and
+      (:modified in events or :created in events or [:closed] == events)
   end
 end

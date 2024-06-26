@@ -1,12 +1,23 @@
 defmodule PortfolioWeb.NoteLive.Index do
   use PortfolioWeb, :live_view
-
+  require Logger
   alias Portfolio.Blog
   alias Portfolio.Blog.Note
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, stream(socket, :notes, Blog.list_notes())}
+  def mount(_params, session, socket) do
+    env = Mix.env()
+    # Extract the locale from the session or default to 'en'
+    user_locale =
+      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
+
+    Logger.debug("Note index mounted with locale: #{user_locale}")
+    # Stream the case studies and assign the user_locale to the socket
+    {:ok,
+     socket
+     |> assign(:user_locale, user_locale)
+     |> assign(:env, env)
+     |> stream(:notes, Blog.list_notes())}
   end
 
   @impl true
