@@ -78,8 +78,10 @@ function test {
 }
 
 function test:coverage {
-  # Get test coverage
-  _dc -e "MIX_ENV=test" web mix coveralls.github "${@}"
+  # Get test coverage and debug environment
+  echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
+  echo "GITHUB_TOKEN: ${GITHUB_TOKEN:0:5}..." # Print first 5 chars for security
+  _dc -e "MIX_ENV=test" -e "GITHUB_TOKEN=${GITHUB_TOKEN}" -e "GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH}" web mix coveralls.github "${@}"
 }
 
 function test:coverage:details {
