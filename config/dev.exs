@@ -21,8 +21,7 @@ config :portfolio, dev_routes: true
 
 config :portfolio, Portfolio.Repo, show_sensitive_data_on_connection_error: true
 
-config :portfolio, :csp,
-  report_only: true
+config :portfolio, :csp, report_only: true
 
 config :logger, :console,
   format: {Portfolio.LoggerFormatter, :format},

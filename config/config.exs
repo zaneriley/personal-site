@@ -35,7 +35,6 @@ config :portfolio, PortfolioWeb.Endpoint,
 
 config :portfolio, Portfolio.Repo, adapter: Ecto.Adapters.Postgres
 
-
 config :portfolio, :csp,
   # You can specify domains to put in the CSP header.
   # https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
@@ -43,6 +42,7 @@ config :portfolio, :csp,
     scheme = System.get_env("CSP_SCHEME", "http")
     host = System.get_env("CSP_HOST", "localhost")
     port = System.get_env("CSP_PORT", "8000")
+
     "#{scheme}://#{host}#{if port == "80" or port == "443", do: "", else: ":#{port}"}"
   end,
   report_only: false
