@@ -79,7 +79,7 @@ function test {
 
 function test:coverage {
   # Get test coverage
-  _dc -e "MIX_ENV=test" web mix coveralls "${@}"
+  _dc -e "MIX_ENV=test" web mix coveralls.github "${@}"
 }
 
 function test:coverage:details {
