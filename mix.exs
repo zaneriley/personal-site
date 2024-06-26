@@ -19,7 +19,8 @@ defmodule Portfolio.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test,
         "coveralls.github": :test
-      ]
+      ],
+      coveralls: [github_event_path: "/tmp/github_event.json"]
     ]
   end
 
