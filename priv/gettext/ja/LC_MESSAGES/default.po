@@ -1,0 +1,69 @@
+msgid "Zane Riley"
+msgstr "ゼイン・ライリーy"
+
+msgid "Zane Riley | Product Design Portfolio"
+msgstr "ゼイン・ライリー | プロダクトデザインポートフォリオ"
+
+msgid "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
+msgstr "ゼイン・ライリー｜東京のプロダクトデザイナー｜10年以上の実績 "
+
+msgid "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+msgstr "ゼイン・ライリー：東京を拠点とするプロダクトデザイナー。10年以上の経験を持ち、現在Googleに所属。Eコマース、ヘルスケア、金融業界での豊富な経験があり、Googleで様々なプロダクトの設計・開発に携わってきまし"
+
+msgid "Product designer helping people beyond the screen"
+msgstr "画面を超えて人々を支援するプロダクトデザイナー"
+
+msgid "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
+msgstr "東京を拠点に10年以上の経験を持つ。人々の生活を豊かにする製品を創造することを信じています。私の究極の目標は、人々が望む未来を形作るのを助けるものを作ることです、彼らに押し付けられた未来ではありません。"
+
+msgid "currently at google Helping people make informed healthcare choices and access care when they need it."
+msgstr "現在、グーグルで人々が情報に基づいた医療選択をし、必要なときにケアを受けられるよう支援しています。"
+
+msgid "Skip to main content"
+msgstr "コンテンツにスキップ"
+
+msgid "Zane Riley Portfolio Logo"
+msgstr "ゼイン・ライリー ポートフォリオのロゴ"
+
+msgid "Language switcher"
+msgstr "言語切替"
+
+msgid "English"
+msgstr "English"
+
+msgid "Japanese"
+msgstr "日本語"
+
+msgid "Theme switcher"
+msgstr "テーマ切替"
+
+msgid "Light mode"
+msgstr "ライトモード"
+
+msgid "Dark mode"
+msgstr "ダークモード"
+
+msgid "Case Study"
+msgid_plural "Case Studies"
+msgstr[0] "ケーススタディ"
+msgstr[1] "ケーススタディ"
+
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "分"
+msgstr[1] "分"
+
+msgid "Colophon"
+msgstr "奥付"
+
+msgid "Self-hosted on my homelab in Tokyo."
+msgstr "東京の自宅サーバーで運用しています。"
+
+msgid "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
+msgstr "%{Font1}、%{Font2}、%{Font3}、そして%{Font4}でタイプセットしています。"
+
+msgid "Open source on %{github} under aGPL."
+msgstr "aGPLの下で%{github}にオープンソースとしています。"
+
+msgid "Remix freely in %{figma}."
+msgstr "%{figma}で自由にリミックスしてください。"

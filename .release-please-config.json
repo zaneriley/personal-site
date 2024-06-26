@@ -1,0 +1,13 @@
+{
+  "packages": {
+    ".": {
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "elixir",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": true,
+      "prerelease": true
+    }
+  },
+  "$schema": "https://raw.githubusercontent.com/google-github-actions/release-please-action/main/schema.json"
+}

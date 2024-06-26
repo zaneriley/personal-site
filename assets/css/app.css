@@ -1,0 +1,52 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+  /* TODO: Consider how to incorporate container queries */
+  --fs-base: clamp(1.13rem, 0vi + 1.13rem, 1.13rem);
+  --grid-max-width: 69.75rem;
+  --grid-gutter: 3rem;
+  --grid-columns: 12;
+}
+
+.u-container {
+  max-width: var(--grid-max-width);
+  padding-inline: var(--grid-gutter);
+  margin-inline: auto;
+}
+
+.u-grid {
+  display: grid;
+  gap: var(--grid-gutter);
+}
+
+.col-span-12-children > *{
+  grid-column: span 12;
+}
+
+body {
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* transfer to tailwind */
+:root {
+  --space-color-1: oklch(92.6% 0.00 332.25);
+  --space-color-2: oklch(78.23% 0.040 333.34);
+  --space-color-3: oklch(70.59% 0.080 277.55);
+  --space-color-4: oklch(54.37% 0.080 261.67);
+  --space-color-5: oklch(34.13% 0.020 268.58);
+  --space-color-6: oklch(26.33% 0.005 325.71);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(to top, 
+  var(--space-color-5) 0%, var(--space-color-6) 50%);
+}
+.bg-gradient-light {
+  background: linear-gradient(to bottom, 
+    var(--space-color-1) 0%, var(--space-color-2) 14.3%, var(--space-color-3) 28.6%,
+    var(--space-color-4) 42.9%, var(--space-color-5) 57.1%, var(--space-color-6) 71.4%);
+}

@@ -1,0 +1,73 @@
+msgid "Zane Riley"
+msgstr "Zane Riley"
+
+msgid "Zane Riley | Product Design Portfolio"
+msgstr "Zane Riley | Product Design Portfolio"
+
+msgid "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
+msgstr "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
+
+msgid "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+msgstr "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+
+msgid "Product designer helping people beyond the screen"
+msgstr "Product designer helping people beyond the screen"
+
+msgid "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
+msgstr "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
+
+msgid "Helping people make informed healthcare choices and access care when they need it."
+msgstr "Helping people make informed healthcare choices and access care when they need it."
+
+msgid "Skip to main content"
+msgstr "Skip to main content"
+
+msgid "Zane Riley Portfolio Logo"
+msgstr "Zane Riley Portfolio Logo"
+
+msgid "Change language"
+msgstr "Change language"
+
+msgid "Language switcher"
+msgstr "Language switcher"
+
+msgid "English"
+msgstr "English"
+
+msgid "Japanese"
+msgstr "日本語"
+
+msgid "Theme switcher"
+msgstr "Theme switcher"
+
+msgid "Light mode"
+msgstr "Light mode"
+
+msgid "Dark mode"
+msgstr "Dark mode"
+
+msgid "Case Study"
+msgid_plural "Case Studies"
+msgstr[0] "Case Study"
+msgstr[1] "Case Studies"
+
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "minute"
+msgstr[1] "minutes"
+
+msgid "Colophon"
+msgstr "Colophon"
+
+msgid "Self-hosted on my homelab in Tokyo."
+msgstr "Self-hosted on my homelab in Tokyo."
+
+msgid "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
+msgstr "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
+
+msgid "Open source on %{github} under aGPL."
+msgstr "Open source on %{github} under aGPL."
+
+msgid "Remix freely in %{figma}."
+msgstr "Remix freely in %{figma}."
+

@@ -1,0 +1,49 @@
+<main class="u-container">
+  <article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
+    <nav class="text-sm">
+      <li>Case Study</li>
+
+      <li><%= @case_study.company %></li>
+    </nav>
+    <!-- Title -->
+    <h1 class="text-4xl">
+      <%= @translations["title"] || @case_study.title %>
+    </h1>
+    <h2 class="text-2xl">
+      <%= @translations["introduction"] || @case_study.introduction %>
+    </h2>
+    <!-- Meta Information -->
+    <div class="grid grid-cols-subgrid">
+      <span class="col-span-3">
+        <strong>Role:</strong> <br /><%= @case_study.role %>
+      </span>
+      <span class="col-span-3">
+        <strong>Timeline:</strong> <br /><%= @case_study.timeline %>
+      </span>
+      <span class="col-span-3">
+        <strong>Read Time:</strong>
+        <br /><%= @case_study.read_time %> <%= ngettext(
+          "minute",
+          "minutes",
+          @case_study.read_time
+        ) %>
+      </span>
+      <div class="col-span-3">
+        <strong>Platforms:</strong>
+        <ul>
+          <%= for platform <- @case_study.platforms do %>
+            <li><%= platform %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+    <!-- Main Content -->
+    <div class="space-y-md">
+      <%= if @case_study.content do %>
+        <%= raw(@case_study.content) %>
+      <% else %>
+        <p>Content not available.</p>
+      <% end %>
+    </div>
+  </article>
+</main>
