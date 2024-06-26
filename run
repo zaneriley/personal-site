@@ -99,7 +99,7 @@ function test:coverage {
     COMMITTER=$GITHUB_ACTOR
 
     # Run coveralls.post
-    if _dc -e "MIX_ENV=test" \
+    _dc -e "MIX_ENV=test" \
        -e "GITHUB_TOKEN=${GITHUB_TOKEN}" \
        web mix coveralls.post \
          --token "$COVERALLS_REPO_TOKEN" \
@@ -107,13 +107,7 @@ function test:coverage {
          --sha "$SHA" \
          --committer "$COMMITTER" \
          --name "GitHub Actions" \
-         "${@}" then
-      echo "Successfully uploaded coverage report to Coveralls.io"
-    else
-      echo "Failed to upload coverage report to Coveralls.io"
-      echo "Exit code: $?"
-      exit 1
-    fi
+         "${@}"
   fi
 }
 
