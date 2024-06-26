@@ -16,9 +16,19 @@ jobs:
     steps:
       - uses: "actions/checkout@v2"
 
+      - name: "Debug: List initial directory contents"
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
+
       - name: "Install CI dependencies"
         run: |
           ./run ci:install-deps
+
+      - name: "Debug: List directory contents after install"
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
 
       - name: "Test"
         env:
@@ -30,52 +40,46 @@ jobs:
           sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
           ./run ci:test
 
-      - name: DEBUG List directory contents
+      - name: "Debug: List directory contents after test"
         run: |
-          pwd
+          echo "Current directory: $(pwd)"
           ls -la
-          
-      # - name: Upload to Codecov
-      #   env: 
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      #   run: |
-      #     curl -Os https://uploader.codecov.io/latest/linux/codecov
-      #     chmod +x codecov
-      #     ./codecov
-      - name: Debug and Upload to Codecov
-        env: 
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          echo "Contents of code-coverage directory:"
+          ls -la code-coverage || echo "code-coverage directory not found"
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: code-coverage/excoveralls.json 
+
+      - name: "Debug: Verify artifact upload"
         run: |
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
-          echo "Searching for coverage files:"
-          find . -name "*.json" -o -name "*.xml" -o -name "*.info"
-          cd ../
-          echo "Searching for coverage files in parent directory:"
-          find . -name "*.json" -o -name "*.xml" -o -name "*.info"
-          cd ../
-          echo "Searching for coverage files in grandparent directory:"
-          find . -name "*.json" -o -name "*.xml" -o -name "*.info"
-          echo "Downloading Codecov uploader:"
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          echo "Codecov uploader version:"
-          ./codecov --version
-          echo "Uploading to Codecov:"
-          ./codecov -v
-      - name: Debug coverage file
-        run: |
-          echo "Searching for excoveralls.json:"
+          echo "Attempting to locate excoveralls.json:"
           find . -name "excoveralls.json"
-          if [ -f "excoveralls.json" ]; then
-            echo "excoveralls.json found in current directory"
-            cat excoveralls.json | head -n 10
-          elif [ -f "code-coverage/excoveralls.json" ]; then
-            echo "excoveralls.json found in code-coverage directory"
-            cat code-coverage/excoveralls.json | head -n 10
-          else
-            echo "excoveralls.json not found, searching for other JSON files:"
-            find . -name "*.json"
-          fi
+
+  upload-coverage:
+    needs: test
+    runs-on: "ubuntu-22.04"
+    steps:
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: "Debug: List downloaded artifacts"
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
+          echo "Contents of downloaded artifacts:"
+          find . -type f
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}   
+
+      - name: "Debug: Codecov upload result"
+        run: |
+          echo "Codecov upload completed"
+          echo "Exit code: $?"
