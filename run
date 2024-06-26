@@ -86,7 +86,7 @@ function test:coverage {
     echo "Running coverage locally without GitHub Actions environment"
     _dc -e "MIX_ENV=test" web mix "${@}"
   else
-    _dc -e "MIX_ENV=test" -e "GITHUB_TOKEN=${GITHUB_TOKEN}" -e "GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH}" web mix coveralls.github "${@}"
+    _dc -e "MIX_ENV=test" -e "GITHUB_TOKEN=${GITHUB_TOKEN}" -e "GITHUB_EVENT_PATH=${GITHUB_EVENT_PATH}" -v "${GITHUB_EVENT_PATH}:${GITHUB_EVENT_PATH}" web mix coveralls.github "${@}"
   fi
 }
 
