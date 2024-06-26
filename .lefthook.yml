@@ -63,6 +63,7 @@ pre-push:
         exit 1
       glob: ""
     format_check_elixir:
+      glob: "*.{ex,exs}"
       run: ./run mix format
     lint_elixir:
       run: ./run mix credo
