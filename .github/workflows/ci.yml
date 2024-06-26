@@ -23,10 +23,9 @@ jobs:
       - name: "Test"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: |
           # Remove volumes in CI to avoid permission errors due to UID / GID.
           sed -i "s|.:/app|/tmp:/tmp|g" .env*
           sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
-          ls -l $GITHUB_EVENT_PATH
-          cat $GITHUB_EVENT_PATH
           ./run ci:test
