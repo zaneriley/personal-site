@@ -5,6 +5,9 @@
 # Zane Riley's Product Design Portfolio
 
 <p align="center">
+  <img src="https://img.shields.io/badge/status-work%20in%20progress-yellow" alt="Work in Progress" />
+</p>
+<p align="center">
   <img src="https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio" alt="Website Status" />
   <img src="https://img.shields.io/github/license/zaneriley/personal-site" alt="GitHub License" />
   <img src="https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml" alt="GitHub Actions Workflow Status" />
@@ -39,9 +42,10 @@ This repository houses my product design portfolio, showcasing various projects 
 I'm an extremely product-focused designer with 10+ years of experience, based in Tokyo, Japan (prev in San Francisco) 
 
 **Why all this for a website?**
-- For portfolios, you can build what you want without compromises. For example, I was able to incorporate features like a custom optically-aligned typographic "engine" that might be less practical in large-team settings or with less technical designers.
+- It's a personal website, so why not? It's one of the few times you can build what you want without compromises. For example, I was able to incorporate features like a custom optically-aligned typographic "engine" that might be less practical in large-team settings or with less technical designers.
 - I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something with a lot more infra (e.g. admin interface, metrics, gitops)
-- I have plans to utilize reuse all this infra.And in a way, this was sort of a homelab project for me.
+- Reusable for future app development
+- And in a way, this is a homelab project for me.
 
 ## Features
 
