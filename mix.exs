@@ -12,7 +12,15 @@ defmodule Portfolio.MixProject do
       deps_path: "/mix/deps",
       aliases: aliases(),
       deps: deps(),
-      test_coverage: [tool: ExCoveralls]
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
+      ],
+      coveralls: [github_event_path: "/tmp/github_event.json"]
     ]
   end
 

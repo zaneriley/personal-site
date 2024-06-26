@@ -2,26 +2,20 @@
   <img src="https://github.com/zaneriley/personal-site/blob/main/logo.png" alt="Zane Riley Portfolio Logo" width="500"/>
 </p>
 
-# Zane Riley's Product Design Portfolio
+# Zane Riley's Product Design Portfolio (WIP)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/status-work%20in%20progress-yellow" alt="Work in Progress" />
+<p align="left">
+    <img src="https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio" alt="Website Status" />
+    <img src="https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml" alt="GitHub Actions Workflow Status" />
+    <a href='https://coveralls.io/github/zaneriley/personal-site?branch=refs/pull/20/merge'><img src='https://coveralls.io/repos/github/zaneriley/personal-site/badge.svg?branch=refs/pull/20/merge' alt='Coverage Status' /></a>
 </p>
-<p align="center">
-  <img src="https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio" alt="Website Status" />
+
+<p align="left">
   <img src="https://img.shields.io/github/license/zaneriley/personal-site" alt="GitHub License" />
-  <img src="https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml" alt="GitHub Actions Workflow Status" />
   <img src="https://img.shields.io/github/stars/zaneriley/personal-site?style=social" alt="Github Stars" />
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Elixir-4B275F?style=flat&logo=elixir&logoColor=white" alt="Elixir" />
-  <img src="https://img.shields.io/badge/Phoenix-FD4F00?style=flat&logo=phoenix-framework&logoColor=white" alt="Phoenix Framework" />
-  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="TailwindCSS" />
-</p>
-
-<p align="center">
+<p align="left">
   <a href="#introduction">Introduction</a> •
   <a href="#features">Features</a> •
   <a href="#technical-details">Technical Details</a> •
@@ -34,18 +28,17 @@
   <a href="#contact">Contact</a>
 </p>
 
-
 ## Introduction
 
 This repository houses my product design portfolio, showcasing various projects and designs I've worked on. It's built using Phoenix.
 
-I'm an extremely product-focused designer with 10+ years of experience, based in Tokyo, Japan (prev in San Francisco) 
+About me: product-focused designer with 10+ years of experience, based in Tokyo, Japan (prev in San Francisco) 
 
 **Why all this for a website?**
 - It's a personal website, so why not? It's one of the few times you can build what you want without compromises. For example, I was able to incorporate features like a custom optically-aligned typographic "engine" that might be less practical in large-team settings or with less technical designers.
-- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something with a lot more infra (e.g. admin interface, metrics, gitops)
-- Reusable for future app development
-- And in a way, this is a homelab project for me.
+- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something with a lot more infra and a better DX (e.g. admin interface, metrics, gitops)
+- It'll be reusable for future app development
+- This is also a homelab project
 
 ## Features
 
@@ -66,6 +59,13 @@ The portfolio includes a light/dark mode feature with real-time updates across s
 A custom optically-aligned typographic "engine" takes into account line-height box and typeface characteristics. It optically subtracts space so that typography aligns to a baseline, ensuring any two objects are equally spaced optically.
 
 ## Technical Details
+
+<p align="left">
+  <img src="https://img.shields.io/badge/Elixir-4B275F?style=flat&logo=elixir&logoColor=white" alt="Elixir" />
+  <img src="https://img.shields.io/badge/Phoenix-FD4F00?style=flat&logo=phoenix-framework&logoColor=white" alt="Phoenix Framework" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="TailwindCSS" />
+</p>
 
 ### Backend
 

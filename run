@@ -77,9 +77,35 @@ function test {
   _dc -e "MIX_ENV=test" web mix test "${@}"
 }
 
+
 function test:coverage {
-  # Get test coverage
-  _dc -e "MIX_ENV=test" web mix coveralls "${@}"
+  echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
+  
+  if [ -z "$GITHUB_EVENT_PATH" ]; then
+    echo "Running coverage locally without GitHub Actions environment"
+    _dc -e "MIX_ENV=test" web mix coveralls "${@}"
+  else
+    echo "Running coverage in GitHub Actions environment"
+    
+    if [ -z "$COVERALLS_REPO_TOKEN" ]; then
+      echo "Error: COVERALLS_REPO_TOKEN is not set"
+      exit 1
+    fi
+
+    BRANCH=${GITHUB_REF#refs/heads/}
+    SHA=$GITHUB_SHA
+    COMMITTER=$GITHUB_ACTOR
+
+    _dc -e "MIX_ENV=test" \
+       -e "GITHUB_TOKEN=${GITHUB_TOKEN}" \
+       web mix coveralls.post \
+         --token "$COVERALLS_REPO_TOKEN" \
+         --branch "$BRANCH" \
+         --sha "$SHA" \
+         --committer "$COMMITTER" \
+         --name "GitHub Actions" \
+         "${@}"
+  fi
 }
 
 function test:coverage:details {
@@ -192,7 +218,7 @@ function ci:test {
   lint
   format:check
   mix ecto.setup
-  test "${@}"
+  test:coverage "${@}"
 }
 
 function help {

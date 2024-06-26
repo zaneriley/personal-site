@@ -29,7 +29,9 @@ docker-compose.override.yml
 /_build/
 
 # If you run "mix test --cover", coverage assets end up here.
-/cover/
+/code-coverage/
+/cover
+
 
 # The directory Mix downloads your dependencies sources to.
 /deps/
