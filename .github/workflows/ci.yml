@@ -16,19 +16,9 @@ jobs:
     steps:
       - uses: "actions/checkout@v2"
 
-      - name: "Debug: List initial directory contents"
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-
       - name: "Install CI dependencies"
         run: |
           ./run ci:install-deps
-
-      - name: "Debug: List directory contents after install"
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
 
       - name: "Test"
         env:
@@ -41,49 +31,4 @@ jobs:
           # Remove volumes in CI to avoid permission errors due to UID / GID.
           sed -i "s|.:/app|/tmp:/tmp|g" .env*
           sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
-          mkdir -p code-coverage
           ./run ci:test
-
-      - name: "Debug: List directory contents after test"
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-          echo "Contents of code-coverage directory:"
-          ls -la code-coverage || echo "code-coverage directory not found"
-
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: code-coverage/excoveralls.json 
-
-      - name: "Debug: Verify artifact upload"
-        run: |
-          echo "Attempting to locate excoveralls.json:"
-          find . -name "excoveralls.json"
-
-  upload-coverage:
-    needs: test
-    runs-on: "ubuntu-22.04"
-    steps:
-      - name: Download coverage artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report
-
-      - name: "Debug: List downloaded artifacts"
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-          echo "Contents of downloaded artifacts:"
-          find . -type f
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}   
-
-      - name: "Debug: Codecov upload result"
-        run: |
-          echo "Codecov upload completed"
-          echo "Exit code: $?"

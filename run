@@ -87,18 +87,15 @@ function test:coverage {
   else
     echo "Running coverage in GitHub Actions environment"
     
-    # Ensure COVERALLS_REPO_TOKEN is set
     if [ -z "$COVERALLS_REPO_TOKEN" ]; then
       echo "Error: COVERALLS_REPO_TOKEN is not set"
       exit 1
     fi
 
-    # Use GitHub Actions environment variables
     BRANCH=${GITHUB_REF#refs/heads/}
     SHA=$GITHUB_SHA
     COMMITTER=$GITHUB_ACTOR
 
-    # Run coveralls.post
     _dc -e "MIX_ENV=test" \
        -e "GITHUB_TOKEN=${GITHUB_TOKEN}" \
        web mix coveralls.post \
