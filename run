@@ -107,13 +107,11 @@ function test:coverage {
          --sha "$SHA" \
          --committer "$COMMITTER" \
          --name "GitHub Actions" \
-         "${@}"
-
-    # Check if the command was successful
-    if [ $? -eq 0 ]; then
+         "${@}" then
       echo "Successfully uploaded coverage report to Coveralls.io"
     else
       echo "Failed to upload coverage report to Coveralls.io"
+      echo "Exit code: $?"
       exit 1
     fi
   fi
