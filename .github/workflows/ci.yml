@@ -52,6 +52,12 @@ jobs:
           ls -la
           echo "Searching for coverage files:"
           find . -name "*.json" -o -name "*.xml" -o -name "*.info"
+          cd ../
+          echo "Searching for coverage files in parent directory:"
+          find . -name "*.json" -o -name "*.xml" -o -name "*.info"
+          cd ../
+          echo "Searching for coverage files in grandparent directory:"
+          find . -name "*.json" -o -name "*.xml" -o -name "*.info"
           echo "Downloading Codecov uploader:"
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
@@ -59,11 +65,17 @@ jobs:
           ./codecov --version
           echo "Uploading to Codecov:"
           ./codecov -v
-      - name: Debug code-coverage folder
+      - name: Debug coverage file
         run: |
-          if [ -d "code-coverage" ]; then
-            echo "Contents of code-coverage folder:"
-            ls -la code-coverage
+          echo "Searching for excoveralls.json:"
+          find . -name "excoveralls.json"
+          if [ -f "excoveralls.json" ]; then
+            echo "excoveralls.json found in current directory"
+            cat excoveralls.json | head -n 10
+          elif [ -f "code-coverage/excoveralls.json" ]; then
+            echo "excoveralls.json found in code-coverage directory"
+            cat code-coverage/excoveralls.json | head -n 10
           else
-            echo "code-coverage folder not found"
+            echo "excoveralls.json not found, searching for other JSON files:"
+            find . -name "*.json"
           fi
