@@ -88,7 +88,6 @@ function test:coverage {
     _dc -e "MIX_ENV=test" \
        -e "GITHUB_TOKEN=${GITHUB_TOKEN}" \
        -e "GITHUB_EVENT_PATH=/tmp/github_event.json" \
-       --volume "${GITHUB_EVENT_PATH}:/tmp/github_event.json:ro" \
        web mix coveralls.github "${@}"
   fi
 }
