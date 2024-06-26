@@ -77,6 +77,7 @@ function test {
   _dc -e "MIX_ENV=test" web mix test "${@}"
 }
 
+
 function test:coverage {
   echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
   
@@ -85,9 +86,36 @@ function test:coverage {
     _dc -e "MIX_ENV=test" web mix coveralls "${@}"
   else
     echo "Running coverage in GitHub Actions environment"
+    
+    # Ensure COVERALLS_REPO_TOKEN is set
+    if [ -z "$COVERALLS_REPO_TOKEN" ]; then
+      echo "Error: COVERALLS_REPO_TOKEN is not set"
+      exit 1
+    fi
+
+    # Use GitHub Actions environment variables
+    BRANCH=${GITHUB_REF#refs/heads/}
+    SHA=$GITHUB_SHA
+    COMMITTER=$GITHUB_ACTOR
+
+    # Run coveralls.post
     _dc -e "MIX_ENV=test" \
        -e "GITHUB_TOKEN=${GITHUB_TOKEN}" \
-       web mix coveralls.json "${@}"
+       web mix coveralls.post \
+         --token ${COVERALLS_REPO_TOKEN} \
+         --branch "$BRANCH" \
+         --sha "$SHA" \
+         --committer "$COMMITTER" \
+         --name "GitHub Actions" \
+         "${@}"
+
+    # Check if the command was successful
+    if [ $? -eq 0 ]; then
+      echo "Successfully uploaded coverage report to Coveralls.io"
+    else
+      echo "Failed to upload coverage report to Coveralls.io"
+      exit 1
+    fi
   fi
 }
 
