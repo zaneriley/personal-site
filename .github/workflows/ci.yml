@@ -43,11 +43,28 @@ jobs:
           sed -i "s|.:/app|/tmp:/tmp|g" .env*
           sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
 
+      - name: "Check .env file"
+        run: cat .env
+
+      - name: "Print environment variables"
+        run: env | grep POSTGRES
+
+      - name: "Set PostgreSQL variables"
+        run: |
+          echo "POSTGRES_USER=portfolio" >> $GITHUB_ENV
+          echo "POSTGRES_PASSWORD=password" >> $GITHUB_ENV
+
+      - name: "Check Docker Compose version"
+        run: docker compose version
+
       - name: "Build and start Docker"
         run: |
           docker compose build
           docker compose up -d
           docker compose logs
+
+      - name: "Print Docker Compose config"
+        run: docker compose config
 
       - name: "Database setup"
         run: |
