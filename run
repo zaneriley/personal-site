@@ -72,11 +72,15 @@ function format:check {
   format --check-formatted
 }
 
+function security:check {
+  # Run Sobelow security checks
+  mix sobelow --config --exit --threshold high
+}
+
 function test {
   # Run test suite
   _dc -e "MIX_ENV=test" web mix test "${@}"
 }
-
 
 function test:coverage {
   echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"

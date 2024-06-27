@@ -2,12 +2,9 @@ name: "CI"
 
 on:
   pull_request:
-    branches:
-      - "*"
+    branches: ["*"]
   push:
-    branches:
-      - "main"
-      - "master"
+    branches: ["main", "master"]
 
 jobs:
   test:
@@ -17,18 +14,61 @@ jobs:
       - uses: "actions/checkout@v2"
 
       - name: "Install CI dependencies"
-        run: |
-          ./run ci:install-deps
+        run: ./run ci:install-deps
 
-      - name: "Test"
+      - name: "Cache Mix dependencies"
+        uses: actions/cache@v2
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: "Cache build artifacts"
+        uses: actions/cache@v2
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-build-
+
+      - name: "Lint and check"
+        run: |
+          shellcheck run bin/*
+          ./run lint:dockerfile
+          ./run lint
+          ./run format:check
+
+      - name: "Setup environment"
+        run: |
+          cp --no-clobber .env.example .env
+          sed -i "s|.:/app|/tmp:/tmp|g" .env*
+          sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
+
+      - name: "Build and start Docker"
+        run: |
+          docker compose build
+          docker compose up -d
+          docker compose logs
+
+      - name: "Database setup"
+        run: |
+          . .env
+          ./run wait-until "docker compose exec -T -e PGPASSWORD=${POSTGRES_PASSWORD} postgres psql -U ${POSTGRES_USER} ${POSTGRES_USER} -c 'SELECT 1'"
+          ./run mix ecto.setup
+
+      - name: "Compile and check for critical security issues"
+        run: |
+          ./run mix compile
+          ./run security:check --threshold high
+
+      - name: "Run tests"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_ACTOR: ${{ github.actor }}
-        run: |
-          # Remove volumes in CI to avoid permission errors due to UID / GID.
-          sed -i "s|.:/app|/tmp:/tmp|g" .env*
-          sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
-          ./run ci:test
+        run: ./run test:coverage
+
+      - name: "Full Sobelow scan"
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: ./run security:check
