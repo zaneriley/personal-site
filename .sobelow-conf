@@ -1,0 +1,13 @@
+[
+  verbose: false,
+  private: false,
+  skip: false,
+  router: "",
+  exit: "low",
+  format: "txt",
+  out: "",
+  threshold: "medium",
+  ignore: ["Config.HTTPS", "Config.CSP"] 
+  #CSP is handled in put_csp_header plug
+  #HTTPS will be implemented closer to release
+]

@@ -72,6 +72,11 @@ function format:check {
   format --check-formatted
 }
 
+function security:check {
+  # Run Sobelow security checks
+  mix sobelow --config --exit
+}
+
 function test {
   # Run test suite
   _dc -e "MIX_ENV=test" web mix test "${@}"
@@ -217,6 +222,7 @@ function ci:test {
 
   lint
   format:check
+  security:check
   mix ecto.setup
   test:coverage "${@}"
 }
