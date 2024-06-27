@@ -16,19 +16,11 @@ jobs:
       - name: "Install CI dependencies"
         run: ./run ci:install-deps
 
-      - name: "Cache Mix dependencies"
-        uses: actions/cache@v2
-        with:
-          path: deps
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-
-
-      - name: "Cache build artifacts"
-        uses: actions/cache@v2
-        with:
-          path: _build
-          key: ${{ runner.os }}-build-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-build-
+      - name: "Setup environment"
+        run: |
+          cp --no-clobber .env.example .env
+          sed -i "s|.:/app|/tmp:/tmp|g" .env*
+          sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
 
       - name: "Lint and check"
         run: |
@@ -36,12 +28,6 @@ jobs:
           ./run lint:dockerfile
           ./run lint
           ./run format:check
-
-      - name: "Setup environment"
-        run: |
-          cp --no-clobber .env.example .env
-          sed -i "s|.:/app|/tmp:/tmp|g" .env*
-          sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
 
       - name: "Check .env file"
         run: cat .env
