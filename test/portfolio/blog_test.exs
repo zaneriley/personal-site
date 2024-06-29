@@ -83,7 +83,9 @@ defmodule Portfolio.BlogTest do
     end
 
     test "update_note/2 preserves original URL" do
-      {:ok, note} = Blog.create_note(%{title: "Original Title", content: "Content"})
+      {:ok, note} =
+        Blog.create_note(%{title: "Original Title", content: "Content"})
+
       original_url = note.url
 
       {:ok, updated_note} = Blog.update_note(note, %{title: "New Title"})

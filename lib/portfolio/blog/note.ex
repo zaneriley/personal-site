@@ -1,4 +1,23 @@
 defmodule Portfolio.Blog.Note do
+  @moduledoc """
+  Defines the schema and behavior for blog notes in the Portfolio application.
+
+  This module provides a schema for storing blog notes, along with functions
+  for validating and transforming note data. It includes features such as:
+
+  - Automatic URL generation based on the note title
+  - URL slugification with support for both Latin and non-Latin characters
+  - Validation of note attributes including title length and URL uniqueness
+
+  ## Examples
+
+      iex> attrs = %{title: "My First Blog Post", content: "Hello, world!"}
+      iex> changeset = Portfolio.Blog.Note.changeset(%Portfolio.Blog.Note{}, attrs)
+      iex> {:ok, note} = Repo.insert(changeset)
+      iex> note.url
+      "my-first-blog-post"
+
+  """
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -57,6 +76,7 @@ defmodule Portfolio.Blog.Note do
     |> String.replace("æ", "ae")
     |> String.replace("œ", "oe")
     |> String.replace("ß", "ss")
+
     # Add more transliterations as needed
   end
 
@@ -98,8 +118,13 @@ defmodule Portfolio.Blog.Note do
         else
           changeset
         end
+
       custom_url ->
-        put_change(changeset, :url, String.slice(custom_url, 0, @max_url_length))
+        put_change(
+          changeset,
+          :url,
+          String.slice(custom_url, 0, @max_url_length)
+        )
     end
   end
 
