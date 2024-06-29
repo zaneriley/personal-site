@@ -3,20 +3,20 @@ defmodule PortfolioWeb.NoteLive.Index do
   require Logger
   alias Portfolio.Blog
   alias Portfolio.Blog.Note
+  alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true
   def mount(_params, session, socket) do
     env = Mix.env()
-    # Extract the locale from the session or default to 'en'
-    user_locale =
-      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
+    user_locale = session["user_locale"] || Application.get_env(:portfolio, :default_locale)
 
     Logger.debug("Note index mounted with locale: #{user_locale}")
-    # Stream the case studies and assign the user_locale to the socket
+
     {:ok,
      socket
      |> assign(:user_locale, user_locale)
      |> assign(:env, env)
+     |> stream_configure(:notes, dom_id: &"note-#{&1.url}")
      |> stream(:notes, Blog.list_notes())}
   end
 
@@ -25,21 +25,25 @@ defmodule PortfolioWeb.NoteLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Note")
-    |> assign(:note, Blog.get_note!(id))
-  end
-
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Note")
+    |> assign(:title, "New Note")
     |> assign(:note, %Note{})
+  end
+
+
+  defp apply_action(socket, :edit, %{"url" => url}) do
+    socket
+    |> assign(:page_title, "Edit Note")
+    |> assign(:title, "Edit Note")
+    |> assign(:note, Blog.get_note!(url))
   end
 
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Notes")
+    |> assign(:title, "Listing Notes")
     |> assign(:note, nil)
   end
 
@@ -49,8 +53,8 @@ defmodule PortfolioWeb.NoteLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    note = Blog.get_note!(id)
+  def handle_event("delete", %{"url" => url}, socket) do
+    note = Blog.get_note!(url)
     {:ok, _} = Blog.delete_note(note)
 
     {:noreply, stream_delete(socket, :notes, note)}

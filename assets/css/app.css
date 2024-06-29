@@ -31,6 +31,10 @@ body {
   min-height: 100vh;
 }
 
+html, body, [data-phx-main] {
+  height: 100%;
+}
+
 /* transfer to tailwind */
 :root {
   --space-color-1: oklch(92.6% 0.00 332.25);

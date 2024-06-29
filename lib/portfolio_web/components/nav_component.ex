@@ -1,35 +1,28 @@
 defmodule PortfolioWeb.NavComponent do
-  @moduledoc """
-  A component for rendering the navigation menu.
-
-  This component is used to render the navigation menu for the Portfolio application. It includes links to various pages, such as the home page, case studies, notes, and about page.
-
-  ## Usage
-
-  To use the component, you can include it in your Phoenix templates or LiveViews. For example:
-
-      <.nav />
-
-  """
-  use PortfolioWeb, :html
+  use PortfolioWeb, :live_component
   alias PortfolioWeb.Router.Helpers, as: Routes
 
-  def render_nav(assigns) do
-    PortfolioWeb.NavComponent.nav(assigns)
+  def update(assigns, socket) do
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign_new(:current_path, fn -> assigns[:current_path] || "/" end)
+      |> assign_new(:user_locale, fn -> assigns[:user_locale] || "en" end)
+
+    {:ok, socket}
   end
 
-  def nav(assigns) do
-    path_without_locale = assigns.conn.assigns[:path_without_locale] || "/"
-    en_path = "/en#{path_without_locale}"
-    ja_path = "/ja#{path_without_locale}"
-
-    assigns = assign(assigns, en_path: en_path, ja_path: ja_path)
+  def render(assigns) do
+    assigns = assign(assigns,
+      en_path: build_localized_path(assigns.current_path, "en"),
+      ja_path: build_localized_path(assigns.current_path, "ja")
+    )
 
     ~H"""
     <nav role="banner" class="flex items-center justify-between w-full">
       <!-- Logo -->
       <.link
-        navigate={Routes.home_path(@conn, :index, @user_locale)}
+        navigate={Routes.home_path(@socket, :index, @user_locale)}
         class="text-2xl"
         aria-label={gettext("Zane Riley Portfolio Logo")}
       >
@@ -39,50 +32,70 @@ defmodule PortfolioWeb.NavComponent do
       <nav>
         <ul class="flex items-center space-x-4">
           <li>
-            <%= live_redirect(ngettext("Case Study", "Case Studies", 2),
-              to: Routes.case_study_index_path(@conn, :index, @user_locale),
-              class: active_class(@conn.request_path, :case_studies)
-            ) %>
+            <.link
+              navigate={Routes.case_study_index_path(@socket, :index, @user_locale)}
+              class={active_class(@current_path, :case_studies)}
+            >
+              <%= ngettext("Case Study", "Case Studies", 2) %>
+            </.link>
           </li>
           <li>
-            <%= live_redirect(ngettext("Note", "Notes", 2),
-              to: Routes.note_index_path(@conn, :index, @user_locale),
-              class: active_class(@conn.request_path, :notes)
-            ) %>
+            <.link
+              navigate={Routes.note_index_path(@socket, :index, @user_locale)}
+              class={active_class(@current_path, :notes)}
+            >
+              <%= ngettext("Note", "Notes", 2) %>
+            </.link>
           </li>
           <li>
-            <%= live_redirect("About",
-              to: Routes.about_path(@conn, :index, @user_locale),
-              class: active_class(@conn.request_path, :about)
-            ) %>
+            <.link
+              navigate={Routes.about_path(@socket, :index, @user_locale)}
+              class={active_class(@current_path, :about)}
+            >
+              <%= gettext("About") %>
+            </.link>
           </li>
         </ul>
       </nav>
       <!-- Language switcher -->
-      <div
-        role="region"
-        aria-label={gettext("Language switcher")}
-        class="flex space-x-4"
-      >
-        <.link
-          class={"#{if @user_locale == "en", do: "font-bold", else: ""}"}
-          href={@en_path}
-        >
-          English
-        </.link>
-        <.link
-          class={"#{if @user_locale == "ja", do: "font-bold", else: ""}"}
-          href={@ja_path}
-        >
-          日本語
-        </.link>
-      </div>
+        <nav aria-label={gettext("Language switcher")}>
+        <ul class="flex space-x-4">
+          <li>
+            <.link
+              navigate={@en_path}
+              aria-label={gettext("Switch to English")}
+              aria-current={if @user_locale == "en", do: "page", else: "false"}
+              class={"#{if @user_locale == "en", do: "font-bold", else: ""}"}
+            >
+              English
+            </.link>
+          </li>
+          <li>
+            <.link
+              navigate={@ja_path}
+              aria-label={gettext("Switch to Japanese")}
+              aria-current={if @user_locale == "ja", do: "page", else: "false"}
+              class={"#{if @user_locale == "ja", do: "font-bold", else: ""}"}
+            >
+              日本語
+            </.link>
+          </li>
+        </ul>
+      </nav>
     </nav>
     """
   end
 
-  defp active_class(current_page, page) when current_page == page,
-    do: "font-bold"
+  defp active_class(current_path, page) do
+    if String.contains?(current_path, Atom.to_string(page)), do: "font-bold", else: ""
+  end
 
-  defp active_class(_, _), do: ""
+  defp build_localized_path(current_path, locale) do
+    base_path = PortfolioWeb.Layouts.remove_locale_from_path(current_path)
+    if base_path == "/" do
+      "/#{locale}"
+    else
+      "/#{locale}#{base_path}"
+    end
+  end
 end

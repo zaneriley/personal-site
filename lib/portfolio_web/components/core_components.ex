@@ -152,7 +152,7 @@ defmodule PortfolioWeb.CoreComponents do
                   type="button"
                   aria-label={gettext("close")}
                 >
-                  <Heroicons.x_mark solid />
+                  <Heroicons.x_mark solid class="inline-block h-4 w-4" />
                 </button>
               </div>
               <div id={"#{@id}-content"}>
@@ -238,9 +238,16 @@ defmodule PortfolioWeb.CoreComponents do
       {@rest}
     >
       <p :if={@title}>
-        <Heroicons.information_circle :if={@kind == :info} mini />
-        <Heroicons.exclamation_circle :if={@kind == :error} mini />
-        <%= @title %>
+        <Heroicons.information_circle
+          :if={@kind == :info}
+          mini
+          class="inline-block h-4 w-4"
+        />
+        <Heroicons.exclamation_circle
+          :if={@kind == :error}
+          mini
+          class="inline-block h-4 w-4"
+        />> <%= @title %>
       </p>
       <p><%= msg %></p>
       <button :if={@close} type="button" aria-label={gettext("close")}>
@@ -277,7 +284,7 @@ defmodule PortfolioWeb.CoreComponents do
         phx-disconnected={show("#disconnected")}
         phx-connected={hide("#disconnected")}
       >
-        Attempting to reconnect <Heroicons.arrow_path />
+        Attempting to reconnect <Heroicons.arrow_path class="inline-block h-4 w-4" />
       </.flash>
     </div>
     """
@@ -514,7 +521,7 @@ defmodule PortfolioWeb.CoreComponents do
   def error(assigns) do
     ~H"""
     <p>
-      <Heroicons.exclamation_circle mini />
+      <Heroicons.exclamation_circle mini class="inline-block h-4 w-4" />
       <%= render_slot(@inner_block) %>
     </p>
     """
@@ -678,7 +685,7 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <div>
       <.link navigate={@navigate}>
-        <Heroicons.arrow_left solid />
+        <Heroicons.arrow_left solid class="inline-block h-4 w-4" />
         <%= render_slot(@inner_block) %>
       </.link>
     </div>

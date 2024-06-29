@@ -8,14 +8,18 @@ defmodule Portfolio.BlogFixtures do
   Generate a note.
   """
   def note_fixture(attrs \\ %{}) do
+    IO.inspect(attrs, label: "Fixture attrs")
     {:ok, note} =
       attrs
       |> Enum.into(%{
+        title: "some title",
         content: "some content",
-        title: "some title"
+        url: "test-note"
       })
+      |> IO.inspect(label: "Merged attrs")
       |> Portfolio.Blog.create_note()
 
+    IO.inspect(note, label: "Created note")
     note
   end
 end

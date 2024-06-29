@@ -19,8 +19,29 @@ defmodule Portfolio.Blog.Note do
   @doc false
   def changeset(note, attrs) do
     note
-    |> cast(attrs, [:title, :content])
+    |> cast(attrs, [:title, :content, :url])
     |> validate_required([:title, :content])
+    |> generate_url()
     |> unique_constraint(:url)
+  end
+
+  defp slugify(str) when is_binary(str) do
+    str
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9\s-]/, "")
+    |> String.replace(~r/[\s-]+/, "-")
+    |> String.trim("-")
+  end
+
+  defp slugify(_), do: ""
+
+  defp generate_url(changeset) do
+    case get_change(changeset, :url) do
+      nil ->
+        title = get_field(changeset, :title)
+        put_change(changeset, :url, slugify(title))
+      custom_url ->
+        put_change(changeset, :url, slugify(custom_url))
+    end
   end
 end

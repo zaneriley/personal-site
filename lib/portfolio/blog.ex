@@ -19,6 +19,10 @@ defmodule Portfolio.Blog do
   """
   def list_notes do
     Repo.all(Note)
+    |> Enum.map(fn note ->
+      url = note.url || "note-#{note.id}"
+      %{note | url: url}
+    end)
   end
 
   @doc """
@@ -35,8 +39,12 @@ defmodule Portfolio.Blog do
       ** (Ecto.NoResultsError)
 
   """
-  def get_note!(id), do: Repo.get!(Note, id)
-
+  def get_note!(url_or_id) do
+    case Integer.parse(url_or_id) do
+      {id, _} -> Repo.get!(Note, id)
+      :error -> Repo.get_by!(Note, url: url_or_id)
+    end
+  end
   @doc """
   Creates a note.
 

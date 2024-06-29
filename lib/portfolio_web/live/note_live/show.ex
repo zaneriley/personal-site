@@ -1,6 +1,6 @@
 defmodule PortfolioWeb.NoteLive.Show do
   use PortfolioWeb, :live_view
-
+  alias PortfolioWeb.Router.Helpers, as: Routes
   alias Portfolio.Blog
 
   @impl true
@@ -9,11 +9,12 @@ defmodule PortfolioWeb.NoteLive.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"url" => url}, _, socket) do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:note, Blog.get_note!(id))}
+     |> assign(:title, page_title(socket.assigns.live_action))
+     |> assign(:note, Blog.get_note!(url))}
   end
 
   defp page_title(:show), do: "Show Note"
