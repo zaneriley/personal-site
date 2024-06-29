@@ -58,12 +58,20 @@ defmodule Portfolio.Blog do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_note(attrs \\ %{}) do
+   def create_note(attrs \\ %{}) do
     %Note{}
     |> Note.changeset(attrs)
+    |> IO.inspect(label: "Changeset before insertion")
     |> Repo.insert()
+    |> case do
+      {:ok, note} ->
+        IO.inspect(note, label: "Inserted note")
+        {:ok, note}
+      error ->
+        IO.inspect(error, label: "Insertion error")
+        error
+    end
   end
-
   @doc """
   Updates a note.
 
