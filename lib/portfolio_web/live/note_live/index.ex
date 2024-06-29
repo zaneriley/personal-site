@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.NoteLive.Index do
   use PortfolioWeb, :live_view
   require Logger
+  import PortfolioWeb.LiveHelpers
   alias Portfolio.Blog
   alias Portfolio.Blog.Note
   alias PortfolioWeb.Router.Helpers, as: Routes
@@ -23,7 +24,8 @@ defmodule PortfolioWeb.NoteLive.Index do
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
+  def handle_params(params, uri, socket) do
+    socket = handle_locale_and_path(socket, params, uri)
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 

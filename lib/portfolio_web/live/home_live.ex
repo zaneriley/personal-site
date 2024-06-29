@@ -33,12 +33,6 @@ defmodule PortfolioWeb.HomeLive do
     {:noreply, socket}
   end
 
-  def handle_params(params, uri, socket) do
-    socket = handle_locale_and_path(socket, params, uri)
-    # Add any view-specific logic here
-    {:noreply, socket}
-  end
-
   def render(assigns) do
     ~H"""
     <main class="u-container">

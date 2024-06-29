@@ -56,6 +56,20 @@ msgid_plural "minutes"
 msgstr[0] "minute"
 msgstr[1] "minutes"
 
+msgid "Note"
+msgid_plural "Notes"
+msgstr[0] "Note"
+msgstr[1] "Notes"
+
+msgid "About"
+msgstr "About"
+
+msgid "Switch to English"
+msgstr "Switch to English"
+
+msgid "Switch to Japanese"
+msgstr "Switch to Japanese"
+
 msgid "Colophon"
 msgstr "Colophon"
 
