@@ -6,22 +6,30 @@
     </.link>
   </:actions>
 </.header>
-      <%= if Mix.env() == :dev do %>
-        <div>
-          Debug: Gettext Locale: <%= Gettext.get_locale(PortfolioWeb.Gettext) %>,
-          Assign Locale: <%= @user_locale %>
-        </div>
-      <% end %>
+<%= if Mix.env() == :dev do %>
+  <div>
+    Debug: Gettext Locale: <%= Gettext.get_locale(PortfolioWeb.Gettext) %>,
+    Assign Locale: <%= @user_locale %>
+  </div>
+<% end %>
 <.table
   id="notes"
   rows={@streams.notes}
-  row_click={fn {_id, note} -> JS.navigate(Routes.note_show_path(@socket, :show, @user_locale, note.url)) end}
+  row_click={
+    fn {_id, note} ->
+      JS.navigate(Routes.note_show_path(@socket, :show, @user_locale, note.url))
+    end
+  }
 >
   <:col :let={{_id, note}} label="Title"><%= note.title %></:col>
   <:col :let={{_id, note}} label="Content"><%= note.content %></:col>
   <:action :let={{_id, note}}>
     <div class="sr-only">
-      <.link navigate={Routes.note_show_path(@socket, :show, @user_locale, note.url)}>Show</.link>
+      <.link navigate={
+        Routes.note_show_path(@socket, :show, @user_locale, note.url)
+      }>
+        Show
+      </.link>
     </div>
     <.link patch={Routes.note_index_path(@socket, :edit, note.url)}>Edit</.link>
   </:action>
@@ -35,15 +43,14 @@
   </:action>
 </.table>
 
-
 <.live_component
+  :if={@live_action in [:new, :edit]}
   module={PortfolioWeb.NoteLive.FormComponent}
   id={@note.id || :new}
   title={@page_title}
   action={@live_action}
   note={@note}
   patch={Routes.note_index_path(@socket, :index, @user_locale)}
-  :if={@live_action in [:new, :edit]} 
-  show 
+  show
   on_cancel={JS.patch(Routes.note_index_path(@socket, :index, @user_locale))}
 />

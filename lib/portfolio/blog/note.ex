@@ -40,6 +40,7 @@ defmodule Portfolio.Blog.Note do
       nil ->
         title = get_field(changeset, :title)
         put_change(changeset, :url, slugify(title))
+
       custom_url ->
         put_change(changeset, :url, slugify(custom_url))
     end

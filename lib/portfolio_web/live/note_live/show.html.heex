@@ -2,7 +2,10 @@
   Note <%= @note.id %>
   <:subtitle>This is a note record from your database.</:subtitle>
   <:actions>
-    <.link patch={Routes.note_show_path(@socket, :edit, @note.url)} phx-click={JS.push_focus()}>
+    <.link
+      patch={Routes.note_show_path(@socket, :edit, @note.url)}
+      phx-click={JS.push_focus()}
+    >
       <.button>Edit note</.button>
     </.link>
   </:actions>
@@ -13,17 +16,19 @@
   <:item title="Content"><%= @note.content %></:item>
 </.list>
 
-<.back navigate={Routes.note_index_path(@socket, :index, @user_locale)}>Back to notes</.back>
+<.back navigate={Routes.note_index_path(@socket, :index, @user_locale)}>
+  Back to notes
+</.back>
 
 <.live_component
+  :if={@live_action in [:new, :edit]}
   module={PortfolioWeb.NoteLive.FormComponent}
   id={@note.id || :new}
   title={@page_title}
   action={@live_action}
   note={@note}
   patch={Routes.note_index_path(@socket, :index, @user_locale)}
-  :if={@live_action in [:new, :edit]} 
-  show 
+  show
   on_cancel={JS.patch(Routes.note_index_path(@socket, :index, @user_locale))}
   class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
 />

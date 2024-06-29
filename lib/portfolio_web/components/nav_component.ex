@@ -1,4 +1,27 @@
 defmodule PortfolioWeb.NavComponent do
+  @moduledoc """
+  Main site navigation livecomponent.
+
+  Features:
+  - Logo
+  - Page navigation (Case Studies, Notes, About)
+  - EN/JA language switcher
+  - Active page highlighting
+  - Accessibility labels
+
+  Usage:
+      <.live_component module={PortfolioWeb.NavComponent} id="nav" current_path={@current_path} user_locale={@locale} />
+
+  Assigns:
+  - `current_path`: Current URL path (default: "/")
+  - `user_locale`: User's locale (default: "en")
+
+  Requires gettext translations for navigation labels and language switcher text.
+
+  Helper functions:
+  - `active_class/2`: Determines active navigation item
+  - `build_localized_path/2`: Generates localized paths
+  """
   use PortfolioWeb, :live_component
   alias PortfolioWeb.Router.Helpers, as: Routes
 
@@ -13,10 +36,11 @@ defmodule PortfolioWeb.NavComponent do
   end
 
   def render(assigns) do
-    assigns = assign(assigns,
-      en_path: build_localized_path(assigns.current_path, "en"),
-      ja_path: build_localized_path(assigns.current_path, "ja")
-    )
+    assigns =
+      assign(assigns,
+        en_path: build_localized_path(assigns.current_path, "en"),
+        ja_path: build_localized_path(assigns.current_path, "ja")
+      )
 
     ~H"""
     <nav role="banner" class="flex items-center justify-between w-full">
@@ -58,7 +82,7 @@ defmodule PortfolioWeb.NavComponent do
         </ul>
       </nav>
       <!-- Language switcher -->
-        <nav aria-label={gettext("Language switcher")}>
+      <nav aria-label={gettext("Language switcher")}>
         <ul class="flex space-x-4">
           <li>
             <.link
@@ -87,11 +111,14 @@ defmodule PortfolioWeb.NavComponent do
   end
 
   defp active_class(current_path, page) do
-    if String.contains?(current_path, Atom.to_string(page)), do: "font-bold", else: ""
+    if String.contains?(current_path, Atom.to_string(page)),
+      do: "font-bold",
+      else: ""
   end
 
   defp build_localized_path(current_path, locale) do
     base_path = PortfolioWeb.Layouts.remove_locale_from_path(current_path)
+
     if base_path == "/" do
       "/#{locale}"
     else

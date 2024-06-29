@@ -62,6 +62,7 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
     case Blog.update_note(socket.assigns.note, note_params) do
       {:ok, note} ->
         notify_parent({:saved, note})
+
         {:noreply,
          socket
          |> put_flash(:info, "Note updated successfully")
@@ -76,6 +77,7 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
     case Blog.create_note(note_params) do
       {:ok, note} ->
         notify_parent({:saved, note})
+
         {:noreply,
          socket
          |> put_flash(:info, "Note created successfully")

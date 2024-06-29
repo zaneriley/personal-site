@@ -1,4 +1,37 @@
 defmodule PortfolioWeb.LiveHelpers do
+  @moduledoc """
+  A set of helper functions for Phoenix LiveView in the Portfolio application.
+
+  Provides utilities for managing LiveView sockets, internationalization, page metadata, and navigation.
+
+  ## Features
+
+  * LiveView Socket Management: Configures common socket assigns for default and admin mounts
+  * Internationalization: Integrates with Gettext for multi-language support
+  * Page Metadata: Functions for setting and managing page titles and descriptions
+  * Navigation: Manages current path information and handles locale-based path changes
+  * Date Utilities: Assigns current year for copyright notices
+
+  ## Usage
+
+  Use with Phoenix LiveView's `on_mount` callback:
+
+      def on_mount(:default, params, session, socket) do
+        {:cont, PortfolioWeb.LiveHelpers.setup_common_assigns(socket, params, session)}
+      end
+
+      def on_mount(:admin, params, session, socket) do
+        {:cont, socket |> PortfolioWeb.LiveHelpers.setup_common_assigns(params, session) |> assign(:admin, true)}
+      end
+
+  ## Main Functions
+
+  * `on_mount/4`: Sets up common assigns for default and admin mounts
+  * `assign_page_metadata/3`: Assigns custom or default page metadata
+  * `handle_locale_and_path/3`: Manages locale changes and updates current path
+  * `assign_locale/2`: Assigns user's locale to the socket
+  """
+
   import Phoenix.Component
   import PortfolioWeb.Gettext
 
@@ -45,6 +78,7 @@ defmodule PortfolioWeb.LiveHelpers do
   defp assign_default_page_metadata(socket) do
     {date, _time} = :calendar.local_time()
     {current_year, _month, _day} = date
+
     assign(socket,
       page_title: @default_title,
       page_description: @default_description

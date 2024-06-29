@@ -8,7 +8,9 @@ defmodule PortfolioWeb.NoteLive.Index do
   @impl true
   def mount(_params, session, socket) do
     env = Mix.env()
-    user_locale = session["user_locale"] || Application.get_env(:portfolio, :default_locale)
+
+    user_locale =
+      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
 
     Logger.debug("Note index mounted with locale: #{user_locale}")
 
@@ -31,7 +33,6 @@ defmodule PortfolioWeb.NoteLive.Index do
     |> assign(:title, "New Note")
     |> assign(:note, %Note{})
   end
-
 
   defp apply_action(socket, :edit, %{"url" => url}) do
     socket

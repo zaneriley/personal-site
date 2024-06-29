@@ -45,6 +45,7 @@ defmodule Portfolio.Blog do
       :error -> Repo.get_by!(Note, url: url_or_id)
     end
   end
+
   @doc """
   Creates a note.
 
