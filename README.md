@@ -122,6 +122,10 @@ Then drop your database:
 ```bash
 docker exec -it YOURAPP-postgres-1 psql -U YOURAPP -d postgres -c "DROP DATABASE YOURDATABASE;"
 ```
+and the test database as well (otherwise they'll be out of sync)
+```bash
+docker exec -it YOURAPP-postgres-1 psql -U YOURAPP -d postgres -c "DROP DATABASE YOURDATABASE_test;"
+```
 
 After that, run your app again with `docker compose up -d` and then do `./run mix ecto.setup`.
 

@@ -2,10 +2,9 @@ defmodule Portfolio.Blog do
   @moduledoc """
   The Blog context.
   """
-
+  require Logger
   import Ecto.Query, warn: false
   alias Portfolio.Repo
-
   alias Portfolio.Blog.Note
 
   @doc """
@@ -58,20 +57,24 @@ defmodule Portfolio.Blog do
       {:error, %Ecto.Changeset{}}
 
   """
-   def create_note(attrs \\ %{}) do
+  def create_note(attrs \\ %{}) do
     %Note{}
     |> Note.changeset(attrs)
-    |> IO.inspect(label: "Changeset before insertion")
     |> Repo.insert()
     |> case do
       {:ok, note} ->
-        IO.inspect(note, label: "Inserted note")
+        Logger.info("Note created successfully: #{note.id}")
         {:ok, note}
-      error ->
-        IO.inspect(error, label: "Insertion error")
-        error
+      {:error, %Ecto.Changeset{} = changeset} ->
+        Logger.error("Failed to create note: #{inspect(changeset.errors)}")
+        {:error, changeset}
+      {:error, %Ecto.ConstraintError{} = error} ->
+        Logger.error("Constraint error: #{inspect(error)}")
+        changeset = Note.changeset(%Note{}, attrs)
+        {:error, Ecto.Changeset.add_error(changeset, :url, "has already been taken")}
     end
   end
+
   @doc """
   Updates a note.
 

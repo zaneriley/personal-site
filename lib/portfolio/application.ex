@@ -19,7 +19,7 @@ defmodule Portfolio.Application do
       {Portfolio.Content.FileSystemWatcher,
        Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[
          :paths
-       ]},
+       ]}
       # Start a worker by calling: Portfolio.Worker.start_link(arg)
       # {Portfolio.Worker, arg}
     ]
