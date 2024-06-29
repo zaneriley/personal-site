@@ -23,9 +23,7 @@ defmodule Portfolio.BlogTest do
 
       assert {:error, changeset} = Blog.create_note(attrs)
 
-      assert "must be at most 255 characters" in errors_on(
-               changeset
-             ).title
+      assert "must be at most 255 characters" in errors_on(changeset).title
     end
 
     test "create_note/1 with custom url" do
@@ -82,6 +80,20 @@ defmodule Portfolio.BlogTest do
 
       assert {:ok, note} = Blog.create_note(attrs)
       assert note.url == "特殊文字-テスト"
+    end
+
+    test "update_note/2 preserves original URL" do
+      {:ok, note} = Blog.create_note(%{title: "Original Title", content: "Content"})
+      original_url = note.url
+
+      {:ok, updated_note} = Blog.update_note(note, %{title: "New Title"})
+      assert updated_note.url == original_url
+    end
+
+    test "get_note!/1 with non-existent URL" do
+      assert_raise Ecto.NoResultsError, fn ->
+        Blog.get_note!("non-existent-url")
+      end
     end
   end
 end

@@ -9,10 +9,11 @@ defmodule Portfolio.Repo.Migrations.CreateNotes do
       add :introduction, :string
       add :file_path, :string
       add :locale, :string
-      add :content, :text
+      add :content, :string
 
       timestamps(type: :utc_datetime)
     end
+
     create unique_index(:notes, [:url], name: :unique_note_urls)
     create index(:notes, [:locale])
   end

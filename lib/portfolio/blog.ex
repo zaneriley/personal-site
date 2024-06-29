@@ -65,13 +65,17 @@ defmodule Portfolio.Blog do
       {:ok, note} ->
         Logger.info("Note created successfully: #{note.id}")
         {:ok, note}
+
       {:error, %Ecto.Changeset{} = changeset} ->
         Logger.error("Failed to create note: #{inspect(changeset.errors)}")
         {:error, changeset}
+
       {:error, %Ecto.ConstraintError{} = error} ->
         Logger.error("Constraint error: #{inspect(error)}")
         changeset = Note.changeset(%Note{}, attrs)
-        {:error, Ecto.Changeset.add_error(changeset, :url, "has already been taken")}
+
+        {:error,
+         Ecto.Changeset.add_error(changeset, :url, "has already been taken")}
     end
   end
 
