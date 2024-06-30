@@ -11,8 +11,9 @@ defmodule Portfolio.BlogFixtures do
     {:ok, note} =
       attrs
       |> Enum.into(%{
+        title: "some title",
         content: "some content",
-        title: "some title"
+        url: "test-note"
       })
       |> Portfolio.Blog.create_note()
 

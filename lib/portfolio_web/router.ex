@@ -4,6 +4,7 @@ defmodule PortfolioWeb.Router do
   alias PortfolioWeb.Plugs.LocaleRedirection
   alias PortfolioWeb.Plugs.CommonMetadata
   import Phoenix.LiveView.Router
+  import Phoenix.LiveDashboard.Router
 
   defp put_csp_header(conn, _opts) do
     csp_config = Application.get_env(:portfolio, :csp, [])
@@ -78,27 +79,23 @@ defmodule PortfolioWeb.Router do
   # We're defining these first as to not trigger the :locale redirection pipeline.
   if Mix.env() in [:dev, :test] do
     scope "/admin", PortfolioWeb do
-      # Use the :admin pipeline
       pipe_through [:admin]
 
-      # Admin routes for /up and /dashboard
+      live_session :admin, on_mount: {PortfolioWeb.LiveHelpers, :admin} do
+        live "/notes/new", NoteLive.Index, :new
+        live "/note/:url/edit", NoteLive.Index, :edit
+        live "/note/:url/show/edit", NoteLive.Show, :edit
+
+        live "/case-study/new", CaseStudyLive.Index, :new
+        live "/case-study/:url/edit", CaseStudyLive.Index, :edit
+        live "/case-study/:url", CaseStudyLive.Show, :show
+        live "/case-study/:url/show/edit", CaseStudyLive.Show, :edit
+      end
+
+      # Keep non-LiveView routes outside the live_session
       get "/up/", UpController, :index
       get "/up/databases", UpController, :databases
-
-      # LiveDashboard route
-      import Phoenix.LiveDashboard.Router
       live_dashboard "/dashboard", metrics: PortfolioWeb.Telemetry
-
-      # LiveView routes for Case Studies
-
-      live "/notes/new", NoteLive.Index, :new
-      live "/notes/:id/edit", NoteLive.Index, :edit
-      live "/notes/:id/show/edit", NoteLive.Show, :edit
-
-      live "/case-study/new", CaseStudyLive.Index, :new
-      live "/case-study/:id/edit", CaseStudyLive.Index, :edit
-      live "/case-study/:id", CaseStudyLive.Show, :show
-      live "/case-study/:id/show/edit", CaseStudyLive.Show, :edit
     end
   end
 
@@ -111,12 +108,14 @@ defmodule PortfolioWeb.Router do
   scope "/:locale", PortfolioWeb do
     pipe_through [:browser, :locale]
 
-    live "/", HomeLive, :index
-    live "/case-studies", CaseStudyLive.Index, :index
-    live "/case-study/:url", CaseStudyLive.Show, :show
-    live "/notes", NoteLive.Index, :index
-    live "/note/:id", NoteLive.Show, :show
-    live "/about", AboutLive, :index
+    live_session :default, on_mount: PortfolioWeb.LiveHelpers do
+      live "/", HomeLive, :index
+      live "/case-studies", CaseStudyLive.Index, :index
+      live "/case-study/:url", CaseStudyLive.Show, :show
+      live "/notes", NoteLive.Index, :index
+      live "/note/:url", NoteLive.Show, :show
+      live "/about", AboutLive, :index
+    end
   end
 
   # Catch-all route for unmatched paths

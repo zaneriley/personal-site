@@ -4,11 +4,17 @@ defmodule Portfolio.Repo.Migrations.CreateNotes do
   def change do
     create table(:notes) do
       add :title, :string
-      add :content, :text
       add :url, :string
+      add :read_time, :integer
+      add :introduction, :string
+      add :file_path, :string
       add :locale, :string
+      add :content, :string
 
       timestamps(type: :utc_datetime)
     end
+
+    create unique_index(:notes, [:url], name: :unique_note_urls)
+    create index(:notes, [:locale])
   end
 end

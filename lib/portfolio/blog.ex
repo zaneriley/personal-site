@@ -2,10 +2,9 @@ defmodule Portfolio.Blog do
   @moduledoc """
   The Blog context.
   """
-
+  require Logger
   import Ecto.Query, warn: false
   alias Portfolio.Repo
-
   alias Portfolio.Blog.Note
 
   @doc """
@@ -19,6 +18,10 @@ defmodule Portfolio.Blog do
   """
   def list_notes do
     Repo.all(Note)
+    |> Enum.map(fn note ->
+      url = note.url || "note-#{note.id}"
+      %{note | url: url}
+    end)
   end
 
   @doc """
@@ -35,7 +38,12 @@ defmodule Portfolio.Blog do
       ** (Ecto.NoResultsError)
 
   """
-  def get_note!(id), do: Repo.get!(Note, id)
+  def get_note!(url_or_id) do
+    case Integer.parse(url_or_id) do
+      {id, _} -> Repo.get!(Note, id)
+      :error -> Repo.get_by!(Note, url: url_or_id)
+    end
+  end
 
   @doc """
   Creates a note.
@@ -53,6 +61,22 @@ defmodule Portfolio.Blog do
     %Note{}
     |> Note.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, note} ->
+        Logger.info("Note created successfully: #{note.id}")
+        {:ok, note}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        Logger.error("Failed to create note: #{inspect(changeset.errors)}")
+        {:error, changeset}
+
+      {:error, %Ecto.ConstraintError{} = error} ->
+        Logger.error("Constraint error: #{inspect(error)}")
+        changeset = Note.changeset(%Note{}, attrs)
+
+        {:error,
+         Ecto.Changeset.add_error(changeset, :url, "has already been taken")}
+    end
   end
 
   @doc """

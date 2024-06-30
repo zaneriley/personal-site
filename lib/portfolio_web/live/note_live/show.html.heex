@@ -1,41 +1,34 @@
-<.header class="text-sm">
+<.header>
   Note <%= @note.id %>
-  <:subtitle class="text-gray-600">
-    This is a note record from your database.
-  </:subtitle>
+  <:subtitle>This is a note record from your database.</:subtitle>
   <:actions>
     <.link
-      patch={~p"/notes/#{@note}/show/edit"}
+      patch={Routes.note_show_path(@socket, :edit, @note.url)}
       phx-click={JS.push_focus()}
-      class="mt-2"
     >
-      <.button class="">Edit note</.button>
+      <.button>Edit note</.button>
     </.link>
   </:actions>
 </.header>
 
-<.list class="mr-auto ml-auto w-full">
-  <:item title="Title">
-    <span class="text-2xl px-2xs-md"><%= @note.title %></span>
-  </:item>
+<.list>
+  <:item title="Title"><%= @note.title %></:item>
   <:item title="Content"><%= @note.content %></:item>
 </.list>
 
-<.back navigate={~p"/notes"}>Back to notes</.back>
+<.back navigate={Routes.note_index_path(@socket, :index, @user_locale)}>
+  Back to notes
+</.back>
 
-<.modal
-  :if={@live_action == :edit}
-  id="note-modal"
+<.live_component
+  :if={@live_action in [:new, :edit]}
+  module={PortfolioWeb.NoteLive.FormComponent}
+  id={@note.id || :new}
+  title={@page_title}
+  action={@live_action}
+  note={@note}
+  patch={Routes.note_index_path(@socket, :index, @user_locale)}
   show
-  on_cancel={JS.patch(~p"/notes/#{@note}")}
->
-  <.live_component
-    module={PortfolioWeb.NoteLive.FormComponent}
-    id={@note.id}
-    title={@page_title}
-    action={@live_action}
-    note={@note}
-    patch={~p"/notes/#{@note}"}
-    class="brounded-lg shadow-lg p-6"
-  />
-</.modal>
+  on_cancel={JS.patch(Routes.note_index_path(@socket, :index, @user_locale))}
+  class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
+/>

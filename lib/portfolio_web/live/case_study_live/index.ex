@@ -3,6 +3,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   require Logger
   alias Portfolio.Admin
   alias Portfolio.CaseStudy
+  import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true
@@ -22,7 +23,8 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
+  def handle_params(params, uri, socket) do
+    socket = handle_locale_and_path(socket, params, uri)
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 

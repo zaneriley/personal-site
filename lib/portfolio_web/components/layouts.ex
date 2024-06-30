@@ -7,9 +7,10 @@ defmodule PortfolioWeb.Layouts do
 
   @supported_locales Application.compile_env(:portfolio, :supported_locales)
 
-  defp remove_locale_from_path(path) do
+  def remove_locale_from_path(path) do
     case String.split(path, "/", parts: 3) do
       ["", locale, rest] when locale in @supported_locales -> "/#{rest}"
+      ["", locale] when locale in @supported_locales -> "/"
       _ -> path
     end
   end

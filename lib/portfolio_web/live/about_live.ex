@@ -1,37 +1,31 @@
 defmodule PortfolioWeb.AboutLive do
   require Logger
   use PortfolioWeb, :live_view
-  alias PortfolioWeb.Router.Helpers, as: Routes
+  import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.DevToolbar
 
-  def mount(_params, session, socket) do
-    user_locale =
-      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
-
-    Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
-
-    Logger.debug("User locale assigned to socket: #{user_locale}")
-
-    page_title =
-      gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience")
-
-    page_description =
-      gettext(
-        "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+  def mount(_params, _session, socket) do
+    socket =
+      assign_page_metadata(
+        socket,
+        gettext("About Zane Riley | Product Designer"),
+        gettext(
+          "Learn more about Zane Riley, a Product Designer with over 10 years of experience in various industries."
+        )
       )
-
-    socket =
-      assign(socket, user_locale: user_locale)
-
-    socket =
-      assign(socket, page_title: page_title, page_description: page_description)
 
     {:ok, socket}
   end
 
+  def handle_params(params, uri, socket) do
+    socket = handle_locale_and_path(socket, params, uri)
+    # Add any view-specific logic here
+    {:noreply, socket}
+  end
+
   def render(assigns) do
     ~H"""
-    <main class="min-h-screen  font-sans">
+    <main class="u-container">
       <%= if Mix.env() == :dev do %>
         <div>
           Debug: Gettext Locale: <%= Gettext.get_locale(PortfolioWeb.Gettext) %>,

@@ -2,6 +2,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
+  import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
   alias PortfolioWeb.DevToolbar
 
@@ -44,8 +45,45 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   end
 
   @impl true
-  def handle_params(%{"url" => _url}, _, socket) do
-    {:noreply, socket}
+  def mount(_params, session, socket) do
+    socket = assign_locale(socket, session)
+    {:ok, socket}
+  end
+
+  @impl true
+  def handle_params(
+        %{"locale" => user_locale, "url" => url} = params,
+        uri,
+        socket
+      ) do
+    socket = handle_locale_and_path(socket, params, uri)
+
+    if valid_slug?(url) do
+      {case_study, translations} =
+        Content.get_content_with_translations(:case_study, url, user_locale)
+
+      case case_study do
+        nil ->
+          {:noreply,
+           socket
+           |> put_flash(:error, "Case study not found")
+           |> redirect(to: "/")}
+
+        %Portfolio.CaseStudy{} = cs ->
+          {page_title, introduction} = set_page_metadata(cs, translations)
+
+          {:noreply,
+           assign(socket,
+             case_study: cs,
+             translations: translations,
+             page_title: page_title,
+             page_description: introduction
+           )}
+      end
+    else
+      {:noreply,
+       socket |> put_flash(:error, "Invalid URL") |> redirect(to: "/")}
+    end
   end
 
   defp valid_slug?(slug) do

@@ -1,6 +1,7 @@
 {
   "skip_files": [
-    "test"
+    "test",
+    "lib/portfolio_web/components/core_components.ex"
   ],
   "coverage_options": {
     "treat_no_relevant_lines_as_covered": true,
