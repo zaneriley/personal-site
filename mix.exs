@@ -27,7 +27,7 @@ defmodule Portfolio.MixProject do
   def application do
     [
       mod: {Portfolio.Application, []},
-      extra_applications: [:logger, :runtime_tools, :file_system]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -59,7 +59,6 @@ defmodule Portfolio.MixProject do
       {:phoenix_live_view, "0.20.3"},
       {:plug_cowboy, "~> 2.1"},
       {:postgrex, "0.17.4"},
-      {:slugify, "~> 1.3"},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:swoosh, "1.14.4"},
       {:telemetry_metrics, "0.6.2"},

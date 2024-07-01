@@ -5,6 +5,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   alias Portfolio.CaseStudy
   import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
+  import PortfolioWeb.Components.PortfolioItemList
 
   @impl true
   def mount(_params, session, socket) do

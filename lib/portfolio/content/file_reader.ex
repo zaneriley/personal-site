@@ -18,16 +18,6 @@ defmodule Portfolio.Content.FileReader do
 
   The frontmatter is a set of metadata that is extracted from the beginning of a Markdown file. It is defined by a specific format, which consists of three parts:
 
-  1. The first line is the title, which is extracted as the first element of the frontmatter.
-  2. The second line is the date, which is extracted as the second element of the frontmatter.
-  3. The rest of the file is the content, which is extracted as the third element of the frontmatter.
-
-  The frontmatter is separated from the content by a line containing three dashes (`---`). This line is used to separate the frontmatter from the content.
-
-  ## Content
-
-  The content is the actual content of the Markdown file, which is extracted after the frontmatter. The content is converted to HTML using the Earmark library.
-
   ## Example
 
   Consider the following Markdown file:
@@ -71,19 +61,27 @@ defmodule Portfolio.Content.FileReader do
     end
   end
 
-  defp parse_frontmatter(frontmatter) do
-    case :yamerl_constr.string(frontmatter) do
-      [metadata] ->
-        {:ok, Enum.into(metadata, %{}, &transform_metadata/1)}
+  # Only parse frontmatter in dev and test environments
+  if Mix.env() in [:dev, :test] do
+    defp parse_frontmatter(frontmatter) do
+      case :yamerl_constr.string(frontmatter) do
+        [metadata] ->
+          {:ok, Enum.into(metadata, %{}, &transform_metadata/1)}
 
-      error ->
-        Logger.error(
-          "YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}"
-        )
+        error ->
+          Logger.error(
+            "YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}"
+          )
 
-        {:error, {:yaml_parsing_failed, error}}
+          {:error, {:yaml_parsing_failed, error}}
+      end
+    end
+  else
+    defp parse_frontmatter(_frontmatter) do
+      {:ok, %{}} # Return empty metadata in production
     end
   end
+
 
   defp transform_metadata({charlist_key, charlist_value})
        when is_list(charlist_key) and is_list(charlist_value) do

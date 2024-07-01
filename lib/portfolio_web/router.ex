@@ -5,28 +5,35 @@ defmodule PortfolioWeb.Router do
   alias PortfolioWeb.Plugs.CommonMetadata
   import Phoenix.LiveView.Router
   import Phoenix.LiveDashboard.Router
-
+  require Logger
+  Logger.info("Current compile_env: #{@compile_env}")
   defp put_csp_header(conn, _opts) do
     csp_config = Application.get_env(:portfolio, :csp, [])
+    scheme = csp_config[:scheme] || "http"
+    host = csp_config[:host] || "localhost"
+    port = csp_config[:port] || "8000"
 
-    base_url =
-      if is_function(csp_config[:build_url]),
-        do: csp_config[:build_url].(),
-        else: "http://localhost:8000"
+    base_url = "#{scheme}://#{host}#{if port in ["80", "443"], do: "", else: ":#{port}"}"
+    ws_scheme = if scheme == "https", do: "wss", else: "ws"
+    ws_url = "#{ws_scheme}://#{host}#{if port in ["80", "443"], do: "", else: ":#{port}"}"
+
+    additional_hosts = if Mix.env() == :dev, do: "http://0.0.0.0:#{port} https://0.0.0.0:#{port}", else: ""
+    additional_ws = if Mix.env() == :dev, do: "ws://0.0.0.0:* wss://0.0.0.0:*", else: ""
+    frame_src = if Mix.env() == :dev, do: "'self'", else: "'none'"
 
     csp =
-      "default-src 'self' #{base_url}; " <>
-        "script-src 'self' #{base_url} 'unsafe-inline'; " <>
-        "style-src 'self' #{base_url} 'unsafe-inline'; " <>
-        "img-src 'self' #{base_url} data:; " <>
-        "font-src 'self' #{base_url}; " <>
-        "connect-src 'self' #{base_url}; " <>
-        "frame-src 'none'; " <>
+      "default-src 'self' #{base_url} #{additional_hosts}; " <>
+        "script-src 'self' #{base_url} #{additional_hosts} 'unsafe-inline'; " <>
+        "style-src 'self' #{base_url} #{additional_hosts} 'unsafe-inline'; " <>
+        "img-src 'self' #{base_url} #{additional_hosts} data:; " <>
+        "font-src 'self' #{base_url} #{additional_hosts}; " <>
+        "connect-src 'self' #{base_url} #{additional_hosts} #{ws_url} #{additional_ws}; " <>
+        "frame-src #{frame_src}; " <>
         "object-src 'none'; " <>
         "base-uri 'self'; " <>
         "form-action 'self'; " <>
-        "frame-ancestors 'none'; " <>
-        "upgrade-insecure-requests;"
+        "frame-ancestors 'none';" <>
+        if @compile_env == :prod, do: " upgrade-insecure-requests;", else: ""
 
     header_name =
       if csp_config[:report_only],
