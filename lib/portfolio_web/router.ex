@@ -13,12 +13,22 @@ defmodule PortfolioWeb.Router do
     host = csp_config[:host] || "localhost"
     port = csp_config[:port] || "8000"
 
-    base_url = "#{scheme}://#{host}#{if port in ["80", "443"], do: "", else: ":#{port}"}"
-    ws_scheme = if scheme == "https", do: "wss", else: "ws"
-    ws_url = "#{ws_scheme}://#{host}#{if port in ["80", "443"], do: "", else: ":#{port}"}"
+    base_url =
+      "#{scheme}://#{host}#{if port in ["80", "443"], do: "", else: ":#{port}"}"
 
-    additional_hosts = if Mix.env() == :dev, do: "http://0.0.0.0:#{port} https://0.0.0.0:#{port}", else: ""
-    additional_ws = if Mix.env() == :dev, do: "ws://0.0.0.0:* wss://0.0.0.0:*", else: ""
+    ws_scheme = if scheme == "https", do: "wss", else: "ws"
+
+    ws_url =
+      "#{ws_scheme}://#{host}#{if port in ["80", "443"], do: "", else: ":#{port}"}"
+
+    additional_hosts =
+      if Mix.env() == :dev,
+        do: "http://0.0.0.0:#{port} https://0.0.0.0:#{port}",
+        else: ""
+
+    additional_ws =
+      if Mix.env() == :dev, do: "ws://0.0.0.0:* wss://0.0.0.0:*", else: ""
+
     frame_src = if Mix.env() == :dev, do: "'self'", else: "'none'"
 
     csp =

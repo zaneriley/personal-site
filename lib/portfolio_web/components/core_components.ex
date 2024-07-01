@@ -118,7 +118,6 @@ defmodule PortfolioWeb.CoreComponents do
     """
   end
 
-
   @doc """
   Renders a logo.
 
@@ -295,7 +294,8 @@ defmodule PortfolioWeb.CoreComponents do
         phx-disconnected={show("#disconnected")}
         phx-connected={hide("#disconnected")}
       >
-        Attempting to reconnect <Heroicons.arrow_path class="inline-block h-4 w-4" />
+        Attempting to reconnect
+        <Heroicons.arrow_path class="inline-block h-4 w-4" />
       </.flash>
     </div>
     """
