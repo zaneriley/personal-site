@@ -19,7 +19,6 @@ defmodule Portfolio.Content.FileSystemWatcher do
     use GenServer
     require Logger
 
-
     @doc """
     Monitors a specified directory for file changes and triggers content updates.
     """
@@ -74,7 +73,9 @@ defmodule Portfolio.Content.FileSystemWatcher do
           {:file_event, watcher_pid, {path, events}},
           %{watcher_pid: watcher_pid} = state
         ) do
-      Logger.info("File system event: File: #{path}, Events: #{inspect(events)}")
+      Logger.info(
+        "File system event: File: #{path}, Events: #{inspect(events)}"
+      )
 
       case {relevant_file_change?(path, events), events} do
         {true, [:modified]} ->

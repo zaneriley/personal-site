@@ -78,10 +78,10 @@ defmodule Portfolio.Content.FileReader do
     end
   else
     defp parse_frontmatter(_frontmatter) do
-      {:ok, %{}} # Return empty metadata in production
+      # Return empty metadata in production
+      {:ok, %{}}
     end
   end
-
 
   defp transform_metadata({charlist_key, charlist_value})
        when is_list(charlist_key) and is_list(charlist_value) do

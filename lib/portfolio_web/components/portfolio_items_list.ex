@@ -1,4 +1,8 @@
 defmodule PortfolioWeb.Components.PortfolioItemList do
+  @moduledoc """
+  Renders a list of items, intended for full ist of different schemas (case studies, notes, etc)
+
+  """
   use Phoenix.Component
   import PortfolioWeb.Gettext
 
@@ -18,18 +22,21 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
             <tr>
               <td>
                 <h3><%= item.title %></h3>
-                <p><%= item.introduction || String.slice(item.content, 0, 100) %>...</p>
+                <p>
+                  <%= item.introduction || String.slice(item.content, 0, 100) %>...
+                </p>
               </td>
               <td>
                 <ul>
-                <li>
+                  <li>
                     <%= ngettext(
                       "%{count} min read",
                       "%{count} min read",
                       item.read_time,
                       count: item.read_time
                     ) %>
-                  </li>                </ul>
+                  </li>
+                </ul>
               </td>
               <td>
                 <%= render_slot(@action, item) %>

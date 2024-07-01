@@ -9,13 +9,15 @@
   </:actions>
 </.header>
 
-   <.portfolio_item_list items={@streams.case_studies}>
-     <:action :let={case_study}>
-       <.link navigate={Routes.case_study_show_path(@socket, :show, @user_locale, case_study.url)}>
-         View
-       </.link>
-     </:action>
-   </.portfolio_item_list>
+<.portfolio_item_list items={@streams.case_studies}>
+  <:action :let={case_study}>
+    <.link navigate={
+      Routes.case_study_show_path(@socket, :show, @user_locale, case_study.url)
+    }>
+      View
+    </.link>
+  </:action>
+</.portfolio_item_list>
 
 <.modal
   :if={@live_action in [:new, :edit]}

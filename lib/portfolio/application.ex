@@ -10,7 +10,6 @@ defmodule Portfolio.Application do
       Application.start(:yamerl)
     end
 
-
     children = [
       PortfolioWeb.Telemetry,
       Portfolio.Repo,
@@ -18,20 +17,19 @@ defmodule Portfolio.Application do
        query: Application.get_env(:portfolio, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Portfolio.PubSub},
       {Finch, name: Portfolio.Finch},
-      PortfolioWeb.Endpoint,
-      ]
+      PortfolioWeb.Endpoint
+    ]
 
-      children =
-        if Mix.env() in [:dev, :test] do
-          children ++ [Portfolio.Content.FileSystemWatcher]
-        else
-          children
-        end
+    children =
+      if Mix.env() in [:dev, :test] do
+        children ++ [Portfolio.Content.FileSystemWatcher]
+      else
+        children
+      end
 
-      opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
-      Supervisor.start_link(children, opts)
+    opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
+    Supervisor.start_link(children, opts)
   end
-
 
   @impl true
   def config_change(changed, _new, removed) do
