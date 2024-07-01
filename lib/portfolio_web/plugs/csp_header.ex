@@ -44,7 +44,8 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
       style_src: "'self' #{base_url} #{additional_hosts} 'unsafe-inline'",
       img_src: "'self' #{base_url} #{additional_hosts} data:",
       font_src: "'self' #{base_url} #{additional_hosts}",
-      connect_src: "'self' #{base_url} #{additional_hosts} #{ws_url} #{additional_ws}",
+      connect_src:
+        "'self' #{base_url} #{additional_hosts} #{ws_url} #{additional_ws}",
       frame_src: frame_src(),
       object_src: "'none'",
       base_uri: "'self'",
@@ -60,11 +61,12 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
     host = config[:host] || "localhost"
     port = config[:port] || "8000"
 
-    url_scheme = case {type, scheme} do
-      {:ws, "https"} -> "wss"
-      {:ws, _} -> "ws"
-      _ -> scheme
-    end
+    url_scheme =
+      case {type, scheme} do
+        {:ws, "https"} -> "wss"
+        {:ws, _} -> "ws"
+        _ -> scheme
+      end
 
     port_segment = if port in ["80", "443"], do: "", else: ":#{port}"
     "#{url_scheme}://#{host}#{port_segment}"
@@ -76,6 +78,7 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
       "ws://0.0.0.0:* wss://0.0.0.0:*"
     }
   end
+
   defp get_additional_urls(_), do: {"", ""}
 
   defp frame_src when @env == :dev, do: "'self'"
@@ -84,6 +87,7 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   defp maybe_add_upgrade_insecure_requests(directives) when @env == @prod_env do
     [{"upgrade-insecure-requests", ""} | directives]
   end
+
   defp maybe_add_upgrade_insecure_requests(directives), do: directives
 
   defp determine_header_name(true), do: "content-security-policy-report-only"

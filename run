@@ -186,7 +186,7 @@ function prod:remote {
 
 function release {
   # Build and tag the Docker image
-  docker build --no-cache -t portfolio:$(git rev-parse --short HEAD) .
+  docker build --no-cache -t portfolio:"$(git rev-parse --short HEAD) ."
 
   # Push to Docker registry (uncomment and modify as needed)
   # docker push your-registry/portfolio:$(git rev-parse --short HEAD)
