@@ -72,8 +72,6 @@ msgstr "英語に切り替え"
 msgid "Switch to Japanese"
 msgstr "日本語に切り替え"
 
-
-
 msgid "Colophon"
 msgstr "奥付"
 

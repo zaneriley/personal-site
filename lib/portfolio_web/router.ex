@@ -6,7 +6,7 @@ defmodule PortfolioWeb.Router do
   import Phoenix.LiveView.Router
   import Phoenix.LiveDashboard.Router
   require Logger
-  Logger.info("Current compile_env: #{@compile_env}")
+
   defp put_csp_header(conn, _opts) do
     csp_config = Application.get_env(:portfolio, :csp, [])
     scheme = csp_config[:scheme] || "http"

@@ -249,6 +249,16 @@ defmodule PortfolioWeb.CoreComponents do
           mini
           class="inline-block h-4 w-4"
         />> <%= @title %>
+        <Heroicons.information_circle
+          :if={@kind == :info}
+          mini
+          class="inline-block h-4 w-4"
+        />
+        <Heroicons.exclamation_circle
+          :if={@kind == :error}
+          mini
+          class="inline-block h-4 w-4"
+        />> <%= @title %>
       </p>
       <p><%= msg %></p>
       <button :if={@close} type="button" aria-label={gettext("close")}>
@@ -523,6 +533,7 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <p>
       <Heroicons.exclamation_circle mini class="inline-block h-4 w-4" />
+      <Heroicons.exclamation_circle mini class="inline-block h-4 w-4" />
       <%= render_slot(@inner_block) %>
     </p>
     """
@@ -686,6 +697,7 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <div>
       <.link navigate={@navigate}>
+        <Heroicons.arrow_left solid class="inline-block h-4 w-4" />
         <Heroicons.arrow_left solid class="inline-block h-4 w-4" />
         <%= render_slot(@inner_block) %>
       </.link>
