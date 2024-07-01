@@ -50,6 +50,74 @@ defmodule PortfolioWeb.CoreComponents do
   slot :confirm
   slot :cancel
 
+  def modal(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      phx-mounted={@show && show_modal(@id)}
+      phx-remove={hide_modal(@id)}
+    >
+      <div id={"#{@id}-bg"} aria-hidden="true" />
+      <div
+        aria-labelledby={"#{@id}-title"}
+        aria-describedby={"#{@id}-description"}
+        role="dialog"
+        aria-modal="true"
+        tabindex="0"
+      >
+        <div>
+          <div>
+            <.focus_wrap
+              id={"#{@id}-container"}
+              phx-mounted={@show && show_modal(@id)}
+              phx-window-keydown={hide_modal(@on_cancel, @id)}
+              phx-key="escape"
+              phx-click-away={hide_modal(@on_cancel, @id)}
+            >
+              <div>
+                <button
+                  phx-click={hide_modal(@on_cancel, @id)}
+                  type="button"
+                  aria-label={gettext("close")}
+                >
+                  <Heroicons.x_mark solid class="h-6 w-6" />
+                </button>
+              </div>
+              <div id={"#{@id}-content"}>
+                <header :if={@title != []}>
+                  <h1 id={"#{@id}-title"}>
+                    <%= render_slot(@title) %>
+                  </h1>
+                  <p :if={@subtitle != []} id={"#{@id}-description"}>
+                    <%= render_slot(@subtitle) %>
+                  </p>
+                </header>
+                <%= render_slot(@inner_block) %>
+                <div :if={@confirm != [] or @cancel != []}>
+                  <.button
+                    :for={confirm <- @confirm}
+                    id={"#{@id}-confirm"}
+                    phx-click={@on_confirm}
+                    phx-disable-with
+                  >
+                    <%= render_slot(confirm) %>
+                  </.button>
+                  <.link
+                    :for={cancel <- @cancel}
+                    phx-click={hide_modal(@on_cancel, @id)}
+                  >
+                    <%= render_slot(cancel) %>
+                  </.link>
+                </div>
+              </div>
+            </.focus_wrap>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   @doc """
   Renders a logo.
 
@@ -122,74 +190,6 @@ defmodule PortfolioWeb.CoreComponents do
     """
   end
 
-  def modal(assigns) do
-    ~H"""
-    <div
-      id={@id}
-      phx-mounted={@show && show_modal(@id)}
-      phx-remove={hide_modal(@id)}
-    >
-      <div id={"#{@id}-bg"} aria-hidden="true" />
-      <div
-        aria-labelledby={"#{@id}-title"}
-        aria-describedby={"#{@id}-description"}
-        role="dialog"
-        aria-modal="true"
-        tabindex="0"
-      >
-        <div>
-          <div>
-            <.focus_wrap
-              id={"#{@id}-container"}
-              phx-mounted={@show && show_modal(@id)}
-              phx-window-keydown={hide_modal(@on_cancel, @id)}
-              phx-key="escape"
-              phx-click-away={hide_modal(@on_cancel, @id)}
-            >
-              <div>
-                <button
-                  phx-click={hide_modal(@on_cancel, @id)}
-                  type="button"
-                  aria-label={gettext("close")}
-                >
-                  <Heroicons.x_mark solid class="inline-block h-4 w-4" />
-                </button>
-              </div>
-              <div id={"#{@id}-content"}>
-                <header :if={@title != []}>
-                  <h1 id={"#{@id}-title"}>
-                    <%= render_slot(@title) %>
-                  </h1>
-                  <p :if={@subtitle != []} id={"#{@id}-description"}>
-                    <%= render_slot(@subtitle) %>
-                  </p>
-                </header>
-                <%= render_slot(@inner_block) %>
-                <div :if={@confirm != [] or @cancel != []}>
-                  <.button
-                    :for={confirm <- @confirm}
-                    id={"#{@id}-confirm"}
-                    phx-click={@on_confirm}
-                    phx-disable-with
-                  >
-                    <%= render_slot(confirm) %>
-                  </.button>
-                  <.link
-                    :for={cancel <- @cancel}
-                    phx-click={hide_modal(@on_cancel, @id)}
-                  >
-                    <%= render_slot(cancel) %>
-                  </.link>
-                </div>
-              </div>
-            </.focus_wrap>
-          </div>
-        </div>
-      </div>
-    </div>
-    """
-  end
-
   @doc """
   Renders flash notices.
 
@@ -238,6 +238,16 @@ defmodule PortfolioWeb.CoreComponents do
       {@rest}
     >
       <p :if={@title}>
+        <Heroicons.information_circle
+          :if={@kind == :info}
+          mini
+          class="inline-block h-4 w-4"
+        />
+        <Heroicons.exclamation_circle
+          :if={@kind == :error}
+          mini
+          class="inline-block h-4 w-4"
+        />> <%= @title %>
         <Heroicons.information_circle
           :if={@kind == :info}
           mini
@@ -523,6 +533,7 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <p>
       <Heroicons.exclamation_circle mini class="inline-block h-4 w-4" />
+      <Heroicons.exclamation_circle mini class="inline-block h-4 w-4" />
       <%= render_slot(@inner_block) %>
     </p>
     """
@@ -686,6 +697,7 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <div>
       <.link navigate={@navigate}>
+        <Heroicons.arrow_left solid class="inline-block h-4 w-4" />
         <Heroicons.arrow_left solid class="inline-block h-4 w-4" />
         <%= render_slot(@inner_block) %>
       </.link>

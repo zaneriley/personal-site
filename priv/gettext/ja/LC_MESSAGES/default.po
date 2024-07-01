@@ -53,6 +53,11 @@ msgid_plural "minutes"
 msgstr[0] "分"
 msgstr[1] "分"
 
+msgid "%{count} min read"
+msgid_plural "%{count} min read"
+msgstr[0] "%{count}分で読める"
+msgstr[1] "%{count}分で読める"
+
 msgid "Note"
 msgid_plural "Notes"
 msgstr[0] "メモ"

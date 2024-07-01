@@ -6,7 +6,9 @@ defmodule Portfolio.Application do
   @impl true
   def start(_type, _args) do
     # Can't be a child process for some reason
-    Application.start(:yamerl)
+    if Mix.env() in [:dev, :test] do
+      Application.start(:yamerl)
+    end
 
     children = [
       PortfolioWeb.Telemetry,
@@ -15,14 +17,15 @@ defmodule Portfolio.Application do
        query: Application.get_env(:portfolio, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Portfolio.PubSub},
       {Finch, name: Portfolio.Finch},
-      PortfolioWeb.Endpoint,
-      {Portfolio.Content.FileSystemWatcher,
-       Application.get_env(:portfolio, Portfolio.Content.FileSystemWatcher)[
-         :paths
-       ]}
-      # Start a worker by calling: Portfolio.Worker.start_link(arg)
-      # {Portfolio.Worker, arg}
+      PortfolioWeb.Endpoint
     ]
+
+    children =
+      if Mix.env() in [:dev, :test] do
+        children ++ [Portfolio.Content.FileSystemWatcher]
+      else
+        children
+      end
 
     opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
     Supervisor.start_link(children, opts)
