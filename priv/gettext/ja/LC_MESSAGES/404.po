@@ -1,0 +1,35 @@
+msgid "ERROR 404"
+msgstr "エラー 404"
+
+msgid "DATA NOT FOUND"
+msgstr "データ... 検出不能"
+
+msgid "SYSTEM: Zane's Design Portfolio"
+msgstr "システム: Zaneデザインポートフォリオ"
+
+msgid "STATUS: [CONFUSED BUT OPERATIONAL]"
+msgstr "状態: [少々混乱気味... しかし、稼働中]"
+
+msgid "GREETINGS,"
+msgstr "ごきげんよう、"
+
+msgid "THE DATA YOU SEEK HAS EITHER"
+msgstr "お探しのデータは、"
+
+msgid "DISAPPEARED INTO THE VOID OR"
+msgstr "奈落の底へ消え失せたか、"
+
+msgid "NEVER EXISTED IN THE FIRST PLACE"
+msgstr "あるいは最初から存在しなかったのかもしれません..."
+
+msgid "EVERY DEAD END IS JUST A NEW BEGINNING."
+msgstr "行き止まりは、新たな始まりの合図。"
+
+msgid "THIS TERMINAL WISHES YOU LUCK ON"
+msgstr "このターミナルは、あなたの旅の"
+
+msgid "YOUR CONTINUED EXPLORATION."
+msgstr "幸運を祈っています。どうか諦めないで..."
+
+msgid "RETURN TO HOME"
+msgstr "ホームに戻る" 

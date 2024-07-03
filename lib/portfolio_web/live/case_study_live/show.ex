@@ -18,10 +18,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
         nil ->
           Logger.error("Case study not found in database for URL: #{url}")
 
-          {:ok,
-           socket
-           |> put_flash(:error, "Case study not found")
-           |> redirect(to: "/")}
+          raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
+
 
         %Portfolio.CaseStudy{} = cs ->
           # Logger.debug("Case study: #{inspect(cs, pretty: true)}")
@@ -40,7 +38,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
       end
     else
       Logger.error("Invalid URL format: #{url}")
-      {:ok, socket |> put_flash(:error, "Invalid URL") |> redirect(to: "/")}
+      raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
     end
   end
 
@@ -64,10 +62,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
       case case_study do
         nil ->
-          {:noreply,
-           socket
-           |> put_flash(:error, "Case study not found")
-           |> redirect(to: "/")}
+          raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
+
 
         %Portfolio.CaseStudy{} = cs ->
           {page_title, introduction} = set_page_metadata(cs, translations)
@@ -81,8 +77,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
            )}
       end
     else
-      {:noreply,
-       socket |> put_flash(:error, "Invalid URL") |> redirect(to: "/")}
+      raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
     end
   end
 
