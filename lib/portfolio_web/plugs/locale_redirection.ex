@@ -26,8 +26,13 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
     normalized_path = normalize_path(conn.request_path)
     log(:debug, "Normalized path: #{normalized_path}")
 
-    {locale_from_url, remaining_path} = extract_locale_from_path(normalized_path)
-    log(:debug, "Extracted locale: '#{locale_from_url}', Remaining path: '#{remaining_path}'")
+    {locale_from_url, remaining_path} =
+      extract_locale_from_path(normalized_path)
+
+    log(
+      :debug,
+      "Extracted locale: '#{locale_from_url}', Remaining path: '#{remaining_path}'"
+    )
 
     user_locale = get_user_locale(conn)
     log(:debug, "User locale: #{user_locale}")
@@ -51,7 +56,10 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
       String.split(path, "/", trim: true) |> length() == 1 and
           not valid_route?(conn, path) ->
         log(:info, "Single segment invalid path detected. Halting.")
-        raise Phoenix.Router.NoRouteError, conn: conn, router: PortfolioWeb.Router
+
+        raise Phoenix.Router.NoRouteError,
+          conn: conn,
+          router: PortfolioWeb.Router
 
       # If the locale is missing or unsupported, attempt to redirect
       true ->
@@ -73,7 +81,10 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
           # If no valid path is found, log a warning and return the conn without redirecting
           nil ->
             log(:warning, "No valid route found after adding locale.")
-            raise Phoenix.Router.NoRouteError, conn: conn, router: PortfolioWeb.Router
+
+            raise Phoenix.Router.NoRouteError,
+              conn: conn,
+              router: PortfolioWeb.Router
 
           # If a valid path is found, reset the redirect count and perform the redirection
           path ->
@@ -114,15 +125,21 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
     log(:debug, "Checking if route is valid: #{path}")
     log(:debug, "Method: #{conn.method}, Host: #{conn.host}")
 
-    result = Phoenix.Router.route_info(
-      PortfolioWeb.Router,
-      conn.method,
-      path,
-      conn.host
-    ) != :error
+    result =
+      Phoenix.Router.route_info(
+        PortfolioWeb.Router,
+        conn.method,
+        path,
+        conn.host
+      ) != :error
 
     log(:debug, "Route #{path} is #{if result, do: "valid", else: "invalid"}")
-    log(:debug, "Route info: #{inspect(Phoenix.Router.route_info(PortfolioWeb.Router, conn.method, path, conn.host))}")
+
+    log(
+      :debug,
+      "Route info: #{inspect(Phoenix.Router.route_info(PortfolioWeb.Router, conn.method, path, conn.host))}"
+    )
+
     result
   end
 

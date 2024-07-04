@@ -18,8 +18,9 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
         nil ->
           Logger.error("Case study not found in database for URL: #{url}")
 
-          raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
-
+          raise Phoenix.Router.NoRouteError,
+            conn: socket,
+            router: PortfolioWeb.Router
 
         %Portfolio.CaseStudy{} = cs ->
           # Logger.debug("Case study: #{inspect(cs, pretty: true)}")
@@ -38,7 +39,10 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
       end
     else
       Logger.error("Invalid URL format: #{url}")
-      raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
+
+      raise Phoenix.Router.NoRouteError,
+        conn: socket,
+        router: PortfolioWeb.Router
     end
   end
 
@@ -62,8 +66,9 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
       case case_study do
         nil ->
-          raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
-
+          raise Phoenix.Router.NoRouteError,
+            conn: socket,
+            router: PortfolioWeb.Router
 
         %Portfolio.CaseStudy{} = cs ->
           {page_title, introduction} = set_page_metadata(cs, translations)
@@ -77,7 +82,9 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
            )}
       end
     else
-      raise Phoenix.Router.NoRouteError, conn: socket, router: PortfolioWeb.Router
+      raise Phoenix.Router.NoRouteError,
+        conn: socket,
+        router: PortfolioWeb.Router
     end
   end
 
