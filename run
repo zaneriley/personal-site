@@ -184,6 +184,16 @@ function prod:remote {
   cmd bin/portfolio remote
 }
 
+function release {
+  # Build and tag the Docker image
+  docker build --no-cache -t portfolio:"$(git rev-parse --short HEAD) ."
+
+  # Push to Docker registry (uncomment and modify as needed)
+  # docker push your-registry/portfolio:$(git rev-parse --short HEAD)
+
+  echo "Release $(git rev-parse --short HEAD) built and ready for deployment"
+}
+
 function clean {
   # Remove cache and other machine generates files
   rm -rf priv/static/*.* priv/static/js priv/static/css priv/static/images priv/static/fonts
