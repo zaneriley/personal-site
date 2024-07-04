@@ -56,6 +56,12 @@ msgid_plural "minutes"
 msgstr[0] "minute"
 msgstr[1] "minutes"
 
+msgid "%{count} min read"
+msgid_plural "%{count} min read"
+msgstr[0] "%{count} min read"
+msgstr[1] "%{count} min read"
+
+
 msgid "Note"
 msgid_plural "Notes"
 msgstr[0] "Note"

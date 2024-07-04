@@ -3,38 +3,10 @@ defmodule PortfolioWeb.Router do
   alias PortfolioWeb.Plugs.SetLocale
   alias PortfolioWeb.Plugs.LocaleRedirection
   alias PortfolioWeb.Plugs.CommonMetadata
+  alias PortfolioWeb.Plugs.CSPHeader
   import Phoenix.LiveView.Router
   import Phoenix.LiveDashboard.Router
-
-  defp put_csp_header(conn, _opts) do
-    csp_config = Application.get_env(:portfolio, :csp, [])
-
-    base_url =
-      if is_function(csp_config[:build_url]),
-        do: csp_config[:build_url].(),
-        else: "http://localhost:8000"
-
-    csp =
-      "default-src 'self' #{base_url}; " <>
-        "script-src 'self' #{base_url} 'unsafe-inline'; " <>
-        "style-src 'self' #{base_url} 'unsafe-inline'; " <>
-        "img-src 'self' #{base_url} data:; " <>
-        "font-src 'self' #{base_url}; " <>
-        "connect-src 'self' #{base_url}; " <>
-        "frame-src 'none'; " <>
-        "object-src 'none'; " <>
-        "base-uri 'self'; " <>
-        "form-action 'self'; " <>
-        "frame-ancestors 'none'; " <>
-        "upgrade-insecure-requests;"
-
-    header_name =
-      if csp_config[:report_only],
-        do: "content-security-policy-report-only",
-        else: "content-security-policy"
-
-    put_resp_header(conn, header_name, csp)
-  end
+  require Logger
 
   pipeline :locale do
     plug SetLocale
@@ -48,7 +20,7 @@ defmodule PortfolioWeb.Router do
     plug :put_root_layout, {PortfolioWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :put_csp_header
+    plug CSPHeader
     plug CommonMetadata
   end
 
@@ -105,6 +77,13 @@ defmodule PortfolioWeb.Router do
     live "/", HomeLive
   end
 
+  # Catch-all route for unmatched paths
+  scope "/", PortfolioWeb do
+    pipe_through :browser
+    get "/up/", UpController, :index
+    get "/up/databases", UpController, :databases
+  end
+
   scope "/:locale", PortfolioWeb do
     pipe_through [:browser, :locale]
 
@@ -116,13 +95,6 @@ defmodule PortfolioWeb.Router do
       live "/note/:url", NoteLive.Show, :show
       live "/about", AboutLive, :index
     end
-  end
-
-  # Catch-all route for unmatched paths
-  scope "/", PortfolioWeb do
-    pipe_through :browser
-    get "/up/", UpController, :index
-    get "/up/databases", UpController, :databases
   end
 
   scope "/api", PortfolioWeb do
