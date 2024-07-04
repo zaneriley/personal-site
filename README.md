@@ -30,7 +30,7 @@
 
 ## Introduction
 
-This repository houses my product design portfolio, showcasing various projects and designs I've worked on. It's built using Phoenix.
+This repository houses my product design portfolio, showcasing various projects and designs I've worked on. 
 
 About me: product-focused designer with 10+ years of experience, based in Tokyo, Japan (prev in San Francisco) 
 
@@ -44,7 +44,10 @@ About me: product-focused designer with 10+ years of experience, based in Tokyo,
 
 ### Internationalization
 
-The portfolio supports both English (/en) and Japanese (/ja) languages. It uses the Accept-Language header to detect the user's preferred language and sets a session key to maintain that preference. For application and landing page content, we use Gettext for translations. Case studies have separate markdown files for each language.
+The portfolio supports both English (/en) and Japanese (/ja) languages. It determines the locale, by in order:
+* Locale in URL
+* Accept-Language header to detect the user's preferred language.
+For application and landing page content, we use Gettext for translations. Case studies and other long form content have separate markdown files for each language.
 
 ### Admin Interface
 
