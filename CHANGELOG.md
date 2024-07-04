@@ -3,7 +3,7 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
-## 0.1.0 (2024-07-04)
+## 0.1.0-alpha.1 (2024-07-04)
 
 * This commit replaces the entire React-based portfolio  with the new Elixir and Phoenix based portfolio
 
