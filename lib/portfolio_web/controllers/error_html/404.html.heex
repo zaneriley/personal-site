@@ -74,34 +74,43 @@
       <%= gettext("Skip to main content") %>
     </a>
     <div class="min-h-screen flex items-center justify-center">
-      <div class="" style="filter: url('#waves');transform: translateY(-0.25rem) translateX(calc(0rem));">
+      <div
+        class=""
+        style="filter: url('#waves');transform: translateY(-0.25rem) translateX(calc(0rem));"
+      >
         /********************************************** <br />
         <a href="/" class="" aria-label={gettext("Return to homepage")}>
           <%= dynamic_home_url() %>
-        </a>        
-        <h1><%= gettext("ERROR 404") %> <br/> <%= gettext("DATA NOT FOUND") %></h1>
-        * <%= gettext("SYSTEM: Zane's Design Portfolio") %> <br/>
-        * <%= gettext("STATUS: [CONFUSED BUT OPERATIONAL]") %> <br/>
-        ***********************************************/ <br/>
-        <br/>
+        </a>
+        <h1>
+          <%= gettext("ERROR 404") %> <br /> <%= gettext("DATA NOT FOUND") %>
+        </h1>
+        * <%= gettext("SYSTEM: Zane's Design Portfolio") %> <br />
+        * <%= gettext("STATUS: [CONFUSED BUT OPERATIONAL]") %> <br />
+        ***********************************************/ <br />
+        <br />
 
-        <%= gettext("GREETINGS,") %><br/>
-        <br/>
+        <%= gettext("GREETINGS,") %><br />
+        <br />
 
         <%= gettext("THE DATA YOU SEEK HAS EITHER") %> <br />
-        <%= gettext("DISAPPEARED INTO THE VOID OR") %><br/>
-        <%= gettext("NEVER EXISTED IN THE FIRST PLACE") %><br/>
-        <br/>
+        <%= gettext("DISAPPEARED INTO THE VOID OR") %><br />
+        <%= gettext("NEVER EXISTED IN THE FIRST PLACE") %><br />
+        <br />
 
-        <%= gettext("EVERY DEAD END IS JUST A NEW BEGINNING.") %><br/>
+        <%= gettext("EVERY DEAD END IS JUST A NEW BEGINNING.") %><br />
         <%= gettext("THIS TERMINAL WISHES YOU LUCK ON") %> <br />
-        <%= gettext("YOUR CONTINUED EXPLORATION.") %><br/>
-        <br/>
+        <%= gettext("YOUR CONTINUED EXPLORATION.") %><br />
+        <br /> ≺system initiating self-reflection protocol≻<br />
+        <p class="">
+          <a href="/" class="pb-6 block"><%= gettext("RETURN TO HOME") %></a>
+        </p>
 
-        ≺system initiating self-reflection protocol≻<br/>
-        <p class=""><a href="/" class="pb-6 block"><%= gettext("RETURN TO HOME") %></a></p>
-
-        <svg class="waves absolute top-0 left-0" xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <svg
+          class="waves absolute top-0 left-0"
+          xmlns="http://www.w3.org/2000/svg"
+          version="1.1"
+        >
           <defs>
             <filter id="waves">
               <feturbulence
