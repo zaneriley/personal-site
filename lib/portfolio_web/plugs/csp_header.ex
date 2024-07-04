@@ -6,12 +6,12 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   import Plug.Conn
 
   @type csp_config :: %{
-    scheme: String.t(),
-    host: String.t(),
-    port: String.t(),
-    additional_hosts: list(String.t()),
-    report_only: boolean()
-  }
+          scheme: String.t(),
+          host: String.t(),
+          port: String.t(),
+          additional_hosts: list(String.t()),
+          report_only: boolean()
+        }
 
   @env Mix.env()
 
@@ -30,7 +30,9 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   @spec get_csp_config(Plug.Conn.t()) :: csp_config
   defp get_csp_config(conn) do
     # Detect the actual host being used
-    actual_host = conn.host || Application.get_env(:portfolio, PortfolioWeb.Endpoint)[:url][:host]
+    actual_host =
+      conn.host ||
+        Application.get_env(:portfolio, PortfolioWeb.Endpoint)[:url][:host]
 
     %{
       scheme: System.get_env("URL_SCHEME", "http"),
@@ -76,14 +78,22 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
 
   @spec construct_url(csp_config, :base | :ws) :: String.t()
   defp construct_url(config, type) do
-    url_scheme = if type == :ws and config.scheme == "https", do: "wss", else: config.scheme
-    port_segment = if config.port in ["80", "443"], do: "", else: ":#{config.port}"
+    url_scheme =
+      if type == :ws and config.scheme == "https",
+        do: "wss",
+        else: config.scheme
+
+    port_segment =
+      if config.port in ["80", "443"], do: "", else: ":#{config.port}"
+
     "#{url_scheme}://#{config.host}#{port_segment}"
   end
 
   @spec get_all_hosts(csp_config) :: String.t()
   defp get_all_hosts(config) do
-    base_hosts = [config.host, "localhost", "0.0.0.0"] ++ config.additional_hosts
+    base_hosts =
+      [config.host, "localhost", "0.0.0.0"] ++ config.additional_hosts
+
     base_urls = Enum.map(base_hosts, &"#{config.scheme}://#{&1}:#{config.port}")
     Enum.join(base_urls, " ")
   end
@@ -96,6 +106,7 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   defp maybe_add_upgrade_insecure_requests(directives) when @env == :prod do
     [{"upgrade-insecure-requests", ""} | directives]
   end
+
   defp maybe_add_upgrade_insecure_requests(directives), do: directives
 
   @spec determine_header_name(boolean()) :: String.t()

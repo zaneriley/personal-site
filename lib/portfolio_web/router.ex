@@ -76,13 +76,13 @@ defmodule PortfolioWeb.Router do
 
     live "/", HomeLive
   end
+
   # Catch-all route for unmatched paths
   scope "/", PortfolioWeb do
     pipe_through :browser
     get "/up/", UpController, :index
     get "/up/databases", UpController, :databases
   end
-
 
   scope "/:locale", PortfolioWeb do
     pipe_through [:browser, :locale]

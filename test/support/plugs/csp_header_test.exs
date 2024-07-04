@@ -15,8 +15,10 @@ defmodule PortfolioWeb.CSPHeaderTest do
 
     test "CSP header contains critical directives", %{csp: csp} do
       critical_directives = ~w(default-src script-src style-src connect-src)
+
       for directive <- critical_directives do
-        assert csp =~ ~r/#{directive}\s/, "Missing critical directive: #{directive}"
+        assert csp =~ ~r/#{directive}\s/,
+               "Missing critical directive: #{directive}"
       end
     end
 

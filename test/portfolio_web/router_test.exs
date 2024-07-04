@@ -3,7 +3,9 @@ defmodule PortfolioWeb.RouterTest do
   import Plug.Conn
 
   describe "Locale Handling Tests" do
-    test "redirects to default locale when no locale is specified", %{conn: conn} do
+    test "redirects to default locale when no locale is specified", %{
+      conn: conn
+    } do
       conn = get(conn, "/")
       assert redirected_to(conn, 301) =~ "/en"
     end
@@ -24,6 +26,5 @@ defmodule PortfolioWeb.RouterTest do
       conn = get(conn, "/non-existent-route")
       assert conn.status == 404
     end
-
   end
 end
