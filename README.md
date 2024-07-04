@@ -7,7 +7,7 @@
 <p align="left">
     <img src="https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio" alt="Website Status" />
     <img src="https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml" alt="GitHub Actions Workflow Status" />
-    <a href='https://coveralls.io/github/zaneriley/personal-site?branch=refs/pull/20/merge'><img src='https://coveralls.io/repos/github/zaneriley/personal-site/badge.svg?branch=refs/pull/20/merge' alt='Coverage Status' /></a>
+    <a href='https://coveralls.io/github/zaneriley/personal-site?'><img src='https://coveralls.io/repos/github/zaneriley/personal-site/badge.svg?branch=main' alt='Coverage Status' /></a>
 </p>
 
 <p align="left">
