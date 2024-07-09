@@ -109,7 +109,13 @@ These hooks help maintain code quality, but you bypass the checks easily if you 
 
 ### Deployment
 
-Deployment details are still being finalized. The project uses GitHub Actions for CI/CD, as indicated by the workflow status badge at the top of this README.
+Deployment details are still being finalized. The project uses GitHub Actions for CI/CD, as indicated by the workflow status badge at the top of this README. Below is a WIP:
+
+You'll need to make sure the env variables are set to production, namely:
+```bash
+export DOCKER_WEB_VOLUME=./priv/static:/app/priv/static # Use this for production
+#export DOCKER_WEB_VOLUME=.:/app  # use this for dev 
+```
 
 ### Troubleshooting
 

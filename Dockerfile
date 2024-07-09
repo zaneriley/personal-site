@@ -38,7 +38,7 @@ RUN if [ "${NODE_ENV}" != "development" ]; then \
 ###############################################################################
 
 # Stage 2: Development environment
-FROM elixir:1.16.0-slim AS dev
+FROM elixir:1.17.1-slim AS dev
 LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
 WORKDIR /app
@@ -48,7 +48,7 @@ ARG GID=1000
 
 # Install development dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential curl inotify-tools \
+  && apt-get install -y --no-install-recommends ca-certificates build-essential curl inotify-tools \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership
@@ -93,7 +93,7 @@ CMD ["iex", "-S", "mix", "phx.server"]
 ###############################################################################
 
 # Stage 3: Production environment
-FROM elixir:1.16.0-slim AS prod
+FROM elixir:1.17.1-slim AS prod
 LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
 WORKDIR /app
