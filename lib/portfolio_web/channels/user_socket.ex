@@ -1,11 +1,7 @@
 defmodule PortfolioWeb.UserSocket do
   use Phoenix.Socket
   require Logger
-  @salt Application.compile_env(:portfolio, PortfolioWeb.Endpoint)[:token_salt]
 
-  ## Channels
-  channel "theme:lobby", PortfolioWeb.ThemeChannel
-  channel "user_theme:*", PortfolioWeb.ThemeChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -20,14 +16,6 @@ defmodule PortfolioWeb.UserSocket do
   # performing token verification on connect.
   @impl true
   def connect(params, socket, _connect_info) do
-    # case params do
-    #   # %{"token" => token} ->
-    #   #   verify_token_and_connect(token, socket)
-
-    #   # _ ->
-    #   #   Logger.debug("Unauthenticated user connected")
-    #     {:ok, socket}
-    # end
     {:ok, socket}
   end
 

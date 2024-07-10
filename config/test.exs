@@ -10,6 +10,10 @@ config :logger, level: :warning
 
 config :portfolio, Portfolio.Mailer, adapter: Swoosh.Adapters.Test
 
+# You can't use mix.env in release builds, so setting this
+# let's us check for the environment in the application
+config :portfolio, environment: :test
+
 # config/test.exs
 config :portfolio, :supported_locales, ["en", "ja"]
 config :portfolio, :default_locale, "en"

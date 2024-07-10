@@ -2,8 +2,7 @@ import Config
 
 config :portfolio, PortfolioWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
-  server: true,
-  token_salt: System.get_env("PROD_TOKEN_SALT")
+  server: true
 
 config :logger, :console,
   format: {LogfmtEx, :format},
@@ -11,3 +10,7 @@ config :logger, :console,
   level: :info
 
 config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Portfolio.Finch
+
+# You can't use mix.env in release builds, so setting this
+# let's us check for the environment in the application
+config :portfolio, environment: :prod

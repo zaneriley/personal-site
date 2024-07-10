@@ -1,5 +1,7 @@
 import Config
 
+config :portfolio, environment: config_env()
+
 url_host = System.fetch_env!("URL_HOST")
 
 config :portfolio, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")

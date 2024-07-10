@@ -97,10 +97,6 @@ defmodule PortfolioWeb.Router do
     end
   end
 
-  scope "/api", PortfolioWeb do
-    post "/session/generate", SessionController, :generate
-  end
-
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:new, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
