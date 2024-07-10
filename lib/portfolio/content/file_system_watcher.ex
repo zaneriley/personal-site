@@ -32,7 +32,8 @@ defmodule Portfolio.Content.FileSystemWatcher do
   defp should_start? do
     Application.get_env(:portfolio, :environment) in [:dev, :test]
   end
-    @doc """
+
+  @doc """
   Initializes the file watcher.
 
   Args:
@@ -79,9 +80,7 @@ defmodule Portfolio.Content.FileSystemWatcher do
         {:file_event, watcher_pid, {path, events}},
         %{watcher_pid: watcher_pid} = state
       ) do
-    Logger.info(
-      "File system event: File: #{path}, Events: #{inspect(events)}"
-    )
+    Logger.info("File system event: File: #{path}, Events: #{inspect(events)}")
 
     case {relevant_file_change?(path, events), events} do
       {true, [:modified]} ->

@@ -37,7 +37,7 @@ defmodule Portfolio.MixProject do
   defp deps do
     [
       {:cowboy, "~> 2.11.0"},
-      {:credo, "1.7.3", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dns_cluster, "~> 0.1.1"},
       {:earmark, "~> 1.4"},
@@ -59,7 +59,6 @@ defmodule Portfolio.MixProject do
       {:phoenix_live_view, "0.20.3"},
       {:plug_cowboy, "~> 2.1"},
       {:postgrex, "0.17.4"},
-      {:slugify, "~> 1.3"},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:swoosh, "1.14.4"},
       {:telemetry_metrics, "0.6.2"},

@@ -2,7 +2,6 @@ defmodule PortfolioWeb.UserSocket do
   use Phoenix.Socket
   require Logger
 
-
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
   # verification, you can put default assigns into
