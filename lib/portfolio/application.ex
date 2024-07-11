@@ -6,7 +6,7 @@ defmodule Portfolio.Application do
   @impl true
   def start(_type, _args) do
     # Can't be a child process for some reason
-    if Mix.env() in [:dev, :test] do
+    if Application.get_env(:portfolio, :environment) in [:dev, :test] do
       Application.start(:yamerl)
     end
 
@@ -21,7 +21,7 @@ defmodule Portfolio.Application do
     ]
 
     children =
-      if Mix.env() in [:dev, :test] do
+      if Application.get_env(:portfolio, :environment) in [:dev, :test] do
         children ++ [Portfolio.Content.FileSystemWatcher]
       else
         children

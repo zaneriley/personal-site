@@ -49,7 +49,7 @@ defmodule PortfolioWeb.Router do
   # it behind authentication and allow only admins to access it.
   # Conditional block for development-only routes
   # We're defining these first as to not trigger the :locale redirection pipeline.
-  if Mix.env() in [:dev, :test] do
+  if Application.get_env(:portfolio, :environment) in [:dev, :test] do
     scope "/admin", PortfolioWeb do
       pipe_through [:admin]
 
@@ -95,10 +95,6 @@ defmodule PortfolioWeb.Router do
       live "/note/:url", NoteLive.Show, :show
       live "/about", AboutLive, :index
     end
-  end
-
-  scope "/api", PortfolioWeb do
-    post "/session/generate", SessionController, :generate
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

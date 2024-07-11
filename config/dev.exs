@@ -17,6 +17,10 @@ config :portfolio, PortfolioWeb.Endpoint,
   token_salt: System.get_env("DEV_TOKEN_SALT")
 
 # Updating dev
+# You can't use mix.env in release builds, so setting this
+# let's us check for the environment in the application
+config :portfolio, environment: :dev
+
 config :portfolio, dev_routes: true
 
 config :portfolio, Portfolio.Repo, show_sensitive_data_on_connection_error: true

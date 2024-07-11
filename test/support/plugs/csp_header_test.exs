@@ -27,7 +27,7 @@ defmodule PortfolioWeb.CSPHeaderTest do
     end
 
     test "script-src does not allow unsafe-inline in production", %{csp: csp} do
-      if Mix.env() == :prod do
+      if Application.get_env(:portfolio, :environment) == :prod do
         refute csp =~ ~r/script-src[^;]*'unsafe-inline'/
       end
     end

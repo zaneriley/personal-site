@@ -62,7 +62,7 @@ defmodule Portfolio.Content.FileReader do
   end
 
   # Only parse frontmatter in dev and test environments
-  if Mix.env() in [:dev, :test] do
+  if Application.compile_env(:portfolio, :environment) in [:dev, :test] do
     defp parse_frontmatter(frontmatter) do
       case :yamerl_constr.string(frontmatter) do
         [metadata] ->
