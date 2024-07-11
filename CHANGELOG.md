@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.1.1-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.1.0-alpha.1...v0.1.1-alpha.1) (2024-07-11)
+
+
+### Miscellaneous
+
+* **release:** bump version to 0.1.0-alpha.2 ([#31](https://github.com/zaneriley/personal-site/issues/31)) ([dbd011d](https://github.com/zaneriley/personal-site/commit/dbd011d80bdb9f731dc2dc11af954dffea08d243))
+
 ## 0.1.0-alpha.1 (2024-07-04)
 
 * This commit replaces the entire React-based portfolio  with the new Elixir and Phoenix based portfolio
