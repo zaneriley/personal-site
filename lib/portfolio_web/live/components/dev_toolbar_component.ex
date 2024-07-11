@@ -21,7 +21,9 @@ defmodule PortfolioWeb.DevToolbar do
         <div class="flex space-x-2">
           <div>
             <strong class="text-gray-400 ">ENV:</strong>
-            <span class="text-white font-semibold"><%= Application.get_env(:portfolio, :environment) %></span>
+            <span class="text-white font-semibold">
+              <%= Application.get_env(:portfolio, :environment) %>
+            </span>
           </div>
           <div>
             <strong class="text-gray-400">LOCALE:</strong>

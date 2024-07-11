@@ -26,7 +26,7 @@ defmodule PortfolioWeb.AboutLive do
   def render(assigns) do
     ~H"""
     <main class="u-container">
-    <%= if Application.get_env(:portfolio, :environment) == :dev do %>
+      <%= if Application.get_env(:portfolio, :environment) == :dev do %>
         <div>
           Debug: Gettext Locale: <%= Gettext.get_locale(PortfolioWeb.Gettext) %>,
           Assign Locale: <%= @user_locale %>
