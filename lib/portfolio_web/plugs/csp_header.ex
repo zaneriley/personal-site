@@ -13,7 +13,7 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
           report_only: boolean()
         }
 
-  @env Mix.env()
+  @env Application.compile_env(:portfolio, :environment)
 
   @spec init(keyword()) :: keyword()
   def init(opts), do: opts
