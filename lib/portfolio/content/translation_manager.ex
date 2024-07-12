@@ -52,8 +52,8 @@ defmodule Portfolio.Content.TranslationManager do
   """
   alias Portfolio.Repo
   alias Portfolio.CaseStudy
-
   alias Portfolio.Translation
+  alias Portfolio.Content.TranslatableFields
   import Ecto.Query
   require Logger
 
@@ -158,8 +158,20 @@ defmodule Portfolio.Content.TranslationManager do
 
       _ ->
         Enum.into(translations, %{}, fn t ->
-          {String.to_atom(t.field_name), t.field_value}
+          {safe_to_atom(t.field_name), t.field_value}
         end)
+    end
+  end
+
+  # This approach ensures that we only create atoms for fields we expect,
+  # avoiding potential atom table exhaustion.
+  # It also maintains backwards compatibility by falling back to
+  # string keys for any unexpected fields.
+  defp safe_to_atom(field_name) do
+    if field_name in Enum.map(TranslatableFields.all(), &Atom.to_string/1) do
+      String.to_existing_atom(field_name)
+    else
+      field_name
     end
   end
 end
