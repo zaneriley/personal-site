@@ -12,23 +12,34 @@ on:
 jobs:
   test:
     runs-on: "ubuntu-22.04"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      GITHUB_REF: ${{ github.ref }}
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_ACTOR: ${{ github.actor }}
 
     steps:
       - uses: "actions/checkout@v2"
 
       - name: "Install CI dependencies"
-        run: |
-          ./run ci:install-deps
+        run: ./run ci:install-deps
 
-      - name: "Test"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          GITHUB_REF: ${{ github.ref }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
+      - name: "Setup environment"
         run: |
           # Remove volumes in CI to avoid permission errors due to UID / GID.
           sed -i "s|.:/app|/tmp:/tmp|g" .env*
           sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
-          ./run ci:test
+          ./run ci:setup-env
+
+      - name: "Lint"
+        run: ./run ci:lint
+
+      - name: "Security check"
+        run: ./run ci:security-check
+
+      - name: "Run tests"
+        run: ./run ci:test
+
+      - name: "Static analysis"
+        run: ./run ci:static-analysis

@@ -82,7 +82,6 @@ function test {
   _dc -e "MIX_ENV=test" web mix test "${@}"
 }
 
-
 function test:coverage {
   echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
   
@@ -116,6 +115,21 @@ function test:coverage {
 function test:coverage:details {
   # Get test coverage details
   _dc -e "MIX_ENV=test" web mix coveralls.detail "${@}"
+}
+
+function dialyzer {
+  # Run Dialyzer static code analysis
+  mix dialyzer "${@}"
+}
+
+function dialyzer:ci {
+  # Run Dialyzer in CI environment
+  _dc -e "MIX_ENV=test" web mix dialyzer --format short
+}
+
+function dialyzer:explain {
+  # Explain a Dialyzer warning
+  mix dialyzer.explain "${@}"
 }
 
 function shell {
@@ -201,40 +215,58 @@ function clean {
 }
 
 function ci:install-deps {
-  # Install Continuous Integration (CI) dependencies
-  sudo apt-get install -y curl shellcheck
-  sudo curl \
-    -L https://raw.githubusercontent.com/nickjj/wait-until/v0.2.0/wait-until \
-    -o /usr/local/bin/wait-until && sudo chmod +x /usr/local/bin/wait-until
+    # Unchanged
+    sudo apt-get install -y curl shellcheck
+    sudo curl \
+        -L https://raw.githubusercontent.com/nickjj/wait-until/v0.2.0/wait-until \
+        -o /usr/local/bin/wait-until && sudo chmod +x /usr/local/bin/wait-until
+}
+
+function ci:setup-env {
+    cp --no-clobber .env.example .env
+    docker compose build
+    docker compose up -d
+
+    # shellcheck disable=SC1091
+    . .env
+    wait-until "docker compose exec -T \
+        -e PGPASSWORD=${POSTGRES_PASSWORD} postgres \
+        psql -U ${POSTGRES_USER} ${POSTGRES_USER} -c 'SELECT 1'"
+
+    docker compose logs
+}
+
+function ci:lint {
+    shellcheck run bin/*
+    lint:dockerfile "${@}"
+    lint
+    format:check
+}
+
+function ci:security-check {
+    security:check
+}
+
+function ci:setup-db {
+    mix ecto.setup
 }
 
 function ci:test {
-  # Execute Continuous Integration (CI) pipeline
-  #
-  # It's expected that your CI environment has these tools available:
-  #   - https://github.com/koalaman/shellcheck
-  #   - https://github.com/nickjj/wait-until
-  shellcheck run bin/*
-  lint:dockerfile "${@}"
+    test:coverage "${@}"
+}
 
-  cp --no-clobber .env.example .env
+function ci:static-analysis {
+    dialyzer:ci || true
+}
 
-  docker compose build
-  docker compose up -d
-
-  # shellcheck disable=SC1091
-  . .env
-  wait-until "docker compose exec -T \
-    -e PGPASSWORD=${POSTGRES_PASSWORD} postgres \
-    psql -U ${POSTGRES_USER} ${POSTGRES_USER} -c 'SELECT 1'"
-
-  docker compose logs
-
-  lint
-  format:check
-  security:check
-  mix ecto.setup
-  test:coverage "${@}"
+function ci:run-all {
+    ci:install-deps
+    ci:setup-env
+    ci:lint "$@"
+    ci:security-check
+    # ci:setup-db
+    ci:test "$@"
+    ci:static-analysis
 }
 
 function help {
