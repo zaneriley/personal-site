@@ -26,10 +26,10 @@ defmodule Portfolio.Content.CaseStudyManager do
   end
 
   defp create_case_study(metadata) do
-    %CaseStudy{}
-    |> CaseStudy.changeset(metadata)
-    |> Repo.insert()
-    |> case do
+    changeset = CaseStudy.changeset(%CaseStudy{}, metadata)
+    insert_result = Repo.insert(changeset)
+
+    case insert_result do
       {:ok, case_study} ->
         {:ok, case_study}
 
@@ -47,8 +47,9 @@ defmodule Portfolio.Content.CaseStudyManager do
     filtered_metadata = Map.take(metadata, fields)
     changeset = CaseStudy.changeset(case_study, filtered_metadata)
 
-    Repo.update(changeset)
-    |> case do
+    update_result = Repo.update(changeset)
+
+    case update_result do
       {:ok, updated_case_study} ->
         Portfolio.ContentRenderer.do_render(updated_case_study, markdown)
 

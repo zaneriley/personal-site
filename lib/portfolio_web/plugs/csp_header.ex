@@ -98,10 +98,12 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
     Enum.join(base_urls, " ")
   end
 
+  @dialyzer {:nowarn_function, frame_src: 0}
   @spec frame_src() :: String.t()
   defp frame_src when @env == :dev, do: "'self'"
   defp frame_src, do: "'none'"
 
+  @dialyzer {:nowarn_function, maybe_add_upgrade_insecure_requests: 1}
   @spec maybe_add_upgrade_insecure_requests(keyword()) :: keyword()
   defp maybe_add_upgrade_insecure_requests(directives) when @env == :prod do
     [{"upgrade-insecure-requests", ""} | directives]

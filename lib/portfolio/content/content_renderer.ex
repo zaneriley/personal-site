@@ -52,26 +52,12 @@ defmodule Portfolio.ContentRenderer do
            update_case_study_content(case_study, html_content) do
       {:ok, updated_case_study}
     else
-      {:error, :file_processing_failed} ->
+      error ->
         Logger.error(
-          "Markdown rendering failed for CaseStudy ID (file): #{case_study.id}"
+          "Markdown rendering failed for CaseStudy ID: #{case_study.id}. Error: #{inspect(error)}"
         )
 
-        {:error, :file_processing_failed}
-
-      {:error, :conversion_failed} ->
-        Logger.error(
-          "Failed to convert markdown to HTML for CaseStudy ID: #{case_study.id}"
-        )
-
-        {:error, :conversion_failed}
-
-      {:error, reason} ->
-        Logger.error(
-          "Markdown rendering failed for CaseStudy ID (unknown error): #{case_study.id}. Reason: #{reason}"
-        )
-
-        {:error, reason}
+        {:error, :rendering_failed}
     end
   end
 

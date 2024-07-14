@@ -125,7 +125,10 @@ defmodule Portfolio.Content.FileSystemWatcher do
   end
 
   def start_link() do
-    raise "File system watcher is not available in #{Mix.env()} environment"
+    Logger.warn(
+      "File system watcher is not available in #{Mix.env()} environment"
+    )
+
     :ignore
   end
 end

@@ -49,8 +49,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
       # If the URL already contains a supported locale, no redirection is needed
       locale_from_url in @supported_locales ->
         log(:debug, "Supported locale #{locale_from_url} found in URL.")
-        # Reset redirect count for supported locales
-        conn |> put_session(:redirect_count, 0)
+        put_session(conn, :redirect_count, 0)
 
       # Check if it's a single segment path that's not a locale
       String.split(path, "/", trim: true) |> length() == 1 and
@@ -91,8 +90,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
             conn =
               conn
               |> put_session(:redirect_count, 0)
-
-            redirect_to_locale(conn, path, user_locale)
+              |> redirect_to_locale(path, user_locale)
         end
     end
   end
@@ -198,7 +196,6 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
       _ ->
         [
-          "/#{locale}#{if parts == [], do: "", else: "/#{Enum.join(parts, "/")}"}",
           "/#{locale}#{if tl(parts) == [], do: "", else: "/#{Enum.join(tl(parts), "/")}"}"
         ]
     end
