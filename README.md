@@ -94,6 +94,7 @@ To set up the project locally:
 1. Clone the repository
 2. Ensure you have Docker installed
 3. Run `docker-compose up -d` to start the application
+4. Run `./run mix ecto.setup` to initially set up the db
 4. Visit `localhost:8000` in your browser
 
 ### Code Quality and Git Hooks
