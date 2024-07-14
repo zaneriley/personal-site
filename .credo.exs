@@ -140,6 +140,7 @@
           {Credo.Check.Refactor.RejectReject, []},
           {Credo.Check.Refactor.UnlessWithElse, []},
           {Credo.Check.Refactor.WithClauses, []},
+          {Credo.Check.Refactor.UtcNowTruncate, []},
 
           #
           ## Warnings
@@ -167,24 +168,16 @@
           {Credo.Check.Warning.WrongTestFileExtension, []},
 
           # Experimental/Opinionated checks
-          {Credo.Check.Readability.BlockPipe, []},
           {Credo.Check.Warning.LeakyEnvironment, []},
-          {Credo.Check.Refactor.ModuleDependencies, []},
-          {Credo.Check.Readability.Specs, []},
-          {Credo.Check.Readability.StrictModuleLayout, []},
-          {Credo.Check.Warning.UnsafeToAtom, []},
-          {Credo.Check.Refactor.PipeChainStart, []},
-
+          {Credo.Check.Readability.StrictModuleLayout, []}
         ],
         disabled: [
-          #
           # Checks scheduled for next check update (opt-in for now)
-          {Credo.Check.Refactor.UtcNowTruncate, []},
 
           #
           # Controversial and experimental checks (opt-in, just move the check to `:enabled`
           #   and be sure to use `mix credo --strict` to see low priority checks)
-          #
+          {Credo.Check.Readability.BlockPipe, []},
           {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
           {Credo.Check.Consistency.UnusedVariableNames, []},
           {Credo.Check.Design.DuplicatedCode, []},
@@ -198,7 +191,6 @@
           {Credo.Check.Readability.SeparateAliasRequire, []},
           {Credo.Check.Readability.SingleFunctionToBlockPipe, []},
           {Credo.Check.Readability.SinglePipe, []},
-
           {Credo.Check.Readability.WithCustomTaggedTuple, []},
           {Credo.Check.Refactor.ABCSize, []},
           {Credo.Check.Refactor.AppendSingleItem, []},
@@ -206,16 +198,13 @@
           {Credo.Check.Refactor.FilterReject, []},
           {Credo.Check.Refactor.IoPuts, []},
           {Credo.Check.Refactor.MapMap, []},
-
           {Credo.Check.Refactor.NegatedIsNil, []},
           {Credo.Check.Refactor.PassAsyncInTestCases, []},
           {Credo.Check.Refactor.RejectFilter, []},
           {Credo.Check.Refactor.VariableRebinding, []},
           {Credo.Check.Warning.LazyLogging, []},
-
           {Credo.Check.Warning.MapGetUnsafePass, []},
-          {Credo.Check.Warning.MixEnv, []},
-
+          {Credo.Check.Warning.MixEnv, []}
 
           # {Credo.Check.Refactor.MapInto, []},
 
