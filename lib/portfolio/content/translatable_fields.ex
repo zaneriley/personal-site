@@ -3,17 +3,24 @@ defmodule Portfolio.Content.TranslatableFields do
   Defines and manages translatable fields for different content types.
   """
 
-  @case_study_fields [:title, :company, :role, :timeline, :introduction, :content]
+  @case_study_fields [
+    :title,
+    :company,
+    :role,
+    :timeline,
+    :introduction,
+    :content
+  ]
+  @additional_fields [:custom_field]
+
+  # Force atom creation at compile-time
+  @all_fields (@case_study_fields ++ @additional_fields) |> Enum.uniq()
+  @all_field_strings @all_fields |> Enum.map(&Atom.to_string/1)
 
   def case_study, do: @case_study_fields
+  def additional, do: @additional_fields
 
-  def all do
-    @case_study_fields
-  end
+  def all, do: @all_fields
 
-  # This function is called at compile-time to ensure all atoms are created
-  def __force_atom_creation__ do
-    all()
-    |> Enum.each(&(&1 |> Atom.to_string() |> String.to_atom()))
-  end
+  def all_strings, do: @all_field_strings
 end

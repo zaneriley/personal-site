@@ -3,12 +3,11 @@ defmodule Portfolio.Application do
 
   use Application
 
-  # Force creation of atoms for translatable fields at compile-time
-  # This ensures that we don't run into atom table exhaustion issues
-  Portfolio.Content.TranslatableFields.__force_atom_creation__()
-
   @impl true
   def start(_type, _args) do
+    # Force creation of atoms for translatable fields at compile-time
+    # This ensures that we don't run into atom table exhaustion issues
+
     # Can't be a child process for some reason
     if Application.get_env(:portfolio, :environment) in [:dev, :test] do
       Application.start(:yamerl)

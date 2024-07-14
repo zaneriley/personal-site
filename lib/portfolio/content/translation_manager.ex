@@ -122,7 +122,7 @@ defmodule Portfolio.Content.TranslationManager do
       content.translations
       |> Enum.filter(&(&1.locale == locale))
       |> Enum.into(%{}, fn t ->
-        {String.to_atom(t.field_name), t.field_value}
+        {safe_to_existing_atom(t.field_name), t.field_value}
       end)
 
     Map.merge(default_data, translations)
@@ -168,9 +168,18 @@ defmodule Portfolio.Content.TranslationManager do
   # It also maintains backwards compatibility by falling back to
   # string keys for any unexpected fields.
   defp safe_to_atom(field_name) do
-    if field_name in Enum.map(TranslatableFields.all(), &Atom.to_string/1) do
+    if field_name in TranslatableFields.all_strings() do
       String.to_existing_atom(field_name)
     else
+      field_name
+    end
+  end
+
+  defp safe_to_existing_atom(field_name) do
+    if field_name in TranslatableFields.all_strings() do
+      String.to_existing_atom(field_name)
+    else
+      Logger.warn("Unexpected translation field encountered: #{field_name}")
       field_name
     end
   end

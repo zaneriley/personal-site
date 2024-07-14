@@ -196,7 +196,6 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
       _ ->
         [
-          "/#{locale}#{if parts == [], do: "", else: "/#{Enum.join(parts, "/")}"}",
           "/#{locale}#{if tl(parts) == [], do: "", else: "/#{Enum.join(tl(parts), "/")}"}"
         ]
     end

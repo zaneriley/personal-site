@@ -58,10 +58,10 @@ defmodule Portfolio.Blog do
 
   """
   def create_note(attrs \\ %{}) do
-    %Note{}
-    |> Note.changeset(attrs)
-    |> Repo.insert()
-    |> case do
+    changeset = Note.changeset(%Note{}, attrs)
+    insert_result = Repo.insert(changeset)
+
+    case insert_result do
       {:ok, note} ->
         Logger.info("Note created successfully: #{note.id}")
         {:ok, note}

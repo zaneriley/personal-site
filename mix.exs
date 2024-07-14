@@ -20,7 +20,12 @@ defmodule Portfolio.MixProject do
         "coveralls.html": :test,
         "coveralls.github": :test
       ],
-      coveralls: [github_event_path: "/tmp/github_event.json"]
+      coveralls: [github_event_path: "/tmp/github_event.json"],
+      dialyzer: [
+        plt_add_apps: [:ex_unit, :mix],
+        ignore_warnings: ".dialyzer_ignore.exs",
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ]
     ]
   end
 

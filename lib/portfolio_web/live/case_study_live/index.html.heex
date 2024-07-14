@@ -23,7 +23,9 @@
   :if={@live_action in [:new, :edit]}
   id="case_study-modal"
   show
-  on_cancel={JS.patch(Routes.case_study_index_path(@socket, :index))}
+  on_cancel={
+    JS.patch(Routes.case_study_index_path(@socket, :index, @user_locale))
+  }
 >
   <.live_component
     module={PortfolioWeb.CaseStudyLive.FormComponent}
