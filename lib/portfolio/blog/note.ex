@@ -21,6 +21,8 @@ defmodule Portfolio.Blog.Note do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type t :: %__MODULE__{}
+
   schema "notes" do
     field :title, :string
     field :url, :string

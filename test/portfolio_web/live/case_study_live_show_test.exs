@@ -13,25 +13,46 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
       %{case_study: case_study}
     end
 
-    test "loads and displays a case study", %{conn: conn, case_study: case_study} do
+    test "loads and displays a case study", %{
+      conn: conn,
+      case_study: case_study
+    } do
       user_locale = "en"
 
       {:ok, _show_live, html} =
-        live(conn, Routes.case_study_show_path(conn, :show, user_locale, case_study.url))
+        live(
+          conn,
+          Routes.case_study_show_path(conn, :show, user_locale, case_study.url)
+        )
 
       assert html =~ "Case Study"
       assert html =~ case_study.title
       assert html =~ case_study.introduction
     end
 
-    test "displays Japanese translation when locale is set to ja", %{conn: conn, case_study: case_study} do
+    test "displays Japanese translation when locale is set to ja", %{
+      conn: conn,
+      case_study: case_study
+    } do
       user_locale = "ja"
 
       {:ok, _show_live, html} =
-        live(conn, Routes.case_study_show_path(conn, :show, user_locale, case_study.url))
+        live(
+          conn,
+          Routes.case_study_show_path(conn, :show, user_locale, case_study.url)
+        )
 
-      ja_title = Enum.find(case_study.translations, &(&1.field_name == "title" and &1.locale == "ja"))
-      ja_introduction = Enum.find(case_study.translations, &(&1.field_name == "introduction" and &1.locale == "ja"))
+      ja_title =
+        Enum.find(
+          case_study.translations,
+          &(&1.field_name == "title" and &1.locale == "ja")
+        )
+
+      ja_introduction =
+        Enum.find(
+          case_study.translations,
+          &(&1.field_name == "introduction" and &1.locale == "ja")
+        )
 
       assert ja_title, "Japanese title translation not found"
       assert ja_introduction, "Japanese introduction translation not found"
@@ -44,9 +65,16 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
       non_existent_url = "non-existent-url"
 
       assert_error_sent 404, fn ->
-        get(conn, Routes.case_study_show_path(conn, :show, user_locale, non_existent_url))
+        get(
+          conn,
+          Routes.case_study_show_path(
+            conn,
+            :show,
+            user_locale,
+            non_existent_url
+          )
+        )
       end
     end
   end
-
 end

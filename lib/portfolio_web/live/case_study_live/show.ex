@@ -6,6 +6,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   alias PortfolioWeb.Router.Helpers, as: Routes
   alias PortfolioWeb.DevToolbar
 
+  @dialyzer {:nowarn_function, mount: 3}
   @impl true
   def mount(%{"locale" => user_locale, "url" => url}, _session, socket) do
     Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
@@ -52,6 +53,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     {:ok, socket}
   end
 
+  @dialyzer {:nowarn_function, handle_params: 3}
   @impl true
   def handle_params(
         %{"locale" => user_locale, "url" => url} = params,

@@ -102,11 +102,19 @@ defmodule Portfolio.BlogTest do
   describe "notes listing and retrieval" do
     test "list_notes/0 returns all notes in correct order" do
       # Create three notes with known creation times
-      {:ok, note1} = Blog.create_note(%{title: "First Note", content: "Content 1"})
-      :timer.sleep(1000) # Ensure different timestamps
-      {:ok, note2} = Blog.create_note(%{title: "Second Note", content: "Content 2"})
+      {:ok, note1} =
+        Blog.create_note(%{title: "First Note", content: "Content 1"})
+
+      # Ensure different timestamps
       :timer.sleep(1000)
-      {:ok, note3} = Blog.create_note(%{title: "Third Note", content: "Content 3"})
+
+      {:ok, note2} =
+        Blog.create_note(%{title: "Second Note", content: "Content 2"})
+
+      :timer.sleep(1000)
+
+      {:ok, note3} =
+        Blog.create_note(%{title: "Third Note", content: "Content 3"})
 
       # Retrieve the list of notes
       notes = Blog.list_notes()
@@ -119,13 +127,13 @@ defmodule Portfolio.BlogTest do
 
       # Assert all notes are present with correct attributes
       assert Enum.all?(notes, fn note ->
-        Enum.any?([note1, note2, note3], fn created_note ->
-          note.id == created_note.id &&
-          note.title == created_note.title &&
-          note.content == created_note.content &&
-          note.url == created_note.url
-        end)
-      end)
+               Enum.any?([note1, note2, note3], fn created_note ->
+                 note.id == created_note.id &&
+                   note.title == created_note.title &&
+                   note.content == created_note.content &&
+                   note.url == created_note.url
+               end)
+             end)
     end
 
     test "get_note!/1 retrieves note by ID and URL with special characters" do
@@ -135,6 +143,7 @@ defmodule Portfolio.BlogTest do
         content: "Content with 特殊文字 and 🚀",
         url: "special-note"
       }
+
       {:ok, created_note} = Blog.create_note(attrs)
 
       # Retrieve note by ID
