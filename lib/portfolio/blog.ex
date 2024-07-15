@@ -7,22 +7,44 @@ defmodule Portfolio.Blog do
   alias Portfolio.Repo
   alias Portfolio.Blog.Note
 
+  @type list_notes_option :: {:order, :asc | :desc} | {:limit, non_neg_integer() | nil}
+
   @doc """
   Returns the list of notes.
+
+  ## Options
+
+    * `:order` - The order to return notes in. Can be `:asc` or `:desc`. Defaults to `:desc`.
+    * `:limit` - The maximum number of notes to return. Defaults to `nil` (no limit).
 
   ## Examples
 
       iex> list_notes()
       [%Note{}, ...]
 
+      iex> list_notes(order: :asc, limit: 10)
+      [%Note{}, ...]
+
   """
-  def list_notes do
-    Repo.all(Note)
-    |> Enum.map(fn note ->
+  @spec list_notes([list_notes_option]) :: [%Note{}]
+  def list_notes(opts \\ []) do
+    opts = Keyword.merge([order: :desc, limit: nil], opts)
+
+    query = from(n in Note, order_by: [{^opts[:order], :inserted_at}])
+    query = if opts[:limit], do: limit(query, ^opts[:limit]), else: query
+
+    Repo.all(query)
+    |> process_results()
+  end
+
+  @spec process_results([%Note{}]) :: [%Note{}]
+  defp process_results(notes) do
+    Enum.map(notes, fn note ->
       url = note.url || "note-#{note.id}"
       %{note | url: url}
     end)
   end
+
 
   @doc """
   Gets a single note.
@@ -38,10 +60,25 @@ defmodule Portfolio.Blog do
       ** (Ecto.NoResultsError)
 
   """
-  def get_note!(url_or_id) do
-    case Integer.parse(url_or_id) do
-      {id, _} -> Repo.get!(Note, id)
-      :error -> Repo.get_by!(Note, url: url_or_id)
+  @spec get_note!(integer() | String.t()) :: %Note{} | no_return()
+  def get_note!(id_or_url) do
+    note =
+      case id_or_url do
+        id when is_integer(id) ->
+          # Direct query by ID for integer input
+          Repo.get(Note, id)
+
+        url when is_binary(url) ->
+          # Attempt to parse string as integer, fall back to URL lookup
+          case Integer.parse(url) do
+            {id, ""} -> Repo.get(Note, id)
+            _ -> Repo.get_by(Note, url: url)
+          end
+      end
+
+    case note do
+      nil -> raise Ecto.NoResultsError, queryable: Note
+      note -> note
     end
   end
 
