@@ -88,7 +88,7 @@ defmodule Portfolio.Content do
     case Repo.one(content_query) do
       nil ->
         Logger.error("No content found for #{inspect(identifier)}")
-        {nil, %{}}
+        raise Ecto.NoResultsError, queryable: CaseStudy
 
       content ->
         translations = TranslationManager.merge_translations(content, locale)

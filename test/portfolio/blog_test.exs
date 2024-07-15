@@ -98,4 +98,75 @@ defmodule Portfolio.BlogTest do
       end
     end
   end
+
+  describe "notes listing and retrieval" do
+    test "list_notes/0 returns all notes in correct order" do
+      # Create three notes with known creation times
+      {:ok, note1} =
+        Blog.create_note(%{title: "First Note", content: "Content 1"})
+
+      # Ensure different timestamps
+      :timer.sleep(1000)
+
+      {:ok, note2} =
+        Blog.create_note(%{title: "Second Note", content: "Content 2"})
+
+      :timer.sleep(1000)
+
+      {:ok, note3} =
+        Blog.create_note(%{title: "Third Note", content: "Content 3"})
+
+      # Retrieve the list of notes
+      notes = Blog.list_notes()
+
+      # Assert the correct number of notes
+      assert length(notes) == 3
+
+      # Assert the correct order (most recent first)
+      assert [note3.id, note2.id, note1.id] == Enum.map(notes, & &1.id)
+
+      # Assert all notes are present with correct attributes
+      assert Enum.all?(notes, fn note ->
+               Enum.any?([note1, note2, note3], fn created_note ->
+                 note.id == created_note.id &&
+                   note.title == created_note.title &&
+                   note.content == created_note.content &&
+                   note.url == created_note.url
+               end)
+             end)
+    end
+
+    test "get_note!/1 retrieves note by ID and URL with special characters" do
+      # Create a note with special characters
+      attrs = %{
+        title: "Special 特殊 Note!",
+        content: "Content with 特殊文字 and 🚀",
+        url: "special-note"
+      }
+
+      {:ok, created_note} = Blog.create_note(attrs)
+
+      # Retrieve note by ID
+      retrieved_by_id = Blog.get_note!(created_note.id)
+      assert retrieved_by_id.id == created_note.id
+      assert retrieved_by_id.title == attrs.title
+      assert retrieved_by_id.content == attrs.content
+      assert retrieved_by_id.url == attrs.url
+
+      # Retrieve note by URL
+      retrieved_by_url = Blog.get_note!(attrs.url)
+      assert retrieved_by_url.id == created_note.id
+      assert retrieved_by_url.title == attrs.title
+      assert retrieved_by_url.content == attrs.content
+      assert retrieved_by_url.url == attrs.url
+
+      # Assert retrievals by ID and URL return the same note
+      assert retrieved_by_id == retrieved_by_url
+
+      # Test non-existent note
+      assert_raise Ecto.NoResultsError, fn ->
+        Blog.get_note!("non-existent")
+      end
+    end
+  end
 end
