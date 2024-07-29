@@ -1,4 +1,4 @@
-defmodule Portfolio.Translation do
+defmodule Portfolio.Content.Schemas.Translation do
   @moduledoc """
   Manages translations for various translatable entities within the application.
 
@@ -13,11 +13,25 @@ defmodule Portfolio.Translation do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @type t :: %__MODULE__{
+          id: Ecto.UUID.t(),
+          locale: String.t(),
+          field_name: String.t(),
+          field_value: String.t(),
+          translatable_id: Ecto.UUID.t(),
+          translatable_type: String.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   schema "translations" do
     field :locale, :string
     field :field_name, :string
     field :field_value, :string
-    field :translatable_id, :integer
+    field :translatable_id, :binary_id
     field :translatable_type, :string
 
     timestamps()

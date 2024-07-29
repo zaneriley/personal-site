@@ -1,6 +1,5 @@
 defmodule PortfolioWeb.RouterTest do
   use PortfolioWeb.ConnCase
-  import Plug.Conn
 
   describe "Locale Handling Tests" do
     test "redirects to default locale when no locale is specified", %{

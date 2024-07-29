@@ -1,6 +1,5 @@
 defmodule Portfolio.Application do
   @moduledoc false
-
   use Application
 
   @impl true
@@ -25,7 +24,14 @@ defmodule Portfolio.Application do
 
     children =
       if Application.get_env(:portfolio, :environment) in [:dev, :test] do
-        children ++ [Portfolio.Content.FileSystemWatcher]
+        watcher_config =
+          Application.get_env(
+            :portfolio,
+            Portfolio.Content.FileManagement.Watcher,
+            []
+          )
+
+        children ++ [{Portfolio.Content.FileManagement.Watcher, watcher_config}]
       else
         children
       end

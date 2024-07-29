@@ -2,7 +2,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
   use PortfolioWeb.ConnCase
   import Phoenix.LiveViewTest
   alias PortfolioWeb.Router.Helpers, as: Routes
-  import Portfolio.AdminFixtures
+  import Portfolio.ContentFixtures
   alias Portfolio.Repo
 
   describe "Case Study Show" do
