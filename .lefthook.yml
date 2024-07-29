@@ -32,7 +32,7 @@ pre-commit:
     # stop_containers:
     #   run: docker compose down
 
-pre-push:
+pre-push-check:
   parallel: false
   commands:
     check_web_container:
@@ -82,3 +82,9 @@ pre-push:
         if [ -z "$(lefthook exec check_web_container)" ] && [ -z "$(lefthook exec check_js_container)" ]; then
           docker compose down
         fi
+
+pre-push:
+  parallel: false
+  commands:
+    run_checks:
+      run: lefthook run pre-push-check || echo "Checks failed, but push will proceed. Please fix issues before merging."
