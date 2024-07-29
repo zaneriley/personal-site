@@ -113,7 +113,7 @@ defmodule Portfolio.Content do
         )
 
         schema = Types.get_schema(type)
-        reraise Ecto.NoResultsError, queryable: schema
+        reraise Ecto.NoResultsError.exception(queryable: schema), __STACKTRACE__
     end
   end
 

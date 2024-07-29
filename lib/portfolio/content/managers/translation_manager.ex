@@ -98,42 +98,6 @@ defmodule Portfolio.Content.TranslationManager do
   end
 
   @doc """
-  Merges the original content struct with translated fields.
-
-  ## Parameters
-    - content: The original content struct (Note or CaseStudy) with preloaded translations
-    - locale: The locale to use for translations
-
-  ## Returns
-    - The content struct with translated fields merged
-  """
-  @spec merge_translations(content(), String.t()) :: content()
-  def merge_translations(%{translations: translations} = content, locale)
-      when is_list(translations) do
-    translations_map =
-      translations
-      |> Enum.filter(&(&1.locale == locale))
-      |> Enum.map(&{&1.field_name, &1.field_value})
-      |> Enum.into(%{})
-
-    translatable_fields =
-      TranslatableFields.translatable_fields(content.__struct__)
-
-    Enum.reduce(translatable_fields, content, fn field, acc ->
-      field_name = Atom.to_string(field)
-      translated_value = Map.get(translations_map, field_name)
-
-      if translated_value do
-        Map.put(acc, field, translated_value)
-      else
-        acc
-      end
-    end)
-  end
-
-  def merge_translations(content, _locale), do: content
-
-  @doc """
   Preloads translations for a list of content items.
 
   ## Parameters

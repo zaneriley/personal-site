@@ -6,17 +6,18 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
   use Portfolio.DataCase
 
   describe "handle_info/2" do
-    @skip true
     test "processes relevant file changes" do
-      state = %Watcher{watcher_pid: self()}
       path = Path.join(Types.get_path("case_study"), "testing-case-study.md")
+      state = %Watcher{watcher_pid: self()}
       events = [:modified]
 
       log =
         capture_log(fn ->
+          Logger.configure(level: :debug)
           Watcher.handle_info({:file_event, self(), {path, events}}, state)
         end)
 
+      assert log =~ "File event detected: #{path}"
       assert log =~ "Processing file change for: #{path}"
     end
 

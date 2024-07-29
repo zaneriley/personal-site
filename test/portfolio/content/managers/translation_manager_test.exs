@@ -73,27 +73,6 @@ defmodule Portfolio.Content.TranslationTest do
       assert translations["company"] == "日本語の会社名"
     end
 
-    test "merge_translations correctly merges translated fields" do
-      note =
-        ContentFixtures.note_fixture(%{
-          title: "Original Title",
-          content: "Original Content"
-        })
-
-      translations = %{
-        "title" => "翻訳されたタイトル",
-        "content" => "翻訳されたコンテンツ",
-        "introduction" => "翻訳された紹介"
-      }
-
-      merged = TranslationManager.merge_translations(note, translations)
-
-      assert merged.title == "翻訳されたタイトル"
-      assert merged.content == "翻訳されたコンテンツ"
-      assert merged.introduction == "翻訳された紹介"
-      # Non-translatable field should remain unchanged
-      assert merged.url == note.url
-    end
 
     test "get_content_with_translations returns content with Japanese translations" do
       case_study = ContentFixtures.case_study_fixture()
