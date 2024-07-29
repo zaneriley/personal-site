@@ -17,7 +17,8 @@ defmodule Portfolio.ContentFixtures do
 
     default_attrs = %{
       "title" => "Insightful Note #{sequence}",
-      "content" => "Content for note #{sequence} with insightful analysis and detailed information.",
+      "content" =>
+        "Content for note #{sequence} with insightful analysis and detailed information.",
       "locale" => "en",
       "url" => "insightful-note-#{sequence}",
       "introduction" => "Introduction for note #{sequence}",
@@ -26,11 +27,13 @@ defmodule Portfolio.ContentFixtures do
       "published_at" => ~N[2023-01-01 00:00:00],
       "is_draft" => false
     }
+
     string_attrs = for {key, val} <- attrs, into: %{}, do: {to_string(key), val}
 
-    note = %Note{}
-    |> Note.changeset(Map.merge(default_attrs, string_attrs))
-    |> Repo.insert!()
+    note =
+      %Note{}
+      |> Note.changeset(Map.merge(default_attrs, string_attrs))
+      |> Repo.insert!()
 
     translation_fixture(note, "ja")
 
@@ -47,7 +50,8 @@ defmodule Portfolio.ContentFixtures do
 
     default_attrs = %{
       "title" => "Case Study #{sequence}",
-      "content" => "Detailed exploration of case study #{sequence}, covering all aspects of the project.",
+      "content" =>
+        "Detailed exploration of case study #{sequence}, covering all aspects of the project.",
       "locale" => "en",
       "url" => "case-study-#{sequence}",
       "company" => "Company #{sequence}",
@@ -61,11 +65,13 @@ defmodule Portfolio.ContentFixtures do
       "published_at" => ~N[2023-01-01 00:00:00],
       "is_draft" => false
     }
+
     string_attrs = for {key, val} <- attrs, into: %{}, do: {to_string(key), val}
 
-    case_study = %CaseStudy{}
-    |> CaseStudy.changeset(Map.merge(default_attrs, string_attrs))
-    |> Repo.insert!()
+    case_study =
+      %CaseStudy{}
+      |> CaseStudy.changeset(Map.merge(default_attrs, string_attrs))
+      |> Repo.insert!()
 
     translation_fixture(case_study, "ja")
     Logger.debug("Case study created: #{inspect(case_study)}")
@@ -74,11 +80,17 @@ defmodule Portfolio.ContentFixtures do
   end
 
   def translation_fixture(content, locale, attrs \\ %{}) do
-    translatable_fields = TranslatableFields.translatable_fields(content.__struct__)
+    translatable_fields =
+      TranslatableFields.translatable_fields(content.__struct__)
 
-    default_attrs = Enum.reduce(translatable_fields, %{}, fn field, acc ->
-      Map.put(acc, Atom.to_string(field), "#{locale} translation for #{field}")
-    end)
+    default_attrs =
+      Enum.reduce(translatable_fields, %{}, fn field, acc ->
+        Map.put(
+          acc,
+          Atom.to_string(field),
+          "#{locale} translation for #{field}"
+        )
+      end)
 
     merged_attrs = Map.merge(default_attrs, attrs)
 

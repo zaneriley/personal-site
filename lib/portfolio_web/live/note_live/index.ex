@@ -2,8 +2,9 @@ defmodule PortfolioWeb.NoteLive.Index do
   use PortfolioWeb, :live_view
   require Logger
   import PortfolioWeb.LiveHelpers
-  alias Portfolio.Blog
-  alias Portfolio.Blog.Note
+  alias Portfolio.Content
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Entry
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true
@@ -20,7 +21,7 @@ defmodule PortfolioWeb.NoteLive.Index do
      |> assign(:user_locale, user_locale)
      |> assign(:env, env)
      |> stream_configure(:notes, dom_id: &"note-#{&1.url}")
-     |> stream(:notes, Blog.list_notes())}
+     |> stream(:notes, Content.list("note"))}
   end
 
   @impl true
@@ -36,11 +37,13 @@ defmodule PortfolioWeb.NoteLive.Index do
     |> assign(:note, %Note{})
   end
 
-  defp apply_action(socket, :edit, %{"url" => url}) do
+  defp apply_action(socket, :edit, %{"id" => id}) do
+    note = Content.get!("note", id)
+
     socket
     |> assign(:page_title, "Edit Note")
     |> assign(:title, "Edit Note")
-    |> assign(:note, Blog.get_note!(url))
+    |> assign(:note, note)
   end
 
   defp apply_action(socket, :index, _params) do
@@ -56,9 +59,9 @@ defmodule PortfolioWeb.NoteLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"url" => url}, socket) do
-    note = Blog.get_note!(url)
-    {:ok, _} = Blog.delete_note(note)
+  def handle_event("delete", %{"id" => id}, socket) do
+    note = Content.get!("note", id)
+    {:ok, _} = Content.delete(:note, note)
 
     {:noreply, stream_delete(socket, :notes, note)}
   end

@@ -79,7 +79,7 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
         case valid_path do
           # If no valid path is found, log a warning and return the conn without redirecting
           nil ->
-            log(:warning, "No valid route found after adding locale.")
+            log(:debug, "No valid route found after adding locale.")
 
             raise Phoenix.Router.NoRouteError,
               conn: conn,

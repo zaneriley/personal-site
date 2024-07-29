@@ -1,8 +1,8 @@
 defmodule PortfolioWeb.CaseStudyLive.Index do
   use PortfolioWeb, :live_view
   require Logger
-  alias Portfolio.Admin
-  alias Portfolio.CaseStudy
+  alias Portfolio.Content
+  alias Portfolio.Content.Schemas.CaseStudy
   import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
   import PortfolioWeb.Components.PortfolioItemList
@@ -20,7 +20,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
      socket
      |> assign(:user_locale, user_locale)
      |> assign(:env, env)
-     |> stream(:case_studies, Admin.list_case_studies())}
+     |> stream(:case_studies, Content.list("case_study"))}
   end
 
   @impl true
@@ -32,7 +32,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Case study")
-    |> assign(:case_study, Admin.get_case_study!(id))
+    |> assign(:case_study, Content.get!(:case_study, id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -57,8 +57,8 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    case_study = Admin.get_case_study!(id)
-    {:ok, _} = Admin.delete_case_study(case_study)
+    case_study = Content.get!(:case_study, id)
+    {:ok, _} = Content.delete(:case_study, case_study)
 
     {:noreply, stream_delete(socket, :case_studies, case_study)}
   end

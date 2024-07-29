@@ -34,7 +34,8 @@ defmodule Portfolio.Content do
   ## Returns
     - List of content items with merged translations
   """
-  @spec list(content_type(), keyword(), String.t() | nil) :: [Note.t()] | [CaseStudy.t()]
+  @spec list(content_type(), keyword(), String.t() | nil) ::
+          [Note.t()] | [CaseStudy.t()]
   def list(type, opts \\ [], locale \\ nil) do
     locale = locale || Application.get_env(:portfolio, :default_locale)
     EntryManager.list_contents(type, opts, locale)
@@ -91,25 +92,38 @@ defmodule Portfolio.Content do
           note
 
         %CaseStudy{} = case_study when type == "case_study" ->
-          Logger.info("Successfully retrieved CaseStudy with ID: #{case_study.id}")
+          Logger.info(
+            "Successfully retrieved CaseStudy with ID: #{case_study.id}"
+          )
+
           case_study
 
         mismatched_content ->
-          Logger.error("Content type mismatch. Requested: #{type}, Found: #{mismatched_content.__struct__}")
-          raise ContentTypeMismatchError, "Content type mismatch for #{inspect(id_or_url)}"
+          Logger.error(
+            "Content type mismatch. Requested: #{type}, Found: #{mismatched_content.__struct__}"
+          )
+
+          raise ContentTypeMismatchError,
+                "Content type mismatch for #{inspect(id_or_url)}"
       end
     rescue
       Ecto.NoResultsError ->
-        Logger.warn("No content found for type: #{type}, identifier: #{inspect(id_or_url)}")
+        Logger.warn(
+          "No content found for type: #{type}, identifier: #{inspect(id_or_url)}"
+        )
+
         schema = Types.get_schema(type)
-        raise Ecto.NoResultsError, queryable: schema
+        reraise Ecto.NoResultsError, queryable: schema
     end
   end
 
   @spec create(content_type(), map()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
   def create(type, attrs) do
-    Logger.debug("Create called with type: #{inspect(type)}, attrs: #{inspect(attrs)}")
+    Logger.debug(
+      "Create called with type: #{inspect(type)}, attrs: #{inspect(attrs)}"
+    )
+
     attrs = Map.put(attrs, "content_type", type)
     Logger.debug("Modified attrs: #{inspect(attrs)}")
 
@@ -205,7 +219,9 @@ defmodule Portfolio.Content do
     )
 
     case EntryManager.upsert_from_file(content_type, attrs) do
-      {:ok, content} -> {:ok, content}
+      {:ok, content} ->
+        {:ok, content}
+
       {:error, reason} ->
         Logger.error("Error upserting content: #{inspect(reason)}")
         {:error, reason}

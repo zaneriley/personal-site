@@ -4,7 +4,6 @@ defmodule Portfolio.Content.ContentTest do
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.ContentFixtures
 
-
   describe "content retrieval" do
     test "get!/2 returns the content item with given id" do
       note = ContentFixtures.note_fixture()
@@ -55,7 +54,6 @@ defmodule Portfolio.Content.ContentTest do
       assert {:error, :invalid_content_type} =
                Content.create("invalid", invalid_attrs)
     end
-
   end
 
   describe "content update" do
@@ -123,7 +121,8 @@ defmodule Portfolio.Content.ContentTest do
     end
 
     test "upsert_from_file/2 updates existing content from file data" do
-      existing_note = ContentFixtures.note_fixture(%{"url" => "existing-file-note"})
+      existing_note =
+        ContentFixtures.note_fixture(%{"url" => "existing-file-note"})
 
       attrs = %{
         "url" => "existing-file-note",

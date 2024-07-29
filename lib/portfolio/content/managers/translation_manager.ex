@@ -1,5 +1,5 @@
 defmodule Portfolio.Content.TranslationManager do
-   @moduledoc """
+  @moduledoc """
   Manages translations for content items in the Portfolio application.
 
   This module provides functionality to create, update, and retrieve translations
@@ -40,25 +40,28 @@ defmodule Portfolio.Content.TranslationManager do
   @spec create_or_update_translations(struct(), String.t(), map()) ::
           {:ok, [Translation.t()]} | {:error, any()}
   def create_or_update_translations(content, locale, attrs) do
-    Logger.debug("Creating/updating translations for #{inspect(content)} in locale #{locale}")
+    Logger.debug(
+      "Creating/updating translations for #{inspect(content)} in locale #{locale}"
+    )
 
-    translatable_fields = TranslatableFields.translatable_fields(content.__struct__)
+    translatable_fields =
+      TranslatableFields.translatable_fields(content.__struct__)
 
-    translations = Enum.map(translatable_fields, fn field ->
-      field_name = Atom.to_string(field)
-      field_value = Map.get(attrs, field_name)
+    translations =
+      Enum.map(translatable_fields, fn field ->
+        field_name = Atom.to_string(field)
+        field_value = Map.get(attrs, field_name)
 
-      if is_nil(field_value) do
-        nil
-      else
-        upsert_translation(content, locale, field_name, field_value)
-      end
-    end)
-    |> Enum.reject(&is_nil/1)
+        if is_nil(field_value) do
+          nil
+        else
+          upsert_translation(content, locale, field_name, field_value)
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
 
     {:ok, translations}
   end
-
 
   @doc """
   Fetches translations for a specific content item and locale.
@@ -105,13 +108,16 @@ defmodule Portfolio.Content.TranslationManager do
     - The content struct with translated fields merged
   """
   @spec merge_translations(content(), String.t()) :: content()
-  def merge_translations(%{translations: translations} = content, locale) when is_list(translations) do
-    translations_map = translations
+  def merge_translations(%{translations: translations} = content, locale)
+      when is_list(translations) do
+    translations_map =
+      translations
       |> Enum.filter(&(&1.locale == locale))
       |> Enum.map(&{&1.field_name, &1.field_value})
       |> Enum.into(%{})
 
-    translatable_fields = TranslatableFields.translatable_fields(content.__struct__)
+    translatable_fields =
+      TranslatableFields.translatable_fields(content.__struct__)
 
     Enum.reduce(translatable_fields, content, fn field, acc ->
       field_name = Atom.to_string(field)
@@ -140,7 +146,9 @@ defmodule Portfolio.Content.TranslationManager do
   @spec preload_translations(Ecto.Query.t(), String.t()) :: Ecto.Query.t()
   def preload_translations(query, locale) do
     from q in query,
-      preload: [translations: ^from(t in Translation, where: t.locale == ^locale)]
+      preload: [
+        translations: ^from(t in Translation, where: t.locale == ^locale)
+      ]
   end
 
   @doc """
@@ -154,14 +162,19 @@ defmodule Portfolio.Content.TranslationManager do
   ## Returns
     - A map where keys are content IDs and values are maps of translations
   """
-  @spec batch_get_translations([binary()], String.t(), String.t()) :: %{binary() => %{String.t() => String.t()}}
+  @spec batch_get_translations([binary()], String.t(), String.t()) :: %{
+          binary() => %{String.t() => String.t()}
+        }
   def batch_get_translations(content_ids, content_type, locale) do
-    Logger.debug("Batch fetching translations for content_type: #{content_type}, locale: #{locale}")
+    Logger.debug(
+      "Batch fetching translations for content_type: #{content_type}, locale: #{locale}"
+    )
 
     from(t in Translation,
-      where: t.translatable_id in ^content_ids and
-             t.translatable_type == ^content_type and
-             t.locale == ^locale,
+      where:
+        t.translatable_id in ^content_ids and
+          t.translatable_type == ^content_type and
+          t.locale == ^locale,
       select: {t.translatable_id, {t.field_name, t.field_value}}
     )
     |> Repo.all()
@@ -183,7 +196,8 @@ defmodule Portfolio.Content.TranslationManager do
 
   Note: Nil values in attrs are ignored. Empty strings clear existing translations.
   """
-  @spec create_or_update_translations(content(), String.t(), map()) :: translation_result()
+  @spec create_or_update_translations(content(), String.t(), map()) ::
+          translation_result()
   def create_or_update_translation(content, locale, field_name, value) do
     Logger.debug(
       "Checking translation for field: #{field_name}, locale: #{locale}, value: #{inspect(value)}"
@@ -225,16 +239,29 @@ defmodule Portfolio.Content.TranslationManager do
       field_value: field_value
     }
 
-    case Repo.get_by(Translation, Map.take(attrs, [:translatable_id, :translatable_type, :locale, :field_name])) do
+    case Repo.get_by(
+           Translation,
+           Map.take(attrs, [
+             :translatable_id,
+             :translatable_type,
+             :locale,
+             :field_name
+           ])
+         ) do
       nil -> %Translation{}
       existing -> existing
     end
     |> Translation.changeset(attrs)
     |> Repo.insert_or_update()
     |> case do
-      {:ok, translation} -> translation
+      {:ok, translation} ->
+        translation
+
       {:error, changeset} ->
-        Logger.error("Failed to upsert translation: #{inspect(changeset.errors)}")
+        Logger.error(
+          "Failed to upsert translation: #{inspect(changeset.errors)}"
+        )
+
         nil
     end
   end

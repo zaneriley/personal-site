@@ -37,7 +37,10 @@ defmodule Portfolio.Content.FileManagement.Watcher do
         %{watcher_pid: watcher_pid} = state
       ) do
     Logger.info("File event detected: #{path}, events: #{inspect(events)}")
-    Logger.info("Is relevant file change? #{relevant_file_change?(path, events)}")
+
+    Logger.info(
+      "Is relevant file change? #{relevant_file_change?(path, events)}"
+    )
 
     if relevant_file_change?(path, events) do
       Logger.info("Processing file change for: #{path}")
@@ -61,8 +64,11 @@ defmodule Portfolio.Content.FileManagement.Watcher do
         case Content.upsert_from_file(content_type, attrs) do
           {:ok, _content} ->
             Logger.info("Successfully upserted content from file: #{path}")
+
           {:error, reason} ->
-            Logger.error("Error upserting content from file #{path}: #{inspect(reason)}")
+            Logger.error(
+              "Error upserting content from file #{path}: #{inspect(reason)}"
+            )
         end
 
       {:error, reason} ->

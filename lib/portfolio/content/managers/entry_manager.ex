@@ -160,27 +160,38 @@ defmodule Portfolio.Content.EntryManager do
   """
   @spec list_contents(Types.content_type(), keyword(), String.t()) ::
           [Note.t()] | [CaseStudy.t()]
-          def list_contents(content_type, opts \\ [], locale \\ "en") do
-            schema = get_schema(content_type)
-            query = sort(schema, opts[:sort_by], opts[:sort_order])
-            contents = Repo.all(query)
+  def list_contents(content_type, opts \\ [], locale \\ "en") do
+    schema = get_schema(content_type)
+    query = sort(schema, opts[:sort_by], opts[:sort_order])
+    contents = Repo.all(query)
 
-            content_ids = Enum.map(contents, & &1.id)
-            translations = TranslationManager.batch_get_translations(content_ids, content_type, locale)
+    content_ids = Enum.map(contents, & &1.id)
 
-            Logger.debug("Fetched translations: #{inspect(translations)}")
+    translations =
+      TranslationManager.batch_get_translations(
+        content_ids,
+        content_type,
+        locale
+      )
 
-            result = Enum.map(contents, fn content ->
-              content_translations = Map.get(translations, content.id, %{})
-              Logger.debug("Content before merge: #{inspect(content)}")
-              Logger.debug("Translations for content: #{inspect(content_translations)}")
-              merged_content = Map.put(content, :translations, content_translations)
-              Logger.debug("Content after merge: #{inspect(merged_content)}")
-              merged_content
-            end)
+    Logger.debug("Fetched translations: #{inspect(translations)}")
 
-            result
-          end
+    result =
+      Enum.map(contents, fn content ->
+        content_translations = Map.get(translations, content.id, %{})
+        Logger.debug("Content before merge: #{inspect(content)}")
+
+        Logger.debug(
+          "Translations for content: #{inspect(content_translations)}"
+        )
+
+        merged_content = Map.put(content, :translations, content_translations)
+        Logger.debug("Content after merge: #{inspect(merged_content)}")
+        merged_content
+      end)
+
+    result
+  end
 
   defp sort(query, nil, _), do: query
 
@@ -259,11 +270,16 @@ defmodule Portfolio.Content.EntryManager do
       "Attempting to upsert #{content_type} with URL: #{url} and locale: #{locale}"
     )
 
-    result = if locale == @default_locale do
-      upsert_default_locale_content(schema, stringified_attrs, content_type)
-    else
-      upsert_non_default_locale_content(schema, stringified_attrs, content_type)
-    end
+    result =
+      if locale == @default_locale do
+        upsert_default_locale_content(schema, stringified_attrs, content_type)
+      else
+        upsert_non_default_locale_content(
+          schema,
+          stringified_attrs,
+          content_type
+        )
+      end
 
     case result do
       {:ok, content} -> {:ok, content}
@@ -280,29 +296,32 @@ defmodule Portfolio.Content.EntryManager do
 
   defp upsert_non_default_locale_content(schema, attrs, content_type) do
     case Repo.get_by(schema, url: attrs["url"]) do
-      nil ->
-        with {:ok, default_entry} <- create_content(Map.put(attrs, "content_type", content_type)),
-            {:ok, _translations} <- TranslationManager.create_or_update_translations(
-              default_entry,
-              attrs["locale"],
-              attrs
-            ) do
-          {:ok, default_entry}
-        else
-          error -> error
-        end
-
-      entry ->
-        with {:ok, _translations} <- TranslationManager.create_or_update_translations(
-              entry,
-              attrs["locale"],
-              attrs
-            ) do
-          {:ok, entry}
-        else
-          error -> error
-        end
+      nil -> create_entry_with_translations(attrs, content_type)
+      entry -> update_entry_translations(entry, attrs)
     end
+  end
+
+  defp create_entry_with_translations(attrs, content_type) do
+    with {:ok, entry} <-
+           create_content(Map.put(attrs, "content_type", content_type)),
+         {:ok, _translations} <- create_or_update_translations(entry, attrs) do
+      {:ok, entry}
+    end
+  end
+
+  defp update_entry_translations(entry, attrs) do
+    case create_or_update_translations(entry, attrs) do
+      {:ok, _translations} -> {:ok, entry}
+      error -> error
+    end
+  end
+
+  defp create_or_update_translations(entry, attrs) do
+    TranslationManager.create_or_update_translations(
+      entry,
+      attrs["locale"],
+      attrs
+    )
   end
 
   defp log_result({:ok, _content} = result),
