@@ -147,7 +147,8 @@ defmodule Portfolio.Content do
     EntryManager.delete_content(content)
   end
 
-  @dialyzer {:nowarn_function, change: 3} # I've tried debugging this error for hours. I can't confirm theres any issue.
+  # I've tried debugging this error for hours. I can't confirm theres any issue.
+  @dialyzer {:nowarn_function, change: 3}
   @spec change(content_type(), Note.t() | CaseStudy.t() | map(), map()) ::
           Ecto.Changeset.t() | {:error, :invalid_content_type}
   def change(type, content, attrs \\ %{}) do

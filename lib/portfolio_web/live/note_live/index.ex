@@ -46,7 +46,6 @@ defmodule PortfolioWeb.NoteLive.Index do
     |> assign(:note, note)
   end
 
-
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Notes")
