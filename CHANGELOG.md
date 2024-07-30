@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.2.0-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.1.1-alpha.1...v0.2.0-alpha.1) (2024-07-30)
+
+
+### Features
+
+* **content:** offer note i18n translations, restructure content management system ([#35](https://github.com/zaneriley/personal-site/issues/35)) ([a36042b](https://github.com/zaneriley/personal-site/commit/a36042b2477a24d6b5619003acf87478e3fb83d7))
+
 ## [0.1.1-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.1.0-alpha.1...v0.1.1-alpha.1) (2024-07-11)
 
 
