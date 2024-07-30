@@ -9,10 +9,14 @@ defmodule PortfolioWeb.HomeLive do
   def mount(_params, session, socket) do
     socket = assign_locale(socket, session)
 
-    page_number = 1
-
     case_studies =
-      Content.get_all_case_studies(socket.assigns.user_locale, page_number)
+      Content.list(
+        "case_study",
+        [sort_by: :published_at, sort_order: :desc],
+        socket.assigns.user_locale
+      )
+
+    Logger.debug("Case studies: #{inspect(case_studies)}")
 
     socket =
       socket
@@ -54,7 +58,7 @@ defmodule PortfolioWeb.HomeLive do
 
       <div>
         <div class="space-y-md">
-          <%= for {case_study, translations} <- @case_studies do %>
+          <%= for case_study <- @case_studies do %>
             <div class="space-y-sm">
               <.link
                 navigate={
@@ -67,15 +71,16 @@ defmodule PortfolioWeb.HomeLive do
                 }
                 aria-label={
                   gettext("Read more about %{title}",
-                    title: translations[:title] || case_study.title
+                    title: case_study.translations["title"] || case_study.title
                   )
                 }
-                title={translations[:title] || case_study.title}
+                title={case_study.translations["title"] || case_study.title}
               >
-                <h3><%= translations[:title] || case_study.title %></h3>
+                <h3><%= case_study.translations["title"] || case_study.title %></h3>
               </.link>
               <p class="text-1xs">
-                <%= translations[:introduction] || case_study.introduction %>
+                <%= case_study.translations["introduction"] ||
+                  case_study.introduction %>
               </p>
               <p class="text-1xs">
                 <%= case_study.read_time %> <%= ngettext(

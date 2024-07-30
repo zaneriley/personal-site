@@ -1,26 +1,83 @@
 defmodule Portfolio.Content.TranslatableFields do
   @moduledoc """
-  Defines and manages translatable fields for different content types.
+  Provides functionality to determine translatable fields for content schemas.
+
+  This module serves as a centralized configuration for managing which fields
+  should be translated for each content type in the Portfolio application.
   """
 
-  @case_study_fields [
-    :title,
-    :company,
-    :role,
-    :timeline,
-    :introduction,
-    :content
-  ]
-  @additional_fields [:custom_field]
+  alias Portfolio.Content.Schemas.{CaseStudy, Note}
 
-  # Force atom creation at compile-time
-  @all_fields (@case_study_fields ++ @additional_fields) |> Enum.uniq()
-  @all_field_strings @all_fields |> Enum.map(&Atom.to_string/1)
+  @type schema :: module()
+  @type field :: atom()
 
-  def case_study, do: @case_study_fields
-  def additional, do: @additional_fields
+  @default_translatable_types [:string, :text]
 
-  def all, do: @all_fields
+  @doc """
+  Returns a list of translatable fields for a given schema.
 
-  def all_strings, do: @all_field_strings
+  This function determines which fields of a schema should be considered for
+  translation. It applies a default rule (all string and text fields are
+  translatable) and then applies any schema-specific rules.
+
+  ## Parameters
+
+    * `schema` - The module representing the Ecto schema
+
+  ## Returns
+
+  A list of atom field names that are considered translatable for the given schema.
+
+  ## Examples
+
+      iex> TranslatableFields.translatable_fields(Portfolio.Content.Schemas.CaseStudy)
+      [:title, :content, :introduction, :company, :role, :timeline, :platforms]
+
+      iex> TranslatableFields.translatable_fields(Portfolio.Content.Schemas.Note)
+      [:title, :content, :introduction]
+  """
+  @spec translatable_fields(schema()) :: [field()]
+  def translatable_fields(schema) do
+    all_fields = schema.__schema__(:fields)
+    default_translatable = default_translatable_fields(schema)
+
+    case schema do
+      CaseStudy -> default_translatable -- ([:url, :read_time] ++ [:platforms])
+      Note -> default_translatable
+      _ -> default_translatable
+    end
+  end
+
+  @doc """
+  Determines if a specific field in a schema is translatable.
+
+  ## Parameters
+
+    * `schema` - The module representing the Ecto schema
+    * `field` - The atom name of the field to check
+
+  ## Returns
+
+  Boolean indicating whether the field is translatable.
+
+  ## Examples
+
+      iex> TranslatableFields.translatable_field?(Portfolio.Content.Schemas.CaseStudy, :title)
+      true
+
+      iex> TranslatableFields.translatable_field?(Portfolio.Content.Schemas.CaseStudy, :read_time)
+      false
+  """
+  @spec translatable_field?(schema(), field()) :: boolean()
+  def translatable_field?(schema, field) do
+    field in translatable_fields(schema)
+  end
+
+  @spec default_translatable_fields(schema()) :: [field()]
+  defp default_translatable_fields(schema) do
+    schema.__schema__(:fields)
+    |> Enum.filter(fn field ->
+      schema.__schema__(:type, field) in @default_translatable_types
+    end)
+  end
 end

@@ -58,6 +58,23 @@ msgid_plural "%{count} min read"
 msgstr[0] "%{count}分で読める"
 msgstr[1] "%{count}分で読める"
 
+msgid "Role"
+msgstr "役割"
+
+msgid "Platform"
+msgid_plural "Platforms"
+msgstr[0] "プラットフォーム"
+msgstr[1] "プラットフォーム"
+
+msgid "Read time"
+msgstr "読了時間"
+
+msgid "Timeline"
+msgstr "タイムライン"
+
+msgid "Company"
+msgstr "会社"
+
 msgid "Note"
 msgid_plural "Notes"
 msgstr[0] "メモ"

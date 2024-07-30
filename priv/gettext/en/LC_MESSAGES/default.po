@@ -61,6 +61,23 @@ msgid_plural "%{count} min read"
 msgstr[0] "%{count} min read"
 msgstr[1] "%{count} min read"
 
+msgid "Role"
+msgstr "Role"
+
+msgid "Platform"
+msgid_plural "Platforms"
+msgstr[0] "Platform"
+msgstr[1] "Platforms"
+
+msgid "Read time"
+msgstr "Read time"
+
+msgid "Timeline"
+msgstr "Timeline"
+
+msgid "Company"
+msgstr "Company"
+
 
 msgid "Note"
 msgid_plural "Notes"

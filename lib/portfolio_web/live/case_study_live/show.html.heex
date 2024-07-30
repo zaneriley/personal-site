@@ -18,29 +18,29 @@
           <Heroicons.chevron_double_right class="inline-block h-4 w-4" />
         </li>
         <li aria-current="page">
-          <%= @translations[:company] || @case_study.company %>
+          <%= @translations["company"] || @case_study.company %>
         </li>
       </ol>
     </nav>
     <!-- Title -->
     <h1 class="text-4xl">
-      <%= @translations[:title] || @case_study.title %>
+      <%= @translations["title"] || @case_study.title %>
     </h1>
     <h2 class="text-2xl">
-      <%= @translations[:introduction] || @case_study.introduction %>
+      <%= @translations["introduction"] || @case_study.introduction %>
     </h2>
     <!-- Meta Information -->
     <div class="grid grid-cols-subgrid">
       <span class="col-span-3">
         <strong><%= gettext("Role") %>:</strong>
-        <br /><%= @translations[:role] || @case_study.role %>
+        <br /><%= @translations["role"] || @case_study.role %>
       </span>
       <span class="col-span-3">
         <strong><%= gettext("Timeline") %>:</strong>
-        <br /><%= @translations[:timeline] || @case_study.timeline %>
+        <br /><%= @translations["timeline"] || @case_study.timeline %>
       </span>
       <span class="col-span-3">
-        <strong><%= gettext("Read Time") %>:</strong>
+        <strong><%= gettext("Read time") %>:</strong>
         <br /><%= @case_study.read_time %> <%= ngettext(
           "minute",
           "minutes",
@@ -48,9 +48,12 @@
         ) %>
       </span>
       <div class="col-span-3">
-        <strong><%= gettext("Platforms") %>:</strong>
+        <% platforms = @translations["platforms"] || @case_study.platforms %>
+        <strong>
+          <%= ngettext("Platform", "Platforms", length(platforms)) %>:
+        </strong>
         <ul>
-          <%= for platform <- (@translations[:platforms] || @case_study.platforms) do %>
+          <%= for platform <- platforms do %>
             <li><%= platform %></li>
           <% end %>
         </ul>
@@ -58,8 +61,8 @@
     </div>
     <!-- Main Content -->
     <div class="space-y-md">
-      <%= if @translations[:content] do %>
-        <%= raw(@translations[:content]) %>
+      <%= if @translations["content"] do %>
+        <%= raw(@translations["content"]) %>
       <% else %>
         <%= if @case_study.content do %>
           <%= raw(@case_study.content) %>

@@ -2,6 +2,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
+  alias Portfolio.Content.Schemas.CaseStudy
   import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
   alias PortfolioWeb.DevToolbar
@@ -12,31 +13,28 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
 
     if valid_slug?(url) do
-      {case_study, translations} =
-        Content.get_content_with_translations(:case_study, url, user_locale)
+      case Content.get_with_translations("case_study", url, user_locale) do
+        {:ok, case_study, translations} ->
+          {page_title, introduction} =
+            set_page_metadata(case_study, translations)
 
-      case case_study do
-        nil ->
-          Logger.error("Case study not found in database for URL: #{url}")
-
-          raise Phoenix.Router.NoRouteError,
-            conn: socket,
-            router: PortfolioWeb.Router
-
-        %Portfolio.CaseStudy{} = cs ->
-          # Logger.debug("Case study: #{inspect(cs, pretty: true)}")
-          # Logger.debug("Translations: #{inspect(translations, pretty: true)}")
-
-          {page_title, introduction} = set_page_metadata(cs, translations)
+          Logger.debug("Case study translations: #{inspect(translations)}")
 
           {:ok,
            assign(socket,
-             case_study: cs,
+             case_study: case_study,
              translations: translations,
              page_title: page_title,
              page_description: introduction,
              user_locale: user_locale
            )}
+
+        {:error, :not_found} ->
+          Logger.error("Case study not found in database for URL: #{url}")
+
+          raise Phoenix.Router.NoRouteError,
+            conn: socket,
+            router: PortfolioWeb.Router
       end
     else
       Logger.error("Invalid URL format: #{url}")
@@ -63,25 +61,23 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     socket = handle_locale_and_path(socket, params, uri)
 
     if valid_slug?(url) do
-      {case_study, translations} =
-        Content.get_content_with_translations(:case_study, url, user_locale)
-
-      case case_study do
-        nil ->
-          raise Phoenix.Router.NoRouteError,
-            conn: socket,
-            router: PortfolioWeb.Router
-
-        %Portfolio.CaseStudy{} = cs ->
-          {page_title, introduction} = set_page_metadata(cs, translations)
+      case Content.get_with_translations("case_study", url, user_locale) do
+        {:ok, case_study, translations} ->
+          {page_title, introduction} =
+            set_page_metadata(case_study, translations)
 
           {:noreply,
            assign(socket,
-             case_study: cs,
+             case_study: case_study,
              translations: translations,
              page_title: page_title,
              page_description: introduction
            )}
+
+        {:error, :not_found} ->
+          raise Phoenix.Router.NoRouteError,
+            conn: socket,
+            router: PortfolioWeb.Router
       end
     else
       raise Phoenix.Router.NoRouteError,
@@ -95,8 +91,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   end
 
   defp set_page_metadata(case_study, translations) do
-    title = translations[:title] || case_study.title
-    introduction = translations[:introduction] || case_study.introduction
+    title = translations["title"] || case_study.title
+    introduction = translations["introduction"] || case_study.introduction
 
     page_title =
       "#{title} - " <>

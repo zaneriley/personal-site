@@ -1,7 +1,7 @@
 defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   use PortfolioWeb, :live_component
-
-  alias Portfolio.Admin
+  alias Portfolio.Content.Types
+  alias Portfolio.Content
 
   @impl true
   def render(assigns) do
@@ -63,7 +63,7 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
 
   @impl true
   def update(%{case_study: case_study} = assigns, socket) do
-    changeset = Admin.change_case_study(case_study)
+    changeset = Content.change("case_study", case_study)
 
     {:ok,
      socket
@@ -75,7 +75,7 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   def handle_event("validate", %{"case_study" => case_study_params}, socket) do
     changeset =
       socket.assigns.case_study
-      |> Admin.change_case_study(case_study_params)
+      |> Content.change("case_study", case_study_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
@@ -86,7 +86,11 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   end
 
   defp save_case_study(socket, :edit, case_study_params) do
-    case Admin.update_case_study(socket.assigns.case_study, case_study_params) do
+    case Content.update(
+           "case_study",
+           socket.assigns.case_study,
+           case_study_params
+         ) do
       {:ok, case_study} ->
         notify_parent({:saved, case_study})
 
@@ -100,8 +104,9 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
     end
   end
 
+  @dialyzer {:nowarn_function, handle_event: 3}
   defp save_case_study(socket, :new, case_study_params) do
-    case Admin.create_case_study(case_study_params) do
+    case Content.create("case_study", case_study_params) do
       {:ok, case_study} ->
         notify_parent({:saved, case_study})
 

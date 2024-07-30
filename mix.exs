@@ -68,7 +68,8 @@ defmodule Portfolio.MixProject do
       {:swoosh, "1.16.9"},
       {:telemetry_metrics, "1.0.0"},
       {:telemetry_poller, "1.1.0"},
-      {:yamerl, "~> 0.10.0", only: [:dev, :test]}
+      {:yamerl, "~> 0.10.0", only: [:dev, :test]},
+      {:uuid, "~> 1.1"}
     ]
   end
 

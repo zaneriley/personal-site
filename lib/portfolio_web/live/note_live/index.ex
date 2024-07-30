@@ -2,8 +2,9 @@ defmodule PortfolioWeb.NoteLive.Index do
   use PortfolioWeb, :live_view
   require Logger
   import PortfolioWeb.LiveHelpers
-  alias Portfolio.Blog
-  alias Portfolio.Blog.Note
+  alias Portfolio.Content
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Entry
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true
@@ -20,7 +21,7 @@ defmodule PortfolioWeb.NoteLive.Index do
      |> assign(:user_locale, user_locale)
      |> assign(:env, env)
      |> stream_configure(:notes, dom_id: &"note-#{&1.url}")
-     |> stream(:notes, Blog.list_notes())}
+     |> stream(:notes, Content.list("note"))}
   end
 
   @impl true
@@ -37,10 +38,12 @@ defmodule PortfolioWeb.NoteLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"url" => url}) do
+    note = Content.get!("note", url)
+
     socket
     |> assign(:page_title, "Edit Note")
     |> assign(:title, "Edit Note")
-    |> assign(:note, Blog.get_note!(url))
+    |> assign(:note, note)
   end
 
   defp apply_action(socket, :index, _params) do
@@ -56,10 +59,36 @@ defmodule PortfolioWeb.NoteLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"url" => url}, socket) do
-    note = Blog.get_note!(url)
-    {:ok, _} = Blog.delete_note(note)
+  def handle_event("delete", %{"id" => id}, socket) do
+    try do
+      note = Content.get!("note", id)
 
-    {:noreply, stream_delete(socket, :notes, note)}
+      case Content.delete("note", note) do
+        {:ok, _} ->
+          {:noreply, stream_delete(socket, :notes, note)}
+
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "Failed to delete note: #{inspect(reason)}"
+           )}
+      end
+    rescue
+      Ecto.NoResultsError ->
+        {:noreply, put_flash(socket, :error, "Note not found")}
+
+      e in [
+        Portfolio.Content.ContentTypeMismatchError,
+        Portfolio.Content.InvalidContentTypeError
+      ] ->
+        {:noreply, put_flash(socket, :error, e.message)}
+
+      e ->
+        require Logger
+        Logger.error("Unexpected error while deleting note: #{inspect(e)}")
+        {:noreply, put_flash(socket, :error, "An unexpected error occurred")}
+    end
   end
 end
