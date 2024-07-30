@@ -100,7 +100,7 @@ defmodule Portfolio.ContentFixtures do
         translatable_id: content.id,
         translatable_type: content.__struct__.translatable_type(),
         locale: locale,
-        field_name: field,
+        field_name: to_string(field),
         field_value: value
       })
       |> Repo.insert!()

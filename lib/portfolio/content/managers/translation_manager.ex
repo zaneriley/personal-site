@@ -47,7 +47,7 @@ defmodule Portfolio.Content.TranslationManager do
     translatable_fields =
       TranslatableFields.translatable_fields(content.__struct__)
 
-    translations =
+    results =
       Enum.map(translatable_fields, fn field ->
         field_name = Atom.to_string(field)
         field_value = Map.get(attrs, field_name)
@@ -58,9 +58,12 @@ defmodule Portfolio.Content.TranslationManager do
           upsert_translation(content, locale, field_name, field_value)
         end
       end)
-      |> Enum.reject(&is_nil/1)
 
-    {:ok, translations}
+    if Enum.any?(results, fn result -> match?({:error, _}, result) end) do
+      {:error, "Failed to create or update some translations"}
+    else
+      {:ok, Enum.reject(results, &is_nil/1)}
+    end
   end
 
   @doc """
@@ -144,53 +147,6 @@ defmodule Portfolio.Content.TranslationManager do
     |> Repo.all()
     |> Enum.group_by(&elem(&1, 0), fn {_, translation} -> translation end)
     |> Map.new(fn {id, translations} -> {id, Enum.into(translations, %{})} end)
-  end
-
-  @doc """
-  Creates or updates translations for a content item.
-
-  ## Parameters
-    - content: The content item (Note or CaseStudy)
-    - locale: String representing the locale of the translations
-    - attrs: Map of attributes containing the translated values
-
-  ## Returns
-    - {:ok, list of translations} if successful
-    - {:error, reason} if there was an error
-
-  Note: Nil values in attrs are ignored. Empty strings clear existing translations.
-  """
-  @spec create_or_update_translations(content(), String.t(), map()) ::
-          translation_result()
-  def create_or_update_translation(content, locale, field_name, value) do
-    Logger.debug(
-      "Checking translation for field: #{field_name}, locale: #{locale}, value: #{inspect(value)}"
-    )
-
-    attrs = %{
-      translatable_id: content.id,
-      translatable_type: content.__struct__.translatable_type(),
-      locale: locale,
-      field_name: field_name,
-      field_value: value
-    }
-
-    Logger.debug("Translation attrs: #{inspect(attrs)}")
-
-    case Repo.get_by(Translation,
-           translatable_id: content.id,
-           translatable_type: attrs.translatable_type,
-           locale: locale,
-           field_name: field_name
-         ) do
-      nil ->
-        Logger.debug("No existing translation found. Creating new.")
-        create_translation(attrs)
-
-      translation ->
-        Logger.debug("Existing translation found. Updating.")
-        update_translation(translation, attrs)
-    end
   end
 
   # Private functions

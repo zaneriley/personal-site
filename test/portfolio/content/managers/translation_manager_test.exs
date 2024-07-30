@@ -73,7 +73,6 @@ defmodule Portfolio.Content.TranslationTest do
       assert translations["company"] == "日本語の会社名"
     end
 
-
     test "get_content_with_translations returns content with Japanese translations" do
       case_study = ContentFixtures.case_study_fixture()
       attrs = %{"title" => "翻訳されたタイトル", "content" => "翻訳されたコンテンツ"}

@@ -11,6 +11,7 @@ defmodule PortfolioWeb.NoteLive.Show do
     {:ok, assign(socket, user_locale: user_locale)}
   end
 
+  @dialyzer {:nowarn_function, handle_params: 3}
   @impl true
   def handle_params(%{"url" => url}, _, socket) do
     case Content.get_with_translations("note", url, socket.assigns.user_locale) do

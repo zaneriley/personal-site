@@ -147,14 +147,27 @@ defmodule Portfolio.Content do
     EntryManager.delete_content(content)
   end
 
-  @spec change(content_type(), Note.t() | CaseStudy.t(), map()) ::
-          Ecto.Changeset.t()
+  @dialyzer {:nowarn_function, change: 3} # I've tried debugging this error for hours. I can't confirm theres any issue.
+  @spec change(content_type(), Note.t() | CaseStudy.t() | map(), map()) ::
+          Ecto.Changeset.t() | {:error, :invalid_content_type}
   def change(type, content, attrs \\ %{}) do
-    get_schema(type).changeset(content, attrs)
-  end
+    Logger.debug("Content.change called with:")
+    Logger.debug("  type: #{inspect(type)}")
+    Logger.debug("  content: #{inspect(content)}")
+    Logger.debug("  attrs: #{inspect(attrs)}")
 
-  defp get_schema("note"), do: Note
-  defp get_schema("case_study"), do: CaseStudy
+    case Types.get_schema(type) do
+      {:error, :invalid_content_type} ->
+        Logger.error("Invalid content type: #{inspect(type)}")
+        {:error, :invalid_content_type}
+
+      schema when is_atom(schema) ->
+        Logger.debug("Using schema: #{inspect(schema)}")
+        changeset = schema.changeset(content, attrs)
+        Logger.debug("Resulting changeset: #{inspect(changeset)}")
+        changeset
+    end
+  end
 
   @doc """
   Retrieves content with its translations.

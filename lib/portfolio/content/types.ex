@@ -160,7 +160,7 @@ defmodule Portfolio.Content.Types do
 
   ## Returns
 
-    * The schema module if found, otherwise `nil`
+    * The schema module if found, otherwise `{:error, :invalid_content_type}`
 
   ## Examples
 
@@ -168,10 +168,10 @@ defmodule Portfolio.Content.Types do
       Portfolio.Content.Schemas.Note
 
       iex> Portfolio.Content.Types.get_schema("invalid")
-      nil
+      {:error, :invalid_content_type}
 
   """
-  @spec get_schema(content_type() | atom()) :: module() | nil
+  @spec get_schema(content_type() | atom()) :: module() | {:error, :invalid_content_type}
   def get_schema(type) when is_atom(type), do: get_schema(Atom.to_string(type))
 
   def get_schema(type) when is_binary(type) do
@@ -179,9 +179,11 @@ defmodule Portfolio.Content.Types do
 
     case type do
       "note" ->
+        Logger.debug("Found note schema, returning: #{inspect(Portfolio.Content.Schemas.Note)}")
         Portfolio.Content.Schemas.Note
 
       "case_study" ->
+        Logger.debug("Found case study schema, returning: #{inspect(Portfolio.Content.Schemas.CaseStudy)}")
         Portfolio.Content.Schemas.CaseStudy
 
       _ ->

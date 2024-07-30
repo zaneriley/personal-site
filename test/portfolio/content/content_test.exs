@@ -139,6 +139,19 @@ defmodule Portfolio.Content.ContentTest do
     end
   end
 
+  describe "error handling" do
+    test "get!/2 raises InvalidContentTypeError for invalid content type" do
+      assert_raise Content.InvalidContentTypeError, fn ->
+        Content.get!("invalid_type", "some-id")
+      end
+    end
+
+    test "create/2 returns error for invalid content type" do
+      assert {:error, :invalid_content_type} =
+               Content.create("invalid_type", %{title: "Test"})
+    end
+  end
+
   describe "locale handling" do
     test "extract_locale/1 extracts locale from valid file path" do
       file_path = "priv/content/note/en/example.md"
@@ -148,6 +161,22 @@ defmodule Portfolio.Content.ContentTest do
     test "extract_locale/1 returns error for invalid file path" do
       file_path = "invalid/path/example.md"
       assert {:error, :invalid_file_path} = Content.extract_locale(file_path)
+    end
+
+    test "get_with_translations/3 returns content with specified locale translations" do
+      note = ContentFixtures.note_fixture()
+
+      # Update the existing translation or create a new one if it doesn't exist
+      {:ok, _} =
+        Content.TranslationManager.create_or_update_translations(note, "fr", %{
+          "title" => "Titre Français"
+        })
+
+      {:ok, retrieved_note, translations} =
+        Content.get_with_translations("note", note.url, "fr")
+
+      assert retrieved_note.id == note.id
+      assert translations["title"] == "Titre Français"
     end
   end
 end

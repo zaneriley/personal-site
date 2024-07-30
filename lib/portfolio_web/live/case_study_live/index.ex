@@ -29,10 +29,13 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
+  defp apply_action(socket, :edit, %{"url" => url}) do
+    case_study = Content.get!("case_study", url)
+
     socket
-    |> assign(:page_title, "Edit Case study")
-    |> assign(:case_study, Content.get!(:case_study, id))
+    |> assign(:page_title, "Edit Case Study")
+    |> assign(:title, "Edit Case Study")
+    |> assign(:case_study, case_study)
   end
 
   defp apply_action(socket, :new, _params) do
@@ -57,9 +60,39 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    case_study = Content.get!(:case_study, id)
-    {:ok, _} = Content.delete(:case_study, case_study)
+    try do
+      case_study = Content.get!("case_study", id)
 
-    {:noreply, stream_delete(socket, :case_studies, case_study)}
+      case Content.delete("case_study", case_study) do
+        {:ok, _} ->
+          {:noreply, stream_delete(socket, :case_studies, case_study)}
+
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "Failed to delete case study: #{inspect(reason)}"
+           )}
+      end
+    rescue
+      Ecto.NoResultsError ->
+        {:noreply, put_flash(socket, :error, "Case study not found")}
+
+      e in [
+        Portfolio.Content.ContentTypeMismatchError,
+        Portfolio.Content.InvalidContentTypeError
+      ] ->
+        {:noreply, put_flash(socket, :error, e.message)}
+
+      e ->
+        require Logger
+
+        Logger.error(
+          "Unexpected error while deleting case study: #{inspect(e)}"
+        )
+
+        {:noreply, put_flash(socket, :error, "An unexpected error occurred")}
+    end
   end
 end

@@ -37,14 +37,15 @@ defmodule PortfolioWeb.NoteLive.Index do
     |> assign(:note, %Note{})
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    note = Content.get!("note", id)
+  defp apply_action(socket, :edit, %{"url" => url}) do
+    note = Content.get!("note", url)
 
     socket
     |> assign(:page_title, "Edit Note")
     |> assign(:title, "Edit Note")
     |> assign(:note, note)
   end
+
 
   defp apply_action(socket, :index, _params) do
     socket
@@ -60,9 +61,35 @@ defmodule PortfolioWeb.NoteLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    note = Content.get!("note", id)
-    {:ok, _} = Content.delete(:note, note)
+    try do
+      note = Content.get!("note", id)
 
-    {:noreply, stream_delete(socket, :notes, note)}
+      case Content.delete("note", note) do
+        {:ok, _} ->
+          {:noreply, stream_delete(socket, :notes, note)}
+
+        {:error, reason} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "Failed to delete note: #{inspect(reason)}"
+           )}
+      end
+    rescue
+      Ecto.NoResultsError ->
+        {:noreply, put_flash(socket, :error, "Note not found")}
+
+      e in [
+        Portfolio.Content.ContentTypeMismatchError,
+        Portfolio.Content.InvalidContentTypeError
+      ] ->
+        {:noreply, put_flash(socket, :error, e.message)}
+
+      e ->
+        require Logger
+        Logger.error("Unexpected error while deleting note: #{inspect(e)}")
+        {:noreply, put_flash(socket, :error, "An unexpected error occurred")}
+    end
   end
 end

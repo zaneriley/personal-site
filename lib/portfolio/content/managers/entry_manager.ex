@@ -55,7 +55,7 @@ defmodule Portfolio.Content.EntryManager do
   def create_content(attrs) do
     Logger.debug("Creating content with attrs: #{inspect(attrs)}")
 
-    case get_schema(attrs["content_type"]) do
+    case Types.get_schema(attrs["content_type"]) do
       {:error, :invalid_content_type} ->
         {:error, :invalid_content_type}
 
@@ -94,7 +94,7 @@ defmodule Portfolio.Content.EntryManager do
   @spec get_content_by_id_or_url(String.t(), integer() | String.t()) ::
           Note.t() | CaseStudy.t()
   def get_content_by_id_or_url(content_type, id_or_url) do
-    schema = get_schema(content_type)
+    schema = Types.get_schema(content_type)
 
     query =
       cond do
@@ -138,7 +138,7 @@ defmodule Portfolio.Content.EntryManager do
   @spec fetch_content_items([binary()], String.t()) ::
           {:ok, [Note.t()] | [CaseStudy.t()]}
   def fetch_content_items(translatable_ids, type) do
-    content_schema = get_schema(type)
+    content_schema = Types.get_schema(type)
     query = from(c in content_schema, where: c.id in ^translatable_ids)
 
     case Repo.all(query) do
@@ -161,7 +161,7 @@ defmodule Portfolio.Content.EntryManager do
   @spec list_contents(Types.content_type(), keyword(), String.t()) ::
           [Note.t()] | [CaseStudy.t()]
   def list_contents(content_type, opts \\ [], locale \\ "en") do
-    schema = get_schema(content_type)
+    schema = Types.get_schema(content_type)
     query = sort(schema, opts[:sort_by], opts[:sort_order])
     contents = Repo.all(query)
 
@@ -260,7 +260,7 @@ defmodule Portfolio.Content.EntryManager do
     )
 
     stringified_attrs = stringify_keys(attrs)
-    schema = get_schema(content_type)
+    schema = Types.get_schema(content_type)
     Logger.debug("Schema returned from get_schema: #{inspect(schema)}")
 
     url = stringified_attrs["url"]
@@ -317,11 +317,14 @@ defmodule Portfolio.Content.EntryManager do
   end
 
   defp create_or_update_translations(entry, attrs) do
-    TranslationManager.create_or_update_translations(
-      entry,
-      attrs["locale"],
-      attrs
-    )
+    case TranslationManager.create_or_update_translations(
+           entry,
+           attrs["locale"],
+           attrs
+         ) do
+      {:ok, _translations} -> {:ok, entry}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   defp log_result({:ok, _content} = result),
@@ -338,14 +341,6 @@ defmodule Portfolio.Content.EntryManager do
       {key, value} -> {key, value}
     end)
   end
-
-  def get_schema(content_type) when is_atom(content_type),
-    do: get_schema(Atom.to_string(content_type))
-
-  def get_schema(content_type) when is_binary(content_type),
-    do: Types.get_schema(content_type)
-
-  def get_schema(_), do: {:error, :invalid_content_type}
 
   defp apply_changeset(%Note{} = note, attrs), do: Note.changeset(note, attrs)
 

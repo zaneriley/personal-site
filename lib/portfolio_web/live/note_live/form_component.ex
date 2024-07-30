@@ -1,7 +1,7 @@
 defmodule PortfolioWeb.NoteLive.FormComponent do
   use PortfolioWeb, :live_component
 
-  alias Portfolio.Blog
+  alias Portfolio.Content
 
   @impl true
   def render(assigns) do
@@ -36,7 +36,7 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
 
   @impl true
   def update(%{note: note} = assigns, socket) do
-    changeset = Blog.change_note(note)
+    changeset = Content.change("note", note, %{})
 
     {:ok,
      socket
@@ -47,8 +47,7 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
   @impl true
   def handle_event("validate", %{"note" => note_params}, socket) do
     changeset =
-      socket.assigns.note
-      |> Blog.change_note(note_params)
+      Content.change("note", socket.assigns.note, note_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
@@ -59,7 +58,7 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
   end
 
   defp save_note(socket, :edit, note_params) do
-    case Blog.update_note(socket.assigns.note, note_params) do
+    case Content.update("note", socket.assigns.note, note_params) do
       {:ok, note} ->
         notify_parent({:saved, note})
 
@@ -74,7 +73,7 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
   end
 
   defp save_note(socket, :new, note_params) do
-    case Blog.create_note(note_params) do
+    case Content.create("note", note_params) do
       {:ok, note} ->
         notify_parent({:saved, note})
 
