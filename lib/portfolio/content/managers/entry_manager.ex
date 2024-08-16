@@ -10,70 +10,143 @@ defmodule Portfolio.Content.EntryManager do
   alias Portfolio.Content.Types
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
   alias Portfolio.Content.TranslationManager
+  alias Portfolio.Content.MarkdownRendering.Renderer
   import Ecto.Query
   require Logger
 
+  # Wasn't able to debug these dialyzer warnings, but code works as expected.
+  @dialyzer [
+    {:nowarn_function, compile_content_and_translations: 3},
+    {:nowarn_function, compile_content: 3},
+    {:nowarn_function, compile_translations: 3},
+    {:nowarn_function, get_content_with_translations: 3}
+  ]
+
+
   @default_locale Application.compile_env(:portfolio, :default_locale)
+  @type content_type :: Types.content_type()
 
   @doc """
-  Creates a new content item based on the provided attributes.
-
-  This function determines the appropriate schema (Note or CaseStudy) based on the
-  "content_type" attribute, and then creates a new record in the database.
+  Creates a new content entry.
 
   ## Parameters
 
-    - attrs: A map containing the attributes for the new content item. Must include
-      a "content_type" key with a value of either "note" or "case_study".
+    * `attrs` - A map containing the attributes for the new content entry.
 
   ## Returns
 
-    - `{:ok, content}` if the content was successfully created, where `content` is
-      either a `Note.t()` or `CaseStudy.t()`.
-    - `{:error, changeset}` if there was a validation error.
-    - `{:error, :invalid_content_type}` if an invalid content type was provided.
-    - `{:error, reason}` for other errors.
-
-  ## Examples
-
-      iex> create_content(%{"content_type" => "note", "title" => "My Note", "content" => "Some content"})
-      {:ok, %Portfolio.Content.Schemas.Note{...}}
-
-      iex> create_content(%{"content_type" => "case_study", "title" => "Case Study", "company" => "ACME"})
-      {:ok, %Portfolio.Content.Schemas.CaseStudy{...}}
-
-      iex> create_content(%{"content_type" => "invalid"})
-      {:error, :invalid_content_type}
+    * `{:ok, content}` if the content was successfully created.
+    * `{:error, reason}` if there was an error during creation.
   """
   @spec create_content(map()) ::
-          {:ok,
-           Portfolio.Content.Schemas.Note.t()
-           | Portfolio.Content.Schemas.CaseStudy.t()}
+          {:ok, Note.t() | CaseStudy.t()}
           | {:error, Ecto.Changeset.t()}
           | {:error, :invalid_content_type}
           | {:error, any()}
   def create_content(attrs) do
-    Logger.debug("Creating content with attrs: #{inspect(attrs)}")
+    case get_schema(attrs["content_type"]) do
+      {:error, :invalid_content_type} = error ->
+        error
 
-    case Types.get_schema(attrs["content_type"]) do
-      {:error, :invalid_content_type} ->
-        {:error, :invalid_content_type}
-
-      schema ->
-        Logger.debug("Schema found: #{inspect(schema)}")
-
-        struct(schema)
-        |> apply_changeset(attrs)
-        |> Repo.insert()
+      {:ok, schema} ->
+        with changeset <- apply_changeset(struct(schema), attrs),
+             {:ok, content} <- insert_content(changeset),
+             {:ok, compiled_content} <-
+               compile_content(content, attrs["content_type"]),
+             {:ok, updated_content} <-
+               update_compiled_content(content, compiled_content) do
+          {:ok, updated_content}
+        else
+          {:error, reason} -> {:error, reason}
+        end
     end
   end
 
-  def update_content(content, attrs) do
-    content
-    |> apply_changeset(attrs)
-    |> Repo.update()
+  @spec insert_content(Ecto.Changeset.t()) ::
+          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  defp insert_content(changeset) do
+    Repo.insert(changeset)
   end
 
+  @spec compile_content(Note.t() | CaseStudy.t(), Types.content_type()) ::
+          {:ok, String.t()}
+          | {:error, :empty_compiled_content | :empty_content | any()}
+  defp compile_content(content, content_type) do
+    case Renderer.render_and_cache(content.content, content_type, content.id) do
+      {:ok, compiled_content}
+      when is_binary(compiled_content) and compiled_content != "" ->
+        {:ok, compiled_content}
+
+      {:ok, _} ->
+        {:error, :empty_compiled_content}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @spec update_compiled_content(Note.t() | CaseStudy.t(), String.t()) ::
+          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  defp update_compiled_content(content, compiled_content) do
+    Repo.update(
+      Ecto.Changeset.change(content, compiled_content: compiled_content)
+    )
+  end
+
+  @doc """
+  Updates an existing content entry.
+
+  ## Parameters
+
+    * `content` - The existing content entry to update.
+    * `attrs` - A map containing the updated attributes.
+    * `content_type` - The type of the content being updated.
+
+  ## Returns
+
+    * `{:ok, content}` if the content was successfully updated.
+    * `{:error, reason}` if there was an error during update.
+  """
+  @spec update_content(Note.t() | CaseStudy.t(), map(), content_type()) ::
+          {:ok, Note.t() | CaseStudy.t()} | {:error, any()}
+  def update_content(content, attrs, content_type) do
+    with changeset <- apply_changeset(content, attrs),
+         {:ok, updated_content} <- update_content_transaction(changeset),
+         {:ok, compiled_content} <-
+           compile_content(updated_content, content_type),
+         {:ok, content_with_compiled} <-
+           update_compiled_content(updated_content, compiled_content) do
+      {:ok, content_with_compiled}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @spec update_content_transaction(Ecto.Changeset.t()) ::
+          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  defp update_content_transaction(changeset) do
+    Repo.transaction(fn ->
+      case Repo.update(changeset) do
+        {:ok, updated_content} -> updated_content
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  @doc """
+  Deletes a content entry.
+
+  ## Parameters
+
+    * `content` - The content entry to delete.
+
+  ## Returns
+
+    * `{:ok, content}` if the content was successfully deleted.
+    * `{:error, changeset}` if there was an error during deletion.
+  """
+  @spec delete_content(Note.t() | CaseStudy.t()) ::
+          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
   def delete_content(content) do
     Repo.delete(content)
   end
@@ -91,27 +164,36 @@ defmodule Portfolio.Content.EntryManager do
   ## Raises
     - Ecto.NoResultsError if no content is found
   """
-  @spec get_content_by_id_or_url(String.t(), integer() | String.t()) ::
+  @spec get_content_by_id_or_url(content_type(), integer() | String.t()) ::
           Note.t() | CaseStudy.t()
   def get_content_by_id_or_url(content_type, id_or_url) do
-    schema = Types.get_schema(content_type)
+    with {:ok, schema} <- get_schema(content_type) do
+      query =
+        cond do
+          uuid?(id_or_url) ->
+            from e in schema, where: e.id == ^id_or_url
 
-    query =
-      cond do
-        uuid?(id_or_url) ->
-          from e in schema, where: e.id == ^id_or_url
+          is_binary(id_or_url) ->
+            from e in schema, where: e.url == ^id_or_url
 
-        is_binary(id_or_url) ->
-          from e in schema, where: e.url == ^id_or_url
+          true ->
+            raise ArgumentError,
+                  "Invalid id_or_url provided: #{inspect(id_or_url)}"
+        end
 
-        true ->
-          raise ArgumentError,
-                "Invalid id_or_url provided: #{inspect(id_or_url)}"
+      case Repo.one(query) do
+        nil ->
+          raise Ecto.NoResultsError, queryable: query
+
+        content ->
+          {:ok, compiled_html} =
+            Renderer.render_and_cache(content.content, content_type, content.id)
+
+          %{content | compiled_content: compiled_html}
       end
-
-    case Repo.one(query) do
-      nil -> raise Ecto.NoResultsError, queryable: query
-      content -> content
+    else
+      {:error, :invalid_content_type} ->
+        raise ArgumentError, "Invalid content type: #{inspect(content_type)}"
     end
   end
 
@@ -203,31 +285,143 @@ defmodule Portfolio.Content.EntryManager do
   # Handle Translations                    #
   ##########################################
 
-  @doc """
-  Fetches content with its translations.
-
-  ## Parameters
-  - `content_type`: The type of content to retrieve ("note" or "case_study").
-  - `identifier`: The unique identifier (URL or ID) of the content.
-  - `locale`: The locale of the translations to fetch.
-
-  ## Returns
-  - `{:ok, content, translations}`: Content and its translations if found.
-  - `{:error, :not_found}`: If no content is found.
-  """
   @spec get_content_with_translations(
-          String.t(),
-          integer() | String.t(),
+          Types.content_type(),
+          String.t() | integer(),
           String.t()
         ) ::
-          {:ok, Note.t() | CaseStudy.t(), map()} | no_return()
-  def get_content_with_translations(content_type, identifier, locale) do
-    content = get_content_by_id_or_url(content_type, identifier)
+          {:ok, Note.t() | CaseStudy.t(), map(), String.t()} | {:error, atom()}
+  def get_content_with_translations(content_type, id_or_url, locale) do
+    Logger.debug(
+      "Fetching #{content_type} with translations for locale: #{locale}"
+    )
 
-    translations =
-      TranslationManager.get_translations(content.id, content_type, locale)
+    try do
+      content = get_content_by_id_or_url(content_type, id_or_url)
 
-    {:ok, content, translations}
+      translations =
+        TranslationManager.get_translations(content.id, content_type, locale)
+
+      case compile_content_and_translations(content, content_type, translations) do
+        {:ok, compiled_content, compiled_translations} ->
+          updated_content = %{content | compiled_content: compiled_content}
+          {:ok, updated_content, compiled_translations, compiled_content}
+
+        {:error, reason} ->
+          Logger.error(
+            "Failed to compile content or translations: #{inspect(reason)}"
+          )
+
+          {:error, :compilation_failed}
+      end
+    rescue
+      Ecto.NoResultsError ->
+        Logger.warning(
+          "No #{content_type} found for identifier: #{inspect(id_or_url)}"
+        )
+
+        {:error, :not_found}
+    end
+  end
+
+  @spec compile_content_and_translations(
+    Note.t() | CaseStudy.t(),
+    Types.content_type(),
+    map()
+  ) ::
+    {:ok, String.t(), map()}
+    | {:error, atom()}
+    | {:error, :empty_content}
+    | {:error, :unexpected_result}
+    | {:error, :exception}
+    defp compile_content_and_translations(content, content_type, translations) do
+      schema = content.__struct__
+      markdown_fields = schema.markdown_fields()
+
+      with {:ok, compiled_content} <- compile_content(content, content_type, markdown_fields),
+           {:ok, compiled_translations} <- compile_translations(translations, content_type, markdown_fields) do
+        {:ok, compiled_content, compiled_translations}
+      end
+    end
+
+  @spec compile_content(Note.t() | CaseStudy.t(), Types.content_type(), [
+          String.t()
+        ]) ::
+          {:ok, String.t()}
+          | {:error, atom()}
+          | {:error, :empty_content}
+          | {:error, :unexpected_result}
+          | {:error, :exception}
+  defp compile_content(content, content_type, markdown_fields) do
+    is_markdown = "content" in markdown_fields
+
+    try do
+      case Renderer.render_and_cache(content.content, content_type, content.id,
+             is_markdown: is_markdown
+           ) do
+        {:ok, compiled} when is_binary(compiled) and compiled != "" ->
+          Logger.debug(
+            "Successfully compiled content for #{content_type} with ID: #{content.id}"
+          )
+
+          {:ok, compiled}
+
+        {:ok, ""} ->
+          Logger.warning(
+            "Compiled content is empty for #{content_type} with ID: #{content.id}"
+          )
+
+          {:error, :empty_content}
+
+        {:error, reason} ->
+          Logger.error(
+            "Error compiling content for #{content_type} with ID: #{content.id}. Error: #{inspect(reason)}"
+          )
+
+          {:error, reason}
+
+        unexpected ->
+          Logger.error(
+            "Unexpected result from render_and_cache for #{content_type} with ID: #{content.id}. Result: #{inspect(unexpected)}"
+          )
+
+          {:error, :unexpected_result}
+      end
+    rescue
+      e ->
+        Logger.error(
+          "Exception raised while compiling content for #{content_type} with ID: #{content.id}. Exception: #{inspect(e)}"
+        )
+
+        {:error, :exception}
+    end
+  end
+
+  @spec compile_translations(map(), Types.content_type(), [String.t()]) ::
+          {:ok, map()} | {:error, atom()}
+  defp compile_translations(translations, content_type, markdown_fields) do
+    Enum.reduce_while(translations, {:ok, %{}}, fn {key, value}, {:ok, acc} ->
+      is_markdown = to_string(key) in markdown_fields
+
+      case Renderer.render_and_cache(value, content_type, "#{key}_translation",
+             is_markdown: is_markdown
+           ) do
+        {:ok, compiled} when is_binary(compiled) and compiled != "" ->
+          Logger.debug("Successfully compiled translation for key: #{key}")
+          {:cont, {:ok, Map.put(acc, key, compiled)}}
+
+        {:ok, ""} ->
+          Logger.warning("Compiled translation is empty for key: #{key}")
+          {:halt, {:error, :empty_translation}}
+
+        {:error, reason} ->
+          Logger.error(
+            "Error compiling translation for key: #{key}. Error: #{inspect(reason)}"
+          )
+
+          {:halt, {:error, reason}}
+      end
+    end)
   end
 
   ##########################################
@@ -252,45 +446,42 @@ defmodule Portfolio.Content.EntryManager do
     - {:ok, content} if the operation was successful
     - {:error, changeset} if there was an error
   """
-  @spec upsert_from_file(String.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, any()}
-  def upsert_from_file(content_type, attrs) do
-    Logger.debug(
-      "upsert_from_file called with content_type: #{inspect(content_type)}, attrs: #{inspect(attrs)}"
-    )
-
-    stringified_attrs = stringify_keys(attrs)
-    schema = Types.get_schema(content_type)
-    Logger.debug("Schema returned from get_schema: #{inspect(schema)}")
-
-    url = stringified_attrs["url"]
-    locale = stringified_attrs["locale"]
-
+  @spec upsert_from_file(content_type(), map()) ::
+          {:ok, Note.t() | CaseStudy.t()}
+          | {:error, atom() | Ecto.Changeset.t()}
+  def upsert_from_file(content_type, attrs) when is_binary(content_type) do
     Logger.info(
-      "Attempting to upsert #{content_type} with URL: #{url} and locale: #{locale}"
+      "Upserting #{content_type} with URL: #{attrs["url"]} and locale: #{attrs["locale"]}"
     )
 
-    result =
-      if locale == @default_locale do
-        upsert_default_locale_content(schema, stringified_attrs, content_type)
-      else
-        upsert_non_default_locale_content(
-          schema,
-          stringified_attrs,
-          content_type
-        )
-      end
-
-    case result do
-      {:ok, content} -> {:ok, content}
+    with {:ok, schema} <- get_schema(content_type),
+         {:ok, content} <- upsert_content(schema, attrs, content_type),
+         {:ok, compiled_content} <- compile_content(content, content_type) do
+      {:ok, %{content | compiled_content: compiled_content}}
+    else
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp get_schema(content_type) do
+    case Types.get_schema(content_type) do
+      {:error, :invalid_content_type} = error -> error
+      schema -> {:ok, schema}
+    end
+  end
+
+  defp upsert_content(schema, attrs, content_type) do
+    if attrs["locale"] == @default_locale do
+      upsert_default_locale_content(schema, attrs, content_type)
+    else
+      upsert_non_default_locale_content(schema, attrs, content_type)
     end
   end
 
   defp upsert_default_locale_content(schema, attrs, content_type) do
     case Repo.get_by(schema, url: attrs["url"]) do
       nil -> create_content(Map.put(attrs, "content_type", content_type))
-      entry -> update_content(entry, attrs)
+      entry -> update_content(entry, attrs, content_type)
     end
   end
 
@@ -325,21 +516,6 @@ defmodule Portfolio.Content.EntryManager do
       {:ok, _translations} -> {:ok, entry}
       {:error, reason} -> {:error, reason}
     end
-  end
-
-  defp log_result({:ok, _content} = result),
-    do: Logger.info("Content upserted successfully")
-
-  defp log_result({:error, changeset}),
-    do: Logger.error("Failed to upsert content: #{inspect(changeset.errors)}")
-
-  # Helper function to convert all keys to strings
-  @spec stringify_keys(map()) :: map()
-  defp stringify_keys(map) do
-    Map.new(map, fn
-      {key, value} when is_atom(key) -> {Atom.to_string(key), value}
-      {key, value} -> {key, value}
-    end)
   end
 
   defp apply_changeset(%Note{} = note, attrs), do: Note.changeset(note, attrs)

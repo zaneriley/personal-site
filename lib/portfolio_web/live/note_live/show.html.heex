@@ -42,8 +42,8 @@
       <%= if @translations["content"] do %>
         <%= raw(@translations["content"]) %>
       <% else %>
-        <%= if @note.content do %>
-          <%= raw(@note.content) %>
+        <%= if @note.compiled_content do %>
+          <%= raw(@note.compiled_content) %>
         <% else %>
           <p><%= gettext("We ran into an issue loading this note!") %></p>
         <% end %>

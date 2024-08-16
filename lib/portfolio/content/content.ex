@@ -84,36 +84,28 @@ defmodule Portfolio.Content do
     end
   end
 
+  @spec fetch_and_validate_content(content_type(), content_identifier()) ::
+          Note.t() | CaseStudy.t() | no_return()
   defp fetch_and_validate_content(type, id_or_url) do
-    try do
-      case EntryManager.get_content_by_id_or_url(type, id_or_url) do
-        %Note{} = note when type == "note" ->
-          Logger.info("Successfully retrieved Note with ID: #{note.id}")
-          note
+    case EntryManager.get_content_by_id_or_url(type, id_or_url) do
+      %Note{} = note when type == "note" ->
+        Logger.info("Successfully retrieved Note with ID: #{note.id}")
+        note
 
-        %CaseStudy{} = case_study when type == "case_study" ->
-          Logger.info(
-            "Successfully retrieved CaseStudy with ID: #{case_study.id}"
-          )
-
-          case_study
-
-        mismatched_content ->
-          Logger.error(
-            "Content type mismatch. Requested: #{type}, Found: #{mismatched_content.__struct__}"
-          )
-
-          raise ContentTypeMismatchError,
-                "Content type mismatch for #{inspect(id_or_url)}"
-      end
-    rescue
-      Ecto.NoResultsError ->
-        Logger.warn(
-          "No content found for type: #{type}, identifier: #{inspect(id_or_url)}"
+      %CaseStudy{} = case_study when type == "case_study" ->
+        Logger.info(
+          "Successfully retrieved CaseStudy with ID: #{case_study.id}"
         )
 
-        schema = Types.get_schema(type)
-        reraise Ecto.NoResultsError.exception(queryable: schema), __STACKTRACE__
+        case_study
+
+      mismatched_content ->
+        Logger.error(
+          "Content type mismatch. Requested: #{type}, Found: #{mismatched_content.__struct__}"
+        )
+
+        raise ContentTypeMismatchError,
+              "Content type mismatch for #{inspect(id_or_url)}"
     end
   end
 
@@ -138,7 +130,7 @@ defmodule Portfolio.Content do
   @spec update(content_type(), Note.t() | CaseStudy.t(), map()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
   def update(type, content, attrs) do
-    EntryManager.update_content(content, attrs)
+    EntryManager.update_content(content, attrs, type)
   end
 
   @spec delete(content_type(), Note.t() | CaseStudy.t()) ::
@@ -147,8 +139,6 @@ defmodule Portfolio.Content do
     EntryManager.delete_content(content)
   end
 
-  # I've tried debugging this error for hours. I can't confirm theres any issue.
-  @dialyzer {:nowarn_function, change: 3}
   @spec change(content_type(), Note.t() | CaseStudy.t() | map(), map()) ::
           Ecto.Changeset.t() | {:error, :invalid_content_type}
   def change(type, content, attrs \\ %{}) do
@@ -171,7 +161,7 @@ defmodule Portfolio.Content do
   end
 
   @doc """
-  Retrieves content with its translations.
+  Retrieves content with its translations and compiled content.
 
   ## Parameters
   - `content_type`: The type of content to retrieve ("note" or "case_study").
@@ -179,22 +169,27 @@ defmodule Portfolio.Content do
   - `locale`: The locale of the translations to fetch.
 
   ## Returns
-  - `{:ok, content, translations}`: Content and its translations if found.
+  - `{:ok, content, translations, compiled_content}`: Content, its translations, and compiled content if found.
   - `{:error, :not_found}`: If no content is found.
 
   ## Examples
 
       iex> Content.get_with_translations("case_study", "my-case-study", "en")
-      {:ok, %CaseStudy{...}, %{"title" => "Translated Title", ...}}
+      {:ok, %CaseStudy{...}, %{"title" => "Translated Title", ...}, "Translated Title"}
 
       iex> Content.get_with_translations("note", 123, "fr")
-      {:ok, %Note{...}, %{"content" => "Contenu traduit", ...}}
+      {:ok, %Note{...}, %{"content" => "Contenu traduit", ...}, "<p>Contenu traduit</p>"}
 
       iex> Content.get_with_translations("case_study", "non-existent", "en")
       {:error, :not_found}
   """
-  @spec get_with_translations(content_type(), content_identifier(), String.t()) ::
-          {:ok, Note.t() | CaseStudy.t(), map()} | {:error, :not_found}
+
+  @spec get_with_translations(
+          Types.content_type(),
+          String.t() | integer(),
+          String.t()
+        ) ::
+          {:ok, Note.t() | CaseStudy.t(), map(), String.t()} | {:error, atom()}
   def get_with_translations(content_type, identifier, locale) do
     EntryManager.get_content_with_translations(content_type, identifier, locale)
   end
@@ -232,14 +227,7 @@ defmodule Portfolio.Content do
       "Upserting #{content_type} with URL: #{attrs["url"]} and locale: #{attrs["locale"]}"
     )
 
-    case EntryManager.upsert_from_file(content_type, attrs) do
-      {:ok, content} ->
-        {:ok, content}
-
-      {:error, reason} ->
-        Logger.error("Error upserting content: #{inspect(reason)}")
-        {:error, reason}
-    end
+    EntryManager.upsert_from_file(content_type, attrs)
   end
 
   @doc """

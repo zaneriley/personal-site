@@ -1,7 +1,6 @@
 defmodule PortfolioWeb.Layouts do
   @moduledoc false
   use PortfolioWeb, :html
-  import PortfolioWeb.NavComponent
   alias PortfolioWeb.Router.Helpers, as: Routes
   embed_templates "layouts/*"
 
@@ -16,9 +15,6 @@ defmodule PortfolioWeb.Layouts do
   end
 
   def hreflang_tags(conn) do
-    current_locale =
-      conn.assigns[:locale] || Application.get_env(:portfolio, :default_locale)
-
     current_path = Phoenix.Controller.current_path(conn)
 
     # Remove locale from the beginning of the path

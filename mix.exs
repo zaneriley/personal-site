@@ -41,6 +41,7 @@ defmodule Portfolio.MixProject do
 
   defp deps do
     [
+      {:cachex, "~> 3.6"},
       {:cowboy, "~> 2.11.0"},
       {:credo, "~> 1.7.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
@@ -55,7 +56,7 @@ defmodule Portfolio.MixProject do
       {:heroicons, "0.5.5"},
       {:jason, "~>1.4.3"},
       {:logfmt_ex, "~> 0.4.2"},
-      {:mox, "1.1.0", only: :test},
+      {:mock, "~> 0.3.8", only: :test},
       {:phoenix, "1.7.14"},
       {:phoenix_ecto, "4.6.2"},
       {:phoenix_html, "4.1.1"},

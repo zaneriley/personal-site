@@ -31,7 +31,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   @type locale_source :: :url | :session | :accept_language | :default
 
   @spec log(atom(), String.t(), keyword()) :: :ok
-  defp log(level, message, metadata \\ []) do
+  defp log(level, message, metadata) do
     Logger.log(level, fn -> "[SetLocale] #{message}" end, metadata)
   end
 

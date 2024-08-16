@@ -16,7 +16,7 @@ defmodule PortfolioWeb.DevToolbar do
 
   def render(assigns) do
     ~H"""
-    <div class="z-50 absolute left-0 fixed bottom-0 w-full bg-gray-800 py-2 px-4 border-t border-gray-700 dark:bg-gray-900 dark:text-white dark:border-gray-800">
+    <div class="z-50 fixed left-0 fixed bottom-0 w-full bg-gray-800 py-2 px-4 border-t border-gray-700 dark:bg-gray-900 dark:text-white dark:border-gray-800">
       <div class="flex flex-col md:flex-row items-center justify-between space-x-4 md:space-x-8">
         <div class="flex space-x-2">
           <div>

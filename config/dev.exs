@@ -3,12 +3,12 @@ import Config
 content_base_path = "priv/content"
 
 config :portfolio, PortfolioWeb.Endpoint,
-  debug_errors: true,
+  debug_errors: false,
   code_reloader: true,
   check_origin: false,
   watchers: [],
   live_reload: [
-    web_console_logger: true,
+    web_console_logger: false,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
@@ -28,6 +28,14 @@ config :portfolio, dev_routes: true
 config :portfolio, Portfolio.Repo, show_sensitive_data_on_connection_error: true
 
 config :portfolio, :csp, report_only: true
+
+config :portfolio, :cache,
+  ttl: :timer.seconds(5),
+  limit: 100,
+  policy: Cachex.Policy.LRU
+
+# Optionally, to disable caching in development:
+config :portfolio, :cache, disabled: true
 
 config :logger, :console,
   format: {Portfolio.LoggerFormatter, :format},

@@ -19,4 +19,9 @@ defmodule Portfolio.Content.Schemas.Note do
   The Note type.
   """
   @type t :: %__MODULE__{}
+
+  def custom_render(content) do
+    # Add any Note-specific rendering logic here
+    content
+  end
 end

@@ -12,7 +12,7 @@ defmodule Portfolio.ContentFixtures do
   @doc """
   Creates a note with dynamic and realistic default attributes that can be overridden.
   """
-  def note_fixture(attrs \\ %{}) do
+  def note_fixture(attrs \\ %{}, opts \\ []) do
     sequence = System.unique_integer([:positive])
 
     default_attrs = %{
@@ -35,7 +35,9 @@ defmodule Portfolio.ContentFixtures do
       |> Note.changeset(Map.merge(default_attrs, string_attrs))
       |> Repo.insert!()
 
-    translation_fixture(note, "ja")
+    unless opts[:skip_translations] do
+      translation_fixture(note, "ja")
+    end
 
     note
   end
@@ -43,7 +45,7 @@ defmodule Portfolio.ContentFixtures do
   @doc """
   Creates a case study with dynamic and realistic default attributes that can be overridden.
   """
-  def case_study_fixture(attrs \\ %{}) do
+  def case_study_fixture(attrs \\ %{}, opts \\ []) do
     Logger.debug("Creating case study fixture")
 
     sequence = System.unique_integer([:positive])
@@ -73,7 +75,12 @@ defmodule Portfolio.ContentFixtures do
       |> CaseStudy.changeset(Map.merge(default_attrs, string_attrs))
       |> Repo.insert!()
 
-    translation_fixture(case_study, "ja")
+    if opts[:translations] do
+      Enum.each(opts[:translations], fn {locale, trans_attrs} ->
+        translation_fixture(case_study, locale, trans_attrs)
+      end)
+    end
+
     Logger.debug("Case study created: #{inspect(case_study)}")
 
     case_study

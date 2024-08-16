@@ -81,6 +81,10 @@ function test {
   # Run test suite
   _dc -e "MIX_ENV=test" web mix test "${@}"
 }
+function test:file {
+  # Run test suite and log to file
+  _dc -e "MIX_ENV=test" web mix test "${@}" > test_output.log 2>&1
+}
 
 function test:coverage {
   echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"

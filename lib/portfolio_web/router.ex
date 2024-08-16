@@ -49,7 +49,7 @@ defmodule PortfolioWeb.Router do
   # it behind authentication and allow only admins to access it.
   # Conditional block for development-only routes
   # We're defining these first as to not trigger the :locale redirection pipeline.
-  if Application.get_env(:portfolio, :environment) in [:dev, :test] do
+  if Application.compile_env(:portfolio, :environment) in [:dev, :test] do
     scope "/admin", PortfolioWeb do
       pipe_through [:admin]
 

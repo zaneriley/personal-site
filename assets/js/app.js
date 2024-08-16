@@ -37,8 +37,8 @@ window.addEventListener("phx:page-loading-stop", info => {
 liveSocket.connect()
 // Expose liveSocket on window for console debug logs and latency simulation:
 >> liveSocket.enableDebug()
->> liveSocket.enableLatencySim(1000)  // active for current browser session
-// >> liveSocket.disableLatencySim() // you'll need to run this after disabling the above
+// >> liveSocket.enableLatencySim(1000)  // active for current browser session
+>> liveSocket.disableLatencySim() // you'll need to run this after disabling the above
 window.addEventListener("phx:live_reload:attached", ({detail: reloader}) => {
   // Enable server log streaming to client.
   // Disable with reloader.disableServerLogs()
@@ -84,13 +84,11 @@ console.log(
      @@@@@@@@@@|     [@@@@]   [@@@@@@@@@BP         [@@@@@@@@@P       @@@@@    @@@@@@@@@B"               
         """""""'              '"""'                                                                     
 `,
-  'font-size: 6px; font-family: monospace; font-weight: bold; line-height: 0.5;'
+  'color: #fff; font-size: 6px; font-family: monospace; font-weight: bold; line-height: 0.5;'
 );
 const messageContent = [
   "H̴̭͇̋̈́e̷͓̿l̶͙̈́l̷̰̈́o̷͚̿ ̵͙̈́t̵̟̆h̷͚̆e̶͚̓r̶̹̈́e̷͇̓!̶̦̓ ̵͚̒N̵̰̒i̶̹͌c̷͚̈́e̶͇̓ ̶͚̒t̵͇̆o̶͇̔ ̶̹̒m̶̭̒e̶̝̓e̶̝͒t̶̟̆ ̶͇̒y̶̭̔o̵̭͒u̶̦͒!̵̰̒",
   "YOUR CURIOSITY IS DELIGHTFUL AND WELCOME.",
-  "FEEL FREE TO EXPLORE THIS HUMBLE CODE REPOSITORY.",
-  "FOR THE FULL EXPERIENCE, PLEASE VISIT:",
   "GitHub: https://github.com/zaneriley/personal-site",
   "Figma: https://www.figma.com/design/zDOcBhnjTDCWmc6OFgeoUc/Zane-Riley's-Product-Portfolio?node-id=2209-559&t=0gZqDDkC2pYanuW3-0",
   "MAY YOUR JOURNEY BE FILLED WITH WONDER AND DISCOVERY.",
@@ -110,8 +108,6 @@ messageContent.forEach((line, index) => {
   setTimeout(() => {
     if (index === 0 || index === messageContent.length - 1) {
       console.log(`%c${line}`, glitchStyle);
-    } else if (index === 3) {
-      console.log(`%c${line}`, highlightStyle);
     } else {
       console.log(`%c${line}`, normalStyle);
     }
@@ -125,7 +121,6 @@ messageContent.forEach((line, index) => {
     function logCrypticMessage() {
       console.log(`
     /* 
-    ${asciiArt}
     ${messageContent}
     */
     `);
