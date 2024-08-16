@@ -23,7 +23,6 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   @default_port "443"
   @default_host "localhost"
 
-
   @spec generate_csp_for_testing(map()) :: String.t()
   def generate_csp_for_testing(config) do
     build_csp(config)
@@ -34,6 +33,7 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
     Logger.debug(
       "CSPHeader init - Environment: #{@env}, Module: #{@env_module}"
     )
+
     opts
   end
 
@@ -116,7 +116,6 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   @spec get_all_hosts(csp_config) :: String.t()
   defp get_all_hosts(config) do
     [config.host, "localhost", "0.0.0.0" | config.additional_hosts]
-    |> Enum.map(&"#{config.scheme}://#{&1}:#{config.port}")
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &"#{config.scheme}://#{&1}:#{config.port}")
   end
 end

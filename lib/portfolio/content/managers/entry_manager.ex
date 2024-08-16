@@ -22,7 +22,6 @@ defmodule Portfolio.Content.EntryManager do
     {:nowarn_function, get_content_with_translations: 3}
   ]
 
-
   @default_locale Application.compile_env(:portfolio, :default_locale)
   @type content_type :: Types.content_type()
 
@@ -167,31 +166,32 @@ defmodule Portfolio.Content.EntryManager do
   @spec get_content_by_id_or_url(content_type(), integer() | String.t()) ::
           Note.t() | CaseStudy.t()
   def get_content_by_id_or_url(content_type, id_or_url) do
-    with {:ok, schema} <- get_schema(content_type) do
-      query =
-        cond do
-          uuid?(id_or_url) ->
-            from e in schema, where: e.id == ^id_or_url
+    case get_schema(content_type) do
+      {:ok, schema} ->
+        query =
+          cond do
+            uuid?(id_or_url) ->
+              from e in schema, where: e.id == ^id_or_url
 
-          is_binary(id_or_url) ->
-            from e in schema, where: e.url == ^id_or_url
+            is_binary(id_or_url) ->
+              from e in schema, where: e.url == ^id_or_url
 
-          true ->
-            raise ArgumentError,
-                  "Invalid id_or_url provided: #{inspect(id_or_url)}"
+            true ->
+              raise ArgumentError,
+                    "Invalid id_or_url provided: #{inspect(id_or_url)}"
+          end
+
+        case Repo.one(query) do
+          nil ->
+            raise Ecto.NoResultsError, queryable: query
+
+          content ->
+            {:ok, compiled_html} =
+              Renderer.render_and_cache(content.content, content_type, content.id)
+
+            %{content | compiled_content: compiled_html}
         end
 
-      case Repo.one(query) do
-        nil ->
-          raise Ecto.NoResultsError, queryable: query
-
-        content ->
-          {:ok, compiled_html} =
-            Renderer.render_and_cache(content.content, content_type, content.id)
-
-          %{content | compiled_content: compiled_html}
-      end
-    else
       {:error, :invalid_content_type} ->
         raise ArgumentError, "Invalid content type: #{inspect(content_type)}"
     end
@@ -325,24 +325,26 @@ defmodule Portfolio.Content.EntryManager do
   end
 
   @spec compile_content_and_translations(
-    Note.t() | CaseStudy.t(),
-    Types.content_type(),
-    map()
-  ) ::
-    {:ok, String.t(), map()}
-    | {:error, atom()}
-    | {:error, :empty_content}
-    | {:error, :unexpected_result}
-    | {:error, :exception}
-    defp compile_content_and_translations(content, content_type, translations) do
-      schema = content.__struct__
-      markdown_fields = schema.markdown_fields()
+          Note.t() | CaseStudy.t(),
+          Types.content_type(),
+          map()
+        ) ::
+          {:ok, String.t(), map()}
+          | {:error, atom()}
+          | {:error, :empty_content}
+          | {:error, :unexpected_result}
+          | {:error, :exception}
+  defp compile_content_and_translations(content, content_type, translations) do
+    schema = content.__struct__
+    markdown_fields = schema.markdown_fields()
 
-      with {:ok, compiled_content} <- compile_content(content, content_type, markdown_fields),
-           {:ok, compiled_translations} <- compile_translations(translations, content_type, markdown_fields) do
-        {:ok, compiled_content, compiled_translations}
-      end
+    with {:ok, compiled_content} <-
+           compile_content(content, content_type, markdown_fields),
+         {:ok, compiled_translations} <-
+           compile_translations(translations, content_type, markdown_fields) do
+      {:ok, compiled_content, compiled_translations}
     end
+  end
 
   @spec compile_content(Note.t() | CaseStudy.t(), Types.content_type(), [
           String.t()
