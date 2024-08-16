@@ -33,9 +33,13 @@ defmodule Portfolio.DataCase do
         shared: not tags[:async]
       )
 
+    clear_cache()
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
-
     :ok
+  end
+
+  def clear_cache do
+    Portfolio.Cache.clear()
   end
 
   @doc """

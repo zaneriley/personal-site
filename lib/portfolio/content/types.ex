@@ -97,7 +97,7 @@ defmodule Portfolio.Content.Types do
 
     case result do
       nil ->
-        Logger.warn("Unrecognized content type for path: #{file_path}")
+        Logger.warning("Unrecognized content type for path: #{file_path}")
         {:error, :unknown_content_type}
 
       type ->

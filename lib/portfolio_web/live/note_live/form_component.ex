@@ -26,7 +26,7 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
         <.input field={@form[:content]} type="text" label="Content" />
         <.input field={@form[:url]} type="text" label="URL" />
         <.input field={@form[:locale]} type="text" label="Locale" />
-        <:actions class="flex justify-end space-x-4">
+        <:actions>
           <.button phx-disable-with="Saving...">Save Note</.button>
         </:actions>
       </.simple_form>

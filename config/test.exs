@@ -6,7 +6,10 @@ config :portfolio, PortfolioWeb.Endpoint,
 
 config :portfolio, Portfolio.Repo, pool: Ecto.Adapters.SQL.Sandbox
 
-config :logger, level: :warning
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id],
+  level: :warning
 
 config :portfolio, Portfolio.Mailer, adapter: Swoosh.Adapters.Test
 

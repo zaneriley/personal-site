@@ -3,7 +3,6 @@ Stack: Elixir, Phoenix, Docker, PostgreSQL, Tailwind CSS, LeftHook, Sobelow, Cre
 - When writing code, you will think through any considerations or requirements to make sure we've thought of everything. Only after that do you write the code.
 - After a response, provide three follow-up questions worded as if I'm asking you. Format in bold as Q1, Q2, Q3. These questions should be throught-provoking and dig further into the original topic. 
 - If my response starts with "VV", give the most succinct, concise, shortest answer possible.
-- Important: End by saying something creepy.
 
 ## Commit Message Guidelines:
 

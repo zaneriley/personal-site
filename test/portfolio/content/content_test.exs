@@ -3,16 +3,26 @@ defmodule Portfolio.Content.ContentTest do
   alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.ContentFixtures
+  alias Portfolio.Content.TranslationManager
+  require Logger
 
   describe "content retrieval" do
     test "get!/2 returns the content item with given id" do
       note = ContentFixtures.note_fixture()
-      assert Content.get!("note", note.id) == note
+      retrieved_note = Content.get!("note", note.id)
+      assert retrieved_note.id == note.id
+      assert retrieved_note.title == note.title
+      assert retrieved_note.content == note.content
+      assert is_binary(retrieved_note.compiled_content)
     end
 
     test "get!/2 returns the content item with given url" do
       note = ContentFixtures.note_fixture()
-      assert Content.get!("note", note.url) == note
+      retrieved_note = Content.get!("note", note.url)
+      assert retrieved_note.id == note.id
+      assert retrieved_note.title == note.title
+      assert retrieved_note.content == note.content
+      assert is_binary(retrieved_note.compiled_content)
     end
 
     test "get!/2 raises Ecto.NoResultsError for non-existent content" do
@@ -74,7 +84,11 @@ defmodule Portfolio.Content.ContentTest do
       assert {:error, %Ecto.Changeset{}} =
                Content.update("note", note, invalid_attrs)
 
-      assert note == Content.get!("note", note.id)
+      updated_note = Content.get!("note", note.id)
+      assert note.id == updated_note.id
+      assert note.title == updated_note.title
+      assert note.content == updated_note.content
+      assert is_binary(updated_note.compiled_content)
     end
   end
 
@@ -87,22 +101,83 @@ defmodule Portfolio.Content.ContentTest do
   end
 
   describe "content with translations" do
-    test "get_with_translations/3 returns content with translations" do
-      case_study = ContentFixtures.case_study_fixture()
+    setup do
+      Portfolio.DataCase.clear_cache()
+      :ok
+    end
 
-      {:ok, _translations} =
-        Content.TranslationManager.create_or_update_translations(
-          case_study,
-          "ja",
-          %{"title" => "日本語のタイトル", "content" => "日本語のコンテンツ"}
-        )
+    test "get_with_translations/3 returns content with specified locale translations" do
+      # Create a note in the default locale (English)
+      {:ok, note} =
+        Content.create("note", %{
+          "title" => "English Title",
+          "content" => "English Content",
+          "url" => "test-note-with-translations",
+          "locale" => "en"
+        })
 
-      assert {:ok, retrieved_case_study, translations} =
-               Content.get_with_translations("case_study", case_study.url, "ja")
+      # Add a French translation
+      {:ok, french_translation} =
+        Content.upsert_from_file("note", %{
+          "title" => "Titre Français",
+          "url" => "test-note-with-translations",
+          "locale" => "fr"
+        })
 
-      assert retrieved_case_study.id == case_study.id
-      assert translations["title"] == "日本語のタイトル"
-      assert translations["content"] == "日本語のコンテンツ"
+      Logger.debug("French translation created: #{inspect(french_translation)}")
+
+      # Retrieve the note with French translations
+      {:ok, retrieved_note, translations, compiled_content} =
+        Content.get_with_translations("note", note.url, "fr")
+
+      Logger.debug("Retrieved translations: #{inspect(translations)}")
+
+      # Assertions
+      assert retrieved_note.id == note.id
+      assert retrieved_note.title == "English Title"
+      assert translations["title"] == "Titre Français"
+      assert translations["url"] == "test-note-with-translations"
+      assert is_binary(compiled_content)
+    end
+
+    test "get_with_translations handles partial translations" do
+      # Create a note
+      {:ok, note} =
+        Content.create("note", %{
+          "title" => "English Title",
+          "content" => "English Content",
+          "url" => "partial-translation-note",
+          "locale" => "en"
+        })
+
+      # Create partial translation
+      {:ok, _} =
+        Content.upsert_from_file("note", %{
+          "title" => "部分的な日本語のタイトル",
+          "url" => "partial-translation-note",
+          "locale" => "ja"
+        })
+
+      # Retrieve content with translations
+      {:ok, _content, translations, _compiled_content} =
+        Content.get_with_translations("note", note.url, "ja")
+
+      # Assertions
+      assert translations["title"] == "部分的な日本語のタイトル"
+      assert Map.has_key?(translations, "content") == false
+    end
+
+    test "get_content_with_translations returns default content for unsupported locale" do
+      note = ContentFixtures.note_fixture()
+      # Assuming Spanish translations are not provided
+      unsupported_locale = "es"
+
+      {:ok, content, translations, _compiled_content} =
+        Content.get_with_translations("note", note.url, unsupported_locale)
+
+      # Assuming English is the default
+      assert content.locale == "en"
+      assert Map.keys(translations) == []
     end
   end
 
@@ -164,19 +239,62 @@ defmodule Portfolio.Content.ContentTest do
     end
 
     test "get_with_translations/3 returns content with specified locale translations" do
-      note = ContentFixtures.note_fixture()
-
-      # Update the existing translation or create a new one if it doesn't exist
-      {:ok, _} =
-        Content.TranslationManager.create_or_update_translations(note, "fr", %{
-          "title" => "Titre Français"
+      # Create a note manually
+      {:ok, note} =
+        Content.create("note", %{
+          "title" => "English Title",
+          "content" => "English Content",
+          "url" => "test-note",
+          "locale" => "en"
         })
 
-      {:ok, retrieved_note, translations} =
+      # Create translations manually
+      TranslationManager.create_or_update_translations(note, "fr", %{
+        "title" => "Titre Français",
+        "content" => "Contenu Français"
+      })
+
+      # Call get_with_translations
+      {:ok, retrieved_note, translations, compiled_content} =
         Content.get_with_translations("note", note.url, "fr")
 
+      # Assertions
       assert retrieved_note.id == note.id
       assert translations["title"] == "Titre Français"
+      assert translations["content"] == "<p>Contenu Français</p>"
+      assert is_binary(compiled_content)
+    end
+  end
+
+  describe "translation management" do
+    test "handle concurrent updates to translations" do
+      note = ContentFixtures.note_fixture()
+      attrs1 = %{"title" => "タイトル1"}
+      attrs2 = %{"title" => "タイトル2"}
+
+      Task.async(fn ->
+        Content.TranslationManager.create_or_update_translations(
+          note,
+          "ja",
+          attrs1
+        )
+      end)
+
+      Task.async(fn ->
+        Content.TranslationManager.create_or_update_translations(
+          note,
+          "ja",
+          attrs2
+        )
+      end)
+
+      # Allow tasks to complete
+      Process.sleep(100)
+
+      translations =
+        Content.TranslationManager.get_translations(note.id, "note", "ja")
+
+      assert translations["title"] in ["タイトル1", "タイトル2"]
     end
   end
 end

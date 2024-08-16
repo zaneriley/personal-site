@@ -20,7 +20,11 @@ defmodule Portfolio.Content.Schemas.CaseStudy do
   """
   @type t :: %__MODULE__{}
 
-  @impl true
+  def custom_render(content) do
+    # Add any CaseStudy-specific rendering logic here
+    content
+  end
+
   def changeset(case_study, attrs) do
     case_study
     |> super(attrs)

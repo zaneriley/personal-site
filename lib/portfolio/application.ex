@@ -19,7 +19,8 @@ defmodule Portfolio.Application do
        query: Application.get_env(:portfolio, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Portfolio.PubSub},
       {Finch, name: Portfolio.Finch},
-      PortfolioWeb.Endpoint
+      PortfolioWeb.Endpoint,
+      Portfolio.Cache
     ]
 
     children =

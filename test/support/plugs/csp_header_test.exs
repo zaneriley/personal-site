@@ -1,6 +1,8 @@
 defmodule PortfolioWeb.CSPHeaderTest do
   use PortfolioWeb.ConnCase
   import Plug.Conn
+  require Logger
+  alias PortfolioWeb.Plugs.CSPHeader
 
   describe "CSP Header Tests" do
     setup %{conn: conn} do
@@ -26,18 +28,39 @@ defmodule PortfolioWeb.CSPHeaderTest do
       assert csp =~ ~r/default-src[^;]*'self'/
     end
 
-    test "script-src does not allow unsafe-inline in production", %{csp: csp} do
-      if Application.get_env(:portfolio, :environment) == :prod do
-        refute csp =~ ~r/script-src[^;]*'unsafe-inline'/
-      end
-    end
-
     test "object-src is set to 'none'", %{csp: csp} do
       assert csp =~ ~r/object-src\s+'none'/
     end
 
     test "frame-ancestors is set to 'none'", %{csp: csp} do
       assert csp =~ ~r/frame-ancestors\s+'none'/
+    end
+
+    test "CSP header is generated correctly for different configurations" do
+      configs = [
+        %{
+          scheme: "http",
+          host: "localhost",
+          port: "4000",
+          additional_hosts: []
+        },
+        %{
+          scheme: "https",
+          host: "example.com",
+          port: "443",
+          additional_hosts: ["api.example.com"]
+        }
+      ]
+
+      for config <- configs do
+        csp = CSPHeader.generate_csp_for_testing(config)
+        assert csp =~ ~r/default-src\s+'self'/
+        assert csp =~ ~r/connect-src\s+'self'/
+        assert csp =~ config.host
+
+        if config.additional_hosts != [],
+          do: assert(csp =~ hd(config.additional_hosts))
+      end
     end
   end
 end

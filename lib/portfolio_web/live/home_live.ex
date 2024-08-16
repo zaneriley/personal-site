@@ -6,6 +6,7 @@ defmodule PortfolioWeb.HomeLive do
   import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.DevToolbar
 
+  @impl true
   def mount(_params, session, socket) do
     socket = assign_locale(socket, session)
 
@@ -37,6 +38,7 @@ defmodule PortfolioWeb.HomeLive do
     {:noreply, socket}
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <main class="u-container">

@@ -4,7 +4,6 @@ defmodule PortfolioWeb.NoteLive.Index do
   import PortfolioWeb.LiveHelpers
   alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note
-  alias Portfolio.Content.Entry
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true

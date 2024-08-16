@@ -23,6 +23,8 @@ defmodule Portfolio.Content.TranslationManager do
   @type content :: Note.t() | CaseStudy.t()
   @type translation_result :: {:ok, [Translation.t()]} | {:error, any()}
 
+  @supported_locales Application.compile_env(:portfolio, :supported_locales)
+
   @doc """
   Creates or updates translations for a content item.
 
@@ -40,6 +42,8 @@ defmodule Portfolio.Content.TranslationManager do
   @spec create_or_update_translations(struct(), String.t(), map()) ::
           {:ok, [Translation.t()]} | {:error, any()}
   def create_or_update_translations(content, locale, attrs) do
+    check_locale_support(locale)
+
     Logger.debug(
       "Creating/updating translations for #{inspect(content)} in locale #{locale}"
     )
@@ -186,29 +190,37 @@ defmodule Portfolio.Content.TranslationManager do
     end
   end
 
-  defp create_translation(attrs) do
-    %Translation{}
-    |> Translation.changeset(attrs)
-    |> Repo.insert()
-    |> case do
-      {:ok, translation} ->
-        {:ok, translation}
-
-      {:error, changeset} ->
-        {:error, "Failed to create translation: #{inspect(changeset.errors)}"}
+  defp check_locale_support(locale) do
+    unless locale in @supported_locales do
+      Logger.warning(
+        "Creating/updating translations for unsupported locale: #{locale}"
+      )
     end
   end
 
-  defp update_translation(translation, attrs) do
-    translation
-    |> Translation.changeset(attrs)
-    |> Repo.update()
-    |> case do
-      {:ok, translation} ->
-        {:ok, translation}
+  # defp create_translation(attrs) do
+  #   %Translation{}
+  #   |> Translation.changeset(attrs)
+  #   |> Repo.insert()
+  #   |> case do
+  #     {:ok, translation} ->
+  #       {:ok, translation}
 
-      {:error, changeset} ->
-        {:error, "Failed to update translation: #{inspect(changeset.errors)}"}
-    end
-  end
+  #     {:error, changeset} ->
+  #       {:error, "Failed to create translation: #{inspect(changeset.errors)}"}
+  #   end
+  # end
+
+  # defp update_translation(translation, attrs) do
+  #   translation
+  #   |> Translation.changeset(attrs)
+  #   |> Repo.update()
+  #   |> case do
+  #     {:ok, translation} ->
+  #       {:ok, translation}
+
+  #     {:error, changeset} ->
+  #       {:error, "Failed to update translation: #{inspect(changeset.errors)}"}
+  #   end
+  # end
 end

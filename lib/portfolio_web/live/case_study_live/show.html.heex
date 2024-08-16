@@ -64,10 +64,21 @@
       <%= if @translations["content"] do %>
         <%= raw(@translations["content"]) %>
       <% else %>
-        <%= if @case_study.content do %>
-          <%= raw(@case_study.content) %>
+        <%= if @compiled_content do %>
+          <%= raw(@compiled_content) %>
         <% else %>
-          <p><%= gettext("We ran into an issue loading this case study!") %></p>
+          <%= if @compile_error do %>
+            <p>
+              <%= gettext(
+                "We encountered an error while preparing this case study: %{error}",
+                error: @compile_error
+              ) %>
+            </p>
+          <% else %>
+            <p>
+              <%= gettext("We ran into an issue loading this case study!") %>
+            </p>
+          <% end %>
         <% end %>
       <% end %>
     </div>

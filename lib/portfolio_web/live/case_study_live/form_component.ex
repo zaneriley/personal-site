@@ -1,6 +1,5 @@
 defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   use PortfolioWeb, :live_component
-  alias Portfolio.Content.Types
   alias Portfolio.Content
 
   @impl true

@@ -12,10 +12,11 @@ defmodule PortfolioWeb.NoteLive.Show do
   end
 
   @dialyzer {:nowarn_function, handle_params: 3}
+  @dialyzer {:nowarn_function, set_page_metadata: 2}
   @impl true
   def handle_params(%{"url" => url}, _, socket) do
     case Content.get_with_translations("note", url, socket.assigns.user_locale) do
-      {:ok, note, translations} ->
+      {:ok, note, translations, compiled_content} ->
         {page_title, introduction} = set_page_metadata(note, translations)
         Logger.debug("Note translations: #{inspect(translations)}")
 
@@ -23,14 +24,13 @@ defmodule PortfolioWeb.NoteLive.Show do
          assign(socket,
            note: note,
            translations: translations,
+           compiled_content: compiled_content,
            page_title: page_title,
            page_description: introduction
          )}
 
       {:error, :not_found} ->
-        raise Phoenix.Router.NoRouteError,
-          conn: socket,
-          router: PortfolioWeb.Router
+        raise PortfolioWeb.LiveError
     end
   end
 

@@ -8,6 +8,8 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
       use Ecto.Schema
       import Ecto.Changeset
       alias Portfolio.Content.Schemas.Translation
+      alias Portfolio.Content.MarkdownRendering.Renderer
+      alias Portfolio.Cache
 
       @primary_key {:id, :binary_id, autogenerate: true}
       @foreign_key_type :binary_id
@@ -15,12 +17,17 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
       @max_url_length 255
       @max_title_length unquote(opts[:max_title_length] || 255)
 
+      @markdown_fields unquote(opts[:markdown_fields] || ["content"])
+
       schema unquote(
                opts[:schema_name] || raise(":schema_name option is required")
              ) do
         field :title, :string
         field :url, :string
+        # raw markdown
         field :content, :string
+        # compiled html
+        field :compiled_content, :string, virtual: true
         field :introduction, :string
         field :read_time, :integer
         field :file_path, :string
@@ -56,12 +63,26 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         |> validate_length(:title, max: @max_title_length)
         |> validate_length(:url, max: @max_url_length)
         |> unique_constraint(:url)
+        |> validate_content()
       end
 
       @spec translatable_type() :: String.t()
       def translatable_type, do: unquote(to_string(opts[:translatable_type]))
 
-      defoverridable changeset: 2
+      def markdown_fields, do: @markdown_fields
+
+      # Callback for custom rendering in child schemas
+      def custom_render(_content), do: nil
+
+      defoverridable changeset: 2, custom_render: 1
+
+      defp validate_content(changeset) do
+        case get_change(changeset, :content) do
+          nil -> changeset
+          content when is_binary(content) -> changeset
+          _ -> add_error(changeset, :content, "must be a string")
+        end
+      end
     end
   end
 end

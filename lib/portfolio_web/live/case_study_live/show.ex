@@ -2,7 +2,6 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
-  alias Portfolio.Content.Schemas.CaseStudy
   import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
   alias PortfolioWeb.DevToolbar
@@ -14,34 +13,45 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations} ->
+        {:ok, case_study, translations, compiled_content} ->
           {page_title, introduction} =
             set_page_metadata(case_study, translations)
 
           Logger.debug("Case study translations: #{inspect(translations)}")
+          debug_slice = compiled_content |> String.slice(0, 100)
+          Logger.debug("Compiled content: #{inspect(debug_slice)}...")
 
           {:ok,
            assign(socket,
              case_study: case_study,
              translations: translations,
+             compiled_content: compiled_content,
              page_title: page_title,
              page_description: introduction,
              user_locale: user_locale
            )}
 
+        {:ok, case_study, translations, {:error, reason}} ->
+          Logger.error("Failed to compile content: #{inspect(reason)}")
+
+          {:ok,
+           assign(socket,
+             case_study: case_study,
+             translations: translations,
+             compiled_content: nil,
+             compile_error: reason,
+             page_title: case_study.title,
+             page_description: case_study.introduction,
+             user_locale: user_locale
+           )}
+
         {:error, :not_found} ->
           Logger.error("Case study not found in database for URL: #{url}")
-
-          raise Phoenix.Router.NoRouteError,
-            conn: socket,
-            router: PortfolioWeb.Router
+          {:ok, socket, layout: false}
       end
     else
       Logger.error("Invalid URL format: #{url}")
-
-      raise Phoenix.Router.NoRouteError,
-        conn: socket,
-        router: PortfolioWeb.Router
+      {:ok, socket, layout: false}
     end
   end
 
@@ -52,6 +62,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   end
 
   @dialyzer {:nowarn_function, handle_params: 3}
+  @dialyzer {:nowarn_function, set_page_metadata: 2}
   @impl true
   def handle_params(
         %{"locale" => user_locale, "url" => url} = params,
@@ -62,7 +73,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations} ->
+        {:ok, case_study, translations, compiled_content} ->
           {page_title, introduction} =
             set_page_metadata(case_study, translations)
 
@@ -70,19 +81,30 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
            assign(socket,
              case_study: case_study,
              translations: translations,
+             compiled_content: compiled_content,
+             page_title: page_title,
+             page_description: introduction
+           )}
+
+        {:ok, case_study, translations, {:error, compile_error}} ->
+          {page_title, introduction} =
+            set_page_metadata(case_study, translations)
+
+          {:noreply,
+           assign(socket,
+             case_study: case_study,
+             translations: translations,
+             compiled_content: nil,
+             compile_error: compile_error,
              page_title: page_title,
              page_description: introduction
            )}
 
         {:error, :not_found} ->
-          raise Phoenix.Router.NoRouteError,
-            conn: socket,
-            router: PortfolioWeb.Router
+          raise PortfolioWeb.LiveError
       end
     else
-      raise Phoenix.Router.NoRouteError,
-        conn: socket,
-        router: PortfolioWeb.Router
+      raise PortfolioWeb.LiveError
     end
   end
 

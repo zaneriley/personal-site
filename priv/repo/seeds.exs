@@ -1,6 +1,7 @@
 alias Portfolio.Repo
 alias Portfolio.Content.Schemas.CaseStudy
 alias Portfolio.Content.Schemas.Note
+alias Portfolio.Content.MarkdownRendering.CustomParser
 
 case_studies = [
   %{
@@ -12,9 +13,8 @@ case_studies = [
     platforms: ["Web", "Mobile"],
     introduction: "Introduction to Case Study 1",
     file_path: "/files/case-study-1.pdf",
-    url: "case-study-1",
     locale: "en",
-    content: "Detailed content of Case Study 1",
+    content: "# this ia a case study",
     company: "Company A",
     sort_order: 1,
     is_draft: false
@@ -28,9 +28,8 @@ case_studies = [
     platforms: ["Web"],
     introduction: "Introduction to Case Study 2",
     file_path: "/files/case-study-2.pdf",
-    url: "case-study-2",
     locale: "en",
-    content: "Detailed content of Case Study 2",
+    content: "# this ia a case study",
     company: "Company B",
     sort_order: 2,
     is_draft: false
@@ -44,9 +43,8 @@ notes = [
     read_time: 5,
     introduction: "Introduction to Note 1",
     file_path: "/files/note-1.md",
-    url: "note-1",
     locale: "en",
-    content: "Detailed content of Note 1",
+    content: "# this ia a note",
     is_draft: false
   },
   %{
@@ -55,9 +53,8 @@ notes = [
     read_time: 3,
     introduction: "Introduction to Note 2",
     file_path: "/files/note-2.md",
-    url: "note-2",
     locale: "en",
-    content: "Detailed content of Note 2",
+    content: "# this ia a note",
     is_draft: false
   }
 ]

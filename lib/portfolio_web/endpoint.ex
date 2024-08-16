@@ -6,7 +6,8 @@ defmodule PortfolioWeb.Endpoint do
     key: "_portfolio_key",
     # It is completely safe to hard code and use these salt values.
     signing_salt: "XCu9aYUeZ",
-    encryption_salt: "jIOxYIG2l"
+    encryption_salt: "jIOxYIG2l",
+    same_site: "Lax"
   ]
 
   socket "/socket", PortfolioWeb.UserSocket,

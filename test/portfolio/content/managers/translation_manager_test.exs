@@ -1,5 +1,6 @@
 defmodule Portfolio.Content.TranslationTest do
-  use Portfolio.DataCase
+  use ExUnit.Case
+  use Portfolio.DataCase, async: false
   alias Portfolio.Content
   alias Portfolio.Content.TranslationManager
   alias Portfolio.ContentFixtures
@@ -78,12 +79,12 @@ defmodule Portfolio.Content.TranslationTest do
       attrs = %{"title" => "翻訳されたタイトル", "content" => "翻訳されたコンテンツ"}
       TranslationManager.create_or_update_translations(case_study, "ja", attrs)
 
-      {:ok, content, translations} =
+      {:ok, content, translations, compiled_content} =
         Content.get_with_translations("case_study", case_study.url, "ja")
 
       assert content.id == case_study.id
       assert translations["title"] == "翻訳されたタイトル"
-      assert translations["content"] == "翻訳されたコンテンツ"
+      assert translations["content"] == "<p>翻訳されたコンテンツ</p>"
     end
 
     test "upsert_from_file creates new content and Japanese translations" do
@@ -98,12 +99,31 @@ defmodule Portfolio.Content.TranslationTest do
       assert {:ok, note} = Content.upsert_from_file("note", attrs)
       assert note.url == "new-note"
 
-      {:ok, retrieved_note, translations} =
-        Content.get_with_translations("note", "new-note", "ja")
+      # Check original content
+      assert note.title == "新しいタイトル"
+      assert note.content == "新しいコンテンツ"
+      assert note.introduction == "新しい紹介"
 
-      assert retrieved_note.id == note.id
-      assert translations["title"] == "新しいタイトル"
-      assert translations["content"] == "新しいコンテンツ"
+      # Fetch the note directly from the database to ensure we're not working with cached data
+      fresh_note = Portfolio.Repo.get!(Portfolio.Content.Schemas.Note, note.id)
+
+      # Check Japanese translations
+      {:ok, retrieved_note, translations, compiled_content} =
+        Content.get_with_translations("note", fresh_note.url, "ja")
+
+      assert retrieved_note.id == fresh_note.id
+
+      assert translations["title"] == "新しいタイトル",
+             "Expected '新しいタイトル', but got '#{translations["title"]}'. Full translations: #{inspect(translations)}"
+
+      assert translations["content"] == "<p>新しいコンテンツ</p>"
+      assert translations["introduction"] == "新しい紹介"
+
+      # Check that there are no French translations
+      {:ok, _retrieved_note, fr_translations, _compiled_content} =
+        Content.get_with_translations("note", fresh_note.url, "fr")
+
+      assert fr_translations == %{}
     end
 
     test "upsert_from_file updates existing content and Japanese translations" do
@@ -119,11 +139,12 @@ defmodule Portfolio.Content.TranslationTest do
       assert {:ok, updated_note} = Content.upsert_from_file("note", attrs)
       assert updated_note.id == existing_note.id
 
-      {:ok, _, translations} =
-        Content.get_with_translations("note", "existing-note", "ja")
+      # Corrected pattern to match the expected return structure
+      assert {:ok, content, translations, compiled_content} =
+               Content.get_with_translations("note", "existing-note", "ja")
 
       assert translations["title"] == "更新されたタイトル"
-      assert translations["content"] == "更新されたコンテンツ"
+      assert translations["content"] == "<p>更新されたコンテンツ</p>"
     end
   end
 end

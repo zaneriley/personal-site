@@ -14,7 +14,7 @@
 *.woff2
 *.eot
 *.otf
-
+*.log
 ### App #######################################################################
 
 priv/static/*
@@ -34,7 +34,6 @@ docker-compose.override.yml
 /code-coverage/
 /cover
 
-
 # The directory Mix downloads your dependencies sources to.
 /deps/
 
@@ -52,6 +51,7 @@ erl_crash.dump
 
 # Ignore package tarball (built via "mix hex.build").
 portfolio-*.tar
+
 
 
 ### Node ######################################################################

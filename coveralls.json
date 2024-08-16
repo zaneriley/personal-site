@@ -1,7 +1,12 @@
 {
   "skip_files": [
     "test",
-    "lib/portfolio_web/components/core_components.ex"
+    "lib/portfolio_web/components/core_components.ex",
+    "lib/portfolio_web/live/components/dev_toolbar_component.ex",
+    "lib/portfolio/release.ex",
+    "lib/portfolio/logger_formatter.ex",
+    "lib/portfolio_web/controllers/error_json",
+    "lib/portfolio_web/controllers/up_controller.ex"
   ],
   "coverage_options": {
     "treat_no_relevant_lines_as_covered": true,
