@@ -30,11 +30,6 @@ defmodule PortfolioWeb.ErrorHTML do
     def actions(_exception), do: []
   end
 
-  defimpl Plug.Exception, for: Ecto.NoResultsError do
-    def status(_exception), do: 404
-    def actions(_exception), do: []
-  end
-
   def dynamic_home_url do
     scheme = Application.get_env(:portfolio, :url_scheme, "http")
     host = Application.get_env(:portfolio, :url_host, "localhost")
