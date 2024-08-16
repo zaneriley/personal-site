@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.3.1-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.0-alpha.1...v0.3.1-alpha.1) (2024-08-16)
+
+
+### Bug Fixes
+
+* remove duplicate Plug.Exception implementation for Ecto.NoResultsError ([31d5a91](https://github.com/zaneriley/personal-site/commit/31d5a9172c32010fc2ba8bbf23f3dfcec7fa6cd9))
+
 ## [0.3.0-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.2.0-alpha.1...v0.3.0-alpha.1) (2024-08-16)
 
 
