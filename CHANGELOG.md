@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.3.0-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.2.0-alpha.1...v0.3.0-alpha.1) (2024-08-16)
+
+
+### Features
+
+* **content:** implement markdown rendering with custom components and caching ([#37](https://github.com/zaneriley/personal-site/issues/37)) ([0ed94ff](https://github.com/zaneriley/personal-site/commit/0ed94ff3c94a5e02b91b7674148d1151f28d30d2))
+
 ## [0.2.0-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.1.1-alpha.1...v0.2.0-alpha.1) (2024-07-30)
 
 
