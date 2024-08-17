@@ -187,7 +187,11 @@ defmodule Portfolio.Content.EntryManager do
 
           content ->
             {:ok, compiled_html} =
-              Renderer.render_and_cache(content.content, content_type, content.id)
+              Renderer.render_and_cache(
+                content.content,
+                content_type,
+                content.id
+              )
 
             %{content | compiled_content: compiled_html}
         end
