@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.3.2-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.1-alpha.1...v0.3.2-alpha.1) (2024-08-17)
+
+
+### Bug Fixes
+
+* **docker:** ensure static assets directory exists in entrypoint script ([086c3c1](https://github.com/zaneriley/personal-site/commit/086c3c17dc06180b8dcb6bea42de808ab2bf6a94))
+
 ## [0.3.1-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.0-alpha.1...v0.3.1-alpha.1) (2024-08-16)
 
 
