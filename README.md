@@ -42,20 +42,30 @@ About me: product-focused designer with 10+ years of experience, based in Tokyo,
 
 ## Features
 
+### Dev tools
+
+Offers tools to ensure code quality and consistency:
+- Automated code formatting and linting
+- Comprehensive test suite with coverage reporting
+- Security checks with Sobelow
+- Static code analysis with Dialyzer
+- Git hooks for pre-commit and pre-push checks
+
+You can read more in <a href="#development-and-deployment">Development and Deployment</a>
+
 ### Internationalization
 
 The portfolio supports both English (/en) and Japanese (/ja) languages. It determines the locale, by in order:
 * Locale in URL
 * Accept-Language header to detect the user's preferred language.
+
 For application and landing page content, we use Gettext for translations. Case studies and other long form content have separate markdown files for each language.
+
+You can also add a new language in `/gettext/` for UI and `/priv/content/schema/` for whichever schema you want to translate.
 
 ### Admin Interface
 
 An admin interface with a Markdown-based system allows for creating case studies with live reloading. This feature is only accessible in the development environment and is not exposed in production.
-
-### Light/Dark Mode
-
-The portfolio includes a light/dark mode feature with real-time updates across sessions. Preferences are stored in local storage and on the server using Elixir's GenServer. Phoenix Channels ensure that theme changes on one tab update automatically on any other open tabs.
 
 ### Custom Typography Engine
 
@@ -72,7 +82,7 @@ A custom optically-aligned typographic "engine" takes into account line-height b
 
 ### Backend
 
-The backend is built with Elixir and Phoenix. PostgreSQL is used as the database for storing project data and user interactions. Obviously not super relevant and overkill for what's basically a website, but it was fun to make and I get to use the infra for other projects.
+The backend is built with Elixir and Phoenix. PostgreSQL is used as the database for storing project data and user interactions. Obviously overkill for what's basically a website, but I hope to use the infra for other projects.
 
 ### Frontend
 
