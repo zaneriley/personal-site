@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.3.3-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.2-alpha.1...v0.3.3-alpha.1) (2024-08-18)
+
+
+### Documentation
+
+* **readme:** update features and development tools information ([a385f3d](https://github.com/zaneriley/personal-site/commit/a385f3d8ea9fbe6dfa0d99711b624b1630741246))
+
 ## [0.3.2-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.1-alpha.1...v0.3.2-alpha.1) (2024-08-17)
 
 
