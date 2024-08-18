@@ -80,8 +80,9 @@ COPY --chown=elixir:elixir . .
 
 # Conditionally digest assets, create a release, and clean up based on MIX_ENV
 RUN if [ "${MIX_ENV}" != "dev" ]; then \
-  ln -s /public /app/priv/static \
-    && mix phx.digest && mix release && rm -rf /app/priv/static; fi
+  mkdir -p /app/priv/static \
+  && cp -r /public/* /app/priv/static/ \
+  && mix phx.digest && mix release; fi
 
   
 ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
@@ -119,6 +120,9 @@ ENV USER=elixir
 COPY --chown=elixir:elixir --from=dev /public /public
 COPY --chown=elixir:elixir --from=dev /mix/_build/prod/rel/portfolio ./
 COPY --chown=elixir:elixir bin/docker-entrypoint-web bin/
+
+COPY --chown=elixir:elixir --from=dev /app/priv /app/priv
+RUN mkdir -p /app/priv/static && chown elixir:elixir /app/priv/static
 
 ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
 
