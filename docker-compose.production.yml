@@ -1,0 +1,47 @@
+version: '3.8'
+
+# This uses a production release of the application that can be tested locally. 
+# You'll need to run `docker compose exec postgres bash -c "pg_dump -U [YOURDBNAME] -d [YOURUSERNAME] > /backups/backup.sql"`
+# to create a backup of your local postgres database before running this.
+services:
+  web:
+    image: ghcr.io/zaneriley/personal-site:v0.3.3-alpha.1
+    env_file:
+      - .env
+    ports:
+      - "${DOCKER_WEB_PORT_FORWARD:-0.0.0.0:8000}:${PORT:-8000}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: "postgres:16.0-bookworm"
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./.backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: >
+      bash -c "
+        /usr/local/bin/docker-entrypoint.sh postgres &
+        until pg_isready -U ${POSTGRES_USER}; do sleep 1; done
+        echo 'Dropping and recreating schema...'
+        psql -U ${POSTGRES_USER} -d postgres -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+        echo 'Restoring from backup...'
+        if psql -U ${POSTGRES_USER} -d postgres -f /backups/backup.sql; then
+          echo 'Backup restored successfully'
+          psql -U ${POSTGRES_USER} -d postgres -c 'COMMIT;'
+        else
+          echo 'Error restoring backup'
+          exit 1
+        fi
+        wait
+      "
+volumes:
+  postgres_data:

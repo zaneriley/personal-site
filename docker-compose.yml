@@ -54,6 +54,7 @@ services:
     stop_grace_period: "3s"
     volumes:
       - "postgres:/var/lib/postgresql/data"
+      - "./.backups:/backups"
 
   web:
     <<: *default-app
