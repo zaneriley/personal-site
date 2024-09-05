@@ -1,7 +1,7 @@
 defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
   use ExUnit.Case
   alias Portfolio.Content.Remote.GitRepoSyncer
-
+  require Logger
   @valid_repo_url Application.compile_env(
                     :portfolio,
                     :content_repo_url
@@ -15,7 +15,21 @@ defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
 
   # The tests here are a bit brittle because of how they're expecting the folder to be cloned
 
+    # Add this helper function at the top of the module
+    defp typeof(term) do
+      cond do
+        is_binary(term) -> "binary"
+        is_list(term) -> "list"
+        is_atom(term) -> "atom"
+        is_integer(term) -> "integer"
+        true -> "other"
+      end
+    end
   setup do
+        # Add these logging statements at the beginning of the setup block
+        Logger.warn("Setup - valid_repo_url: #{inspect(@valid_repo_url)}, type: #{typeof(@valid_repo_url)}")
+        Logger.warn("Setup - local_path: #{inspect(@local_path)}, type: #{typeof(@local_path)}")
+
     unless File.exists?(@local_path) do
       System.cmd("git", ["clone", @valid_repo_url, @local_path],
         env: %{"GIT_TERMINAL_PROMPT" => "0"},
@@ -27,12 +41,19 @@ defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
   end
 
   test "clones repository successfully" do
+    Logger.warn("Test clone - valid_repo_url: #{inspect(@valid_repo_url)}, type: #{typeof(@valid_repo_url)}")
+    Logger.warn("Test clone - local_path: #{inspect(@local_path)}, type: #{typeof(@local_path)}")
+
     assert {:ok, _repo} = GitRepoSyncer.sync_repo(@valid_repo_url, @local_path)
     assert File.exists?(@local_path)
     File.rm_rf!(@local_path)
   end
 
   test "handles invalid repository URL" do
+        # Add these logging statements at the beginning of the test
+        Logger.warn("Test invalid - invalid_repo_url: #{inspect(@invalid_repo_url)}, type: #{typeof(@invalid_repo_url)}")
+        Logger.warn("Test invalid - local_path: #{inspect(@local_path)}, type: #{typeof(@local_path)}")
+
     File.rm_rf!(@local_path)
 
     assert {:error, _reason} =
@@ -42,6 +63,10 @@ defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
   end
 
   test "handles existing directory" do
+        # Add these logging statements at the beginning of the test
+        Logger.warn("Test existing - valid_repo_url: #{inspect(@valid_repo_url)}, type: #{typeof(@valid_repo_url)}")
+        Logger.warn("Test existing - local_path: #{inspect(@local_path)}, type: #{typeof(@local_path)}")
+
     assert {:ok, _repo} = GitRepoSyncer.sync_repo(@valid_repo_url, @local_path)
     assert File.exists?(@local_path)
   end
