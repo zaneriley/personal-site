@@ -47,7 +47,7 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
 
   @spec update_existing_repo(String.t()) :: sync_result()
   defp update_existing_repo(local_path) do
-    Logger.info("Updating existing repo at path: #{local_path}")
+    Logger.info("Updating existing repo at path: #{inspect(local_path)}")
 
     with {:ok, _} <- fetch_all(local_path),
          {:ok, _} <- reset_to_origin(local_path),
@@ -84,11 +84,27 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
   @spec clean_repo(String.t()) :: sync_result()
   defp clean_repo(path), do: run_git_command(path, ["clean", "-fd"])
 
-  @spec run_git_command(String.t(), [String.t()]) :: sync_result()
   defp run_git_command(path, args) do
-    case System.cmd("git", ["-C", path | args], env: @git_env) do
+    full_args = ["-C", path | args]
+    Logger.debug("Running git command. Path: #{inspect(path)}, Args: #{inspect(args)}, Full args: #{inspect(full_args)}")
+
+    Enum.each(full_args, fn arg ->
+      Logger.debug("Arg: #{inspect(arg)}, Type: #{inspect(typeof(arg))}")
+    end)
+
+    case System.cmd("git", full_args, env: @git_env) do
       {_, 0} -> {:ok, path}
       {output, _} -> {:error, output}
+    end
+  end
+
+  defp typeof(term) do
+    cond do
+      is_binary(term) -> "binary"
+      is_list(term) -> "list"
+      is_atom(term) -> "atom"
+      is_integer(term) -> "integer"
+      true -> "other"
     end
   end
 end

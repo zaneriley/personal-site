@@ -1,5 +1,5 @@
 defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
   alias Portfolio.Content.Remote.GitRepoSyncer
 
   @valid_repo_url Application.compile_env(
