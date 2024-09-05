@@ -5,7 +5,7 @@ version: '3.8'
 # to create a backup of your local postgres database before running this.
 services:
   web:
-    image: ghcr.io/zaneriley/personal-site:v0.3.3-alpha.1
+    image: 43dae32f7d97
     env_file:
       - .env
     ports:

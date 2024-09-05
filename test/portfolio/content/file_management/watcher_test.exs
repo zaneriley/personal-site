@@ -5,9 +5,12 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
   import ExUnit.CaptureLog
   use Portfolio.DataCase
 
+  @test_file_path "test/support/fixtures/case-study/testing-case-study/en.md"
+  @malformed_file_path "test/support/fixtures/case-study/testing-case-study-malformed/en.md"
+
   describe "handle_info/2" do
     test "processes relevant file changes" do
-      path = Path.join(Types.get_path("case_study"), "testing-case-study.md")
+      path = @test_file_path
       state = %Watcher{watcher_pid: self()}
       events = [:modified]
 
@@ -22,12 +25,7 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
     end
 
     test "handle_info/2 ignores irrelevant events on markdown files" do
-      base_path = Types.get_path("case_study")
-
-      assert is_binary(base_path),
-             "Expected Types.get_path('case_study') to return a string, got: #{inspect(base_path)}"
-
-      path = Path.join(base_path, "testing-case-study.md")
+      path = @test_file_path
 
       # Define the initial state to match the expected structure
       initial_state = %Watcher{watcher_pid: self()}
@@ -45,7 +43,7 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
 
     test "ignores hidden markdown files" do
       state = %Watcher{watcher_pid: self()}
-      path = Path.join(Types.get_path("note"), ".hidden.md")
+      path = Path.join(Types.get_path("case_study"), ".hidden.md")
       events = [:modified]
 
       log =

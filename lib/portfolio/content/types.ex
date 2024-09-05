@@ -7,6 +7,12 @@ defmodule Portfolio.Content.Types do
   """
   require Logger
 
+  @content_base_path Application.compile_env(
+                       :portfolio,
+                       :content_base_path,
+                       "priv/content"
+                     )
+
   @typedoc "Represents the content type as a string"
   @type content_type :: String.t()
 
@@ -16,11 +22,11 @@ defmodule Portfolio.Content.Types do
   @content_types %{
     "note" => %{
       slugs: ["notes", "note"],
-      path: "priv/content/note"
+      path: Path.join(@content_base_path, "note")
     },
     "case_study" => %{
       slugs: ["case-studies", "case_study", "case-study"],
-      path: "priv/content/case-study"
+      path: Path.join(@content_base_path, "case-study")
     }
   }
 
@@ -50,14 +56,11 @@ defmodule Portfolio.Content.Types do
       nil
 
   """
-  @spec get_path(content_type(), String.t()) :: file_path() | nil
-  def get_path(
-        content_type,
-        locale \\ Application.get_env(:portfolio, :default_locale, "en")
-      ) do
+  @spec get_path(content_type()) :: file_path()
+  def get_path(content_type) do
     case @content_types[content_type] do
       nil -> nil
-      %{path: path} -> Path.join(path, locale)
+      %{path: path} -> path
     end
   end
 
@@ -84,15 +87,12 @@ defmodule Portfolio.Content.Types do
   @spec get_type(file_path()) ::
           {:ok, content_type()} | {:error, :unknown_content_type}
   def get_type(file_path) do
-    normalized_path = normalize_path(file_path)
-
-    Logger.debug(
-      "Determining content type for normalized path: #{normalized_path}"
-    )
+    path_components = Path.split(file_path)
+    slug_map = build_slug_map()
 
     result =
-      Enum.find_value(@content_types, fn {type, %{path: base_path}} ->
-        if String.contains?(normalized_path, base_path), do: type
+      Enum.find_value(path_components, fn component ->
+        slug_map[component]
       end)
 
     case result do
@@ -101,8 +101,17 @@ defmodule Portfolio.Content.Types do
         {:error, :unknown_content_type}
 
       type ->
+        Logger.debug("Successfully determined content type: #{type}")
         {:ok, type}
     end
+  end
+
+  defp build_slug_map do
+    Enum.reduce(@content_types, %{}, fn {type, %{slugs: slugs}}, acc ->
+      Enum.reduce(slugs, acc, fn slug, inner_acc ->
+        Map.put(inner_acc, slug, type)
+      end)
+    end)
   end
 
   defp normalize_path(file_path) do

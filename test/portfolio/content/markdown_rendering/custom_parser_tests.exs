@@ -1,5 +1,6 @@
 defmodule Portfolio.Content.MarkdownRendering.CustomParserTest do
   use Portfolio.DataCase
+  import ExUnit.CaptureLog
 
   alias Portfolio.Content.MarkdownRendering.CustomParser
 
@@ -60,6 +61,36 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParserTest do
       assert Enum.any?(ast, fn node ->
                match?({"h1", _, ["Content"], _}, node)
              end)
+    end
+
+    test "handles error cases correctly" do
+      markdown = "```\nUnclosed code block"
+
+      log =
+        capture_log(fn ->
+          result = CustomParser.parse(markdown)
+          assert {:error, "Error parsing markdown"} = result
+        end)
+
+      assert log =~ "Error parsing markdown:"
+    end
+
+    test "correctly splits frontmatter and content" do
+      markdown = """
+      ---
+      title: Test Title
+      date: 2023-04-14
+      ---
+      # Main Content
+      This is the main content of the markdown.
+      """
+
+      {frontmatter, content} = CustomParser.split_frontmatter(markdown)
+
+      assert frontmatter == "title: Test Title\ndate: 2023-04-14\n"
+
+      assert content ==
+               "# Main Content\nThis is the main content of the markdown.\n"
     end
   end
 end

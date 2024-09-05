@@ -1,6 +1,7 @@
 import Config
 
-content_base_path = "priv/content"
+content_base_path =
+  Application.get_env(:portfolio, :content_base_path, "priv/content")
 
 config :portfolio, PortfolioWeb.Endpoint,
   debug_errors: false,

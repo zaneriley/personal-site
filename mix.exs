@@ -56,7 +56,7 @@ defmodule Portfolio.MixProject do
       {:heroicons, "0.5.5"},
       {:jason, "~>1.4.3"},
       {:logfmt_ex, "~> 0.4.2"},
-      {:mock, "~> 0.3.8", only: :test},
+      {:mox, "~> 1.2.0", only: :test},
       {:phoenix, "1.7.14"},
       {:phoenix_ecto, "4.6.2"},
       {:phoenix_html, "4.1.1"},
@@ -68,6 +68,7 @@ defmodule Portfolio.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:swoosh, "1.16.9"},
       {:telemetry_metrics, "1.0.0"},
+      {:tentacat, "~> 2.4.0"},
       {:telemetry_poller, "1.1.0"},
       {:yamerl, "~> 0.10.0", only: [:dev, :test]},
       {:uuid, "~> 1.1"}

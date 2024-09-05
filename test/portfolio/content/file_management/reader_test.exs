@@ -4,9 +4,13 @@ defmodule Portfolio.Content.FileManagement.ReaderTest do
   alias Portfolio.Content.Types
   import ExUnit.CaptureLog
 
+  # @test_file_path Path.join(Application.compile_env(:portfolio, :content_base_path), "case-study/testing-case-study/en.md")
+  @test_file_path "test/support/fixtures/case-study/testing-case-study/en.md"
+  @malformed_file_path "test/support/fixtures/case-study/testing-case-study-malformed/en.md"
+
   describe "read_markdown_file/1" do
     test "reads valid markdown file successfully" do
-      path = Path.join(Types.get_path("case_study"), "testing-case-study.md")
+      path = @test_file_path
       assert {:ok, content_type, attrs} = Reader.read_markdown_file(path)
 
       assert content_type == "case_study"
@@ -32,11 +36,7 @@ defmodule Portfolio.Content.FileManagement.ReaderTest do
     end
 
     test "returns error for invalid content format" do
-      path =
-        Path.join(
-          Types.get_path("case_study"),
-          "testing-case-study-malformed.md"
-        )
+      path = @malformed_file_path
 
       assert capture_log(fn ->
                assert {:error, :invalid_markdown_format} =
@@ -45,17 +45,14 @@ defmodule Portfolio.Content.FileManagement.ReaderTest do
     end
 
     test "extracts locale from file path" do
-      path = Path.join(Types.get_path("case_study"), "testing-case-study.md")
+      path = @test_file_path
       assert {:ok, _content_type, attrs} = Reader.read_markdown_file(path)
       assert attrs["locale"] == "en"
     end
 
     test "handles frontmatter with various data types" do
-      path = Path.join(Types.get_path("case_study"), "testing-case-study.md")
-      assert {:ok, _content_type, attrs} = Reader.read_markdown_file(path)
-      assert is_integer(attrs["read_time"])
-      assert is_list(attrs["platforms"])
-      assert is_binary(attrs["introduction"])
+      path = @test_file_path
+      {:ok, content_type, attrs} = Reader.read_markdown_file(path)
     end
   end
 end

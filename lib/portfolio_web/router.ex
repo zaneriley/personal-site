@@ -43,6 +43,12 @@ defmodule PortfolioWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api/v1", PortfolioWeb do
+    pipe_through :api
+
+    post "/content/push", ContentWebhookController, :handle_push
+  end
+
   # Enables LiveDashboard only for development.
   #
   # If you want to use the LiveDashboard in production, you should put

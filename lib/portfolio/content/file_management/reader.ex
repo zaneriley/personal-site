@@ -91,9 +91,12 @@ defmodule Portfolio.Content.FileManagement.Reader do
 
   @spec extract_locale(String.t()) :: String.t()
   defp extract_locale(file_path) do
+    supported_locales = Types.get_supported_locales()
+    default_locale = Application.get_env(:portfolio, :default_locale, "en")
+
     file_path
-    |> String.split("/")
-    |> Enum.at(-2)
+    |> Path.split()
+    |> Enum.find(default_locale, &(&1 in supported_locales))
   end
 
   @spec transform_metadata({charlist() | atom(), charlist() | term()}) ::

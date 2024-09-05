@@ -92,6 +92,20 @@ defmodule Portfolio.Content.ContentTest do
     end
   end
 
+  describe "content change" do
+    test "change/3 returns error for invalid content type" do
+      assert {:error, :invalid_content_type} =
+               Content.change("invalid_type", %{}, %{})
+    end
+
+    test "change/3 returns changeset for valid content type" do
+      note = ContentFixtures.note_fixture()
+
+      assert %Ecto.Changeset{} =
+               Content.change("note", note, %{title: "New Title"})
+    end
+  end
+
   describe "content deletion" do
     test "delete/2 deletes the note" do
       note = ContentFixtures.note_fixture()
@@ -211,6 +225,17 @@ defmodule Portfolio.Content.ContentTest do
 
       assert updated_note.id == existing_note.id
       assert updated_note.title == "Updated File Note"
+    end
+
+    test "upsert_from_file/2 handles atom content type" do
+      attrs = %{
+        "url" => "atom-type-note",
+        "locale" => "en",
+        "title" => "Atom Type Note",
+        "content" => "Atom type note content"
+      }
+
+      assert {:ok, %Note{}} = Content.upsert_from_file(:note, attrs)
     end
   end
 

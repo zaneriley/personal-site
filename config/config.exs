@@ -46,3 +46,6 @@ config :portfolio, Portfolio.Mailer, adapter: Swoosh.Adapters.Local
 config :swoosh, :api_client, false
 
 import_config "#{Mix.env()}.exs"
+
+config :portfolio, content_base_path: "priv/content"
+config :portfolio, content_repo_url: System.get_env("CONTENT_REPO_URL")
