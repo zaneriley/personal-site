@@ -17,9 +17,10 @@ config :portfolio, Portfolio.Mailer, adapter: Swoosh.Adapters.Test
 # let's us check for the environment in the application
 config :portfolio, environment: :test
 
-# config/test.exs
-config :portfolio, :supported_locales, ["en", "ja"]
-config :portfolio, :default_locale, "en"
+config :portfolio,
+  content_base_path: "test/support/fixtures"
 
 config :portfolio, Portfolio.Content.FileSystemWatcher,
-  paths: ["priv/case-study/"]
+  paths: [
+    Application.compile_env(:portfolio, :content_base_path)
+  ]

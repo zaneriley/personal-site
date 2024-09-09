@@ -10,10 +10,6 @@ defmodule Portfolio.Content do
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
   require Logger
 
-  defmodule ContentTypeMismatchError do
-    defexception [:message]
-  end
-
   defmodule InvalidContentTypeError do
     defexception [:message]
   end
@@ -76,7 +72,7 @@ defmodule Portfolio.Content do
 
     case Types.valid_type?(type) do
       true ->
-        fetch_and_validate_content(type, id_or_url)
+        fetch_content(type, id_or_url)
 
       false ->
         Logger.error("Invalid content type provided: #{inspect(type)}")
@@ -84,29 +80,10 @@ defmodule Portfolio.Content do
     end
   end
 
-  @spec fetch_and_validate_content(content_type(), content_identifier()) ::
+  @spec fetch_content(content_type(), content_identifier()) ::
           Note.t() | CaseStudy.t() | no_return()
-  defp fetch_and_validate_content(type, id_or_url) do
-    case EntryManager.get_content_by_id_or_url(type, id_or_url) do
-      %Note{} = note when type == "note" ->
-        Logger.info("Successfully retrieved Note with ID: #{note.id}")
-        note
-
-      %CaseStudy{} = case_study when type == "case_study" ->
-        Logger.info(
-          "Successfully retrieved CaseStudy with ID: #{case_study.id}"
-        )
-
-        case_study
-
-      mismatched_content ->
-        Logger.error(
-          "Content type mismatch. Requested: #{type}, Found: #{mismatched_content.__struct__}"
-        )
-
-        raise ContentTypeMismatchError,
-              "Content type mismatch for #{inspect(id_or_url)}"
-    end
+  defp fetch_content(type, id_or_url) do
+    EntryManager.get_content_by_id_or_url(type, id_or_url)
   end
 
   @spec create(content_type(), map()) ::

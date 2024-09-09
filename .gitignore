@@ -1,8 +1,7 @@
 # Mostly created by https://www.gitignore.io
 
 # just for now
-*.md
-!test*.md
+/priv/content
 
 ### Ops ###########################################################################
 /priv/plts/*.plt

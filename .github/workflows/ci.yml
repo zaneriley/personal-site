@@ -18,6 +18,7 @@ jobs:
       GITHUB_REF: ${{ github.ref }}
       GITHUB_SHA: ${{ github.sha }}
       GITHUB_ACTOR: ${{ github.actor }}
+      CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
 
     steps:
       - uses: "actions/checkout@v2"

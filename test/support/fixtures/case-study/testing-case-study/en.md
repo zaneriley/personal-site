@@ -8,6 +8,7 @@ read_time: 14
 platforms: ["List", "of", "strings"]
 sort_order: 100
 introduction: "An in-depth look at my experience leading a cross-functional team in developing a product strategy to help people find the local healthcare they need faster and with greater confidence."
+is_draft: false
 ---
 
 # Heading Level 1

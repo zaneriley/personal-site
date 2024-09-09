@@ -4,7 +4,6 @@ defmodule Portfolio.Application do
 
   @impl true
   def start(_type, _args) do
-
     # Can't be a child process for some reason
     if Application.get_env(:portfolio, :environment) in [:dev, :test] do
       Application.start(:yamerl)

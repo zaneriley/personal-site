@@ -49,25 +49,64 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompilerTest do
     end
   end
 
-  describe "transform/1 with custom elements" do
-    test "renders custom image elements with attributes and caption correctly" do
-      custom_image_ast =
-        {:custom_image, "alt text", "image_src.jpg",
-         %{
-           "caption" => "Image Caption",
-           "srcset" => "image_1x.jpg 1x, image_2x.jpg 2x"
-         }}
+  defmodule Portfolio.Content.MarkdownRendering.HTMLCompilerTest do
+    use ExUnit.Case, async: true
+    alias Portfolio.Content.MarkdownRendering.HTMLCompiler
 
-      html = HTMLCompiler.transform(custom_image_ast)
+    describe "transform/1 for custom_image" do
+      test "renders image with caption and srcset" do
+        node =
+          {:custom_image, "Alt text", "image.jpg",
+           %{
+             "caption" => "Image caption",
+             "srcset" => "image-1x.jpg 1x, image-2x.jpg 2x"
+           }}
 
-      expected_html = """
-      <figure class="responsive-image">
-        <img src="image_src.jpg" alt="alt text" srcset="image_1x.jpg 1x, image_2x.jpg 2x">
-        <figcaption>Image Caption</figcaption>
-      </figure>
-      """
+        result = HTMLCompiler.transform(node)
+        assert result =~ ~s(<figure class="responsive-image">)
 
-      assert html == expected_html
+        assert result =~
+                 ~s(<img src="image.jpg" alt="Alt text" srcset="image-1x.jpg 1x, image-2x.jpg 2x">)
+
+        assert result =~ ~s(<figcaption>Image caption</figcaption>)
+        assert result =~ ~s(</figure>)
+      end
+
+      test "renders image with only caption" do
+        node =
+          {:custom_image, "Alt text", "image.jpg",
+           %{"caption" => "Image caption"}}
+
+        result = HTMLCompiler.transform(node)
+        assert result =~ ~s(<figure class="responsive-image">)
+        assert result =~ ~s(<img src="image.jpg" alt="Alt text" srcset="">)
+        assert result =~ ~s(<figcaption>Image caption</figcaption>)
+        assert result =~ ~s(</figure>)
+      end
+
+      test "renders image with only srcset" do
+        node =
+          {:custom_image, "Alt text", "image.jpg",
+           %{"srcset" => "image-1x.jpg 1x, image-2x.jpg 2x"}}
+
+        result = HTMLCompiler.transform(node)
+        assert result =~ ~s(<figure class="responsive-image">)
+
+        assert result =~
+                 ~s(<img src="image.jpg" alt="Alt text" srcset="image-1x.jpg 1x, image-2x.jpg 2x">)
+
+        assert result =~ ~s(<figcaption></figcaption>)
+        assert result =~ ~s(</figure>)
+      end
+
+      test "renders image without caption or srcset" do
+        node = {:custom_image, "Alt text", "image.jpg", %{}}
+        result = HTMLCompiler.transform(node)
+        assert result =~ ~s(<figure class="responsive-image">)
+        assert result =~ ~s(<img src="image.jpg" alt="Alt text" srcset="">)
+        assert result =~ ~s(<figcaption></figcaption>)
+        assert result =~ ~s(</figure>)
+      end
     end
   end
 

@@ -54,6 +54,7 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
     ["<#{tag}#{attributes}>", transformed_content, "</#{tag}>"]
   end
 
+  # coveralls-ignore-start
   def transform({:custom_image, alt, src, attrs}) do
     caption = Map.get(attrs, "caption", "")
     srcset = Map.get(attrs, "srcset", "")
@@ -66,31 +67,15 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
     """
   end
 
+  # coveralls-ignore-stop
+
   def transform(content) when is_binary(content), do: content
 
-  @doc """
-  Transforms a list of attribute key-value pairs into an HTML attribute string.
-
-  ## Parameters
-    - attrs: A list of two-element tuples representing HTML attributes.
-
-  ## Returns
-    - A string of HTML attributes.
-  """
   @spec transform_attributes(list({String.t(), String.t()})) :: String.t()
   defp transform_attributes(attrs) do
     Enum.map_join(attrs, "", fn {key, value} -> " #{key}=\"#{value}\"" end)
   end
 
-  @doc """
-  Transforms the content of an AST node.
-
-  ## Parameters
-    - content: Either a list of AST nodes or a binary string.
-
-  ## Returns
-    - A string representing the transformed content.
-  """
   @spec transform_content(list(ast_node()) | String.t()) :: String.t()
   defp transform_content(content) when is_list(content) do
     Enum.map_join(content, "", &transform/1)

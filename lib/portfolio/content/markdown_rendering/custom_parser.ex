@@ -6,24 +6,14 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParser do
   require Logger
 
   @doc """
-  Parses the given markdown string into a custom AST.
+  Parses the given markdown string into an AST.
   """
   @spec parse(String.t()) :: {:ok, map()} | {:error, String.t()}
   def parse(markdown) when is_binary(markdown) do
     {frontmatter, content} = split_frontmatter(markdown)
-    preprocessed_content = preprocess_custom_components(content)
 
-    case Earmark.Parser.as_ast(preprocessed_content) do
-      {:ok, ast, []} ->
-        {:ok,
-         %{
-           frontmatter: frontmatter,
-           ast: ast
-         }}
-
-      {:ok, ast, warnings} ->
-        Logger.warning("Warnings while parsing markdown: #{inspect(warnings)}")
-
+    case Earmark.Parser.as_ast(content) do
+      {:ok, ast, _} ->
         {:ok,
          %{
            frontmatter: frontmatter,
@@ -31,14 +21,20 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParser do
          }}
 
       {:error, _ast, error_messages} ->
-        {:error, "Error parsing markdown: #{inspect(error_messages)}"}
+        Logger.error("Error parsing markdown: #{inspect(error_messages)}")
+        {:error, "Error parsing markdown"}
     end
   end
 
-  defp split_frontmatter(markdown) do
-    case String.split(markdown, ~r/---\s*\n/, parts: 3) do
-      ["", frontmatter, content] -> {frontmatter, content}
-      _ -> {"", markdown}
+  def split_frontmatter(markdown) do
+    result = String.split(markdown, ~r/---\s*\n/, parts: 3)
+
+    case result do
+      ["", frontmatter, content] ->
+        {frontmatter, content}
+
+      _ ->
+        {"", markdown}
     end
   end
 

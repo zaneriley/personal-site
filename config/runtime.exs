@@ -38,3 +38,5 @@ config :portfolio, Portfolio.Repo,
   hostname: System.get_env("POSTGRES_HOST", "postgres"),
   port: String.to_integer(System.get_env("POSTGRES_PORT", "5432")),
   pool_size: String.to_integer(System.get_env("POSTGRES_POOL", "15"))
+
+config :portfolio, :github_token, System.get_env("GITHUB_TOKEN")
