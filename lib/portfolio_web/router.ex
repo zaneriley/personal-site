@@ -45,8 +45,6 @@ defmodule PortfolioWeb.Router do
 
   scope "/api/v1", PortfolioWeb do
     pipe_through :api
-
-    post "/content/push", ContentWebhookController, :handle_push
   end
 
   # Enables LiveDashboard only for development.

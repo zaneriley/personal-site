@@ -2,106 +2,71 @@ defmodule PortfolioWeb.ContentWebhookController do
   @moduledoc """
   Handles incoming GitHub webhook payloads for content updates.
 
-  This controller is responsible for processing webhook payloads from GitHub,
-  determining if they contain relevant changes to the content, and triggering
-  content updates when necessary.
-
-  ## Key functions
-
-  - `handle_push/2`: Entrypoint for processing webhook payloads
-  - `process_payload/1`: Determines if a payload contains relevant changes
-  - `trigger_update/0`: Initiates the content update process
-
-  ## Dependencies
-
-  This module relies on:
-  - `Portfolio.Content.Remote.RemoteUpdateTrigger` for triggering updates
-  - `Portfolio.Content.Types` for determining content types
+  This controller processes webhook payloads from GitHub,
+  determines if they contain relevant changes to the content,
+  and triggers content updates when necessary.
   """
 
   require Logger
-  use PortfolioWeb, :controller
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
   alias Portfolio.Content.Types
 
-  @doc """
-  Processes the webhook payload and determines if an update is needed.
+  @type webhook_result ::
+          {:ok, :updated | :no_relevant_changes} | {:error, String.t()}
 
-  This function examines the payload for relevant file changes and triggers
-  an update if necessary.
+  @spec handle_webhook(Plug.Conn.t(), map(), keyword()) :: webhook_result()
+  def handle_webhook(_conn, payload, opts) do
+    Logger.info("Processing webhook payload")
 
-  ## Parameters
+    with {:ok, event_type} <- extract_event_type(payload),
+         :ok <- validate_push_event(event_type),
+         {:ok, relevant_changes} <- extract_relevant_changes(payload) do
+      case relevant_changes do
+        [] ->
+          Logger.info("No relevant file changes detected")
+          {:ok, :no_relevant_changes}
 
-  - `payload`: A map containing the webhook payload from GitHub
-
-  ## Returns
-
-  - `{:ok, :updated}` if relevant changes were found and an update was triggered
-  - `{:ok, :no_relevant_changes}` if no relevant changes were found
-  - `{:error, reason}` if an error occurred during processing
-
-  ## Examples
-
-      iex> payload = %{"commits" => [%{"added" => ["content/new_post.md"]}]}
-      iex> ContentWebhookController.process_payload(payload)
-      {:ok, :updated}
-
-  """
-  @spec handle_push(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def handle_push(conn, %{"payload" => payload}) do
-    Logger.info("Received webhook payload: #{inspect(payload)}")
-
-    payload
-    |> validate_payload()
-    |> process_payload()
-    |> handle_process_result(conn)
-  end
-
-  @spec validate_payload(map()) ::
-          {:ok, map()} | {:error, :invalid_payload, String.t()}
-  defp validate_payload(payload) do
-    cond do
-      is_nil(payload["repository"]) ->
-        {:error, :invalid_payload, "Missing repository information"}
-
-      is_nil(payload["commits"]) ->
-        {:error, :invalid_payload, "Missing commits information"}
-
-      true ->
-        {:ok, payload}
-    end
-  end
-
-  @spec process_payload({:ok, map()} | {:error, :invalid_payload, String.t()}) ::
-          {:ok, :updated | :no_relevant_changes}
-          | {:error, :invalid_payload, String.t()}
-          | {:error, any()}
-  defp process_payload({:error, _, _} = error), do: error
-
-  defp process_payload({:ok, payload}) do
-    if payload_has_relevant_changes?(payload) do
-      Logger.info("Relevant file changes detected")
-      trigger_update()
+        changes ->
+          Logger.info("Relevant file changes detected: #{inspect(changes)}")
+          trigger_update(opts)
+      end
     else
-      Logger.info("No relevant file changes detected")
-      {:ok, :no_relevant_changes}
+      {:error, reason} ->
+        Logger.warn("Error processing webhook: #{reason}")
+        {:error, reason}
     end
   end
 
-  @spec payload_has_relevant_changes?(map()) :: boolean()
-  defp payload_has_relevant_changes?(payload) do
-    payload
-    |> extract_changed_files()
-    |> Enum.any?(&relevant_file_change?/1)
+  @spec extract_event_type(map()) :: {:ok, String.t()} | {:error, String.t()}
+  defp extract_event_type(%{"commits" => _}) do
+    {:ok, "push"}
   end
 
-  @spec extract_changed_files(map()) :: [String.t()]
-  defp extract_changed_files(payload) do
-    payload["commits"]
-    |> Enum.flat_map(fn commit ->
-      (commit["added"] || []) ++ (commit["modified"] || [])
-    end)
+  defp extract_event_type(_) do
+    {:error, "Invalid or unsupported event type"}
   end
+
+  @spec validate_push_event(String.t()) :: :ok | {:error, String.t()}
+  defp validate_push_event("push"), do: :ok
+  defp validate_push_event(_), do: {:error, "Only push events are supported"}
+
+  @spec extract_relevant_changes(map()) ::
+          {:ok, [String.t()]} | {:error, String.t()}
+  defp extract_relevant_changes(%{"commits" => commits})
+       when is_list(commits) do
+    relevant_changes =
+      commits
+      |> Stream.flat_map(fn commit ->
+        (commit["added"] || []) ++ (commit["modified"] || [])
+      end)
+      |> Stream.uniq()
+      |> Stream.filter(&relevant_file_change?/1)
+      |> Enum.to_list()
+
+    {:ok, relevant_changes}
+  end
+
+  defp extract_relevant_changes(_), do: {:error, "Invalid payload structure"}
 
   @spec relevant_file_change?(String.t()) :: boolean()
   defp relevant_file_change?(path) do
@@ -114,65 +79,24 @@ defmodule PortfolioWeb.ContentWebhookController do
     end
   end
 
-  @spec trigger_update() :: {:ok, :updated} | {:error, any()}
-  defp trigger_update() do
+  @spec trigger_update(keyword()) :: webhook_result()
+  defp trigger_update(opts) do
     Logger.info("Triggering update with RemoteUpdateTrigger")
 
-    case RemoteUpdateTrigger.trigger_update(content_repo_url()) do
-      {:ok, _} = result ->
+    case RemoteUpdateTrigger.trigger_update(content_repo_url(opts)) do
+      {:ok, _} ->
         Logger.info("RemoteUpdateTrigger completed successfully")
-        result
+        {:ok, :updated}
 
-      {:error, reason} = error ->
+      {:error, reason} ->
         Logger.error("RemoteUpdateTrigger failed: #{inspect(reason)}")
-        error
+        {:error, "Update failed: #{inspect(reason)}"}
     end
   end
 
-  @spec handle_process_result(
-          {:ok, :updated | :no_relevant_changes}
-          | {:error, :invalid_payload, String.t()}
-          | {:error, any()},
-          Plug.Conn.t()
-        ) :: Plug.Conn.t()
-  defp handle_process_result({:ok, :updated}, conn) do
-    Logger.info("Webhook processed successfully")
-
-    send_json_resp(conn, :ok, %{
-      message: "Content update process initiated successfully"
-    })
-  end
-
-  defp handle_process_result({:ok, :no_relevant_changes}, conn) do
-    Logger.info("No relevant changes detected")
-    send_json_resp(conn, :ok, %{message: "No relevant changes detected"})
-  end
-
-  defp handle_process_result({:error, :invalid_payload, message}, conn) do
-    Logger.warning("Invalid payload received: #{message}")
-
-    send_json_resp(conn, :bad_request, %{
-      error: "Invalid payload",
-      message: message
-    })
-  end
-
-  defp handle_process_result({:error, reason}, conn) do
-    Logger.error("Failed to process webhook: #{inspect(reason)}")
-
-    send_json_resp(conn, :internal_server_error, %{
-      error: "Internal server error"
-    })
-  end
-
-  # Updated helper function to send JSON responses
-  defp send_json_resp(conn, status, data) do
-    conn
-    |> put_resp_content_type("application/json")
-    |> send_resp(Plug.Conn.Status.code(status), Jason.encode!(data))
-  end
-
-  defp content_repo_url do
-    Application.get_env(:portfolio, :content_repo_url)
+  @spec content_repo_url(keyword()) :: String.t()
+  defp content_repo_url(opts) do
+    Keyword.get(opts, :content_repo_url) ||
+      Application.fetch_env!(:portfolio, :content_repo_url)
   end
 end

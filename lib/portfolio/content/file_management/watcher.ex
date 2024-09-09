@@ -52,9 +52,15 @@ defmodule Portfolio.Content.FileManagement.Watcher do
 
   @spec relevant_file_change?(String.t(), list()) :: boolean()
   defp relevant_file_change?(path, events) do
-    Path.extname(path) == ".md" and
-      not String.starts_with?(Path.basename(path), ".") and
+    not hidden_path?(path) and
+      Path.extname(path) == ".md" and
       (:modified in events or :created in events)
+  end
+
+  defp hidden_path?(path) do
+    path
+    |> Path.split()
+    |> Enum.any?(fn part -> String.starts_with?(part, ".") end)
   end
 
   @spec process_file_change(String.t()) :: :ok

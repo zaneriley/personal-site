@@ -1,6 +1,15 @@
 defmodule PortfolioWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :portfolio
 
+  require Logger
+
+  plug :log_request
+
+  @github_webhook_secret Application.compile_env(
+                           :portfolio,
+                           :github_webhook_secret
+                         )
+
   @session_options [
     store: :cookie,
     key: "_portfolio_key",
@@ -9,6 +18,11 @@ defmodule PortfolioWeb.Endpoint do
     encryption_salt: "jIOxYIG2l",
     same_site: "Lax"
   ]
+
+  plug GitHubWebhook,
+    secret: @github_webhook_secret,
+    path: "/api/v1/content/push",
+    action: {PortfolioWeb.ContentWebhookController, :handle_webhook}
 
   socket "/socket", PortfolioWeb.UserSocket,
     websocket: true,
@@ -46,4 +60,12 @@ defmodule PortfolioWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
   plug PortfolioWeb.Router
+
+  defp log_request(conn, _opts) do
+    Logger.warning(
+      "Request received in Endpoint: #{inspect(conn.method)} #{inspect(conn.request_path)}"
+    )
+
+    conn
+  end
 end
