@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.0-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.3-alpha.1...v0.4.0-alpha.1) (2024-09-09)
+
+
+### Features
+
+* **webhook:** implement GitHub webhook for content updates ([2c23562](https://github.com/zaneriley/personal-site/commit/2c2356209d0cae5fa7089d84666975d711d7a073))
+
 ## [0.3.3-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.2-alpha.1...v0.3.3-alpha.1) (2024-08-18)
 
 
