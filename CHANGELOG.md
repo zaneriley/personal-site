@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.1-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.4.0-alpha.1...v0.4.1-alpha.1) (2024-09-14)
+
+
+### Features
+
+* **release:** Create release setup to migrate DB and pull repo ([#45](https://github.com/zaneriley/personal-site/issues/45)) ([d4b26ae](https://github.com/zaneriley/personal-site/commit/d4b26ae591ba1b0f401e0f52e61551e749d4c262))
+
 ## [0.4.0-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.3.3-alpha.1...v0.4.0-alpha.1) (2024-09-09)
 
 
