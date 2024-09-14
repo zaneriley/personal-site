@@ -132,7 +132,7 @@ export DOCKER_WEB_VOLUME=./priv/static:/app/priv/static # Use this for productio
 
 If you encounter issues running `mix ecto.drop` while the app is running, try stopping the web app first:
 ```bash
-docker compose YOURAPP-web-1 stop
+docker compose stop web
 ```
 If that doesn't work:
 ```bash

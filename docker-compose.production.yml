@@ -5,9 +5,14 @@ version: '3.8'
 # to create a backup of your local postgres database before running this.
 services:
   web:
-    image: 43dae32f7d97
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - .env
+    environment:
+      - "MIX_ENV=${MIX_ENV:-prod}"
+      - "NODE_ENV=${NODE_ENV:-production}"
     ports:
       - "${DOCKER_WEB_PORT_FORWARD:-0.0.0.0:8000}:${PORT:-8000}"
     depends_on:
@@ -27,21 +32,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    command: >
-      bash -c "
-        /usr/local/bin/docker-entrypoint.sh postgres &
-        until pg_isready -U ${POSTGRES_USER}; do sleep 1; done
-        echo 'Dropping and recreating schema...'
-        psql -U ${POSTGRES_USER} -d postgres -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
-        echo 'Restoring from backup...'
-        if psql -U ${POSTGRES_USER} -d postgres -f /backups/backup.sql; then
-          echo 'Backup restored successfully'
-          psql -U ${POSTGRES_USER} -d postgres -c 'COMMIT;'
-        else
-          echo 'Error restoring backup'
-          exit 1
-        fi
-        wait
-      "
+
 volumes:
   postgres_data:
