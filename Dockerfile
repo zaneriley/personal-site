@@ -94,7 +94,7 @@ CMD ["iex", "-S", "mix", "phx.server"]
 ###############################################################################
 
 # Stage 3: Production environment
-FROM elixir:1.17.1-slim AS prod
+FROM elixir:1.17.2-slim AS prod
 LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
 WORKDIR /app
@@ -104,7 +104,7 @@ ARG GID=1000
 
 # Install production dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl git \
+  && apt-get install -y --no-install-recommends ca-certificates curl inotify-tools git \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership
