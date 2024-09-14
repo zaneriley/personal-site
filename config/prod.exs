@@ -11,6 +11,9 @@ config :logger, :console,
 
 config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Portfolio.Finch
 
+config :portfolio, Portfolio.Content.FileManagement.Watcher,
+  paths: ["app/priv/content"]
+
 # You can't use mix.env in release builds, so setting this
 # let's us check for the environment in the application
 config :portfolio, environment: :prod

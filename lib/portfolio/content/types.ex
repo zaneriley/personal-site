@@ -7,28 +7,28 @@ defmodule Portfolio.Content.Types do
   """
   require Logger
 
-  @content_base_path Application.compile_env(
-                       :portfolio,
-                       :content_base_path,
-                       "priv/content"
-                     )
-
   @typedoc "Represents the content type as a string"
   @type content_type :: String.t()
 
   @typedoc "Represents a file path as a string"
   @type file_path :: String.t()
 
-  @content_types %{
-    "note" => %{
-      slugs: ["notes", "note"],
-      path: Path.join(@content_base_path, "note")
-    },
-    "case_study" => %{
-      slugs: ["case-studies", "case_study", "case-study"],
-      path: Path.join(@content_base_path, "case-study")
+  def content_base_path do
+    Application.get_env(:portfolio, :content_base_path, "priv/content")
+  end
+
+  def content_types do
+    %{
+      "note" => %{
+        slugs: ["notes", "note"],
+        path: Path.join(content_base_path(), "note")
+      },
+      "case_study" => %{
+        slugs: ["case-studies", "case_study", "case-study"],
+        path: Path.join(content_base_path(), "case-study")
+      }
     }
-  }
+  end
 
   @spec get_supported_locales() :: [String.t()]
   def get_supported_locales do
@@ -56,9 +56,9 @@ defmodule Portfolio.Content.Types do
       nil
 
   """
-  @spec get_path(content_type()) :: file_path()
+  @spec get_path(content_type()) :: file_path() | nil
   def get_path(content_type) do
-    case @content_types[content_type] do
+    case content_types()[content_type] do
       nil -> nil
       %{path: path} -> path
     end
@@ -107,7 +107,7 @@ defmodule Portfolio.Content.Types do
   end
 
   defp build_slug_map do
-    Enum.reduce(@content_types, %{}, fn {type, %{slugs: slugs}}, acc ->
+    Enum.reduce(content_types(), %{}, fn {type, %{slugs: slugs}}, acc ->
       Enum.reduce(slugs, acc, fn slug, inner_acc ->
         Map.put(inner_acc, slug, type)
       end)
@@ -134,8 +134,8 @@ defmodule Portfolio.Content.Types do
       ["note", "case_study"]
 
   """
-  @spec all_types() :: [content_type]
-  def all_types, do: Map.keys(@content_types)
+  @spec all_types() :: [content_type()]
+  def all_types, do: Map.keys(content_types())
 
   @doc """
   Checks if the given type is a valid content type.

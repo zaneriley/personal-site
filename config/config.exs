@@ -47,11 +47,5 @@ config :swoosh, :api_client, false
 
 import_config "#{Mix.env()}.exs"
 
-config :portfolio, content_base_path: "priv/content"
-config :portfolio, content_repo_url: System.get_env("CONTENT_REPO_URL")
-
-config :portfolio,
-  github_webhook_secret: System.get_env("GITHUB_WEBHOOK_SECRET")
-
 config :github_webhook,
   json_library: Jason

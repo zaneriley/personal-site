@@ -1,10 +1,7 @@
 import Config
 
-content_base_path =
-  Application.get_env(:portfolio, :content_base_path, "priv/content")
-
 config :portfolio, PortfolioWeb.Endpoint,
-  debug_errors: false,
+  debug_errors: true,
   code_reloader: true,
   check_origin: false,
   watchers: [],
@@ -14,7 +11,7 @@ config :portfolio, PortfolioWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/portfolio_web/(controllers|live|components)/.*(ex|heex)$",
-      ~r"#{String.trim_trailing(content_base_path, "/")}/.+\.md$"
+      ~r"#{String.trim_trailing("priv/content", "/")}/.+\.md$"
     ]
   ],
   token_salt: System.get_env("DEV_TOKEN_SALT")
@@ -48,7 +45,7 @@ config :phoenix, :stacktrace_depth, 20
 config :phoenix, :plug_init_mode, :runtime
 
 config :portfolio, Portfolio.Content.FileManagement.Watcher,
-  paths: ["#{content_base_path}"]
+  paths: ["priv/content"]
 
 # Include HEEx debug annotations as HTML comments in rendered markup.
 config :phoenix_live_view, :debug_heex_annotations, true
