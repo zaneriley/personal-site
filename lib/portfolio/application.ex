@@ -4,10 +4,8 @@ defmodule Portfolio.Application do
 
   @impl true
   def start(_type, _args) do
-    # Can't be a child process for some reason
-    if Application.get_env(:portfolio, :environment) in [:dev, :test] do
-      Application.start(:yamerl)
-    end
+    # Can't be a child process for some reason.
+    Application.start(:yamerl)
 
     children = [
       PortfolioWeb.Telemetry,
@@ -20,19 +18,16 @@ defmodule Portfolio.Application do
       Portfolio.Cache
     ]
 
-    children =
-      if Application.get_env(:portfolio, :environment) in [:dev, :test] do
-        watcher_config =
-          Application.get_env(
-            :portfolio,
-            Portfolio.Content.FileManagement.Watcher,
-            []
-          )
+    # Add file watcher for all environments
+    watcher_config =
+      Application.get_env(
+        :portfolio,
+        Portfolio.Content.FileManagement.Watcher,
+        []
+      )
 
-        children ++ [{Portfolio.Content.FileManagement.Watcher, watcher_config}]
-      else
-        children
-      end
+    children =
+      children ++ [{Portfolio.Content.FileManagement.Watcher, watcher_config}]
 
     opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
     Supervisor.start_link(children, opts)

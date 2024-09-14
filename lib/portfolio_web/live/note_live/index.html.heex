@@ -1,10 +1,5 @@
 <.header>
   Listing Notes
-  <:actions>
-    <.link patch={Routes.note_index_path(@socket, :new)}>
-      <.button>New Note</.button>
-    </.link>
-  </:actions>
 </.header>
 <%= if Application.get_env(:portfolio, :environment) == :dev do %>
   <div>
@@ -31,7 +26,6 @@
         Show
       </.link>
     </div>
-    <.link patch={Routes.note_index_path(@socket, :edit, note.url)}>Edit</.link>
   </:action>
   <:action :let={{dom_id, note}}>
     <.link

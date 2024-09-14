@@ -5,11 +5,6 @@ defmodule PortfolioWeb.Endpoint do
 
   plug :log_request
 
-  @github_webhook_secret Application.compile_env(
-                           :portfolio,
-                           :github_webhook_secret
-                         )
-
   @session_options [
     store: :cookie,
     key: "_portfolio_key",
@@ -20,7 +15,7 @@ defmodule PortfolioWeb.Endpoint do
   ]
 
   plug GitHubWebhook,
-    secret: @github_webhook_secret,
+    secret: "V/cR1ORkr+Fi5FHCzmzoEtgud7Tjdg/7ZS+DTOdzX2qm+LEwve3XkKwqoXAfTvCH",
     path: "/api/v1/content/push",
     action: {PortfolioWeb.ContentWebhookController, :handle_webhook}
 
@@ -67,5 +62,10 @@ defmodule PortfolioWeb.Endpoint do
     )
 
     conn
+  end
+
+  def get_github_webhook_secret do
+    Application.get_env(:portfolio, :github_webhook_secret) ||
+      raise "GitHub webhook secret is not configured!"
   end
 end

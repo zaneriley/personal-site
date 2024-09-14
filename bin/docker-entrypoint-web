@@ -1,9 +1,57 @@
 #!/usr/bin/env bash
 
+# Exit immediately if a command exits with a non-zero status
 set -e
 
-# Always keep this here as it ensures your latest built assets make their way
-# into your volume persisted public directory.
+# Function to log messages
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
+
+# Common operation: Copy static assets
+log "Copying static assets..."
 cp -r /public/. /app/priv/static/
 
+# Detect environment
+if [ -d "/app/releases" ] && [ -f "/app/bin/portfolio" ]; then
+    log "Detected release environment"
+    
+    # Check for start_erl.data file
+    if [ ! -f "/app/releases/start_erl.data" ]; then
+        log "Error: /app/releases/start_erl.data not found"
+        exit 1
+    fi
+    
+    # Read RELEASE_VSN safely
+    RELEASE_VSN=$(cut -d' ' -f2 < /app/releases/start_erl.data)
+    if [ -z "$RELEASE_VSN" ]; then
+        log "Error: Failed to read release version from start_erl.data"
+        exit 1
+    fi
+    
+    # Export release-specific variables
+    export RELEASE_NAME=portfolio
+    export RELEASE_VSN
+    export RELEASE_ROOT=/app
+    
+    log "Running database migrations..."
+    if ! /app/bin/portfolio eval "Portfolio.Release.migrate()"; then
+        log "Error: Database migration failed"
+        exit 1
+    fi
+    
+    log "Pulling latest changes from the content repository..."
+    if ! /app/bin/portfolio eval "Portfolio.Release.pull_repository()"; then
+        log "Error: Failed to pull latest changes from the repository"
+        exit 1
+    fi
+elif [ "$MIX_ENV" = "prod" ]; then
+    log "MIX_ENV is set to prod, but release files not found. This might be an error."
+else
+    log "Running in local development mode"
+    # Add any local development specific commands here if needed
+fi
+
+# Execute the main command
+log "Executing main command..."
 exec "$@"

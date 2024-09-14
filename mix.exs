@@ -51,7 +51,7 @@ defmodule Portfolio.MixProject do
       {:excoveralls, "0.18.1", only: [:dev, :test]},
       {:finch, "0.18.0"},
       {:floki, "0.36.2", only: :test},
-      {:file_system, "~> 1.0.0", only: [:dev, :test]},
+      {:file_system, "~> 1.0.0"},
       {:github_webhook, "~> 0.2.1"},
       {:gettext, "0.24.0"},
       {:heroicons, "0.5.5"},
@@ -70,7 +70,7 @@ defmodule Portfolio.MixProject do
       {:swoosh, "1.16.9"},
       {:telemetry_metrics, "1.0.0"},
       {:telemetry_poller, "1.1.0"},
-      {:yamerl, "~> 0.10.0", only: [:dev, :test]},
+      {:yamerl, "~> 0.10.0"},
       {:uuid, "~> 1.1"}
     ]
   end

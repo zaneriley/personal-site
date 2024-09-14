@@ -1,12 +1,5 @@
 <.header>
   Case Studies
-  <:actions>
-    <%= if @env != :dev do %>
-      <.link patch={Routes.case_study_index_path(@socket, :new)}>
-        <.button>New case study</.button>
-      </.link>
-    <% end %>
-  </:actions>
 </.header>
 
 <.portfolio_item_list items={@streams.case_studies}>

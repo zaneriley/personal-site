@@ -9,7 +9,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
 
   @impl true
   def mount(_params, session, socket) do
-    env = Mix.env()
+    env = Application.get_env(:portfolio, :environment)
     # Extract the locale from the session or default to 'en'
     user_locale =
       session["user_locale"] || Application.get_env(:portfolio, :default_locale)

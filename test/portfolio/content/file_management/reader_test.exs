@@ -4,7 +4,6 @@ defmodule Portfolio.Content.FileManagement.ReaderTest do
   alias Portfolio.Content.Types
   import ExUnit.CaptureLog
 
-  # @test_file_path Path.join(Application.compile_env(:portfolio, :content_base_path), "case-study/testing-case-study/en.md")
   @test_file_path "test/support/fixtures/case-study/testing-case-study/en.md"
   @malformed_file_path "test/support/fixtures/case-study/testing-case-study-malformed/en.md"
 

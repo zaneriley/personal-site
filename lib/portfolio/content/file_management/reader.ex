@@ -26,9 +26,9 @@ defmodule Portfolio.Content.FileManagement.Reader do
          {:ok, attrs} <- parse_frontmatter(frontmatter),
          {:ok, content_type} <- determine_content_type(file_path),
          locale <- extract_locale(file_path) do
-      Logger.info(
-        "Successfully read markdown file: #{file_path}, content_type: #{content_type}, locale: #{locale}"
-      )
+      Logger.info("Read markdown file: #{file_path}")
+      Logger.info("Extracted attributes: #{inspect(attrs)}")
+      Logger.info("Extracted URL: #{inspect(attrs["url"])}")
 
       {:ok, content_type,
        Map.merge(attrs, %{

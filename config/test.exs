@@ -22,5 +22,5 @@ config :portfolio,
 
 config :portfolio, Portfolio.Content.FileSystemWatcher,
   paths: [
-    Application.compile_env(:portfolio, :content_base_path)
+    Application.get_env(:portfolio, :content_base_path)
   ]

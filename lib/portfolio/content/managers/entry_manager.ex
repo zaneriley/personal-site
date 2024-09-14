@@ -456,16 +456,16 @@ defmodule Portfolio.Content.EntryManager do
           {:ok, Note.t() | CaseStudy.t()}
           | {:error, atom() | Ecto.Changeset.t()}
   def upsert_from_file(content_type, attrs) when is_binary(content_type) do
-    Logger.info(
-      "Upserting #{content_type} with URL: #{attrs["url"]} and locale: #{attrs["locale"]}"
-    )
+    Logger.info("Upserting #{content_type} with attrs: #{inspect(attrs)}")
 
     with {:ok, schema} <- get_schema(content_type),
          {:ok, content} <- upsert_content(schema, attrs, content_type),
          {:ok, compiled_content} <- compile_content(content, content_type) do
       {:ok, %{content | compiled_content: compiled_content}}
     else
-      {:error, reason} -> {:error, reason}
+      {:error, reason} ->
+        Logger.error("Error in upsert_from_file: #{inspect(reason)}")
+        {:error, reason}
     end
   end
 
@@ -485,9 +485,23 @@ defmodule Portfolio.Content.EntryManager do
   end
 
   defp upsert_default_locale_content(schema, attrs, content_type) do
-    case Repo.get_by(schema, url: attrs["url"]) do
-      nil -> create_content(Map.put(attrs, "content_type", content_type))
-      entry -> update_content(entry, attrs, content_type)
+    Logger.info(
+      "Upserting default locale content with URL: #{inspect(attrs["url"])}"
+    )
+
+    if is_nil(attrs["url"]) do
+      Logger.error("URL is nil in attrs: #{inspect(attrs)}")
+      {:error, :nil_url}
+    else
+      case Repo.get_by(schema, url: attrs["url"]) do
+        nil ->
+          Logger.info("Creating new content for URL: #{attrs["url"]}")
+          create_content(Map.put(attrs, "content_type", content_type))
+
+        entry ->
+          Logger.info("Updating existing content for URL: #{attrs["url"]}")
+          update_content(entry, attrs, content_type)
+      end
     end
   end
 

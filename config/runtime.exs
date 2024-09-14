@@ -40,3 +40,19 @@ config :portfolio, Portfolio.Repo,
   pool_size: String.to_integer(System.get_env("POSTGRES_POOL", "15"))
 
 config :portfolio, :github_token, System.get_env("GITHUB_TOKEN")
+
+config :portfolio,
+  github_webhook_secret: System.get_env("GITHUB_WEBHOOK_SECRET")
+
+config :portfolio, content_repo_url: System.get_env("CONTENT_REPO_URL")
+
+if config_env() == :prod do
+  config :portfolio, content_base_path: "app/priv/content"
+else
+  config :portfolio, content_base_path: "priv/content"
+end
+
+content_base_path = Application.get_env(:portfolio, :content_base_path)
+
+config :portfolio, Portfolio.Content.FileManagement.Watcher,
+  paths: [System.get_env("CONTENT_BASE_PATH", "priv/content")]

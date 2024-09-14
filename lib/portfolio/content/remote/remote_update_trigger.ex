@@ -50,19 +50,4 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
         {:error, "Repository sync failed"}
     end
   end
-
-  @doc false
-  @spec process_file(String.t(), String.t()) :: {:ok, map()} | {:error, any()}
-  defp process_file(path, content) do
-    case Reader.read_markdown_file(content) do
-      {:ok, _content_type, parsed_content} ->
-        case Watcher.process_file_change(path, parsed_content) do
-          :ok -> {:ok, %{path: path, content: content}}
-          {:error, reason} -> {:error, reason}
-        end
-
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
 end
