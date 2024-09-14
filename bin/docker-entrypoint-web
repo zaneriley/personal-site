@@ -23,7 +23,7 @@ if [ -d "/app/releases" ] && [ -f "/app/bin/portfolio" ]; then
     fi
     
     # Read RELEASE_VSN safely
-    RELEASE_VSN=$(cat /app/releases/start_erl.data | cut -d' ' -f2)
+    RELEASE_VSN=$(cut -d' ' -f2 < /app/releases/start_erl.data)
     if [ -z "$RELEASE_VSN" ]; then
         log "Error: Failed to read release version from start_erl.data"
         exit 1
