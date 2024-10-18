@@ -1,0 +1,112 @@
+:root {
+  /* TYPE & LAYOUT */
+  --fs-base: clamp(1.13rem, 0vi + 1.13rem, 1.13rem);
+  --grid-max-width: 1440px;
+  --grid-gutter: 3rem;
+  --grid-outer-margins: 0.5rem;
+  --grid-columns: 12;
+
+  /* DARK MODE PRIMITIVES */
+  --white-absolute: oklch(100% 0 0deg);
+  --black-absolute: oklch(0% 0 0deg);
+
+  /* Adjusted white/black points */
+
+  /* In terms of color grading, we "crush' the white and black point 
+  so nothing is using absolute white/black, then we use white/black for effect */
+  --white-point: oklch(90.76% 0.0184 316.61deg);
+  --black-point: oklch(11.47% 0 0deg);
+
+  /* Dusk Palette */
+
+  /* This acts as a neutral text palette, but hue shifts significantly 
+  compared to most website/app color palettes. */
+  --dusk-0: var(--white-point);
+  --dusk-100: oklch(88.73% 0.056 324.15deg);
+  --dusk-200: oklch(85.53% 0.072 314.14deg);
+  --dusk-300: oklch(81.03% 0.086 303.13deg);
+  --dusk-400: oklch(76.32% 0.1 291.05deg);
+  --dusk-500: oklch(68.67% 0.095 276.77deg);
+  --dusk-600: oklch(56.6% 0.07 263.77deg);
+  --dusk-700: oklch(41.84% 0.038 261.51deg);
+  --dusk-800: oklch(33.09% 0.022 259.38deg);
+  --dusk-900: oklch(28.04% 0.012 264.36deg);
+  --dusk-1000: oklch(25.26% 0.008 274.64deg);
+
+  /* Neutral Palette */
+  --neutral-0: var(--white-point);
+  --neutral-100: oklch(78.23% 0.036 333.34deg);
+  --neutral-200: #bd9ca6;
+  --neutral-300: oklch(77.77% 0.0704 75.85deg);
+
+  /* Gold Palette */
+  --ochre-0: oklch(77.77% 0.0704 75.85);
+
+  /* SEMANTIC TOKENS */
+  --text-color-main: var(--neutral-0);
+  --text-color-callout: var(--white-absolute);
+  --text-color-deemphasized: var(--dusk-500);
+  --text-color-suppressed: var(--dusk-600);
+  --text-color-accent: var(--ochre-0);
+}
+
+@property --color-grad-1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: oklch(41.84% 0.038 261.51deg);
+}
+
+@property --color-grad-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: oklch(33.09% 0.022 259.38deg);
+}
+
+@property --color-grad-3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: oklch(28.04% 0.012 264.36deg);
+}
+
+@property --color-grad-4 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: oklch(25.26% 0.008 274.64deg);
+}
+
+/* Dark mode by default*/
+html,
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --color-grad-1: oklch(100% 0 0);
+  --color-grad-2: oklch(79.52% 0.1341 209.59);
+  --color-grad-3: oklch(63.36% 0.1372 226.77);
+  --color-grad-4: oklch(55.54% 0.244 265.91);
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) {
+    color-scheme: light;
+    --color-grad-1: oklch(100% 0 0);
+    --color-grad-2: oklch(79.52% 0.1341 209.59);
+    --color-grad-3: oklch(63.36% 0.1572 226.77);
+    --color-grad-4: oklch(55.54% 0.244 265.91);
+  }
+}
+
+.bg-gradient {
+  background: linear-gradient(
+    to top,
+    var(--color-grad-1) 0%,
+    var(--color-grad-2) 12%,
+    var(--color-grad-3) 25%,
+    var(--color-grad-4) 50%
+  );
+  background-attachment: fixed;
+  transition: --color-grad-1 5s, --color-grad-2 5s, --color-grad-3 5s,
+    --color-grad-4 5s;
+}
