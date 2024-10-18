@@ -3,6 +3,8 @@ defmodule Portfolio.Content.Schemas.CaseStudy do
   Defines the schema and behavior for case studies in the Portfolio application.
   Extends BaseSchema with additional fields specific to case studies.
   """
+  require Logger
+
   use Portfolio.Content.Schemas.BaseSchema,
     schema_name: "case_studies",
     translatable_type: "case_study",

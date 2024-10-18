@@ -53,13 +53,6 @@
       <meta property="og:description" content={assigns[:og_meta][:description]} />
     <% end %>
     <link phx-track-static rel="stylesheet" href={url(~p"/css/critical.css")} />
-    <!-- TODO: Figure out how to gen the critical CSS from the tailwind config -->
-    <!-- Critical CSS -->
-    <%= if File.exists?("../assets/css/critical.css") do %>
-      <style>
-        <%= File.read!("../assets/css/critical.css") %>
-      </style>
-    <% end %>
     <!-- FUll CSS -->
     <link phx-track-static rel="stylesheet" href={url(~p"/css/app.css")} />
     <script

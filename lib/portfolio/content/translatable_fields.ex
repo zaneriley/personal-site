@@ -11,7 +11,7 @@ defmodule Portfolio.Content.TranslatableFields do
   @type schema :: module()
   @type field :: atom()
 
-  @default_translatable_types [:string, :text]
+  @default_translatable_types [:string, :text, :integer]
 
   @doc """
   Returns a list of translatable fields for a given schema.
@@ -42,7 +42,7 @@ defmodule Portfolio.Content.TranslatableFields do
     default_translatable = default_translatable_fields(schema)
 
     case schema do
-      CaseStudy -> default_translatable -- ([:url, :read_time] ++ [:platforms])
+      CaseStudy -> default_translatable -- ([:url] ++ [:platforms])
       Note -> default_translatable
       _ -> default_translatable
     end

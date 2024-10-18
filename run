@@ -33,12 +33,32 @@ function cmd {
   _dc web "${@}"
 }
 
+# -----------------------------------------------------------------------------
+# Elixir
+# -----------------------------------------------------------------------------
+
 function mix {
   # Run any mix commands
   echo "Running mix as user: $(id)"
   echo "From directory: $(pwd)"
   echo "Command: mix $*"
   cmd mix "${@}"
+}
+
+function mix:install {
+  # Install mix dependencies and write lock file
+  _build_run_down web mix deps.get
+}
+
+function mix:clean {
+  # Clean mix dependencies
+  _build_run_down web mix deps.clean ${@}
+}
+
+
+function mix:outdated {
+  # List any installed packages that are outdated
+  mix hex.outdated
 }
 
 function iex {
@@ -57,36 +77,37 @@ function lint:dockerfile {
     hadolint/hadolint hadolint --ignore DL3008 -t style "${@}" - < Dockerfile
 }
 
-function lint {
+function elixir:lint {
   # Lint Elixir code
   mix credo
 }
 
-function format {
+function elixir:format {
   # Run the mix formatter
   mix format
 }
 
-function format:check {
+function elixir:format:check {
   # Check to see if there's an unformatted code
-  format --check-formatted
+  mix format --check-formatted
 }
 
-function security:check {
+function elixir:security-check {
   # Run Sobelow security checks
   mix sobelow --config --exit
 }
 
-function test {
+function elixir:test {
   # Run test suite
   _dc -e "MIX_ENV=test" web mix test "${@}"
 }
-function test:file {
+
+function elixir:test:file {
   # Run test suite and log to file
   _dc -e "MIX_ENV=test" web mix test "${@}" > test_output.log 2>&1
 }
 
-function test:coverage {
+function elixir:test:coverage {
   echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
   
   if [ -z "$GITHUB_EVENT_PATH" ]; then
@@ -116,52 +137,100 @@ function test:coverage {
   fi
 }
 
-function test:coverage:details {
+function elixir:test:coverage:details {
   # Get test coverage details
   _dc -e "MIX_ENV=test" web mix coveralls.detail "${@}"
 }
 
-function dialyzer {
+function elixir:static-analysis {
   # Run Dialyzer static code analysis
   mix dialyzer "${@}"
 }
 
-function dialyzer:ci {
+function elixir:static-analysis:ci {
   # Run Dialyzer in CI environment
   _dc -e "MIX_ENV=test" web mix dialyzer --format short
 }
 
-function dialyzer:explain {
+function elixir:static-analysis:explain {
   # Explain a Dialyzer warning
   mix dialyzer.explain "${@}"
 }
 
-function shell {
-  # Start a shell session in the web container
-  cmd bash "${@}"
+# -----------------------------------------------------------------------------
+# Javascript
+# -----------------------------------------------------------------------------
+
+function js:lint {
+  # Lint JavaScript files
+  _dc js biome lint --write . 
 }
 
-function psql {
-  # Connect to PostgreSQL
-  # shellcheck disable=SC1091
-  . .env
- _dc postgres psql -U "${POSTGRES_USER}" "${@}"
+function js:lint:check {
+  # Lint JavaScript files
+  _dc js biome lint .
 }
 
-function mix:install {
-  # Install mix dependencies and write lock file
-  _build_run_down web mix deps.get
+function js:format {
+  # Check formatting
+  _dc js biome format --write .
 }
 
-function mix:outdated {
-  # List any installed packages that are outdated
-  mix hex.outdated
+function js:fix:check {
+  # Fix formatting issues
+  _dc js biome check .
+}
+
+function js:fix {
+  # Fix Biome issues (formatting and linting)
+  _dc js biome check --write "${@}"
+}
+
+function js:test {
+  # Run JavaScript tests with Vitest
+  _dc js vitest
+}
+
+function js:test:run {
+  # Run JavaScript tests once without watch mode
+  _dc js vitest run 
+}
+
+function js:test:browser {
+  # Run JavaScript tests once without watch mode
+  _dc js vitest --workspace=vitest.workspace.ts
+}
+
+function js:test:coverage {
+  # Run JavaScript tests with coverage
+  _dc js npx vitest run --coverage
+}
+
+function js:test:watch {
+  # Run JavaScript tests in watch mode (default behavior of vitest)
+  _dc js npx vitest
+}
+
+function js:test:ui {
+  # Run JavaScript tests with Vitest UI
+  _dc js npx vitest --ui
+}
+
+function yarn:add {
+  # Install a JS package
+  _build_run_down js yarn add "$@"
 }
 
 function yarn:install {
   # Install yarn dependencies and write lock file
   _build_run_down js yarn install
 }
+
+function yarn:upgrade {
+  # Update a JS package
+  _build_run_down js yarn upgrade "$@"
+}
+
 function yarn:remove {
   # Install yarn dependencies and write lock file
   _build_run_down js yarn remove "$@"
@@ -178,6 +247,10 @@ function yarn:build:js {
   node esbuild.config.mjs
 }
 
+# -----------------------------------------------------------------------------
+# CSS
+# -----------------------------------------------------------------------------
+
 function yarn:build:css {
   # Build CSS assets, this is meant to be run from within the assets container
   local args=()
@@ -190,6 +263,34 @@ function yarn:build:css {
 
   mkdir -p ../priv/static/css
   tailwindcss --postcss -i css/app.css -o ../priv/static/css/app.css "${args[@]}"
+}
+
+function css:lint {
+  _dc js yarn stylelint "**/*.css" --fix
+}
+
+function css:lint:check {
+  _dc js yarn stylelint "**/*.css"
+}
+
+# -----------------------------------------------------------------------------
+# Shell
+# -----------------------------------------------------------------------------
+
+function shell {
+  # Start a shell session in the web container
+  cmd bash "${@}"
+}
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+
+function psql {
+  # Connect to PostgreSQL
+  # shellcheck disable=SC1091
+  . .env
+ _dc postgres psql -U "${POSTGRES_USER}" "${@}"
 }
 
 function prod:migrate {
@@ -218,6 +319,10 @@ function clean {
   touch priv/static/.keep
 }
 
+# -----------------------------------------------------------------------------
+# CI
+# -----------------------------------------------------------------------------
+
 function ci:install-deps {
     # Unchanged
     sudo apt-get install -y curl shellcheck
@@ -243,12 +348,14 @@ function ci:setup-env {
 function ci:lint {
     shellcheck run bin/*
     lint:dockerfile "${@}"
-    lint
-    format:check
+    elixir:lint
+    elixir:format
+    js:fix
+    css:lint
 }
 
 function ci:security-check {
-    security:check
+    elixir:security-check
 }
 
 function ci:setup-db {
@@ -260,7 +367,7 @@ function ci:test {
 }
 
 function ci:static-analysis {
-    dialyzer:ci || true
+    elixir:static-analysis:ci || true
 }
 
 function ci:run-all {
@@ -271,6 +378,27 @@ function ci:run-all {
     # ci:setup-db
     ci:test "$@"
     ci:static-analysis
+}
+
+# -----------------------------------------------------------------------------
+# Unified commands
+# -----------------------------------------------------------------------------
+
+function lint:all {
+    elixir:lint
+    js:lint
+    css:lint
+}
+
+function format:all {
+    elixir:format
+    js:fix
+    css:lint
+}
+
+function test:all {
+    elixir:test
+    js:test
 }
 
 function help {

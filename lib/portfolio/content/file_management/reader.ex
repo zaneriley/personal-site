@@ -6,6 +6,7 @@ defmodule Portfolio.Content.FileManagement.Reader do
   YAML parsing, content type determination, and locale extraction.
   """
   alias Portfolio.Content.Types
+  alias Portfolio.Content.Utils.MetadataCalculator
   require Logger
 
   @doc """
@@ -25,17 +26,33 @@ defmodule Portfolio.Content.FileManagement.Reader do
          {:ok, frontmatter, markdown} <- split_frontmatter_and_content(content),
          {:ok, attrs} <- parse_frontmatter(frontmatter),
          {:ok, content_type} <- determine_content_type(file_path),
-         locale <- extract_locale(file_path) do
+         locale <- extract_locale(file_path),
+         {:ok, metadata} <- MetadataCalculator.calculate(markdown, locale) do
       Logger.info("Read markdown file: #{file_path}")
       Logger.info("Extracted attributes: #{inspect(attrs)}")
       Logger.info("Extracted URL: #{inspect(attrs["url"])}")
+
+      counting_method = get_counting_method(locale)
+
+      word_count =
+        case counting_method do
+          :characters -> metadata.character_count
+          :words -> metadata.word_count
+          _ -> metadata.word_count || metadata.character_count
+        end
+
+      Logger.debug("READER: Metadata: #{inspect(metadata)}")
+      Logger.debug("READER: Locale: #{locale}")
+      Logger.debug("READER: Counting method: #{get_counting_method(locale)}")
 
       {:ok, content_type,
        Map.merge(attrs, %{
          "content" => markdown,
          "file_path" => file_path,
          "locale" => locale,
-         "url" => attrs["url"]
+         "url" => attrs["url"],
+         "word_count" => word_count,
+         "read_time" => metadata.native_read_time_seconds
        })}
     else
       {:error, reason} = error ->
@@ -89,13 +106,13 @@ defmodule Portfolio.Content.FileManagement.Reader do
     end
   end
 
-  @spec extract_locale(String.t()) :: String.t()
   defp extract_locale(file_path) do
     supported_locales = Types.get_supported_locales()
     default_locale = Application.get_env(:portfolio, :default_locale, "en")
 
     file_path
     |> Path.split()
+    |> Enum.map(&Path.rootname/1)
     |> Enum.find(default_locale, &(&1 in supported_locales))
   end
 
@@ -123,5 +140,22 @@ defmodule Portfolio.Content.FileManagement.Reader do
 
   defp transform_value(charlist_value) when is_list(charlist_value) do
     List.to_string(charlist_value)
+  end
+
+  @spec get_counting_method(String.t()) :: atom()
+  defp get_counting_method(locale) do
+    reading_configs =
+      Application.get_env(
+        :portfolio,
+        Portfolio.Content.Utils.MetadataCalculator
+      )[:reading_configs]
+
+    Logger.debug("Reading configs: #{inspect(reading_configs)}")
+
+    case Map.get(reading_configs, locale) do
+      %{counting_method: method} -> method
+      # Default to :words if not specified
+      _ -> :words
+    end
   end
 end

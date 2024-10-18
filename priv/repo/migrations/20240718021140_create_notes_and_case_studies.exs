@@ -5,10 +5,11 @@ defmodule Portfolio.Repo.Migrations.CreateNotesAndCaseStudies do
     create table(:notes, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :title, :text, null: false
-      add :url, :string
+      add :url, :string, null: false
       add :content, :text, null: false
       add :introduction, :text
       add :read_time, :integer
+      add :word_count, :integer
       add :file_path, :string
       add :locale, :string, null: false
       add :published_at, :utc_datetime
@@ -20,10 +21,11 @@ defmodule Portfolio.Repo.Migrations.CreateNotesAndCaseStudies do
     create table(:case_studies, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :title, :string, null: false
-      add :url, :string
+      add :url, :string, null: false
       add :content, :text, null: false
       add :introduction, :text
       add :read_time, :integer
+      add :word_count, :integer
       add :file_path, :string
       add :locale, :string, null: false
       add :published_at, :utc_datetime

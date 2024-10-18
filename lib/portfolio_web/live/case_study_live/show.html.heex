@@ -1,86 +1,80 @@
-<main class="u-container">
-  <article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
-    <%= if Application.get_env(:portfolio, :environment) == :dev do %>
-      <div>
-        Debug: Gettext Locale: <%= Gettext.get_locale(PortfolioWeb.Gettext) %>,
-        Assign Locale: <%= @user_locale %>
-      </div>
-      <DevToolbar.render socket={@socket} locale={@user_locale} />
-    <% end %>
-    <nav aria-label="Breadcrumb" class="text-sm">
-      <ol class="flex items-center space-x-2">
-        <li>
-          <.link navigate={Routes.home_path(@socket, :index, @user_locale)}>
-            <%= ngettext("Case Study", "Case Studies", 1) %>
-          </.link>
-        </li>
-        <li aria-hidden="true">
-          <Heroicons.chevron_double_right class="inline-block h-4 w-4" />
-        </li>
-        <li aria-current="page">
-          <%= @translations["company"] || @case_study.company %>
-        </li>
-      </ol>
-    </nav>
-    <!-- Title -->
-    <h1 class="text-4xl">
-      <%= @translations["title"] || @case_study.title %>
-    </h1>
-    <h2 class="text-2xl">
-      <%= @translations["introduction"] || @case_study.introduction %>
-    </h2>
-    <!-- Meta Information -->
-    <div class="grid grid-cols-subgrid">
-      <span class="col-span-3">
-        <strong><%= gettext("Role") %>:</strong>
-        <br /><%= @translations["role"] || @case_study.role %>
+<article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
+  <nav aria-label="Breadcrumb" class="text-sm">
+    <div class="flex items-center space-x-2">
+      <.typography tag="span" size="1xs" font="cheee">
+        <.link navigate={Routes.home_path(@socket, :index, @user_locale)}>
+          <%= ngettext("Case Study", "Case Studies", 1) %>
+        </.link>
+      </.typography>
+      <span aria-hidden="true">
+        <Heroicons.chevron_double_right class="inline-block h-md w-md" />
       </span>
-      <span class="col-span-3">
-        <strong><%= gettext("Timeline") %>:</strong>
-        <br /><%= @translations["timeline"] || @case_study.timeline %>
-      </span>
-      <span class="col-span-3">
-        <strong><%= gettext("Read time") %>:</strong>
-        <br /><%= @case_study.read_time %> <%= ngettext(
-          "minute",
-          "minutes",
-          @case_study.read_time
-        ) %>
-      </span>
-      <div class="col-span-3">
-        <% platforms = @translations["platforms"] || @case_study.platforms %>
-        <strong>
-          <%= ngettext("Platform", "Platforms", length(platforms)) %>:
-        </strong>
-        <ul>
-          <%= for platform <- platforms do %>
-            <li><%= platform %></li>
-          <% end %>
-        </ul>
-      </div>
+      <.typography tag="span" size="1xs" font="cheee">
+        <%= @translations["company"] || @case_study.company %>
+      </.typography>
     </div>
-    <!-- Main Content -->
-    <div class="space-y-md">
-      <%= if @translations["content"] do %>
-        <%= raw(@translations["content"]) %>
+  </nav>
+  <!-- Title -->
+  <.typography tag="h1" size="4xl" font="cardinal">
+    <%= @translations["title"] || @case_study.title %>
+  </.typography>
+  <.typography tag="h2" size="1xl">
+    <%= @translations["introduction"] || @case_study.introduction %>
+  </.typography>
+  <!-- Meta Information -->
+  <div class="grid grid-cols-12">
+    <span class="col-span-3">
+      <.typography tag="span" size="1xs" font="cheee">
+        <%= gettext("Role") %>
+      </.typography>
+      <br /><%= @translations["role"] || @case_study.role %>
+    </span>
+    <span class="col-span-3">
+      <.typography tag="span" size="1xs" font="cheee">
+        <%= gettext("Timeline") %>
+      </.typography>
+      <br /><%= @translations["timeline"] || @case_study.timeline %>
+    </span>
+    <div class="col-span-3">
+      <% platforms = @translations["platforms"] || @case_study.platforms %>
+      <.typography tag="span" size="1xs" font="cheee">
+        <%= ngettext("Platform", "Platforms", length(platforms)) %>
+      </.typography>
+      <ul>
+        <%= for platform <- platforms do %>
+          <li><%= platform %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <.content_metadata
+    read_time={@translations["read_time"] || @case_study.read_time}
+    word_count={@translations["word_count"] || @case_study.word_count}
+    updated_at={@translations["updated_at"] || @case_study.updated_at}
+    user_locale={@user_locale}
+  />
+  <!-- Main Content -->
+  <div class="space-y-md drop-cap">
+    <%= if @translations["content"] do %>
+      <%= raw(@translations["content"]) %>
+    <% else %>
+      <%= if @compiled_content do %>
+        <%= raw(@compiled_content) %>
       <% else %>
-        <%= if @compiled_content do %>
-          <%= raw(@compiled_content) %>
+        <%= if @compile_error do %>
+          <p>
+            <%= gettext(
+              "We encountered an error while preparing this case study: %{error}",
+              error: @compile_error
+            ) %>
+          </p>
         <% else %>
-          <%= if @compile_error do %>
-            <p>
-              <%= gettext(
-                "We encountered an error while preparing this case study: %{error}",
-                error: @compile_error
-              ) %>
-            </p>
-          <% else %>
-            <p>
-              <%= gettext("We ran into an issue loading this case study!") %>
-            </p>
-          <% end %>
+          <p>
+            <%= gettext("We ran into an issue loading this case study!") %>
+          </p>
         <% end %>
       <% end %>
-    </div>
-  </article>
-</main>
+    <% end %>
+  </div>
+</article>

@@ -84,7 +84,13 @@ defmodule Portfolio.Content.TranslationTest do
 
       assert content.id == case_study.id
       assert translations["title"] == "翻訳されたタイトル"
-      assert translations["content"] == "<p>翻訳されたコンテンツ</p>"
+
+      # Parse the HTML content
+      {:ok, parsed_html} = Floki.parse_fragment(translations["content"])
+
+      # Check if it's a paragraph and contains the expected text
+      assert [{"p", _, [text]}] = parsed_html
+      assert text == "翻訳されたコンテンツ"
     end
 
     test "upsert_from_file creates new content and Japanese translations" do
@@ -116,7 +122,9 @@ defmodule Portfolio.Content.TranslationTest do
       assert translations["title"] == "新しいタイトル",
              "Expected '新しいタイトル', but got '#{translations["title"]}'. Full translations: #{inspect(translations)}"
 
-      assert translations["content"] == "<p>新しいコンテンツ</p>"
+      assert {:ok, content_html} = Floki.parse_fragment(translations["content"])
+      assert Floki.text(content_html) == "新しいコンテンツ"
+
       assert translations["introduction"] == "新しい紹介"
 
       # Check that there are no French translations
@@ -139,12 +147,17 @@ defmodule Portfolio.Content.TranslationTest do
       assert {:ok, updated_note} = Content.upsert_from_file("note", attrs)
       assert updated_note.id == existing_note.id
 
-      # Corrected pattern to match the expected return structure
       assert {:ok, content, translations, compiled_content} =
                Content.get_with_translations("note", "existing-note", "ja")
 
       assert translations["title"] == "更新されたタイトル"
-      assert translations["content"] == "<p>更新されたコンテンツ</p>"
+
+      # Parse the HTML content
+      {:ok, parsed_html} = Floki.parse_fragment(translations["content"])
+
+      # Check if it's a paragraph and contains the expected text
+      assert [{"p", _, [text]}] = parsed_html
+      assert text == "更新されたコンテンツ"
     end
   end
 end

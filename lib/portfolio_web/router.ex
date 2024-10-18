@@ -97,7 +97,7 @@ defmodule PortfolioWeb.Router do
       live "/case-study/:url", CaseStudyLive.Show, :show
       live "/notes", NoteLive.Index, :index
       live "/note/:url", NoteLive.Show, :show
-      live "/about", AboutLive, :index
+      live "/self", AboutLive, :index
     end
   end
 

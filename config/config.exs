@@ -9,6 +9,7 @@ config :portfolio,
   ecto_repos: [Portfolio.Repo],
   generators: [timestamp_type: :utc_datetime],
   default_locale: "en",
+  default_theme: "dark",
   supported_locales: ["en", "ja"],
   static_asset_extensions: [
     "png",
@@ -34,6 +35,22 @@ config :portfolio, PortfolioWeb.Endpoint,
   live_view: [signing_salt: "aC4Hk8o2"]
 
 config :portfolio, Portfolio.Repo, adapter: Ecto.Adapters.Postgres
+
+config :portfolio, Portfolio.Content.Utils.MetadataCalculator,
+  reading_configs: %{
+    "en" => %{
+      counting_method: :words,
+      native_reading_speed: 238.0,
+      non_native_reading_speed: 80.0,
+      code_reading_speed: 50.0
+    },
+    "ja" => %{
+      counting_method: :characters,
+      native_reading_speed: 600.0,
+      non_native_reading_speed: 600.0,
+      code_reading_speed: 50.0
+    }
+  }
 
 config :logger, :console,
   format: {LogfmtEx, :format},

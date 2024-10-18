@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang={@user_locale}>
+<html
+  lang={@user_locale}
+  data-theme={Application.get_env(:portfolio, :default_theme, "dark")}
+>
   <head>
     <.live_title>
       <%= assigns[:page_title] ||
@@ -16,6 +19,11 @@
           ~c"Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
       }
     />
+    <noscript>
+      <style>
+        .noscript { display: none; }
+      </style>
+    </noscript>
     <!-- href langs -->
     <%= hreflang_tags(@conn) %>
     <!-- Favicon and touch icons -->
@@ -54,16 +62,8 @@
       <meta property="og:image" content={assigns[:og_meta][:image]} />
       <meta property="og:description" content={assigns[:og_meta][:description]} />
     <% end %>
-    <link phx-track-static rel="stylesheet" href={url(~p"/css/critical.css")} />
-    <!-- TODO: Figure out how to gen the critical CSS from the tailwind config -->
-    <!-- Critical CSS -->
-    <%= if File.exists?("../assets/css/critical.css") do %>
-      <style>
-        <%= File.read!("../assets/css/critical.css") %>
-      </style>
-    <% end %>
     <!-- FUll CSS -->
-    <link phx-track-static rel="stylesheet" href={url(~p"/css/app.css")} />
+    <link phx-track-static rel="stylesheet" href="/css/app.css" />
     <script
       defer
       phx-track-static
@@ -71,11 +71,110 @@
       src={url(~p"/js/app.js")}
     />
   </head>
-  <body class="min-h-screen text-md bg-gradient-dark">
+  <body class="min-h-screen flex flex-col text-md bg-gradient font-gt-flexa">
     <a href="#main-content" class="sr-only" tabindex="0">
       <%= gettext("Skip to main content") %>
     </a>
 
     <%= @inner_content %>
+    <footer
+      role="contentinfo"
+      class="mt-auto grid grid-cols-12 sticky top-[100vh] text-1xs"
+    >
+      <div class="col-span-2">
+        Logo
+      </div>
+      <div class="col-span-3">
+        <.typography tag="h2" size="1xs" font="cheee">
+          <%= gettext("Connect") %>
+        </.typography>
+        <.typography tag="ul" size="1xs">
+          <li>
+            <a href="mailto:zane@zaneriley.com" target="_blank" rel="noopener">
+              hello@zaneriley.com
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.linkedin.com/in/zaneriley/"
+              target="_blank"
+              rel="noopener"
+            >
+              LinkedIn
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/zaneriley"
+              target="_blank"
+              rel="noopener"
+            >
+              Github
+            </a>
+          </li>
+        </.typography>
+      </div>
+      <div class="col-span-3">
+        <.typography tag="h2" size="1xs" font="cheee">
+          <%= gettext("Colophon") %>
+        </.typography>
+
+        <.typography tag="p" size="1xs">
+          <%= raw(
+            gettext(
+              "Type set in %{font1}, %{font2}, %{font3}, & %{font4}.",
+              font1:
+                "<a href='https://www.grillitype.com/typeface/gt-flexa'>GT Flexa</a>",
+              font2:
+                "<a href='https://productiontype.com/font/cardinal/cardinal-fruit' class='font-cardinal-fruit' rel='noopener' target='_blank'>Cardinal Fruit</a>",
+              font3:
+                "<a href='https://ohnotype.co/fonts/cheee' class='font-cheee' rel='noopener' target='_blank'>CHEEE</a>",
+              font4:
+                "<a href='https://fonts.google.com/noto/specimen/Noto+Sans+JP' rel='noopener' target='_blank'>Noto Sans JP</a>"
+            )
+          ) %><br /><%= raw(
+            gettext("Design avaiable in %{figma}.",
+              figma:
+                "<a href='https://www.figma.com/design/zDOcBhnjTDCWmc6OFgeoUc/Zane-Riley's-Product-Portfolio?node-id=2209-559&t=0gZqDDkC2pYanuW3-0' target='_blank' rel='noopener'>Figma</a>"
+            )
+          ) %>
+        </.typography>
+      </div>
+      <div class="col-span-3">
+        <.typography tag="h2" size="1xs" font="cheee">
+          <%= gettext("Server") %>
+        </.typography>
+        <.typography tag="p" size="1xs">
+          <%= gettext("Hosted on my home server in Tokyo.") %> <br />
+          <%= gettext("Written in Elixir.") %> <br />
+          <%= raw(
+            gettext("Open source on %{github}.",
+              github:
+                "<a href='https://github.com/zane-riley/personal-site' target='_blank' rel='noopener'>Github</a>"
+            )
+          ) %>
+        </.typography>
+      </div>
+      <div class="col-span-12">
+        <.typography
+          tag="p"
+          size="1xs"
+          font="cheee"
+          center={true}
+          color="suppressed"
+        >
+          Now in Tokyo
+        </.typography>
+        <.typography
+          tag="p"
+          size="1xs"
+          font="cheee"
+          center={true}
+          color="suppressed"
+        >
+          &copy; 2010 – <%= @current_year %>
+        </.typography>
+      </div>
+    </footer>
   </body>
 </html>

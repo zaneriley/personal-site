@@ -12,12 +12,13 @@ case_studies = [
     read_time: 15,
     platforms: ["Web", "Mobile"],
     introduction: "Introduction to Case Study 1",
-    file_path: "/files/case-study-1.pdf",
+    file_path: "/content/case-study/test-case-study/en.md",
     locale: "en",
     content: "# this ia a case study",
     company: "Company A",
     sort_order: 1,
-    is_draft: false
+    is_draft: false,
+    published_at: NaiveDateTime.utc_now()
   },
   %{
     title: "Case Study 2",
@@ -27,12 +28,13 @@ case_studies = [
     read_time: 10,
     platforms: ["Web"],
     introduction: "Introduction to Case Study 2",
-    file_path: "/files/case-study-2.pdf",
+    file_path: "/content/case-study/test-case-study/en.md",
     locale: "en",
     content: "# this ia a case study",
     company: "Company B",
     sort_order: 2,
-    is_draft: false
+    is_draft: false,
+    published_at: NaiveDateTime.utc_now()
   }
 ]
 
@@ -45,7 +47,8 @@ notes = [
     file_path: "/files/note-1.md",
     locale: "en",
     content: "# this ia a note",
-    is_draft: false
+    is_draft: false,
+    published_at: NaiveDateTime.utc_now()
   },
   %{
     title: "Note 2",
@@ -55,7 +58,8 @@ notes = [
     file_path: "/files/note-2.md",
     locale: "en",
     content: "# this ia a note",
-    is_draft: false
+    is_draft: false,
+    published_at: NaiveDateTime.utc_now()
   }
 ]
 

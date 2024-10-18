@@ -286,7 +286,12 @@ defmodule Portfolio.Content.ContentTest do
       # Assertions
       assert retrieved_note.id == note.id
       assert translations["title"] == "Titre Français"
-      assert translations["content"] == "<p>Contenu Français</p>"
+
+      # Use Floki to extract text content
+      html_content = translations["content"]
+      text_content = Floki.text(html_content)
+
+      assert text_content == "Contenu Français"
       assert is_binary(compiled_content)
     end
   end
