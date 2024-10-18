@@ -3,6 +3,8 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
   Provides a base schema for content types in the Portfolio application.
   Defines common fields, validations, and behaviors for content schemas.
   """
+  require Logger
+
   defmacro __using__(opts) do
     quote do
       use Ecto.Schema
@@ -30,6 +32,7 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         field :compiled_content, :string, virtual: true
         field :introduction, :string
         field :read_time, :integer
+        field :word_count, :integer
         field :file_path, :string
         field :locale, :string
         field :published_at, :utc_datetime
@@ -49,21 +52,25 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         :read_time,
         :file_path,
         :published_at,
-        :is_draft
+        :is_draft,
+        :word_count
       ]
 
       def changeset(struct, attrs) do
-        struct
-        |> cast(
-          attrs,
-          @required_fields ++
-            @optional_fields ++ unquote(opts[:additional_fields] || [])
-        )
-        |> validate_required(@required_fields)
-        |> validate_length(:title, max: @max_title_length)
-        |> validate_length(:url, max: @max_url_length)
-        |> unique_constraint(:url)
-        |> validate_content()
+        changeset =
+          struct
+          |> cast(
+            attrs,
+            @required_fields ++
+              @optional_fields ++ unquote(opts[:additional_fields] || [])
+          )
+          |> validate_required(@required_fields)
+          |> validate_length(:title, max: @max_title_length)
+          |> validate_length(:url, max: @max_url_length)
+          |> unique_constraint(:url)
+          |> validate_content()
+
+        changeset
       end
 
       @spec translatable_type() :: String.t()

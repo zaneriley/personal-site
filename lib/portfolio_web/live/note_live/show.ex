@@ -4,6 +4,7 @@ defmodule PortfolioWeb.NoteLive.Show do
   alias PortfolioWeb.Router.Helpers, as: Routes
   alias Portfolio.Content
   require Logger
+  import PortfolioWeb.Components.Typography
 
   @impl true
   def mount(%{"locale" => user_locale}, _session, socket) do

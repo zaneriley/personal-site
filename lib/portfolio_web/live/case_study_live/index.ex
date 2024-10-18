@@ -10,17 +10,19 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   @impl true
   def mount(_params, session, socket) do
     env = Application.get_env(:portfolio, :environment)
-    # Extract the locale from the session or default to 'en'
+
     user_locale =
       session["user_locale"] || Application.get_env(:portfolio, :default_locale)
 
     Logger.debug("Case study index mounted with locale: #{user_locale}")
-    # Stream the case studies and assign the user_locale to the socket
+
+    case_studies = Content.list("case_study", [], user_locale)
+
     {:ok,
      socket
      |> assign(:user_locale, user_locale)
      |> assign(:env, env)
-     |> stream(:case_studies, Content.list("case_study"))}
+     |> stream(:case_studies, case_studies)}
   end
 
   @impl true
@@ -30,12 +32,12 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"url" => url}) do
-    case_study = Content.get!("case_study", url)
+    case_studies = Content.list("case_study", [], socket.assigns.user_locale)
 
     socket
-    |> assign(:page_title, "Edit Case Study")
-    |> assign(:title, "Edit Case Study")
-    |> assign(:case_study, case_study)
+    |> assign(:page_title, "Listing Case studies")
+    |> assign(:case_study, nil)
+    |> stream(:case_studies, case_studies)
   end
 
   defp apply_action(socket, :new, _params) do

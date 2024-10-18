@@ -109,6 +109,8 @@ defmodule Portfolio.Content.EntryManager do
   @spec update_content(Note.t() | CaseStudy.t(), map(), content_type()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, any()}
   def update_content(content, attrs, content_type) do
+    Logger.info("Updating content with attrs: #{inspect(attrs)}")
+
     with changeset <- apply_changeset(content, attrs),
          {:ok, updated_content} <- update_content_transaction(changeset),
          {:ok, compiled_content} <-
@@ -248,7 +250,13 @@ defmodule Portfolio.Content.EntryManager do
           [Note.t()] | [CaseStudy.t()]
   def list_contents(content_type, opts \\ [], locale \\ "en") do
     schema = Types.get_schema(content_type)
-    query = sort(schema, opts[:sort_by], opts[:sort_order])
+
+    query =
+      from c in schema,
+        where: c.is_draft == false and not is_nil(c.published_at)
+
+    query = apply_sorting(query, opts[:sort_by], opts[:sort_order])
+
     contents = Repo.all(query)
 
     content_ids = Enum.map(contents, & &1.id)
@@ -279,10 +287,10 @@ defmodule Portfolio.Content.EntryManager do
     result
   end
 
-  defp sort(query, nil, _), do: query
+  defp apply_sorting(query, nil, _), do: query
 
-  defp sort(query, sort_by, sort_order) do
-    order_by(query, {^sort_order, ^sort_by})
+  defp apply_sorting(query, sort_by, sort_order) do
+    order_by(query, [c], [{^sort_order, field(c, ^sort_by)}])
   end
 
   ##########################################
@@ -456,8 +464,6 @@ defmodule Portfolio.Content.EntryManager do
           {:ok, Note.t() | CaseStudy.t()}
           | {:error, atom() | Ecto.Changeset.t()}
   def upsert_from_file(content_type, attrs) when is_binary(content_type) do
-    Logger.info("Upserting #{content_type} with attrs: #{inspect(attrs)}")
-
     with {:ok, schema} <- get_schema(content_type),
          {:ok, content} <- upsert_content(schema, attrs, content_type),
          {:ok, compiled_content} <- compile_content(content, content_type) do

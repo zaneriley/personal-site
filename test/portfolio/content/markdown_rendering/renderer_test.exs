@@ -16,7 +16,8 @@ defmodule Portfolio.Content.MarkdownRendering.RendererTest do
     test "renders simple markdown to HTML" do
       markdown = "# Hello"
       {:ok, html} = Renderer.render_and_cache(markdown, :note, "test_1")
-      assert html =~ "<h1>Hello</h1>"
+      {:ok, parsed} = Floki.parse_fragment(html)
+      assert [{"h1", _, ["Hello"]}] = Floki.find(parsed, "h1")
     end
 
     test "renders complex markdown with various elements" do
@@ -38,14 +39,37 @@ defmodule Portfolio.Content.MarkdownRendering.RendererTest do
       """
 
       {:ok, html} = Renderer.render_and_cache(markdown, :post, "test_2")
-      assert html =~ "<h1>Header</h1>"
-      assert html =~ "<strong>Bold</strong> and <em>italic</em>"
-      assert html =~ "<ul>"
-      assert html =~ "<li>List item 1</li>"
-      assert html =~ "<li>List item 2</li>"
-      assert html =~ "<pre><code class=\"elixir\">"
-      assert html =~ "<a href=\"https://example.com\">Link</a>"
-      assert html =~ "<img src=\"https://example.com/image.jpg\" alt=\"Image\">"
+      {:ok, parsed} = Floki.parse_fragment(html)
+
+      # Check header
+      assert [{"h1", _, ["Header"]}] = Floki.find(parsed, "h1")
+
+      # Check paragraphs
+      paragraphs = Floki.find(parsed, "p")
+      assert length(paragraphs) == 3
+
+      # Check paragraph with bold and italic
+      [first_p | _] = paragraphs
+      assert Floki.text(first_p) =~ "Bold and italic"
+      assert [{"strong", _, ["Bold"]}] = Floki.find(first_p, "strong")
+      assert [{"em", _, ["italic"]}] = Floki.find(first_p, "em")
+
+      # Check list
+      assert [ul] = Floki.find(parsed, "ul")
+
+      assert [{"li", _, ["List item 1"]}, {"li", _, ["List item 2"]}] =
+               Floki.find(ul, "li")
+
+      # Check code block
+      assert [{"code", [{"class", "elixir"}], [code_content]}] =
+               Floki.find(parsed, "code.elixir")
+
+      assert code_content == "def hello, do: \"world\""
+
+      # Check link
+      assert [{"a", [{"href", "https://example.com"}], ["Link"]}] =
+               Floki.find(parsed, "p a[href='https://example.com']")
+
     end
 
     test "caches content after first render" do

@@ -1,34 +1,128 @@
-<!DOCTYPE html>
-<head>
-  <title>Down for Planned Maintenance</title>
-  <style>
-    body {
-      background-color: #fff;
-      width: 960px;
-      margin: 0 auto;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-    h1 {
-      font-size: 42px;
-      color: #000;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #000;
-    }
-    h2 {
-      margin-bottom: 42px;
-    }
-    p {
-      color: #444;
-      font-size: 22px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Down for Temporary Planned Maintenance</h1>
-  <h2>Reason: The server is being upgraded to make things faster for you.</h2>
-  <p>If all goes well everything will be up and running by 2pm EST, please check back then.</p>
-  <p><i>P.S., don't worry, your data is safely backed up!</i></p>
-  <hr>
-  <p>Status updates may be posted on Twitter at: <a href="https://twitter.com/nickjanetakis">@nickjanetakis</a></p>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>
+      Planned Maintenance in Progress | Zane Riley | Product Design Portfolio
+    </title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --bg-color: #343334;
+        --text-color: #e0e0e0;
+        --accent-color: #00ff9f;
+        --glitch-color-1: #ff00de;
+        --glitch-color-2: #00ff9f;
+      }
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-size: 1.05rem;
+        font-family: "Courier New", monospace;
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        max-width: 600px;
+        padding: 20px;
+        text-align: left;
+      }
+      h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--text-color);
+        padding-bottom: 10px;
+      }
+      h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
+      p {
+        font-size: 16px;
+        margin-bottom: 15px;
+      }
+      a {
+        color: var(--accent-color);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .glitch {
+        text-shadow:
+          2px 2px var(--glitch-color-1),
+          -2px -2px var(--glitch-color-2);
+      }
+      pre {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      class="container"
+      style="
+        filter: url(&quot;#waves&quot;);
+        transform: translateY(-0.25rem) translateX(calc(0rem));
+      "
+    >
+      <pre style="font-size: 0.5em">
+                                                                                 _     _g                     
+        ggmmmmmmmmgg                                           =qg~~~~__        9@)  'T@                      
+       ,P        @@                                             [@'    @@             @F                      
+       /       _@P            _                                 @@     |@g           !@                       
+      '       g@'       _  "B@'   gg@   o@@!     _/ T@         |@'     |@/    g@)    @/      _  9g  ,@@     @,
+            _@D        +    @9     @9 _' |@     i   AD         @@      @W   , ,@    A@      g   @F ,  @g    @ 
+           o@"        |    @@     /@ /   @/    @'  /"          @"    _@"      @T    @'     B   JF     @@    @ 
+         ,@@         @     @'     @ /   gW    &F,<             @mmgj         {@    |@     g/_:'       [@    ' 
+        /@F         @   , @9     @//   /@    ;@              ; /  {@        ,[    ,|     /@           |@   *  
+      ,g@          @9  , /@  ,  /@/   .@' ,  @@              @     @@       @"    @|  ,  @N           |@  /   
+     _@f          ;@  ;  @' '   @?    @F     @g   ,         ;@      @,     AW ,  /@  '   @]   ,       |@ ,    
+    @@         f  @@y"  @B+    @F    {@;     @@_,+          @@      [@    ,@k"   @E:     @@  /        |@,     
+  _@8        _@   <"    >      "     "        <>           ,@|       @p   0"    'P       "B+          [W      
+ dBBmmmmmmm0BB'                                           _@@h       '@L                              )       
+                                                                      "                                                                                                   
+   _!@@@g____ ,q         __L    @g__               @@@@@@@@@@@@        __o@   @@@@@ !@@@@@              
+   @@@@@@@@@@l_  ____g@@@@@@L  [@@@@@@             PPPPPPPPPPPP ___g@@@@@@@@, @@@@@ |@@@@@              
+   BB@@@@BB@@@@  @@@@@@@@@@@D^   "4@@              @@@@@@@@@@@@ '@@@@@@@@@@D" @@@@@ |@@@@@|@@@@@@@@@@@@|
+    [@@@g :@@@W  '@@@@@@@@]         ___g@@|        PPPPPPPP@@@@  Q@@B@@@@@    """""_|@@@@W|@@@@@@@@@@@@|
+    [@@@@gggggg!     [@@@@]   @@@@@@@@@@@@@        gggggg@@@@@@      @@@@@    @@@@@@@@@@@|              
+     @@@@@@@@@@|     [@@@@]   [@@@@@@@@@BP         [@@@@@@@@@P       @@@@@    @@@@@@@@@B"               
+        """""""'              '"""'                                                                     
+    </pre
+      >
+      <h1 class="glitch">SYSTEM UPGRADE IN PROGRESS</h1>
+      <p>
+        Your patience is greatly appreciated. <br />
+        The website is dead. Long live the website.
+      </p>
+    </div>
+
+    <svg
+      class="waves"
+      xmlns="http://www.w3.org/2000/svg"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
+    >
+      <defs>
+        <filter id="waves">
+          <feTurbulence
+            baseFrequency="0.0015"
+            numOctaves="5"
+            result="noise"
+            seed="2"
+          ></feTurbulence>
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="50"
+          ></feDisplacementMap>
+        </filter>
+      </defs>
+    </svg>
+  </body>
 </html>

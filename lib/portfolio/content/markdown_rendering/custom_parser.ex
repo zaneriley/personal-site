@@ -12,12 +12,18 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParser do
   def parse(markdown) when is_binary(markdown) do
     {frontmatter, content} = split_frontmatter(markdown)
 
+    # Step 1: Preprocess custom components in the content
+    content = preprocess_custom_components(content)
+
     case Earmark.Parser.as_ast(content) do
       {:ok, ast, _} ->
+        # Step 2: Process the AST to transform nodes
+        processed_ast = process_ast(ast)
+
         {:ok,
          %{
            frontmatter: frontmatter,
-           ast: ast
+           ast: processed_ast
          }}
 
       {:error, _ast, error_messages} ->
@@ -63,4 +69,30 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParser do
     end)
     |> Enum.into(%{})
   end
+
+  defp process_ast(ast) do
+    Enum.map(ast, &process_node/1)
+  end
+
+  defp process_node({tag, attrs, content, meta})
+       when tag in ["h1", "h2", "h3", "h4", "h5", "h6", "p"] do
+    default_attrs = get_default_typography_attrs(tag)
+    merged_attrs = Map.merge(attrs |> Enum.into(%{}), default_attrs)
+    {:typography, tag, merged_attrs, process_ast(content), meta}
+  end
+
+  defp process_node({tag, attrs, content, meta}) do
+    {tag, attrs, process_ast(content), meta}
+  end
+
+  defp process_node(content) when is_binary(content), do: content
+
+  defp get_default_typography_attrs("h1"), do: %{font: "cardinal", size: "4xl"}
+  defp get_default_typography_attrs("h2"), do: %{font: "cardinal", size: "3xl"}
+  defp get_default_typography_attrs("h3"), do: %{font: "cardinal", size: "2xl"}
+  defp get_default_typography_attrs("h4"), do: %{size: "1xl"}
+  defp get_default_typography_attrs("h5"), do: %{size: "1xs"}
+  defp get_default_typography_attrs("h6"), do: %{size: "1xs"}
+  defp get_default_typography_attrs("p"), do: %{size: "md"}
+  defp get_default_typography_attrs(_), do: %{}
 end

@@ -7,6 +7,7 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
   """
 
   require Logger
+  alias PortfolioWeb.Components.TypographyHelpers
 
   @type ast_node ::
           {binary(), list(), list() | binary(), map()}
@@ -56,6 +57,7 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
 
   # coveralls-ignore-start
   def transform({:custom_image, alt, src, attrs}) do
+    Logger.info("Rendering custom image: #{src}")
     caption = Map.get(attrs, "caption", "")
     srcset = Map.get(attrs, "srcset", "")
 
@@ -68,6 +70,31 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
   end
 
   # coveralls-ignore-stop
+
+  def transform({:typography, tag, attrs, content, _meta}) do
+    Logger.info("Rendering typography component: #{tag}")
+    # Merge default attributes with any existing ones
+    assigns =
+      Map.new(attrs)
+      |> Map.put_new(:tag, tag)
+      |> Map.put_new(:size, get_size_for_tag(tag))
+
+    # Build the class names using TypographyHelpers
+    class_name = TypographyHelpers.build_class_names(assigns)
+
+    # Generate additional attributes (except :class and :tag)
+    attributes = generate_additional_attributes(assigns)
+
+    # Transform the inner content
+    transformed_content = transform_content(content)
+
+    # Construct the HTML string
+    [
+      "<#{assigns.tag} class=\"#{class_name}\"#{attributes}>",
+      transformed_content,
+      "</#{assigns.tag}>"
+    ]
+  end
 
   def transform(content) when is_binary(content), do: content
 
@@ -82,4 +109,23 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
   end
 
   defp transform_content(content) when is_binary(content), do: content
+
+  defp get_size_for_tag(tag) do
+    case tag do
+      "h1" -> "4xl"
+      "h2" -> "3xl"
+      "h3" -> "2xl"
+      "h4" -> "1xl"
+      "h5" -> "1xl"
+      "h6" -> "md"
+      "p" -> "md"
+      _ -> ""
+    end
+  end
+
+  defp generate_additional_attributes(assigns) do
+    assigns
+    |> Map.drop([:tag, :size, :font, :color, :center, :class])
+    |> Enum.map_join("", fn {key, value} -> " #{key}=\"#{value}\"" end)
+  end
 end

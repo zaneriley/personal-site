@@ -42,32 +42,18 @@ defmodule Portfolio.Content.TranslationManager do
   @spec create_or_update_translations(struct(), String.t(), map()) ::
           {:ok, [Translation.t()]} | {:error, any()}
   def create_or_update_translations(content, locale, attrs) do
-    check_locale_support(locale)
-
-    Logger.debug(
-      "Creating/updating translations for #{inspect(content)} in locale #{locale}"
-    )
+    validate_locale(locale)
 
     translatable_fields =
       TranslatableFields.translatable_fields(content.__struct__)
 
     results =
-      Enum.map(translatable_fields, fn field ->
-        field_name = Atom.to_string(field)
-        field_value = Map.get(attrs, field_name)
+      Enum.map(
+        translatable_fields,
+        &process_translatable_field(&1, content, locale, attrs)
+      )
 
-        if is_nil(field_value) do
-          nil
-        else
-          upsert_translation(content, locale, field_name, field_value)
-        end
-      end)
-
-    if Enum.any?(results, fn result -> match?({:error, _}, result) end) do
-      {:error, "Failed to create or update some translations"}
-    else
-      {:ok, Enum.reject(results, &is_nil/1)}
-    end
+    aggregate_translation_results(results)
   end
 
   @doc """
@@ -154,6 +140,39 @@ defmodule Portfolio.Content.TranslationManager do
   end
 
   # Private functions
+  defp validate_locale(locale) do
+    unless locale in @supported_locales do
+      Logger.warning(
+        "Creating/updating translations for unsupported locale: #{locale}"
+      )
+    end
+  end
+
+  defp process_translatable_field(field, content, locale, attrs) do
+    field_name = Atom.to_string(field)
+    field_value = Map.get(attrs, field_name)
+
+    if is_nil(field_value) do
+      nil
+    else
+      normalized_value = normalize_field_value(field_value)
+      upsert_translation(content, locale, field_name, normalized_value)
+    end
+  end
+
+  defp normalize_field_value(value) when is_integer(value),
+    do: Integer.to_string(value)
+
+  defp normalize_field_value(value), do: value
+
+  defp aggregate_translation_results(results) do
+    if Enum.any?(results, &match?({:error, _}, &1)) do
+      {:error, "Failed to create or update some translations"}
+    else
+      {:ok, Enum.reject(results, &is_nil/1)}
+    end
+  end
+
   defp upsert_translation(content, locale, field_name, field_value) do
     attrs = %{
       translatable_id: content.id,
@@ -163,18 +182,18 @@ defmodule Portfolio.Content.TranslationManager do
       field_value: field_value
     }
 
-    case Repo.get_by(
-           Translation,
-           Map.take(attrs, [
-             :translatable_id,
-             :translatable_type,
-             :locale,
-             :field_name
-           ])
-         ) do
-      nil -> %Translation{}
-      existing -> existing
-    end
+    existing_translation =
+      Repo.get_by(
+        Translation,
+        Map.take(attrs, [
+          :translatable_id,
+          :translatable_type,
+          :locale,
+          :field_name
+        ])
+      )
+
+    (existing_translation || %Translation{})
     |> Translation.changeset(attrs)
     |> Repo.insert_or_update()
     |> case do
@@ -187,14 +206,6 @@ defmodule Portfolio.Content.TranslationManager do
         )
 
         nil
-    end
-  end
-
-  defp check_locale_support(locale) do
-    unless locale in @supported_locales do
-      Logger.warning(
-        "Creating/updating translations for unsupported locale: #{locale}"
-      )
     end
   end
 

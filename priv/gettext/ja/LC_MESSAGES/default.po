@@ -10,8 +10,23 @@ msgstr "ゼイン・ライリー｜東京のプロダクトデザイナー｜10�
 msgid "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
 msgstr "ゼイン・ライリー：東京を拠点とするプロダクトデザイナー。10年以上の経験を持ち、現在Googleに所属。Eコマース、ヘルスケア、金融業界での豊富な経験があり、Googleで様々なプロダクトの設計・開発に携わってきまし"
 
-msgid "Product designer helping people beyond the screen"
-msgstr "画面を超えて人々を支援するプロダクトデザイナー"
+msgid "%{role} based in %{city}"
+msgstr "%{city}都在住の<br />%{role}"
+
+msgid "Digital Product Designer"
+msgstr "プロダクトデザイナー"
+
+msgid "Tokyo"
+msgstr "東京"
+
+msgid "Solving problems for customers through %{tagline_methods} or %{tagline_else}"
+msgstr "顧客の課題解決に、%{tagline_methods} そして%{tagline_else}"
+
+msgid "tagline_methods"
+msgstr "戦略・デザイン・コード,"
+
+msgid "tagline_else"
+msgstr "必要なら何でも"
 
 msgid "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
 msgstr "東京を拠点に10年以上の経験を持つ。人々の生活を豊かにする製品を創造することを信じています。私の究極の目標は、人々が望む未来を形作るのを助けるものを作ることです、彼らに押し付けられた未来ではありません。"
@@ -48,16 +63,6 @@ msgid_plural "Case Studies"
 msgstr[0] "ケーススタディ"
 msgstr[1] "ケーススタディ"
 
-msgid "minute"
-msgid_plural "minutes"
-msgstr[0] "分"
-msgstr[1] "分"
-
-msgid "%{count} min read"
-msgid_plural "%{count} min read"
-msgstr[0] "%{count}分で読める"
-msgstr[1] "%{count}分で読める"
-
 msgid "Role"
 msgstr "役割"
 
@@ -80,7 +85,7 @@ msgid_plural "Notes"
 msgstr[0] "メモ"
 msgstr[1] "メモ"
 
-msgid "About"
+msgid "Self"
 msgstr "自己紹介"
 
 msgid "Switch to English"
@@ -92,14 +97,50 @@ msgstr "日本語に切り替え"
 msgid "Colophon"
 msgstr "奥付"
 
-msgid "Self-hosted on my homelab in Tokyo."
+msgid "Hosted on my home server in Tokyo."
 msgstr "東京の自宅サーバーで運用しています。"
 
 msgid "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
 msgstr "%{font1}、%{font2}、%{font3}、そして%{font4}でタイプセットしています。"
 
-msgid "Open source on %{github} under aGPL."
-msgstr "aGPLの下で%{github}にオープンソースとしています。"
+msgid "Written in Elixir."
+msgstr "Elixirで書かれています。"
 
-msgid "Remix freely in %{figma}."
-msgstr "%{figma}で自由にリミックスしてください。"
+msgid "Open source on %{github}."
+msgstr "%{github}にオープンソースとしています。"
+
+msgid "Design avaiable in %{figma}."
+msgstr "%{figma}でデザインが利用可能です。"
+
+# Read time
+msgid "Less than a minute read"
+msgstr "1分未満で読めます"
+
+msgid "1 min read"
+msgstr "1分で読めます"
+
+msgid "%{count} min read"
+msgstr "%{count}分で読めます"
+
+msgid "%{hours} hour %{minutes} min read"
+msgstr "%{hours}時間%{minutes}分で読めます"
+
+# Word/Character count
+msgid "%{formatted_count} word"
+msgid_plural "%{formatted_count} words"
+msgstr[0] "%{formatted_count}文字"
+msgstr[1] "%{formatted_count}文字"
+
+# Update date
+msgid "Updated today"
+msgstr "本日更新"
+
+msgid "Updated yesterday"
+msgstr "昨日更新"
+
+msgid "Updated %{date}"
+msgstr "%{date}に更新"
+
+# Separator
+msgid "Metadata separator"
+msgstr " • "

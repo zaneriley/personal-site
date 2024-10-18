@@ -67,9 +67,13 @@ You can also add a new language in `/gettext/` for UI and `/priv/content/schema/
 
 An admin interface with a Markdown-based system allows for creating case studies with live reloading. This feature is only accessible in the development environment and is not exposed in production.
 
-### Custom Typography Engine
+### Optically-Aligned Typography System
 
-A custom optically-aligned typographic "engine" takes into account line-height box and typeface characteristics. It optically subtracts space so that typography aligns to a baseline, ensuring any two objects are equally spaced optically.
+A optically-aligned typographic "engine"  that optically adjusts typgographic elements. The goal is to ensure that the container aligns precisely with the visible text content—from the ascender down to the bottom of the x-height—rather than encompassing the entire line-height box. This precise alignment makes it so all objects are equally spaced optically. 
+
+It requires specific integration for each typeface you use, so it's not practical for most teams. 
+
+In the future, you can get this for free if [CSS Inline Layout Module Level 3](https://www.w3.org/TR/css-inline-3/) is implemented.
 
 ## Technical Details
 

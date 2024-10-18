@@ -11,46 +11,46 @@
   </:actions>
 </.header>
 
-<main class="u-container">
-  <article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
-    <nav aria-label="Breadcrumb" class="text-sm">
-      <ol class="flex items-center space-x-2">
-        <li>
-          <.link navigate={Routes.home_path(@socket, :index, @user_locale)}>
-            <%= ngettext("Note", "Notes", 1) %>
-          </.link>
-        </li>
-      </ol>
-    </nav>
-    <!-- Title -->
-    <h1 class="text-4xl">
-      <%= @translations["title"] || @note.title %>
-    </h1>
-    <!-- Meta Information -->
-    <div class="grid grid-cols-subgrid">
-      <span class="col-span-3">
-        <strong><%= gettext("Read Time") %>:</strong>
-        <br /><%= @note.read_time %> <%= ngettext(
-          "minute",
-          "minutes",
-          @note.read_time
-        ) %>
-      </span>
-    </div>
-    <!-- Main Content -->
-    <div class="space-y-md">
-      <%= if @translations["content"] do %>
-        <%= raw(@translations["content"]) %>
+<article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
+  <nav aria-label="Breadcrumb" class="text-sm">
+    <ol class="flex items-center space-x-2">
+      <li>
+        <.link navigate={Routes.home_path(@socket, :index, @user_locale)}>
+          <%= ngettext("Note", "Notes", 1) %>
+        </.link>
+      </li>
+    </ol>
+  </nav>
+  <!-- Title -->
+  <.typography tag="h1" size="4xl">
+    <%= @translations["title"] || @note.title %>
+  </.typography>
+  <!-- Meta Information -->
+  <div class="grid grid-cols-subgrid">
+    <span class="col-span-3">
+      <.typography tag="span" size="1xs" font="cheee">
+        <%= gettext("Read Time") %>:
+      </.typography>
+      <br /><%= @note.read_time %> <%= ngettext(
+        "minute",
+        "minutes",
+        @note.read_time
+      ) %>
+    </span>
+  </div>
+  <!-- Main Content -->
+  <div class="space-y-md">
+    <%= if @translations["content"] do %>
+      <%= raw(@translations["content"]) %>
+    <% else %>
+      <%= if @note.compiled_content do %>
+        <%= raw(@note.compiled_content) %>
       <% else %>
-        <%= if @note.compiled_content do %>
-          <%= raw(@note.compiled_content) %>
-        <% else %>
-          <p><%= gettext("We ran into an issue loading this note!") %></p>
-        <% end %>
+        <p><%= gettext("We ran into an issue loading this note!") %></p>
       <% end %>
-    </div>
-  </article>
-</main>
+    <% end %>
+  </div>
+</article>
 
 <.back navigate={Routes.note_index_path(@socket, :index, @user_locale)}>
   Back to notes

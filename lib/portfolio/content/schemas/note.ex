@@ -1,4 +1,6 @@
 defmodule Portfolio.Content.Schemas.Note do
+  require Logger
+
   use Portfolio.Content.Schemas.BaseSchema,
     schema_name: "notes",
     translatable_type: "note"

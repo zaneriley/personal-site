@@ -1,5 +1,5 @@
 # Stage 1: Build assets
-FROM node:20.6.1-bookworm-slim AS assets
+FROM node:22.9-bookworm-slim AS assets
 
 LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
@@ -17,11 +17,17 @@ RUN apt-get update \
   && groupmod -g "${GID}" node && usermod -u "${UID}" -g "${GID}" node \
   && mkdir -p /node_modules && chown node:node -R /node_modules /app
 
+# Install Playwright
+RUN npx playwright install --with-deps
+
+
 USER node
 
 # Copy package.json and yarn files and install dependencies
 COPY --chown=node:node assets/package.json assets/*yarn* ./
 RUN yarn install && yarn cache clean
+
+RUN npx playwright install
 
 ARG NODE_ENV="production"
 ENV NODE_ENV="${NODE_ENV}" \

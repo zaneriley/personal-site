@@ -24,15 +24,6 @@ defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
     local_path =
       Application.get_env(:portfolio, :content_base_path, "priv/content")
 
-    # Add these logging statements at the beginning of the setup block
-    Logger.warn(
-      "Setup - valid_repo_url: #{inspect(valid_repo_url)}, type: #{typeof(valid_repo_url)}"
-    )
-
-    Logger.warn(
-      "Setup - local_path: #{inspect(local_path)}, type: #{typeof(local_path)}"
-    )
-
     unless File.exists?(local_path) do
       System.cmd("git", ["clone", valid_repo_url, local_path],
         env: %{"GIT_TERMINAL_PROMPT" => "0"},
@@ -47,29 +38,12 @@ defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
     valid_repo_url: valid_repo_url,
     local_path: local_path
   } do
-    Logger.warn(
-      "Test clone - valid_repo_url: #{inspect(valid_repo_url)}, type: #{typeof(valid_repo_url)}"
-    )
-
-    Logger.warn(
-      "Test clone - local_path: #{inspect(local_path)}, type: #{typeof(local_path)}"
-    )
-
     assert {:ok, _repo} = GitRepoSyncer.sync_repo(valid_repo_url, local_path)
     assert File.exists?(local_path)
     File.rm_rf!(local_path)
   end
 
   test "handles invalid repository URL", %{local_path: local_path} do
-    # Add these logging statements at the beginning of the test
-    Logger.warn(
-      "Test invalid - invalid_repo_url: #{inspect(@invalid_repo_url)}, type: #{typeof(@invalid_repo_url)}"
-    )
-
-    Logger.warn(
-      "Test invalid - local_path: #{inspect(local_path)}, type: #{typeof(local_path)}"
-    )
-
     File.rm_rf!(local_path)
 
     assert {:error, _reason} =
@@ -82,15 +56,6 @@ defmodule Portfolio.Content.FileManagement.GitRepoSyncerTest do
     valid_repo_url: valid_repo_url,
     local_path: local_path
   } do
-    # Add these logging statements at the beginning of the test
-    Logger.warn(
-      "Test existing - valid_repo_url: #{inspect(valid_repo_url)}, type: #{typeof(valid_repo_url)}"
-    )
-
-    Logger.warn(
-      "Test existing - local_path: #{inspect(local_path)}, type: #{typeof(local_path)}"
-    )
-
     assert {:ok, _repo} = GitRepoSyncer.sync_repo(valid_repo_url, local_path)
     assert File.exists?(local_path)
   end

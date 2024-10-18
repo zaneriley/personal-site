@@ -5,6 +5,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
   alias PortfolioWeb.DevToolbar
+  import PortfolioWeb.Components.Typography, only: [typography: 1]
+  import PortfolioWeb.Components.ContentMetadata
 
   @dialyzer {:nowarn_function, mount: 3}
   @impl true
@@ -74,6 +76,10 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
         {:ok, case_study, translations, compiled_content} ->
+          Logger.debug(
+            "HELLO! Case study translations: #{inspect(translations)}"
+          )
+
           {page_title, introduction} =
             set_page_metadata(case_study, translations)
 
