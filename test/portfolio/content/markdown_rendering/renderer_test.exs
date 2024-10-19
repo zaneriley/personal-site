@@ -69,7 +69,6 @@ defmodule Portfolio.Content.MarkdownRendering.RendererTest do
       # Check link
       assert [{"a", [{"href", "https://example.com"}], ["Link"]}] =
                Floki.find(parsed, "p a[href='https://example.com']")
-
     end
 
     test "caches content after first render" do

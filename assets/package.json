@@ -15,6 +15,7 @@
     "autoprefixer": "10.4.20",
     "esbuild": "0.23.1",
     "esbuild-copy-static-files": "0.1.0",
+    "fontkit": "^2.0.4",
     "jsdom": "^25.0.1",
     "playwright": "^1.47.2",
     "postcss": "8.4.47",
