@@ -28,27 +28,24 @@
   <a href="#contact">Contact</a>
 </p>
 
-## Introduction
+## My product design portfolio
 
-This repository houses my product design portfolio, showcasing various projects and designs I've worked on. 
-
-About me: product-focused designer with 10+ years of experience, based in Tokyo, Japan (prev in San Francisco) 
+I'm product designer with +10 years of experience, based in Tokyo, Japan (prev in San Francisco). 
 
 **Why all this for a website?**
-- It's a personal website, so why not? It's one of the few times you can build what you want without compromises. For example, I was able to incorporate features like a custom optically-aligned typographic "engine" that might be less practical in large-team settings or with less technical designers.
-- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something with a lot more infra and a better DX (e.g. admin interface, metrics, gitops)
-- It'll be reusable for future app development
+- It's a personal website. It's one of the few times you can build what you want without compromises. 
+- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to  build something that automated the pain from my last portfolio, with more infra and a better DX (e.g. admin interface, metrics, gitops)
+- Maybe it'll be reusable for future app development
 - This is also a homelab project
 
 ## Features
 
 ### Dev tools
 
-Offers tools to ensure code quality and consistency:
-- Automated code formatting and linting
-- Comprehensive test suite with coverage reporting
+- Hundreds of tests with good coverage
 - Security checks with Sobelow
 - Static code analysis with Dialyzer
+- Automated code formatting and linting for elixir, javascript, css & bash
 - Git hooks for pre-commit and pre-push checks
 
 You can read more in <a href="#development-and-deployment">Development and Deployment</a>

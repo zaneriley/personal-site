@@ -1,12 +1,44 @@
 {
-  "CardinalFruit": {
-    "capitalHeight": 0.678,
-    "ascender": 0.984,
-    "descender": -0.273
+  "cheee-small": {
+    "unitsPerEm": 1000,
+    "capHeight": 0.64,
+    "ascent": 1.164,
+    "descent": -0.238,
+    "xHeight": 0.6
   },
-  "Cheee": {
-    "capitalHeight": 0.66,
-    "ascender": 0.95,
-    "descender": -0.25
+  "CardinalFruitWeb-Medium-Trial": {
+    "unitsPerEm": 1000,
+    "capHeight": 0.75,
+    "ascent": 1.02,
+    "descent": -0.32,
+    "xHeight": 0.5
+  },
+  "CardinalFruitWeb-MediumItalic-Trial": {
+    "unitsPerEm": 1000,
+    "capHeight": 0.75,
+    "ascent": 1.02,
+    "descent": -0.32,
+    "xHeight": 0.5
+  },
+  "CardinalFruitWeb-Bold-Trial": {
+    "unitsPerEm": 1000,
+    "capHeight": 0.75,
+    "ascent": 1.02,
+    "descent": -0.32,
+    "xHeight": 0.5
+  },
+  "CardinalFruitWeb-BoldItalic-Trial": {
+    "unitsPerEm": 1000,
+    "capHeight": 0.75,
+    "ascent": 1.02,
+    "descent": -0.32,
+    "xHeight": 0.5
+  },
+  "GT-Flexa-Trial-VF": {
+    "unitsPerEm": 1000,
+    "capHeight": 0.7,
+    "ascent": 0.982,
+    "descent": -0.233,
+    "xHeight": 0.46
   }
 }
