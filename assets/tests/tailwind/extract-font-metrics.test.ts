@@ -1,13 +1,13 @@
-import { describe, it, expect, afterEach } from "vitest";
-import path from "path";
-import process from "process";
-import fs from "fs";
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { afterEach, describe, expect, it } from "vitest";
 import {
-  extractFontMetrics,
-  getFontPathsFromCSS,
-  generateFontMetricsJSON,
   CSSParsingError,
-  FontMetrics,
+  type FontMetrics,
+  extractFontMetrics,
+  generateFontMetricsJSON,
+  getFontPathsFromCSS,
 } from "../../tailwind/extract-font-metrics";
 
 describe("getFontPathsFromCSS", () => {
@@ -18,10 +18,10 @@ describe("getFontPathsFromCSS", () => {
 
     expect(Array.isArray(fontPaths)).toBe(true);
     expect(fontPaths.length).toBeGreaterThan(0);
-    fontPaths.forEach((fontPath) => {
+    for (const fontPath of fontPaths) {
       expect(typeof fontPath).toBe("string");
       expect(fontPath).toMatch(/\.(woff2?|ttf|otf)$/i);
-    });
+    }
   });
 
   it("should throw CSSParsingError for missing CSS file", () => {
@@ -99,11 +99,11 @@ describe("getFontPathsFromCSS", () => {
 
     const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
 
-    fontPaths.forEach((absoluteFontPath) => {
+    for (const absoluteFontPath of fontPaths) {
       const exists = fs.existsSync(absoluteFontPath);
       console.log(`Checking if file exists: ${absoluteFontPath} -> ${exists}`);
       expect(exists).toBe(true);
-    });
+    }
   });
 });
 
@@ -154,7 +154,9 @@ describe("extractFontMetrics", () => {
       "cheee-small.woff",
       "noto-sans-jp.ttf",
     ];
-    fontFiles.forEach((fontFile) => {
+
+    // Replace forEach with for...of loop
+    for (const fontFile of fontFiles) {
       const fontPath = path.join(fontsDirectory, fontFile);
 
       const metrics: FontMetrics = extractFontMetrics(fontPath);
@@ -162,7 +164,7 @@ describe("extractFontMetrics", () => {
       expect(metrics).toBeDefined();
       expect(metrics.capHeight).toBeGreaterThan(0);
       expect(metrics.capHeight).toBeLessThanOrEqual(1);
-    });
+    }
   });
 
   it("should produce consistent results across multiple runs", () => {
@@ -246,7 +248,7 @@ describe("generateFontMetricsJSON", () => {
     const cssContent = `
       @font-face {
         font-family: 'Valid Font';
-        src: url('/fonts/valid-font.woff2') format('woff2');
+        src: url('/fonts/cheee-small.woff') format('woff');
       }
       @font-face {
         font-family: 'Invalid Font';
@@ -254,11 +256,6 @@ describe("generateFontMetricsJSON", () => {
       }
     `;
     fs.writeFileSync(malformedCssPath, cssContent);
-
-    // Create a dummy valid font file
-    const validFontPath = path.join(webRoot, "fonts", "valid-font.woff2"); // Updated path
-    fs.mkdirSync(path.dirname(validFontPath), { recursive: true });
-    fs.writeFileSync(validFontPath, "dummy font data");
 
     try {
       generateFontMetricsJSON(malformedCssPath, outputJsonPath, webRoot);
@@ -269,12 +266,11 @@ describe("generateFontMetricsJSON", () => {
       const metrics = JSON.parse(data);
 
       // Should only contain the valid font
-      expect(metrics).toHaveProperty("valid-font");
+      expect(metrics).toHaveProperty("cheee-small");
       expect(metrics).not.toHaveProperty("nonexistent-font");
     } finally {
       // Clean up
       fs.unlinkSync(malformedCssPath);
-      fs.unlinkSync(validFontPath);
     }
   });
 
@@ -285,15 +281,17 @@ describe("generateFontMetricsJSON", () => {
     const metrics = JSON.parse(data);
 
     for (const fontName in metrics) {
-      const fontMetrics = metrics[fontName];
-      expect(fontMetrics.capHeight).toBeGreaterThan(0);
-      expect(fontMetrics.capHeight).toBeLessThanOrEqual(1);
-      expect(fontMetrics.ascent).toBeGreaterThan(0);
-      expect(fontMetrics.ascent).toBeLessThanOrEqual(2);
-      expect(fontMetrics.descent).toBeLessThanOrEqual(0);
-      expect(fontMetrics.descent).toBeGreaterThanOrEqual(-1);
-      expect(fontMetrics.xHeight).toBeGreaterThan(0);
-      expect(fontMetrics.xHeight).toBeLessThanOrEqual(1);
+      if (Object.prototype.hasOwnProperty.call(metrics, fontName)) {
+        const fontMetrics = metrics[fontName];
+        expect(fontMetrics.capHeight).toBeGreaterThan(0);
+        expect(fontMetrics.capHeight).toBeLessThanOrEqual(1);
+        expect(fontMetrics.ascent).toBeGreaterThan(0);
+        expect(fontMetrics.ascent).toBeLessThanOrEqual(2);
+        expect(fontMetrics.descent).toBeLessThanOrEqual(0);
+        expect(fontMetrics.descent).toBeGreaterThanOrEqual(-1);
+        expect(fontMetrics.xHeight).toBeGreaterThan(0);
+        expect(fontMetrics.xHeight).toBeLessThanOrEqual(1);
+      }
     }
   });
 

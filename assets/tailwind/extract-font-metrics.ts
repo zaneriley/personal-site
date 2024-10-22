@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import * as fontkit from "fontkit";
 import type { Font, FontCollection } from "fontkit";
 
@@ -31,11 +31,8 @@ export function getFontPathsFromCSS(
   } catch (error) {
     if (error instanceof Error) {
       throw new CSSParsingError(`Error reading CSS file: ${error.message}`);
-    } else {
-      throw new CSSParsingError(
-        "Unknown error occurred while reading CSS file",
-      );
     }
+    throw new CSSParsingError("Unknown error occurred while reading CSS file");
   }
 
   // Regular expression to match @font-face blocks
@@ -56,14 +53,14 @@ export function getFontPathsFromCSS(
         const srcRegex = /src:\s*([^;]+);/g;
         const srcMatches = srcRegex.exec(fontFace);
 
-        if (srcMatches && srcMatches[1]) {
+        if (srcMatches?.[1]) {
           const srcValue = srcMatches[1];
           console.log(`Found src value: ${srcValue}`);
 
           // Regular expression to extract URLs from src
           const urlRegex = /url\(['"]?([^'")]+)['"]?\)/g;
-          let urlMatch;
-          while ((urlMatch = urlRegex.exec(srcValue)) !== null) {
+          let urlMatch = urlRegex.exec(srcValue);
+          while (urlMatch !== null) {
             const fontPath = urlMatch[1];
             let absoluteFontPath = fontPath.startsWith("/")
               ? fontPath
@@ -71,11 +68,14 @@ export function getFontPathsFromCSS(
 
             // If webRoot is provided, transform web-relative paths to file system paths
             if (webRoot && fontPath.startsWith("/")) {
-              absoluteFontPath = path.resolve(webRoot, "." + fontPath);
+              absoluteFontPath = path.resolve(webRoot, `.${fontPath}`);
             }
 
             console.log(`Extracted font path: ${absoluteFontPath}`);
             fontPaths.push(absoluteFontPath);
+
+            // Update urlMatch for the next iteration
+            urlMatch = urlRegex.exec(srcValue);
           }
         } else {
           console.log("No src value found in this @font-face block");
@@ -110,16 +110,12 @@ export function extractFontMetrics(fontPath: string): FontMetrics {
     throw error; // Rethrow the original file system error
   }
 
-  let font: Font;
-
   if (isFontCollection(fontResult)) {
     // Handle FontCollection
     throw new Error("FontCollections are not supported");
-    // Or, to use the first font in the collection:
-    // font = fontResult.fonts[0];
-  } else {
-    font = fontResult;
   }
+
+  const font: Font = fontResult;
 
   const { unitsPerEm, capHeight, ascent, descent, xHeight } = font;
 
@@ -153,7 +149,7 @@ export function extractFontMetrics(fontPath: string): FontMetrics {
   const normalizedXHeight = xHeight / unitsPerEm;
 
   // **Log Normalized Metrics**
-  console.log(`Normalized Metrics:`);
+  console.log("Normalized Metrics:");
   console.log(`capHeight: ${normalizedCapHeight}`);
   console.log(`ascent: ${normalizedAscent}`);
   console.log(`descent: ${normalizedDescent}`);
@@ -161,10 +157,10 @@ export function extractFontMetrics(fontPath: string): FontMetrics {
 
   // Check for NaN Values
   if (
-    isNaN(normalizedCapHeight) ||
-    isNaN(normalizedAscent) ||
-    isNaN(normalizedDescent) ||
-    isNaN(normalizedXHeight)
+    Number.isNaN(normalizedCapHeight) ||
+    Number.isNaN(normalizedAscent) ||
+    Number.isNaN(normalizedDescent) ||
+    Number.isNaN(normalizedXHeight)
   ) {
     console.error(
       `Normalization resulted in NaN values for font: ${absolutePath}`,
@@ -190,7 +186,7 @@ export function generateFontMetricsJSON(
     const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
     const fontMetrics: { [key: string]: FontMetrics } = {};
 
-    fontPaths.forEach((fontPath) => {
+    for (const fontPath of fontPaths) {
       const fontName = path.basename(fontPath, path.extname(fontPath));
       try {
         const metrics = extractFontMetrics(fontPath);
@@ -198,7 +194,7 @@ export function generateFontMetricsJSON(
       } catch (error) {
         console.error(`Failed to extract metrics for font: ${fontPath}`, error);
       }
-    });
+    }
 
     fs.writeFileSync(
       outputJsonPath,
