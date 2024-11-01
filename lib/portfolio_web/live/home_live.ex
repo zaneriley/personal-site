@@ -3,10 +3,21 @@ defmodule PortfolioWeb.HomeLive do
   use PortfolioWeb, :live_view
   alias PortfolioWeb.Router.Helpers, as: Routes
   alias Portfolio.Content
-  import PortfolioWeb.LiveHelpers
-  alias PortfolioWeb.DevToolbar
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
+
+
+  @impl true
+  def page_title(_assigns) do
+    gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience")
+  end
+
+  @impl true
+  def page_description(_assigns) do
+    gettext(
+      "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+    )
+  end
 
   @impl true
   def mount(_params, session, socket) do
@@ -22,14 +33,7 @@ defmodule PortfolioWeb.HomeLive do
     Logger.debug("Case studies: #{inspect(case_studies)}")
 
     socket =
-      socket
-      |> assign(case_studies: case_studies)
-      |> assign_page_metadata(
-        gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"),
-        gettext(
-          "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
-        )
-      )
+      assign(socket, case_studies: case_studies)
 
     {:ok, socket}
   end

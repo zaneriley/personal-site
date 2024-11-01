@@ -6,6 +6,7 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
   use Phoenix.Component
   import PortfolioWeb.Gettext
   import PortfolioWeb.Components.Typography
+  import PortfolioWeb.Components.ContentMetadata
 
   @doc """
   Renders a list of portfolio items.
@@ -14,7 +15,7 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
 
       <.portfolio_item_list
         items={@items}
-        navigate_to={&Routes.case_study_show_path(@socket, :show, @user_locale, &1.url)}
+        navigate_to={&Routes.item_show_path(@socket, :show, @user_locale, &1.url)}
       />
   """
   attr :items, :list, required: true
@@ -38,21 +39,18 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
               <.typography tag="p" size="1xs" class="mb-2">
                 <%= item.introduction %>
               </.typography>
-              <div class="flex justify-between items-center">
-                <.typography tag="span" size="1xs" font="cheee">
-                  <%= ngettext(
-                    "%{count} min read",
-                    "%{count} min read",
-                    item.read_time,
-                    count: item.read_time
-                  ) %>
-                </.typography>
-                <%= if item.updated_at && item.updated_at != item.published_at do %>
-                  <.typography tag="span" size="1xs" font="cheee">
-                    <%= format_date(item.updated_at) %>
-                  </.typography>
-                <% end %>
-              </div>
+            <.content_metadata
+              read_time={
+                item.translations["read_time"] || item.read_time
+              }
+              word_count={
+                item.translations["word_count"] || item.word_count
+              }
+              character_count={
+                item.translations["word_count"] || item.word_count
+              }
+
+            />
             </.link>
           </li>
         <% end %>

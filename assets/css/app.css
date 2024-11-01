@@ -34,7 +34,7 @@ body {
 
 * {
   font-variation-settings: "wght" var(--font-wght), "opsz" var(--font-opsz);
-  font-feature-settings: "dlig" 1, "fina" 1, "kern" 1, "liga" 1, "onum" 1,
+  font-feature-settings: "fina" 1, "kern" 1, "liga" 1, "onum" 1,
     "zero" 1, "ss05" 1, "ss01" 1;
 }
 

@@ -23,7 +23,6 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
       }}
   """
 
-  alias Portfolio.Content.Types
   require Logger
 
   # seconds per image

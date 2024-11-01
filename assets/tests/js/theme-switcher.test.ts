@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { initThemeToggle } from "../js/theme-switcher.ts";
+import { initThemeToggle } from "../../js/theme-switcher.ts";
 
 describe("Theme Toggle Module", () => {
   let originalMatchMedia: typeof window.matchMedia;

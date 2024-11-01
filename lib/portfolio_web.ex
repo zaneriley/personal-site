@@ -59,6 +59,7 @@ defmodule PortfolioWeb do
       use Phoenix.LiveView,
         layout: {PortfolioWeb.Layouts, :app}
 
+      import PortfolioWeb.LiveHelpers
       unquote(html_helpers())
     end
   end
@@ -91,6 +92,7 @@ defmodule PortfolioWeb do
       # Core UI components and translation
       import PortfolioWeb.CoreComponents
       import PortfolioWeb.Gettext
+      import PortfolioWeb.Components.Typography
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

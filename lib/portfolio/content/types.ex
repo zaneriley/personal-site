@@ -114,13 +114,6 @@ defmodule Portfolio.Content.Types do
     end)
   end
 
-  defp normalize_path(file_path) do
-    app_root =
-      Application.get_env(:portfolio, :content_root_path, "priv/content")
-
-    String.replace(file_path, ~r(^.*?#{app_root}), app_root)
-  end
-
   @doc """
   Returns a list of all defined content types.
 

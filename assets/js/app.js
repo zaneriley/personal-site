@@ -6,15 +6,16 @@ import topbar from "topbar";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
 
 // Define hooks before using them
-const Hooks = {};
-Hooks.ThemeSwitcher = ThemeSwitcherHook;
+const Hooks = {
+  ThemeSwitcher: ThemeSwitcherHook
+};
 
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
 
 const liveSocket = new LiveSocket("/live", Socket, {
-  hooks: Hooks, // Now Hooks is defined and contains ThemeSwitcherHook
+  hooks: Hooks,
   params: { _csrf_token: csrfToken },
 });
 
@@ -134,6 +135,3 @@ messageContent.forEach((line, index) => {
     }
   }, index * 1000); // Delay each line by 1 second
 });
-
-// Remove the direct call to initThemeToggle(); the hook will handle initialization
-// initThemeToggle(); // Remove or comment out this line

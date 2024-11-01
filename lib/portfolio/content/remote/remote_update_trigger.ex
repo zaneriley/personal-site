@@ -11,10 +11,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   and `Watcher` to process file changes.
   """
 
-  alias Portfolio.Content.Remote.GitContentFetcher
   alias Portfolio.Content.Remote.GitRepoSyncer
-  alias Portfolio.Content.FileManagement.Reader
-  alias Portfolio.Content.FileManagement.Watcher
   require Logger
 
   @doc """

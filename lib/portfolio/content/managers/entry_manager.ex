@@ -273,14 +273,12 @@ defmodule Portfolio.Content.EntryManager do
     result =
       Enum.map(contents, fn content ->
         content_translations = Map.get(translations, content.id, %{})
-        Logger.debug("Content before merge: #{inspect(content)}")
 
         Logger.debug(
           "Translations for content: #{inspect(content_translations)}"
         )
 
         merged_content = Map.put(content, :translations, content_translations)
-        Logger.debug("Content after merge: #{inspect(merged_content)}")
         merged_content
       end)
 

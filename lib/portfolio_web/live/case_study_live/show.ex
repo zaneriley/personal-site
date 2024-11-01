@@ -4,7 +4,6 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   alias Portfolio.Content
   import PortfolioWeb.LiveHelpers
   alias PortfolioWeb.Router.Helpers, as: Routes
-  alias PortfolioWeb.DevToolbar
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.ContentMetadata
 

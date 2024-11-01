@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html
-  lang={@user_locale}
+  lang={@user_locale || @conn.assigns[:user_locale] || "en"}
   data-theme={Application.get_env(:portfolio, :default_theme, "dark")}
 >
   <head>

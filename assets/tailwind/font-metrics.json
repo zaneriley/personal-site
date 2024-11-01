@@ -6,6 +6,13 @@
     "descent": -0.238,
     "xHeight": 0.6
   },
+  "noto-sans-jp": {
+    "unitsPerEm": 1000,
+    "capHeight": 0.733,
+    "ascent": 1.16,
+    "descent": -0.288,
+    "xHeight": 0.543
+  },
   "CardinalFruitWeb-Medium-Trial": {
     "unitsPerEm": 1000,
     "capHeight": 0.75,
@@ -14,20 +21,6 @@
     "xHeight": 0.5
   },
   "CardinalFruitWeb-MediumItalic-Trial": {
-    "unitsPerEm": 1000,
-    "capHeight": 0.75,
-    "ascent": 1.02,
-    "descent": -0.32,
-    "xHeight": 0.5
-  },
-  "CardinalFruitWeb-Bold-Trial": {
-    "unitsPerEm": 1000,
-    "capHeight": 0.75,
-    "ascent": 1.02,
-    "descent": -0.32,
-    "xHeight": 0.5
-  },
-  "CardinalFruitWeb-BoldItalic-Trial": {
     "unitsPerEm": 1000,
     "capHeight": 0.75,
     "ascent": 1.02,

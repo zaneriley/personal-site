@@ -54,11 +54,7 @@ defmodule PortfolioWeb.LiveHelpers do
     user_locale = get_user_locale(session)
     Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
 
-    {date, _time} = :calendar.local_time()
-    {current_year, _month, _day} = date
-
     socket
-    |> assign(:current_year, current_year)
     |> assign(:user_locale, user_locale)
     |> assign(
       :current_path,
@@ -76,8 +72,6 @@ defmodule PortfolioWeb.LiveHelpers do
   end
 
   defp assign_default_page_metadata(socket) do
-    {date, _time} = :calendar.local_time()
-    {current_year, _month, _day} = date
 
     assign(socket,
       page_title: @default_title,

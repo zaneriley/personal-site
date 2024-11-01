@@ -32,7 +32,7 @@ defmodule PortfolioWeb.ContentWebhookController do
       end
     else
       {:error, reason} ->
-        Logger.warn("Error processing webhook: #{reason}")
+        Logger.warning("Error processing webhook: #{reason}")
         {:error, reason}
     end
   end

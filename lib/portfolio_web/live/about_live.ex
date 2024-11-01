@@ -2,7 +2,6 @@ defmodule PortfolioWeb.AboutLive do
   require Logger
   use PortfolioWeb, :live_view
   import PortfolioWeb.LiveHelpers
-  alias PortfolioWeb.DevToolbar
   import PortfolioWeb.Components.Typography
 
   def mount(_params, _session, socket) do
