@@ -7,7 +7,7 @@ import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
 
 // Define hooks before using them
 const Hooks = {
-  ThemeSwitcher: ThemeSwitcherHook
+  ThemeSwitcher: ThemeSwitcherHook,
 };
 
 const csrfToken = document

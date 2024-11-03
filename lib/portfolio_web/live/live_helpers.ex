@@ -72,7 +72,6 @@ defmodule PortfolioWeb.LiveHelpers do
   end
 
   defp assign_default_page_metadata(socket) do
-
     assign(socket,
       page_title: @default_title,
       page_description: @default_description

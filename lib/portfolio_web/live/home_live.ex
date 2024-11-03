@@ -6,7 +6,6 @@ defmodule PortfolioWeb.HomeLive do
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
 
-
   @impl true
   def page_title(_assigns) do
     gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience")

@@ -93,6 +93,7 @@ defmodule PortfolioWeb.Router do
 
     live_session :default, on_mount: PortfolioWeb.LiveHelpers do
       live "/", HomeLive, :index
+      live "/kitchen-sink", KitchenSinkLive, :index
       live "/case-studies", CaseStudyLive.Index, :index
       live "/case-study/:url", CaseStudyLive.Show, :show
       live "/notes", NoteLive.Index, :index

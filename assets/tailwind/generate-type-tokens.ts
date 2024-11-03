@@ -1,8 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
-  calculateSpaceScale,
-  calculateTypeScale,
   generateSpaceCSSVariables,
   generateTypeCSSVariables,
 } from "./fluid-type.ts";
@@ -14,77 +12,125 @@ import {
 } from "./configs/type-config.ts";
 import fontMetrics from "./font-metrics.json";
 
-const OUTPUT_FILE = path.resolve("css/_typography.css");
+// Constants
+const DEFAULT_OUTPUT_PATH = path.resolve("css/_typography.css");
+const SUPPORTED_SCRIPTS = ["latin", "cjk"] as const;
+type ScriptType = (typeof SUPPORTED_SCRIPTS)[number];
 
-// Helper to namespace variables
-export function namespaceVariables(variables: string, namespace: string): string {
-  return variables
-    .split('\n')
-    .map(line => {
-      // Skip comments and empty lines
-      if (line.trim().startsWith('/*') || line.trim() === '') return line;
-      // Replace '--fs-' or '--space-' with '--{namespace}-fs-' or '--{namespace}-space-'
-      return line.replace(/--(fs|space)-/g, `--${namespace}-$1-`);
-    })
-    .join('\n');
+interface ScriptConfig {
+  type: typeof latinTypeConfig;
+  space: typeof latinSpaceConfig;
 }
 
-// Generate semantic variable mappings
-export function generateSemanticVariables(script: string = 'latin'): string {
-  const typeLabels = [
-    "7xl", "6xl", "5xl", "4xl", "3xl", "2xl", "1xl", "md", "1xs", "2xs"
-  ];
-  const spaceLabels = ["4xl", "3xl", "2xl", "1xl", "md", "1xs", "2xs", "3xs"];
+const scriptConfigs: Record<ScriptType, ScriptConfig> = {
+  latin: { type: latinTypeConfig, space: latinSpaceConfig },
+  cjk: { type: cjkTypeConfig, space: cjkSpaceConfig },
+};
+
+interface GenerateOptions {
+  outputPath?: string;
+}
+
+/**
+ * Namespaces CSS variables with a given prefix
+ * @param variables - CSS variable definitions
+ * @param namespace - Namespace prefix to add
+ * @returns Namespaced CSS variables
+ * @throws {Error} If variables or namespace are invalid
+ */
+export function namespaceVariables(
+  variables: string,
+  namespace: string,
+): string {
+  if (!variables?.trim() || !namespace?.trim()) {
+    throw new Error("Variables and namespace must be non-empty strings");
+  }
+
+  return variables
+    .split("\n")
+    .map((line) => {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith("/*") || trimmedLine === "") return line;
+      return line.replace(/--(fs|space)-/g, `--${namespace}-$1-`);
+    })
+    .join("\n");
+}
+
+/**
+ * Generates CSS variables for a specific script configuration
+ * @param script - Script type ('latin' or 'cjk')
+ * @returns Generated CSS variables
+ */
+function generateScriptVariables(script: ScriptType) {
+  const config = scriptConfigs[script];
+
+  const typeVars = namespaceVariables(
+    generateTypeCSSVariables(config.type),
+    script,
+  );
+
+  const spaceVars = namespaceVariables(
+    generateSpaceCSSVariables(config.space),
+    script,
+  );
+
+  return { typeVars, spaceVars };
+}
+
+/**
+ * Generates semantic variable mappings for a script
+ * @param script - Script type to generate variables for
+ * @returns Generated semantic variables
+ */
+export function generateSemanticVariables(
+  script: ScriptType = "latin",
+): string {
+  const config = scriptConfigs[script];
+  const {
+    type: { typeLabels },
+    space: { spaceLabels },
+  } = config;
 
   const typeVars = typeLabels
-    .map(label => `  --fs-${label}: var(--${script}-fs-${label});`)
-    .join('\n');
+    .map((label) => `  --fs-${label}: var(--${script}-fs-${label});`)
+    .join("\n");
 
   const spaceVars = spaceLabels
-    .map(label => `  --space-${label}: var(--${script}-space-${label});`)
-    .join('\n');
+    .map((label) => `  --space-${label}: var(--${script}-space-${label});`)
+    .join("\n");
 
   return `${typeVars}\n\n${spaceVars}`;
 }
 
-// Generate CSS for font metrics
+/**
+ * Generates CSS for font metrics
+ * @returns Generated font metrics CSS
+ */
 function generateFontMetricsCSS(): string {
-  let css = "";
-  for (const [font, metrics] of Object.entries(fontMetrics)) {
-    css += `  --${font}-units-per-em: ${metrics.unitsPerEm};\n`;
-    css += `  --${font}-cap-height: ${metrics.capHeight};\n`;
-    css += `  --${font}-ascent: ${metrics.ascent};\n`;
-    css += `  --${font}-descent: ${metrics.descent};\n`;
-    css += `  --${font}-x-height: ${metrics.xHeight};\n`;
-  }
-  return css;
+  const metrics = Object.entries(fontMetrics)
+    .map(
+      ([font, metrics]) => `
+  --${font}-units-per-em: ${metrics.unitsPerEm};
+  --${font}-cap-height: ${metrics.capHeight};
+  --${font}-ascent: ${metrics.ascent};
+  --${font}-descent: ${metrics.descent};
+  --${font}-x-height: ${metrics.xHeight};`,
+    )
+    .join("\n");
+
+  return metrics.trim();
 }
 
+/**
+ * Generates the complete CSS content
+ * @returns Generated CSS content
+ */
 export function generateCSS(): string {
-  // Generate and namespace variables
-  const latinTypeVars = namespaceVariables(
-    generateTypeCSSVariables(latinTypeConfig),
-    'latin'
-  );
-  const latinSpaceVars = namespaceVariables(
-    generateSpaceCSSVariables(latinSpaceConfig),
-    'latin'
-  );
+  const latinVars = generateScriptVariables("latin");
+  const cjkVars = generateScriptVariables("cjk");
 
-  const cjkTypeVars = namespaceVariables(
-    generateTypeCSSVariables(cjkTypeConfig),
-    'cjk'
-  );
-  const cjkSpaceVars = namespaceVariables(
-    generateSpaceCSSVariables(cjkSpaceConfig),
-    'cjk'
-  );
-
-  // Generate semantic variables
-  const semanticVars = generateSemanticVariables('latin');
-  const semanticCJKVars = generateSemanticVariables('cjk');
-
-  // Generate font metrics variables
+  const semanticVars = generateSemanticVariables("latin");
+  const semanticCJKVars = generateSemanticVariables("cjk");
   const fontMetricsVars = generateFontMetricsCSS();
 
   return `/* 
@@ -95,16 +141,16 @@ export function generateCSS(): string {
   
 :root {
   /* Latin Typography Variables */
-${latinTypeVars}
+${latinVars.typeVars}
 
   /* Latin Spacing Variables */
-${latinSpaceVars}
+${latinVars.spaceVars}
 
   /* CJK Typography Variables */
-${cjkTypeVars}
+${cjkVars.typeVars}
 
   /* CJK Spacing Variables */
-${cjkSpaceVars}
+${cjkVars.spaceVars}
 
   /* Font Metrics */
 ${fontMetricsVars}
@@ -121,67 +167,52 @@ ${semanticCJKVars}
 `.trim();
 }
 
-// Custom error classes for better error handling
-export class CSSGenerationError extends Error {
-  constructor(message: string, public originalError?: Error) {
-    super(message);
-    this.name = 'CSSGenerationError';
-  }
-}
-
-export class CSSWriteError extends Error {
-  constructor(message: string, public originalError?: Error) {
-    super(message);
-    this.name = 'CSSWriteError';
-  }
-}
-
-// Modified writeCSS function
-export function writeCSS(css: string): void {
+/**
+ * Writes CSS content to a file
+ * @param css - CSS content to write
+ * @param outputPath - Path to write the CSS file
+ * @returns Promise that resolves when the file is written
+ */
+export async function writeCSS(
+  css: string,
+  outputPath: string = DEFAULT_OUTPUT_PATH,
+): Promise<void> {
   try {
-    fs.writeFileSync(OUTPUT_FILE, css);
-    console.log(`Fluid CSS variables generated successfully at ${OUTPUT_FILE}`);
+    await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
+    await fs.promises.writeFile(outputPath, css);
+    console.log(`CSS variables generated successfully at ${outputPath}`);
   } catch (error) {
-    throw new CSSWriteError(
-      `Failed to write CSS file to ${OUTPUT_FILE}`,
-      error instanceof Error ? error : undefined
+    throw new Error(
+      `Failed to write CSS file to ${outputPath}: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
 
-// Modified generateAndWriteCSS function
-export function generateAndWriteCSS(): void {
+/**
+ * Generates and writes CSS content to a file
+ * @param options - Generation options
+ * @returns Promise that resolves when the CSS is generated and written
+ */
+export async function generateAndWriteCSS(
+  options: GenerateOptions = {},
+): Promise<void> {
   try {
-    // Reference the module's own exports
-    const css = exports.generateCSS();
-    exports.writeCSS(css);
+    const css = generateCSS();
+    await writeCSS(css, options.outputPath);
     console.log("CSS generation complete.");
   } catch (error) {
-    if (error instanceof CSSWriteError) {
-      console.error("An error occurred while writing CSS:", error);
-      throw error;
-    } else if (error instanceof CSSGenerationError) {
-      console.error("An error occurred during CSS generation:", error);
-      throw error;
-    } else {
-      const generationError = new CSSGenerationError(
-        "An unexpected error occurred during CSS generation",
-        error instanceof Error ? error : undefined
-      );
-      console.error("An unexpected error occurred during CSS generation:", generationError);
-      throw generationError;
-    }
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Failed to generate or write CSS:", message);
+    throw error;
   }
 }
 
 // Main execution
 if (require.main === module) {
-  try {
-    generateAndWriteCSS();
-  } catch (error) {
+  generateAndWriteCSS().catch((error) => {
     console.error(error);
     process.exit(1);
-  }
+  });
 }
 
 // Add the generateScales function
@@ -190,7 +221,7 @@ export function generateScales() {
   const latinSpaceVars = generateSpaceCSSVariables(latinSpaceConfig);
   const cjkTypeVars = generateTypeCSSVariables(cjkTypeConfig);
   const cjkSpaceVars = generateSpaceCSSVariables(cjkSpaceConfig);
-  
+
   return {
     typeSizes: {
       ...latinTypeVars,
@@ -202,4 +233,3 @@ export function generateScales() {
     },
   };
 }
-

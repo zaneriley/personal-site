@@ -39,18 +39,11 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
               <.typography tag="p" size="1xs" class="mb-2">
                 <%= item.introduction %>
               </.typography>
-            <.content_metadata
-              read_time={
-                item.translations["read_time"] || item.read_time
-              }
-              word_count={
-                item.translations["word_count"] || item.word_count
-              }
-              character_count={
-                item.translations["word_count"] || item.word_count
-              }
-
-            />
+              <.content_metadata
+                read_time={item.translations["read_time"] || item.read_time}
+                word_count={item.translations["word_count"] || item.word_count}
+                character_count={item.translations["word_count"] || item.word_count}
+              />
             </.link>
           </li>
         <% end %>
