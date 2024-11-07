@@ -66,6 +66,7 @@ interface TypeStepResult {
   step: number;
   minFontSize: number;
   maxFontSize: number;
+  lineHeight: number;
   wcagViolation: { from: number; to: number } | null;
   clamp: string;
   isFixed: boolean;

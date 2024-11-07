@@ -4,32 +4,77 @@ defmodule PortfolioWeb.KitchenSinkLive do
     layout: false
 
   import PortfolioWeb.Components.Typography
+  import Phoenix.HTML, only: [raw: 1]
 
-  # Add collections of strings as module attributes
-  @headline_strings [
-    {"Memories in the Morning Rain", "朝の雨の中の記憶"},
-    {"Whatever Happens, Happens", "なるようになる"},
-    {"Rain Station", "雨のステイション"}
-  ]
-
-  @large_strings [
-    {"In the silence between heartbeats, dreams take flight",
-     "心臓の鼓動の間の静けさに、夢が飛び立つ"}
-  ]
-
-  @medium_strings [
-    {"Like jazz notes floating through an empty room, some thoughts refuse to fade away. They linger, waiting for someone to remember them.",
-     "空き部屋に漂うジャズの音のように、消えることを拒む思考がある。誰かに思い出されるのを待ちながら、そこに留まり続ける。"},
-    {"A scruffy marmot often finds cactus flowers offtrack. Spectacular mysteries sends stories of doom unraveling. The beetle scuttled across a milkweed leaf, its aeneous body like a golden shield.",
-     "深き森で、古代の妖精が琥珀色の光を放っていた。スペースシャトルは銀河の果てへと、無限の夢を運んでゆく。氷結晶の迷宮で、量子の蝶が時空を舞い踊る。"},
-    {"On November 7, 2016, debt held by the public was $14.3 trillion or about 76% of the previous 12 months of GDP. Intragovernmental holdings stood at $5.4 trillion, giving a combined total gross national debt of $19.8 trillion or about 106% of the previous 12 months of GDP; $6.2 trillion or approximately 45% of the debt held by the public was owned by foreign investors, the largest of which were Japan and China at about $1.09 trillion for Japan and $1.06 trillion for China as of December 2016.",
-     "2016 年 11 月 7 日現在、国民が保有する債務は 14.3 兆ドルで、過去 12 か月の GDP の約 76% を占めています。政府間債務は 5.4 兆ドルで、国民総債務の総額は 19.8 兆ドルで、過去 12 か月の GDP の約 106% を占めています。国民が保有する債務の約 45% にあたる 6.2 兆ドルは外国投資家が保有しており、そのうち最大の国は日本と中国で、2016 年 12 月現在、日本は約 1.09 兆ドル、中国は 1.06 兆ドルとなっています。"}
-  ]
-
-  @small_strings [
-    {"The clock strikes midnight, but time holds its breath.",
-     "時計は真夜中を打つが、時間は息を止めている。"},
-    {"See you space cowboy...", "また会おう、スペースカウボーイ..."}
+  @palettes [
+    %{
+      id: :space_cowboy,
+      weight: 1,
+      strings: %{
+        headline: {"Whatever Happens, Happens", "なるようになる"},
+        large:
+          {"In the silence between heartbeats, dreams take flight",
+           "心臓の鼓動の間の静けさに、夢が飛び立つ"},
+        medium:
+          {"Like jazz notes floating through an empty room, some thoughts refuse to fade away. They linger, waiting for someone to remember them.",
+           "空き部屋に漂うジャズの音のように、消えることを拒む思考がある。誰かに思い出されるのを待ちながら、そこに留まり続ける。"},
+        small: {"See you space cowboy...", "また会おう、スペースカウボーイ..."}
+      }
+    },
+    %{
+      id: :memories,
+      weight: 1,
+      strings: %{
+        headline: {"Memories in the Morning", "朝の雨の中の記憶"},
+        large:
+          {"A scruffy marmot often finds cactus flowers offtrack. Spectacular mysteries sends stories of doom unraveling. The beetle scuttled across a milkweed leaf, its aeneous body like a golden shield.",
+           "深き森で、古代の妖精が琥珀色の光を放っていた。スペースシャトルは銀河の果てへと、無限の夢を運んでゆく。氷結晶の迷宮で、量子の蝶が時空を舞い踊る。"},
+        medium:
+          {"A scruffy marmot often finds cactus flowers offtrack. Spectacular mysteries sends stories of doom unraveling. The beetle scuttled across a milkweed leaf, its aeneous body like a golden shield.",
+           "深き森で、古代の妖精が琥珀色の光を放っていた。スペースシャトルは銀河の果てへと、無限の夢を運んでゆく。氷結晶の迷宮で、量子の蝶が時空を舞い踊る。"},
+        small:
+          {"I saw my breath dancing in the cold damp air. In this new universe, dust particles and time melt into an ashen residue as red and brown kites float by. He always told me to chase my truest joy, and sometimes, at the time, I didn't know if I'd done that.",
+           "冷たく湿った空気の中で、自分の息が踊っているのが見えた。この新しい宇宙では、赤や茶色の凧が舞い、塵の粒子と時間が溶けて灰の残滓になる。父はいつも私に、自分の本当の喜びを追い求めなさいと言っていたが、その時は、自分がそれを成し遂げたかどうかわからなかったこともあった。"}
+      }
+    },
+    %{
+      id: :rain_station,
+      weight: 1,
+      strings: %{
+        headline: {"Rain Station", "雨のステイション"},
+        large: {"Yumi Arai", "荒井由実"},
+        medium: {"For Someone New
+        Don't remember someone like me
+        Don't remember me for someone new
+        Those words that couldn't even become a voice
+        Seasons carry them away into the distance of time
+        June is hazily blue
+        Blurring everything", "新しい誰かのために
+        わたしなど 思い出さないで声にさえもならなかった あのひと言を
+        季節は運んでく 時の彼方
+        六月は蒼く煙って
+        なにもかもにじませている"},
+        small:
+          {"The clock strikes midnight, but time holds its breath.",
+           "時計は真夜中を打つが、時間は息を止めている。"}
+      }
+    },
+    %{
+      id: :hiraeth,
+      weight: 1,
+      strings: %{
+        headline: {"Hiraeth", "ヒレース"},
+        large:
+          {"The rise and fall reminds us of what is lost. Strawberries bloom and despite the melancholy, everything is iridescent, disappearing behind our hands. It's twilight in an abandoned place of faded memories, flourishing between the cracks. Clouds billow from galaxies far away and a lone traveler keeps a watchful eye.",
+           "上り下りは、失われたものを私たちに思い出させます。 苺が咲き乱れ、哀愁を忘れ、すべてが虹色に輝いて、私たちの手の平へと溶けていきます。 左りゆく月が私たちを微睡ませ、遠い創造・成長の時代は滅びの一前へと更に前進します。遥かなる命、次から次へと蓄積しまみた雪は微笑みを引き起こし、それによって繋いでいます。"},
+        medium:
+          {"The rise and fall reminds us of what is lost. Strawberries bloom and despite the melancholy, everything is iridescent, disappearing behind our hands. It's twilight in an abandoned place of faded memories, flourishing between the cracks. Clouds billow from galaxies far away and a lone traveler keeps a watchful eye.",
+           "上り下りは、失われたものを私たちに思い出させます。 苺が咲き乱れ、哀愁を忘れ、すべてが虹色に輝いて、私たちの手の平へと溶けていきます。 左りゆく月が私たちを微睡ませ、遠い創造・成長の時代は滅びの一前へと更に前進します。遥かなる命、次から次へと蓄積しまみた雪は微笑みを引き起こし、それによって繋いでいます。"},
+        small:
+          {"Trees crackle and sway beneath the weight of snowdrifts. A lone traveler surveys the scene, searching for lost memories. With longing hearts, we watch the clouds move in. It's twilight in an abandoned place of faded memories, flourishing between the cracks.",
+           "雪深さの下で木々は擦られ踊り回ります。ひとりの旅人が群青を超えて、幽霊の記憶をみつけるまで策勢します。私たちは思いがけない赦しを受け入れています。"}
+      }
+    }
   ]
 
   def mount(_params, _session, socket) do
@@ -37,17 +82,31 @@ defmodule PortfolioWeb.KitchenSinkLive do
      socket
      |> assign(lang: "en")
      |> assign(show_guides: true)
-     |> assign_random_strings()}
+     |> assign(previous_palette_id: nil)
+     |> assign_random_palette()}
   end
 
-  # Add helper function to get random strings
-  defp assign_random_strings(socket) do
-    assign(socket,
-      headline: Enum.random(@headline_strings),
-      large: Enum.random(@large_strings),
-      medium: Enum.random(@medium_strings),
-      small: Enum.random(@small_strings)
-    )
+  # New helper functions
+  defp assign_random_palette(socket) do
+    current_id = socket.assigns[:current_palette_id]
+
+    # Create weighted list of palette IDs
+    weighted_ids =
+      Enum.flat_map(@palettes, fn %{id: id, weight: weight} ->
+        List.duplicate(id, weight)
+      end)
+
+    # Remove current ID from selection pool
+    available_ids = Enum.reject(weighted_ids, &(&1 == current_id))
+
+    # Select new random palette
+    new_id = Enum.random(available_ids)
+    new_palette = Enum.find(@palettes, &(&1.id == new_id))
+
+    socket
+    |> assign(current_palette_id: new_id)
+    |> assign(previous_palette_id: current_id)
+    |> assign(current_palette: new_palette.strings)
   end
 
   def handle_event("toggle_lang", _, socket) do
@@ -80,16 +139,12 @@ defmodule PortfolioWeb.KitchenSinkLive do
       </div>
 
       <div class="px-4 max-w-[120rem] mx-auto space-y-16">
-        
         <div class="space-y-16">
           <%= for size <- ~w(4xl 2xl 1xl md 1xs) do %>
             <div class="space-y-2">
-              
               <div class="relative">
-                
                 <%= if @show_guides do %>
                   <div class="absolute flex inset-x-0 top-0 w-full h-full pointer-events-none">
-                    
                     <div
                       class="absolute inset-x-0 border-t border-blue-500/30 w-full"
                       style="top: 0.75em"
@@ -115,7 +170,6 @@ defmodule PortfolioWeb.KitchenSinkLive do
                       <%= get_space_value(size) %>
                     </.typography>
                   </div>
-
                 <% end %>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
@@ -127,9 +181,7 @@ defmodule PortfolioWeb.KitchenSinkLive do
                     ] do %>
                     <div class="bg-dusk-900/30 p-6 rounded-lg relative">
                       <%= if @show_guides do %>
-                        
                         <div class="absolute inset-0 pointer-events-none">
-                          
                           <div
                             class="absolute inset-x-0 border-t border-blue-500/20 w-full"
                             style={"top: calc(var(--#{font}-small-cap-height) * 1em)"}
@@ -152,32 +204,24 @@ defmodule PortfolioWeb.KitchenSinkLive do
                         <%= if @lang == "en" do %>
                           <%= case size do %>
                             <% size when size in ~w(4xl 2xl) -> %>
-                              <%= if @lang == "en",
-                                do: elem(@headline, 0),
-                                else: elem(@headline, 1) %>
+                              <%= process_text(elem(@current_palette.headline, 0)) %>
                             <% "1xl" -> %>
-                              <%= if @lang == "en",
-                                do: elem(@large, 0),
-                                else: elem(@large, 1) %>
+                              <%= process_text(elem(@current_palette.large, 0)) %>
                             <% "md" -> %>
-                              <%= if @lang == "en",
-                                do: elem(@medium, 0),
-                                else: elem(@medium, 1) %>
+                              <%= process_text(elem(@current_palette.medium, 0)) %>
                             <% _ -> %>
-                              <%= if @lang == "en",
-                                do: elem(@small, 0),
-                                else: elem(@small, 1) %>
+                              <%= process_text(elem(@current_palette.small, 0)) %>
                           <% end %>
                         <% else %>
                           <%= case size do %>
                             <% size when size in ~w(4xl 2xl) -> %>
-                              タイポグラフィの世界
+                              <%= process_text(elem(@current_palette.headline, 1)) %>
                             <% "1xl" -> %>
-                              デザインは、丁寧に選ばれた書体を通じて、ブランドの静かな大使として語りかけます。
+                              <%= process_text(elem(@current_palette.large, 1)) %>
                             <% "md" -> %>
-                              タイポグラフィは、文字を配置する技術であり、読みやすく魅力的な文章表現を実現する芸術です。
+                              <%= process_text(elem(@current_palette.medium, 1)) %>
                             <% _ -> %>
-                              優れたタイポグラフィの本質は、その存在感の無さにあります。読者の目を引くことなく導くべきです。
+                              <%= process_text(elem(@current_palette.small, 1)) %>
                           <% end %>
                         <% end %>
                       </.typography>
@@ -237,5 +281,12 @@ defmodule PortfolioWeb.KitchenSinkLive do
       "2xs" -> "clamp(0.31rem, 0.48rem - 0.19vi, 0.44rem)"
       "3xs" -> "clamp(0.16rem, 0.34rem - 0.20vi, 0.30rem)"
     end
+  end
+
+  defp process_text(text) when is_binary(text) do
+    # Convert \n to <br> and handle existing <br> tags
+    text
+    |> String.replace("\n", "<br>")
+    |> raw()
   end
 end
