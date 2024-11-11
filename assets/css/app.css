@@ -30,23 +30,35 @@ body {
   font-size: var(--fs-base);
   line-height: 1.5;
   min-height: 100vh;
+  hanging-punctuation: allow-end last; /* Safari only */
 }
 
 * {
-  font-variation-settings: "wght" var(--font-wght), "opsz" var(--font-opsz);
+  font-variation-settings: "wght" var(--font-wght), "wdth" var(--font-wdth);
   font-feature-settings: "fina" 1, "kern" 1, "liga" 1, "onum" 1, "zero" 1,
     "ss05" 1, "ss01" 1;
+  font-synthesis: none;
 }
 
-.drop-cap p:first-of-type::first-letter {
-  display: float;
+.dropcap {
+  display: block;
   float: left;
   text-align: left;
   text-transform: uppercase;
   line-height: 0.7;
-  font-size: 4.88em;
-  margin-top: 0.11em;
+  font-size: calc(3em + 2rem); /* em is # of lines, rem is # of line-height units between lines */
+  margin-top: 0.11em; /* magic unit, needs to be computed somehow */
   margin-right: var(--space-1xs);
   font-style: normal;
-  font-family: "Cardinal Fruit", "Times New Roman", Garamond, Palatino, serif;
+}
+
+html[lang="ja"] * {
+  line-height: var(--cjk-lh) !important;
+}
+@supports (text-justify: inter-character) {
+  .text-justify {
+    text-align: justify;
+    text-justify: inter-character;
+    text-align-last: left;
+  }
 }

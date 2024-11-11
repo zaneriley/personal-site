@@ -30,6 +30,7 @@ export interface LineHeightConfig {
   baseLineHeight: number; // Base line-height in rem units
   scalingFactor: number; // Factor to adjust line-height
   incrementStep: "whole" | "half" | "quarter"; // Line-height snapping increment
+  incrementMethod: "latin" | "cjk";
 }
 
 /* All the value are primarily derived from
@@ -43,6 +44,7 @@ export const latinLineHeightConfig: LineHeightConfig = {
   baseLineHeight: 1.5555,
   scalingFactor: 0.5,
   incrementStep: "quarter",
+  incrementMethod: "latin",
 };
 
 export const cjkLineHeightConfig: LineHeightConfig = {
@@ -50,6 +52,7 @@ export const cjkLineHeightConfig: LineHeightConfig = {
   baseLineHeight: 2,
   scalingFactor: 0.1,
   incrementStep: "whole",
+  incrementMethod: "cjk",
 };
 
 export const latinTypeConfig: TypeConfig = {

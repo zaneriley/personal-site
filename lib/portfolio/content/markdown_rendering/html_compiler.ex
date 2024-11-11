@@ -70,9 +70,8 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
   end
 
   # coveralls-ignore-stop
-
+  # TODO: This seems to run on every save.
   def transform({:typography, tag, attrs, content, _meta}) do
-    Logger.info("Rendering typography component: #{tag}")
     # Merge default attributes with any existing ones
     assigns =
       Map.new(attrs)

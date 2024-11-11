@@ -52,6 +52,7 @@ defmodule PortfolioWeb.Components.ContentMetadata do
 
     ~H"""
     <.typography
+      locale={@user_locale}
       tag="p"
       size="2xs"
       font="cheee"

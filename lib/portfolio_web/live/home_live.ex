@@ -59,7 +59,7 @@ defmodule PortfolioWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.typography tag="h2" size="1xl" class="uppercase">
+    <.typography locale={@user_locale} tag="h2" size="1xl" class="uppercase">
       <%= raw(
         gettext(
           "%{role} based in %{city}",
@@ -70,7 +70,7 @@ defmodule PortfolioWeb.HomeLive do
         )
       ) %>
     </.typography>
-    <.typography tag="p" size="1xl" class="uppercase">
+    <.typography locale={@user_locale} tag="p" size="1xl" class="uppercase">
       <%= raw(
         gettext(
           "Solving problems for customers through %{tagline_methods} or %{tagline_else}",
@@ -81,15 +81,15 @@ defmodule PortfolioWeb.HomeLive do
         )
       ) %>
     </.typography>
-    <.typography tag="p" size="1xs">
+    <.typography locale={@user_locale} tag="p" size="1xs">
       <%= gettext("Now Senior Product Designer at") %>
     </.typography>
-    <.typography tag="h2" size="md">
+    <.typography locale={@user_locale} tag="h2" size="md">
       <%= gettext(
         "10+ years design experience. From startups to FAANG and regulated industries, I bring both breadth and depth of experience to building products people love."
       ) %><br />
     </.typography>
-    <.typography tag="p" size="1xs">
+    <.typography locale={@user_locale} tag="p" size="1xs">
       <%= gettext(
         "Based in Tokyo. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
       ) %>
@@ -100,7 +100,7 @@ defmodule PortfolioWeb.HomeLive do
     </.typography>
 
     <div>
-      <.typography tag="h2" size="1xs" font="cheee">
+      <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
         <%= ngettext("Case Study", "Case Studies", 2) %>
       </.typography>
       <div class="space-y-md">
@@ -122,11 +122,11 @@ defmodule PortfolioWeb.HomeLive do
               }
               title={case_study.translations["title"] || case_study.title}
             >
-              <.typography tag="h3" size="2xl" font="cardinal">
+              <.typography locale={@user_locale} tag="h3" size="2xl" font="cardinal">
                 <%= case_study.translations["title"] || case_study.title %>
               </.typography>
             </.link>
-            <.typography tag="p" size="2xs">
+            <.typography locale={@user_locale} tag="p" size="2xs">
               <%= case_study.translations["introduction"] ||
                 case_study.introduction %>
             </.typography>

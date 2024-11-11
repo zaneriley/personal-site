@@ -1,7 +1,7 @@
 <article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
   <nav aria-label="Breadcrumb" class="text-sm">
     <div class="flex items-center space-x-2">
-      <.typography tag="span" size="1xs" font="cheee">
+      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <.link navigate={Routes.home_path(@socket, :index, @user_locale)}>
           <%= ngettext("Case Study", "Case Studies", 1) %>
         </.link>
@@ -9,35 +9,35 @@
       <span aria-hidden="true">
         <Heroicons.chevron_double_right class="inline-block h-md w-md" />
       </span>
-      <.typography tag="span" size="1xs" font="cheee">
+      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <%= @translations["company"] || @case_study.company %>
       </.typography>
     </div>
   </nav>
   <!-- Title -->
-  <.typography tag="h1" size="4xl" font="cardinal">
+  <.typography locale={@user_locale} tag="h1" size="4xl" font="cardinal">
     <%= @translations["title"] || @case_study.title %>
   </.typography>
-  <.typography tag="h2" size="1xl">
+  <.typography locale={@user_locale} tag="h2" size="1xl" dropcap={true}>
     <%= @translations["introduction"] || @case_study.introduction %>
   </.typography>
   <!-- Meta Information -->
   <div class="grid grid-cols-12">
     <span class="col-span-3">
-      <.typography tag="span" size="1xs" font="cheee">
+      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <%= gettext("Role") %>
       </.typography>
       <br /><%= @translations["role"] || @case_study.role %>
     </span>
     <span class="col-span-3">
-      <.typography tag="span" size="1xs" font="cheee">
+      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <%= gettext("Timeline") %>
       </.typography>
       <br /><%= @translations["timeline"] || @case_study.timeline %>
     </span>
     <div class="col-span-3">
       <% platforms = @translations["platforms"] || @case_study.platforms %>
-      <.typography tag="span" size="1xs" font="cheee">
+      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <%= ngettext("Platform", "Platforms", length(platforms)) %>
       </.typography>
       <ul>

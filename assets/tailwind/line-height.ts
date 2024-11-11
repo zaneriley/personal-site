@@ -129,7 +129,6 @@ export const calculateLineHeight = (
       `Invalid incrementStep: ${config.incrementStep}. Defaulting to 'half'.`,
     );
   }
-
   let roundedUnits = Math.round(unitsRaw * multiplier) / multiplier;
   roundedUnits = parseFloat(roundedUnits.toFixed(4));
   console.log(`roundedUnits (${config.incrementStep}) = ${roundedUnits}`);

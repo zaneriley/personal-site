@@ -29,14 +29,24 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
           <li class="group rounded-lg overflow-hidden">
             <.link navigate={@navigate_to.(item)} class="block p-4">
               <div class="flex justify-between items-start mb-2">
-                <.typography tag="h3" size="1xl" font="cardinal">
+                <.typography
+                  locale={@user_locale}
+                  tag="h3"
+                  size="1xl"
+                  font="cardinal"
+                >
                   <%= item.title %>
                 </.typography>
-                <.typography tag="span" size="1xs" font="cheee">
+                <.typography
+                  locale={@user_locale}
+                  tag="span"
+                  size="1xs"
+                  font="cheee"
+                >
                   <%= format_date(item.published_at) %>
                 </.typography>
               </div>
-              <.typography tag="p" size="1xs" class="mb-2">
+              <.typography locale={@user_locale} tag="p" size="1xs" class="mb-2">
                 <%= item.introduction %>
               </.typography>
               <.content_metadata

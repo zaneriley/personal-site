@@ -12,14 +12,16 @@ const latinConfig: LineHeightConfig = {
   baseFontSize: 18,
   baseLineHeight: 1.555555556,
   scalingFactor: 0.5,
-  incrementStep: "half", // Updated to match test description
+  incrementStep: "half",
+  incrementMethod: "latin",
 };
 
 const cjkConfig: LineHeightConfig = {
   baseFontSize: 18,
   baseLineHeight: 2,
-  scalingFactor: 0.1,
+  scalingFactor: 0.5,
   incrementStep: "whole",
+  incrementMethod: "cjk",
 };
 
 describe("calculateLineHeight", () => {
@@ -50,65 +52,10 @@ describe("calculateLineHeight", () => {
       );
     });
   });
-
-  // it('should decrease line-height as fontSize increases', () => {
-  //   const smallFontSize = 18; // Base font size
-  //   const largeFontSize = 24; // Larger font size
-
-  //   const smallLineHeight = calculateLineHeight(latinConfig, smallFontSize);
-  //   const largeLineHeight = calculateLineHeight(latinConfig, largeFontSize);
-
-  //   expect(largeLineHeight).toBeLessThan(smallLineHeight);
-  // });
-
-  //     it('should snap line-height to nearest half baselineUnit', () => {
-  //       const fontSize = 22; // Arbitrary font size
-  //       const lineHeight = calculateLineHeight(latinConfig, fontSize); // Unitless
-  //       const baselineUnitPx = latinConfig.baseLineHeight * latinConfig.baseFontSize / 2; // 13.5px
-  //       const desiredLineHeightPx = lineHeight * fontSize; // Convert unitless to px
-  //       const snappedLineHeightPx = getSnappedLineHeightPx(desiredLineHeightPx, latinConfig.incrementStep, baselineUnitPx);
-  //       const snappedLineHeight = snappedLineHeightPx / fontSize; // Convert back to unitless
-  //       expect(lineHeight).toBeCloseTo(snappedLineHeight, 5);
-  //     });
-
-  //     it('should not fall below minimum line-height threshold', () => {
-  //       const fontSize = 46; // Large font size
-  //       const lineHeight = calculateLineHeight(latinConfig, fontSize);
-  //       const minLineHeight = minLineHeightThresholds['latin'];
-
-  //       expect(lineHeight).toBeGreaterThanOrEqual(minLineHeight);
-  //     });
-  //   });
-
-  //   describe('CJK Script', () => {
-  //     it('should calculate baselineUnit as characterSize', () => {
-  //       const baselineUnitPx = cjkConfig.baseLineHeight; // For 'whole' increment
-  //       expect(baselineUnitPx).toBe(2); // Adjusted to match configuration
-  //     });
-
-  //     it('should snap line-height to nearest whole baselineUnit', () => {
-  //       const fontSize = 1.5;
-  //       const lineHeight = calculateLineHeight(cjkConfig, fontSize); // Unitless
-  //       const baselineUnitPx = cjkConfig.baseLineHeight * cjkConfig.baseFontSize / 1; // 2 * 18 / 1 = 36px
-  //       const desiredLineHeightPx = lineHeight * fontSize; // Convert unitless to px
-  //       const snappedLineHeightPx = getSnappedLineHeightPx(desiredLineHeightPx, cjkConfig.incrementStep, baselineUnitPx);
-  //       const snappedLineHeight = snappedLineHeightPx / fontSize; // Convert back to unitless
-  //       expect(lineHeight).toBeCloseTo(snappedLineHeight, 5);
-  //     });
-
-  //     it('should handle varying font sizes appropriately', () => {
-  //       const fontSizes = [1, 1.5, 2, 2.5];
-  //       fontSizes.forEach((fontSize) => {
-  //         const lineHeight = calculateLineHeight(cjkConfig, fontSize);
-  //         const minLineHeight = minLineHeightThresholds['cjk'];
-  //         expect(lineHeight).toBeGreaterThanOrEqual(minLineHeight);
-  //       });
-  //     });
-  //   });
-
-  //   describe('General Cases', () => {
-  //     it('should handle negative font sizes gracefully', () => {
-  //       const fontSize = -1;
-  //       expect(() => calculateLineHeight(latinConfig, fontSize)).toThrow('Font size must be positive.');
-  //     });
+  describe("CJK Script", () => {
+    it("should calculate baselineUnit as characterSize", () => {
+      const lineHeight = calculateLineHeight(cjkConfig, 42);
+      expect(lineHeight).toBeCloseTo(0.8571428572, 3);
+    });
+  });
 });

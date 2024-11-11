@@ -22,13 +22,13 @@
     </ol>
   </nav>
   <!-- Title -->
-  <.typography tag="h1" size="4xl">
+  <.typography locale={@user_locale} tag="h1" size="4xl">
     <%= @translations["title"] || @note.title %>
   </.typography>
   <!-- Meta Information -->
   <div class="grid grid-cols-subgrid">
     <span class="col-span-3">
-      <.typography tag="span" size="1xs" font="cheee">
+      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <%= gettext("Read Time") %>:
       </.typography>
       <br /><%= @note.read_time %> <%= ngettext(

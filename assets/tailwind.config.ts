@@ -18,6 +18,62 @@ const config: Config = {
         ".phx-page-loading &",
       ]);
     },
+    ({ addUtilities }) => {
+      const newUtilities = {
+        ".font-cardinal-fruit": {
+          "font-family": [
+            "Cardinal Fruit",
+            "Times New Roman",
+            "Garamond",
+            "Palatino",
+            "system-ui",
+            "serif",
+          ].join(", "),
+          "font-size-adjust": "ex-height from-font",
+        },
+        ".font-cheee": {
+          "font-family": ["Cheee", "Arial", "sans-serif"].join(", "),
+          "font-size-adjust": "cap-height from-font",
+        },
+        ".font-gt-flexa": {
+          "font-family": [
+            "GT Flexa",
+            "Noto Sans JP",
+            "Trebuchet MS",
+            "Avenir",
+            "Fira Sans",
+            "-apple-system",
+            "system-ui",
+            "sans-serif",
+          ].join(", "),
+          "font-weight": "350",
+        },
+        ".font-noto-serif-jp": {
+          "font-family": [
+            "Noto Serif JP",
+            "Source Han Serif",
+            "MS Mincho",
+            "Hina Mincho",
+            "serif",
+          ].join(", "),
+          transform: "scaleX(0.7)",
+          "transform-origin": "left",
+          "font-size-adjust": "ic-height from-font",
+          "font-weight": "480",
+        },
+        ".font-noto-sans-jp": {
+          "font-family": [
+            "Noto Sans JP",
+            "Hiragino Kaku Gothic ProN",
+            "Meiryo",
+            "sans-serif",
+          ].join(", "),
+          "font-size-adjust": "ic-height from-font",
+          "font-weight": "480",
+        },
+      };
+      addUtilities(newUtilities, ["responsive"]);
+    },
   ],
   theme: {
     fontSize: {
@@ -47,32 +103,6 @@ const config: Config = {
       accent: "var(--text-color-accent)",
     },
     extend: {
-      fontFamily: {
-        "cardinal-fruit": [
-          "Cardinal Fruit",
-          "Times New Roman",
-          "Garamond",
-          "Palatino",
-          "serif",
-        ],
-        cheee: ["Cheee", "Arial", "sans-serif"],
-        "gt-flexa": [
-          "GT Flexa",
-          "Trebuchet MS",
-          "Avenir",
-          "Fira Sans",
-          "-apple-system",
-          "system-ui",
-          "sans-serif",
-        ],
-        "noto-sans-jp": [
-          "Noto Sans JP",
-          "Hiragino Kaku Gothic ProN",
-          "Meiryo",
-          "sans-serif",
-        ],
-      },
-      // Add transition properties for the page fade effect
       transitionProperty: {
         opacity: "opacity",
       },

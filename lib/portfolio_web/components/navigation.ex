@@ -55,7 +55,9 @@ defmodule PortfolioWeb.Navigation do
         class="col-span-2"
         aria-label={gettext("Zane Riley Portfolio Logo")}
       >
-        <.typography tag="span" size="2xl" font="cardinal">Zane</.typography>
+        <.typography locale={@user_locale} tag="span" size="2xl" font="cardinal">
+          Zane
+        </.typography>
       </.link>
       <!-- Page navigation -->
       <nav role="navigation" class="col-span-6 col-start-3">
@@ -65,7 +67,7 @@ defmodule PortfolioWeb.Navigation do
               navigate={Routes.case_study_index_path(@socket, :index, @user_locale)}
               class={active_class(@current_path, :case_studies)}
             >
-              <.typography tag="span" size="md">
+              <.typography locale={@user_locale} tag="span" size="md">
                 <%= ngettext("Case Study", "Case Studies", 2) %>
               </.typography>
             </.link>
@@ -75,7 +77,7 @@ defmodule PortfolioWeb.Navigation do
               navigate={Routes.note_index_path(@socket, :index, @user_locale)}
               class={active_class(@current_path, :notes)}
             >
-              <.typography tag="span" size="md">
+              <.typography locale={@user_locale} tag="span" size="md">
                 <%= ngettext("Note", "Notes", 2) %>
               </.typography>
             </.link>
@@ -85,7 +87,7 @@ defmodule PortfolioWeb.Navigation do
               navigate={Routes.about_path(@socket, :index, @user_locale)}
               class={active_class(@current_path, :about)}
             >
-              <.typography tag="span" size="md">
+              <.typography locale={@user_locale} tag="span" size="md">
                 <%= gettext("Self") %>
               </.typography>
             </.link>
@@ -102,24 +104,24 @@ defmodule PortfolioWeb.Navigation do
         <ul class="flex justify-end space-x-md">
           <li>
             <.link
-              navigate={@en_path}
+              href={@en_path}
               aria-label={gettext("Switch to English")}
               aria-current={if @user_locale == "en", do: "page", else: "false"}
               class={"#{if @user_locale == "en", do: "font-bold", else: ""}"}
             >
-              <.typography tag="span" size="1xs">
+              <.typography locale={@user_locale} tag="span" size="1xs">
                 English
               </.typography>
             </.link>
           </li>
           <li>
             <.link
-              navigate={@ja_path}
+              href={@ja_path}
               aria-label={gettext("Switch to Japanese")}
               aria-current={if @user_locale == "ja", do: "page", else: "false"}
               class={"#{if @user_locale == "ja", do: "font-bold", else: ""}"}
             >
-              <.typography tag="span" size="1xs">
+              <.typography locale={@user_locale} tag="span" size="1xs">
                 日本語
               </.typography>
             </.link>

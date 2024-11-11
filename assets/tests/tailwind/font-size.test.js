@@ -3,7 +3,7 @@ import {
   calculateClamp,
   calculateTypeScale,
   generateTypeCSSVariables,
-} from "../../tailwind/fluid-type.ts";
+} from "../../tailwind/font-size.ts";
 
 describe("calculateClamp", () => {
   it("should return a valid clamp value with default parameters", () => {

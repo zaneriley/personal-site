@@ -25,7 +25,7 @@ defmodule PortfolioWeb.AboutLive do
   def render(assigns) do
     ~H"""
     <div class="space-y-8">
-      <.typography tag="p" size="1xl">
+      <.typography locale={@user_locale} tag="p" size="1xl">
         A product designer with over 10 years of experience, currently based in Tokyo and working at Google.
       </.typography>
 

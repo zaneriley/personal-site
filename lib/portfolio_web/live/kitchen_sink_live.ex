@@ -163,10 +163,10 @@ defmodule PortfolioWeb.KitchenSinkLive do
                   </div>
 
                   <div class="flex space-x-md text-sm text-dusk-400 font-mono">
-                    <.typography tag="span" size="2xs">
+                    <.typography locale={@user_locale} tag="span" size="2xs">
                       --fs-<%= size %>
                     </.typography>
-                    <.typography tag="span" size="2xs">
+                    <.typography locale={@user_locale} tag="span" size="2xs">
                       <%= get_space_value(size) %>
                     </.typography>
                   </div>
@@ -174,10 +174,10 @@ defmodule PortfolioWeb.KitchenSinkLive do
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
                   <%= for {font, name} <- [
-                      {"cardinal", "Cardinal"},
                       {"cheee", "Cheee"},
+                      {"cardinal", "Cardinal"},
                       {"gt-flexa", "GT Flexa"},
-                      {nil, "Noto Sans"}
+                      {"noto", "Noto Sans JP"}
                     ] do %>
                     <div class="bg-dusk-900/30 p-6 rounded-lg relative">
                       <%= if @show_guides do %>
@@ -200,19 +200,13 @@ defmodule PortfolioWeb.KitchenSinkLive do
                         </div>
                       <% end %>
 
-                      <.typography tag="p" size={size} font={font}>
-                        <%= if @lang == "en" do %>
-                          <%= case size do %>
-                            <% size when size in ~w(4xl 2xl) -> %>
-                              <%= process_text(elem(@current_palette.headline, 0)) %>
-                            <% "1xl" -> %>
-                              <%= process_text(elem(@current_palette.large, 0)) %>
-                            <% "md" -> %>
-                              <%= process_text(elem(@current_palette.medium, 0)) %>
-                            <% _ -> %>
-                              <%= process_text(elem(@current_palette.small, 0)) %>
-                          <% end %>
-                        <% else %>
+                      <.typography
+                        locale={@user_locale}
+                        tag="p"
+                        size={size}
+                        font={font}
+                      >
+                        <%= if font == "noto" do %>
                           <%= case size do %>
                             <% size when size in ~w(4xl 2xl) -> %>
                               <%= process_text(elem(@current_palette.headline, 1)) %>
@@ -222,6 +216,30 @@ defmodule PortfolioWeb.KitchenSinkLive do
                               <%= process_text(elem(@current_palette.medium, 1)) %>
                             <% _ -> %>
                               <%= process_text(elem(@current_palette.small, 1)) %>
+                          <% end %>
+                        <% else %>
+                          <%= if @lang == "en" do %>
+                            <%= case size do %>
+                              <% size when size in ~w(4xl 2xl) -> %>
+                                <%= process_text(elem(@current_palette.headline, 0)) %>
+                              <% "1xl" -> %>
+                                <%= process_text(elem(@current_palette.large, 0)) %>
+                              <% "md" -> %>
+                                <%= process_text(elem(@current_palette.medium, 0)) %>
+                              <% _ -> %>
+                                <%= process_text(elem(@current_palette.small, 0)) %>
+                            <% end %>
+                          <% else %>
+                            <%= case size do %>
+                              <% size when size in ~w(4xl 2xl) -> %>
+                                <%= process_text(elem(@current_palette.headline, 1)) %>
+                              <% "1xl" -> %>
+                                <%= process_text(elem(@current_palette.large, 1)) %>
+                              <% "md" -> %>
+                                <%= process_text(elem(@current_palette.medium, 1)) %>
+                              <% _ -> %>
+                                <%= process_text(elem(@current_palette.small, 1)) %>
+                            <% end %>
                           <% end %>
                         <% end %>
                       </.typography>

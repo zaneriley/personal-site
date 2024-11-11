@@ -3,7 +3,7 @@ import path from "node:path";
 import {
   generateSpaceCSSVariables,
   generateTypeCSSVariables,
-} from "./fluid-type.ts";
+} from "./font-size.ts";
 import {
   latinTypeConfig,
   latinSpaceConfig,
@@ -110,11 +110,8 @@ function generateFontMetricsCSS(): string {
   const metrics = Object.entries(fontMetrics)
     .map(
       ([font, metrics]) => `
-  --${font}-units-per-em: ${metrics.unitsPerEm};
-  --${font}-cap-height: ${metrics.capHeight};
-  --${font}-ascent: ${metrics.ascent};
-  --${font}-descent: ${metrics.descent};
-  --${font}-x-height: ${metrics.xHeight};`,
+  --${font}-distance-top: ${metrics.ascent - metrics.capHeight};
+  --${font}-distance-top: ${Math.abs(metrics.descent)};`, // it's easier to subtract the margins if this is a positive instead of negative value.
     )
     .join("\n");
 
@@ -148,12 +145,13 @@ ${latinVars.spaceVars}
 
   /* CJK Typography Variables */
 ${cjkVars.typeVars}
+  --cjk-lh: calc(1em + 1rem);
 
   /* CJK Spacing Variables */
 ${cjkVars.spaceVars}
 
   /* Font Metrics */
-${fontMetricsVars}
+  ${fontMetricsVars}
 
   /* Semantic Variables (Default to Latin) */
 ${semanticVars}
@@ -164,6 +162,7 @@ html[lang="ja"] {
   /* Semantic Variables (CJK) */
 ${semanticCJKVars}
 }
+
 `.trim();
 }
 

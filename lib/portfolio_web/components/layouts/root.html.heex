@@ -71,7 +71,7 @@
       src={url(~p"/js/app.js")}
     />
   </head>
-  <body class="min-h-screen flex flex-col text-md bg-gradient font-gt-flexa">
+  <body class="min-h-screen flex flex-col text-md bg-gradient">
     <a href="#main-content" class="sr-only" tabindex="0">
       <%= gettext("Skip to main content") %>
     </a>
@@ -85,10 +85,10 @@
         Logo
       </div>
       <div class="col-span-3">
-        <.typography tag="h2" size="1xs" font="cheee">
+        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
           <%= gettext("Connect") %>
         </.typography>
-        <.typography tag="ul" size="1xs">
+        <.typography locale={@user_locale} tag="ul" size="1xs">
           <li>
             <a href="mailto:zane@zaneriley.com" target="_blank" rel="noopener">
               hello@zaneriley.com
@@ -115,11 +115,11 @@
         </.typography>
       </div>
       <div class="col-span-3">
-        <.typography tag="h2" size="1xs" font="cheee">
+        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
           <%= gettext("Colophon") %>
         </.typography>
 
-        <.typography tag="p" size="1xs">
+        <.typography locale={@user_locale} tag="p" size="1xs">
           <%= raw(
             gettext(
               "Type set in %{font1}, %{font2}, %{font3}, & %{font4}.",
@@ -141,10 +141,10 @@
         </.typography>
       </div>
       <div class="col-span-3">
-        <.typography tag="h2" size="1xs" font="cheee">
+        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
           <%= gettext("Server") %>
         </.typography>
-        <.typography tag="p" size="1xs">
+        <.typography locale={@user_locale} tag="p" size="1xs">
           <%= gettext("Hosted on my home server in Tokyo.") %> <br />
           <%= gettext("Written in Elixir.") %> <br />
           <%= raw(
@@ -157,6 +157,7 @@
       </div>
       <div class="col-span-12">
         <.typography
+          locale={@user_locale}
           tag="p"
           size="1xs"
           font="cheee"
@@ -166,6 +167,7 @@
           Now in Tokyo
         </.typography>
         <.typography
+          locale={@user_locale}
           tag="p"
           size="1xs"
           font="cheee"
