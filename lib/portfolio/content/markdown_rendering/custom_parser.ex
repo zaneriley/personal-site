@@ -17,7 +17,7 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParser do
 
     case Earmark.Parser.as_ast(content) do
       {:ok, ast, _} ->
-        # Step 2: Process the AST to transform nodes
+        # Step 2: Process the AST to transform nodes and annotate the first paragraph
         processed_ast = process_ast(ast)
 
         {:ok,
@@ -71,21 +71,42 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParser do
   end
 
   defp process_ast(ast) do
-    Enum.map(ast, &process_node/1)
+    # Introduce a state to track if the first paragraph is found
+    {processed_ast, _state} = Enum.map_reduce(ast, %{first_paragraph_found: false}, &process_node/2)
+    processed_ast
   end
 
-  defp process_node({tag, attrs, content, meta})
+  defp process_node({tag, attrs, content, meta}, state)
        when tag in ["h1", "h2", "h3", "h4", "h5", "h6", "p"] do
     default_attrs = get_default_typography_attrs(tag)
     merged_attrs = Map.merge(attrs |> Enum.into(%{}), default_attrs)
-    {:typography, tag, merged_attrs, process_ast(content), meta}
+    {processed_content, state} = process_ast_with_state(content, state)
+
+    # Annotate the first paragraph
+    {dropcap, new_state} =
+      if tag == "p" and not state.first_paragraph_found do
+        {true, %{state | first_paragraph_found: true}}
+      else
+        {false, state}
+      end
+
+    meta = if dropcap, do: Map.put(meta, :dropcap, true), else: meta
+
+    node = {:typography, tag, merged_attrs, processed_content, meta}
+    {node, new_state}
   end
 
-  defp process_node({tag, attrs, content, meta}) do
-    {tag, attrs, process_ast(content), meta}
+  defp process_node({tag, attrs, content, meta}, state) do
+    {processed_content, state} = process_ast_with_state(content, state)
+    node = {tag, attrs, processed_content, meta}
+    {node, state}
   end
 
-  defp process_node(content) when is_binary(content), do: content
+  defp process_node(content, state) when is_binary(content), do: {content, state}
+
+  defp process_ast_with_state(ast_list, state) do
+    Enum.map_reduce(ast_list, state, &process_node/2)
+  end
 
   defp get_default_typography_attrs("h1"), do: %{font: "cardinal", size: "4xl"}
   defp get_default_typography_attrs("h2"), do: %{font: "cardinal", size: "3xl"}

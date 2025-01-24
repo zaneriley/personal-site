@@ -9,9 +9,12 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
   @dialyzer {:nowarn_function, mount: 3}
   @impl true
-  def mount(%{"locale" => user_locale, "url" => url}, _session, socket) do
-    Gettext.put_locale(PortfolioWeb.Gettext, user_locale)
+  def on_mount(:default, _params, session, socket) do
+    {:cont, PortfolioWeb.LiveHelpers.setup_common_assigns(socket, _params, session)}
+  end
 
+  @impl true
+  def mount(%{"locale" => user_locale, "url" => url}, _session, socket) do
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
         {:ok, case_study, translations, compiled_content} ->
@@ -28,8 +31,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
              translations: translations,
              compiled_content: compiled_content,
              page_title: page_title,
-             page_description: introduction,
-             user_locale: user_locale
+             page_description: introduction
            )}
 
         {:ok, case_study, translations, {:error, reason}} ->
@@ -42,8 +44,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
              compiled_content: nil,
              compile_error: reason,
              page_title: case_study.title,
-             page_description: case_study.introduction,
-             user_locale: user_locale
+             page_description: case_study.introduction
            )}
 
         {:error, :not_found} ->

@@ -7,17 +7,18 @@ defmodule PortfolioWeb.NoteLive.Index do
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   @impl true
-  def mount(_params, session, socket) do
+  def on_mount(:default, _params, session, socket) do
+    {:cont, PortfolioWeb.LiveHelpers.setup_common_assigns(socket, _params, session)}
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
     env = Application.get_env(:portfolio, :environment)
 
-    user_locale =
-      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
-
-    Logger.debug("Note index mounted with locale: #{user_locale}")
+    Logger.debug("Note index mounted with locale: #{socket.assigns.user_locale}")
 
     {:ok,
      socket
-     |> assign(:user_locale, user_locale)
      |> assign(:env, env)
      |> stream_configure(:notes, dom_id: &"note-#{&1.url}")
      |> stream(:notes, Content.list("note"))}

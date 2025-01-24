@@ -7,6 +7,11 @@ defmodule PortfolioWeb.HomeLive do
   import PortfolioWeb.Components.ContentMetadata
 
   @impl true
+  def on_mount(:default, params, session, socket) do
+    {:cont, PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
+  end
+
+  @impl true
   def page_title(_assigns) do
     gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience")
   end
@@ -19,9 +24,7 @@ defmodule PortfolioWeb.HomeLive do
   end
 
   @impl true
-  def mount(_params, session, socket) do
-    socket = assign_locale(socket, session)
-
+  def mount(_params, _session, socket) do
     case_studies =
       Content.list(
         "case_study",
@@ -39,7 +42,7 @@ defmodule PortfolioWeb.HomeLive do
 
   @impl true
   def handle_params(params, uri, socket) do
-    socket = handle_locale_and_path(socket, params, uri)
+    socket = PortfolioWeb.LiveHelpers.handle_locale_and_path(socket, params, uri)
 
     # Re-fetch the case studies with the updated locale
     case_studies =

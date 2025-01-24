@@ -8,19 +8,20 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   import PortfolioWeb.Components.PortfolioItemList
 
   @impl true
-  def mount(_params, session, socket) do
+  def on_mount(:default, params, session, socket) do
+    {:cont, PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
     env = Application.get_env(:portfolio, :environment)
 
-    user_locale =
-      session["user_locale"] || Application.get_env(:portfolio, :default_locale)
+    Logger.debug("Case study index mounted with locale: #{socket.assigns.user_locale}")
 
-    Logger.debug("Case study index mounted with locale: #{user_locale}")
-
-    case_studies = Content.list("case_study", [], user_locale)
+    case_studies = Content.list("case_study", [], socket.assigns.user_locale)
 
     {:ok,
      socket
-     |> assign(:user_locale, user_locale)
      |> assign(:env, env)
      |> stream(:case_studies, case_studies)}
   end
