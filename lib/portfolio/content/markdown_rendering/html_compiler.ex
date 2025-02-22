@@ -1,37 +1,33 @@
 defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
   @moduledoc """
-  Renders the schema-specific Abstract Syntax Tree (AST) to HTML, including custom UI components.
-
-  This module provides functionality to transform an AST representation of content
-  into HTML, handling both standard HTML tags and custom components like images.
+  Transforms parsed Markdown AST into a Component AST that can be rendered
+  with Phoenix components.
   """
 
   require Logger
-  alias PortfolioWeb.Components.TypographyHelpers
-
-  @type ast_node ::
-          {binary(), list(), list() | binary(), map()}
-          | {:custom_image, binary(), binary(), map()}
-          | binary()
-  @type render_opts :: keyword()
+  alias PortfolioWeb.Components.Typography
 
   @doc """
-  Renders the given content AST to HTML.
+  Renders the given content AST to a Component AST.
 
   ## Parameters
-    - content: A map containing the AST to be rendered.
-    - opts: Optional keyword list of rendering options (currently unused).
+    - content: A map containing the AST to be rendered
+    - opts: Optional keyword list of rendering options
 
   ## Returns
-    - `{:ok, html}` if rendering is successful, where `html` is the rendered HTML string.
-    - `{:error, reason}` if rendering fails, where `reason` is an error message.
+    - {:ok, component_ast} if rendering is successful
+    - {:error, reason} if rendering fails
   """
-  @spec render(map(), render_opts()) :: {:ok, String.t()} | {:error, String.t()}
-  def render(content, opts \\ [])
-
-  def render(%{ast: ast}, _opts) when is_list(ast) do
-    html = Enum.map_join(ast, "", &transform/1)
-    {:ok, html}
+  @spec render(map(), keyword()) :: {:ok, term()} | {:error, String.t()}
+  def render(%{ast: ast}, opts \\ []) when is_list(ast) do
+    try do
+      component_ast = Enum.map(ast, &transform_node/1)
+      {:ok, component_ast}
+    rescue
+      e ->
+        Logger.error("Failed to compile AST: #{inspect(e)}")
+        {:error, "Failed to compile content"}
+    end
   end
 
   def render(_, _opts) do
@@ -39,92 +35,44 @@ defmodule Portfolio.Content.MarkdownRendering.HTMLCompiler do
     {:error, "Invalid content"}
   end
 
-  @doc """
-  Transforms an AST node into its HTML representation.
-
-  ## Parameters
-    - node: An AST node to be transformed.
-
-  ## Returns
-    - A string or list of strings representing the HTML for the given node.
-  """
-  @spec transform(ast_node()) :: String.t() | [String.t()]
-  def transform({tag, attrs, content, _meta}) when is_binary(tag) do
-    attributes = transform_attributes(attrs)
-    transformed_content = transform_content(content)
-    ["<#{tag}#{attributes}>", transformed_content, "</#{tag}>"]
+  # Transform heading nodes to typography components
+  defp transform_node({:heading, level, content, meta}) do
+    {:component, Typography, :typography,
+     %{
+       tag: "h#{level}",
+       size: get_size_for_heading(level),
+       dropcap: false
+     }, transform_content(content)}
   end
 
-  # coveralls-ignore-start
-  def transform({:custom_image, alt, src, attrs}) do
-    Logger.info("Rendering custom image: #{src}")
-    caption = Map.get(attrs, "caption", "")
-    srcset = Map.get(attrs, "srcset", "")
-
-    """
-    <figure class="responsive-image">
-      <img src="#{src}" alt="#{alt}" srcset="#{srcset}">
-      <figcaption>#{caption}</figcaption>
-    </figure>
-    """
+  # Transform paragraph nodes to typography components
+  defp transform_node({:paragraph, _attrs, content, meta}) do
+    {:component, Typography, :typography,
+     %{
+       tag: "p",
+       size: "md",
+       dropcap: meta[:first_paragraph] || false
+     }, transform_content(content)}
   end
 
-  # coveralls-ignore-stop
-  # TODO: This seems to run on every save.
-  def transform({:typography, tag, attrs, content, _meta}) do
-    # Merge default attributes with any existing ones
-    assigns =
-      Map.new(attrs)
-      |> Map.put_new(:tag, tag)
-      |> Map.put_new(:size, get_size_for_tag(tag))
+  # Transform text nodes
+  defp transform_node(content) when is_binary(content), do: content
 
-    # Build the class names using TypographyHelpers
-    class_name = TypographyHelpers.build_class_names(assigns)
-
-    # Generate additional attributes (except :class and :tag)
-    attributes = generate_additional_attributes(assigns)
-
-    # Transform the inner content
-    transformed_content = transform_content(content)
-
-    # Construct the HTML string
-    [
-      "<#{assigns.tag} class=\"#{class_name}\"#{attributes}>",
-      transformed_content,
-      "</#{assigns.tag}>"
-    ]
-  end
-
-  def transform(content) when is_binary(content), do: content
-
-  @spec transform_attributes(list({String.t(), String.t()})) :: String.t()
-  defp transform_attributes(attrs) do
-    Enum.map_join(attrs, "", fn {key, value} -> " #{key}=\"#{value}\"" end)
-  end
-
-  @spec transform_content(list(ast_node()) | String.t()) :: String.t()
+  # Transform lists of nodes
   defp transform_content(content) when is_list(content) do
-    Enum.map_join(content, "", &transform/1)
+    Enum.map(content, &transform_node/1)
   end
 
-  defp transform_content(content) when is_binary(content), do: content
+  defp transform_content(content), do: content
 
-  defp get_size_for_tag(tag) do
-    case tag do
-      "h1" -> "4xl"
-      "h2" -> "3xl"
-      "h3" -> "2xl"
-      "h4" -> "1xl"
-      "h5" -> "1xl"
-      "h6" -> "md"
-      "p" -> "md"
-      _ -> ""
+  defp get_size_for_heading(level) do
+    case level do
+      1 -> "4xl"
+      2 -> "3xl"
+      3 -> "2xl"
+      4 -> "1xl"
+      5 -> "1xs"
+      _ -> "1xs"
     end
-  end
-
-  defp generate_additional_attributes(assigns) do
-    assigns
-    |> Map.drop([:tag, :size, :font, :color, :center, :class])
-    |> Enum.map_join("", fn {key, value} -> " #{key}=\"#{value}\"" end)
   end
 end

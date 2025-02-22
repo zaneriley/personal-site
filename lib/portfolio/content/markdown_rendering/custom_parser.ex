@@ -46,19 +46,10 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParser do
 
   defp preprocess_custom_components(content) do
     content
-    |> preprocess_custom_images()
 
     # Add more custom component preprocessing here
   end
 
-  defp preprocess_custom_images(content) do
-    Regex.replace(~r/!\[(.*?)\]\((.*?)\){(.*?)}/, content, fn _,
-                                                              alt,
-                                                              src,
-                                                              attrs ->
-      "{:custom_image, #{inspect(alt)}, #{inspect(src)}, #{inspect(parse_attrs(attrs))}}"
-    end)
-  end
 
   defp parse_attrs(attrs) do
     attrs
