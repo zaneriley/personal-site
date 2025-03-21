@@ -1,6 +1,5 @@
 defmodule Portfolio.Content.Markdown.PipelineTest do
   use ExUnit.Case, async: true
-  import ExUnit.CaptureLog
 
   # Module doesn't exist yet, but we're defining tests first per TDD
   alias Portfolio.Content.Markdown.Pipeline

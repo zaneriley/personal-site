@@ -2,15 +2,7 @@ defmodule Portfolio.Content.Markdown.RendererTest do
   use ExUnit.Case, async: true
 
   alias Portfolio.Content.Markdown.Renderer
-  alias Portfolio.Content.Markdown.Transforms
   alias Portfolio.Cache
-
-  # Helper functions for common test needs
-  defp make_text(text), do: text
-
-  defp make_element(tag, attrs, children, meta \\ %{}) do
-    {tag, attrs || [], children, meta || %{}}
-  end
 
   # Setup to manage cache state between tests
   setup do

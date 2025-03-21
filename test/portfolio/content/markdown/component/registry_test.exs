@@ -1,18 +1,17 @@
 defmodule Portfolio.Content.Markdown.Component.RegistryTest do
   use ExUnit.Case, async: false
-  import ExUnit.CaptureLog
 
   alias Portfolio.Content.Markdown.Component.Registry
 
   # Define a test component for use in registration tests
   defmodule TestComponent do
-    def render(assigns) do
+    def render(_assigns) do
       # This is just a stub for testing
     end
   end
 
   defmodule AnotherComponent do
-    def render(assigns) do
+    def render(_assigns) do
       # Another stub component
     end
   end
