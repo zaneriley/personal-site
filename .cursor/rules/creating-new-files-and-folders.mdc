@@ -1,0 +1,34 @@
+---
+description: Before creating any new files or folders, follow these rules.
+globs: 
+alwaysApply: true
+---
+- ALWAYS check the existing directory and folder structures. List the files out and search the codebase to see how things are structured.
+
+0. **MANDATORY: Map the existing architecture**
+   - Create a clear understanding of the current module structure and dependency flow
+   - Document key modules and their relationships before modifying them
+   - Identify existing patterns and conventions used in the codebase
+
+1. **NEVER assume missing functionality**
+   - Explicitly search for functionality before implementing it
+   - Check for existing modules with similar names or purposes
+   - Use grep or codebase search to find related implementations
+
+2. **Architectural alignment requirement**
+   - New code MUST follow existing architectural patterns
+   - Match naming conventions used in similar components
+   - Follow established module organization and folder structure
+
+3. **Explicit duplication avoidance**
+   - Before creating any new module, search for similar existing modules
+   - Document why a new module is needed instead of extending an existing one
+   - Get explicit confirmation before implementing potentially redundant functionality
+
+4. **Documentation before modification**
+   - Diagram module interactions for complex components
+   - Document expected changes and their impact on the system
+
+5. **Implementation verification process**
+   - Compare your implementation against similar existing components
+   - Justify any deviations from established patterns

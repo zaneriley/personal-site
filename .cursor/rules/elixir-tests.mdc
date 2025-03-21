@@ -1,0 +1,9 @@
+---
+description: These rules are helpful when writing tests, following TDD, or verifying functionality of elixir code.
+globs: *.exs, test/*
+alwaysApply: false
+---
+- When asked to follow TDD, first focus on writing out what we should be tested. Do not write code yet.
+- Never test migration files. 
+- Do not create new functionality or new non-test files unless you were specifically asked to get failed tests passing and it makes sense to create new files.
+- Do not test on full complete strings, as that's brittle and subject to change. 

@@ -10,7 +10,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   @dialyzer {:nowarn_function, mount: 3}
   @impl true
   def on_mount(:default, _params, session, socket) do
-    {:cont, PortfolioWeb.LiveHelpers.setup_common_assigns(socket, _params, session)}
+    {:cont,
+     PortfolioWeb.LiveHelpers.setup_common_assigns(socket, _params, session)}
   end
 
   @impl true

@@ -20,14 +20,63 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParserTest do
       ast = result.ast
 
       assert [
-               {"h2", [], ["Heading 2"], %{}},
-               {"p", [], ["This is a paragraph."], %{}},
+               {:typography, "h2", %{font: "cardinal", size: "3xl"},
+                ["Heading 2"], %{}},
+               {:typography, "p", %{size: "md"}, ["This is a paragraph."],
+                %{dropcap: true}},
                {"ul", [],
                 [
                   {"li", [], ["List item 1"], %{}},
                   {"li", [], ["List item 2"], %{}}
                 ], %{}}
              ] == ast
+    end
+
+    # New test for image to figure transformation
+    test "transforms markdown images to figure components" do
+      markdown = """
+      # Test Images
+
+      ![Test image](test-image.jpg)
+
+      Regular paragraph.
+      """
+
+      {:ok, result} = CustomParser.parse(markdown)
+      ast = result.ast
+
+      # First element should be h1 typography
+      [h1_node, figure_node, p_node] = ast
+
+      # Verify the figure transformation
+      assert {:component, :figure, attrs, [], _meta} = figure_node
+      assert attrs.src == "test-image.jpg"
+      assert attrs.alt == "Test image"
+      assert attrs.caption == nil
+    end
+
+    # New test for image with caption (image followed by italicized text)
+    test "transforms markdown images with captions to figure components with captions" do
+      markdown = """
+      # Test Images with Captions
+
+      ![Test image](test-image.jpg)
+      *This is a caption for the image*
+
+      Regular paragraph.
+      """
+
+      {:ok, result} = CustomParser.parse(markdown)
+      ast = result.ast
+
+      # First element should be h1 typography
+      [h1_node, figure_node, p_node] = ast
+
+      # Verify the figure transformation with caption
+      assert {:component, :figure, attrs, [], _meta} = figure_node
+      assert attrs.src == "test-image.jpg"
+      assert attrs.alt == "Test image"
+      assert attrs.caption == "This is a caption for the image"
     end
 
     # Not implemented yet
@@ -42,6 +91,40 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParserTest do
       assert [
                {:p, [], ["This is a custom paragraph component."], %{}}
              ] = ast
+    end
+
+    # New test for custom delimiter syntax components
+    test "parses custom component syntax with delimiters" do
+      markdown = """
+      # Custom Components
+
+      ::carousel{title="Project Images" autoplay=true}
+      ![Image 1](image1.jpg)
+      *Caption 1*
+
+      ![Image 2](image2.jpg)
+      *Caption 2*
+      ::end-carousel
+
+      Regular paragraph after component.
+      """
+
+      {:ok, result} = CustomParser.parse(markdown)
+      ast = result.ast
+
+      # First element should be h1 typography
+      [h1_node, carousel_node, p_node] = ast
+
+      # Verify the carousel component
+      assert {:component, :carousel, attrs, content, _meta} = carousel_node
+      assert attrs.title == "Project Images"
+      assert attrs.autoplay == true
+
+      # Carousel should contain figure components
+      assert length(content) == 2
+      assert {:component, :figure, figure1_attrs, [], _} = Enum.at(content, 0)
+      assert figure1_attrs.src == "image1.jpg"
+      assert figure1_attrs.caption == "Caption 1"
     end
 
     test "preserves metadata and frontmatter" do
@@ -59,7 +142,11 @@ defmodule Portfolio.Content.MarkdownRendering.CustomParserTest do
       assert frontmatter == "title: Test Case Study\ncompany: ACME Corp\n"
 
       assert Enum.any?(ast, fn node ->
-               match?({"h1", _, ["Content"], _}, node)
+               match?(
+                 {:typography, "h1", %{font: "cardinal", size: "4xl"},
+                  ["Content"], %{}},
+                 node
+               )
              end)
     end
 

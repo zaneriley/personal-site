@@ -30,6 +30,8 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         field :content, :string
         # compiled html
         field :compiled_content, :string, virtual: true
+        # stored AST representation
+        field :stored_ast, {:array, :map}
         field :introduction, :string
         field :read_time, :integer
         field :word_count, :integer
@@ -53,7 +55,8 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         :file_path,
         :published_at,
         :is_draft,
-        :word_count
+        :word_count,
+        :stored_ast
       ]
 
       def changeset(struct, attrs) do

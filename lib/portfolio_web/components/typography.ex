@@ -11,8 +11,66 @@ defmodule PortfolioWeb.Components.Typography do
   """
 
   use Phoenix.Component
-  import Phoenix.HTML
-  require Logger
+
+  use Portfolio.Content.MarkdownRendering.Components.Definition,
+    type: :typography,
+    function: :typography,
+    description:
+      "A flexible typography component for rendering text elements with customizable styles",
+    attributes: %{
+      tag: %{
+        type: :string,
+        required: false,
+        default: "p",
+        description: "The HTML tag to use (e.g., h1, p, span)"
+      },
+      size: %{
+        type: :string,
+        required: false,
+        default: "md",
+        description: "The text size, e.g., '4xl', 'md', '1xs'"
+      },
+      center: %{
+        type: :boolean,
+        required: false,
+        default: false,
+        description: "Centers the text if set to true"
+      },
+      color: %{
+        type: :string,
+        required: false,
+        default: nil,
+        description: "Additional text color classes"
+      },
+      font: %{
+        type: :string,
+        required: false,
+        default: nil,
+        description: "The font variant to use, e.g., 'cardinal', 'cheee'"
+      },
+      dropcap: %{
+        type: :boolean,
+        required: false,
+        default: false,
+        description: "Enables dropcap styling if set to true"
+      },
+      locale: %{
+        type: :string,
+        required: false,
+        default: nil,
+        description: "The locale for the text"
+      }
+    },
+    examples: [
+      """
+      <.typography tag="h1" size="4xl" center={true}>Heading 1</.typography>
+      """,
+      """
+      <.typography tag="p" size="md" dropcap={true}>Paragraph with dropcap</.typography>
+      """
+    ]
+
+  alias Phoenix.HTML.Safe
 
   @doc """
   Renders a typography element with the specified attributes.
@@ -27,6 +85,7 @@ defmodule PortfolioWeb.Components.Typography do
     * `:font` - The font variant to use, e.g., `"cardinal"`, `"cheee"` (optional).
     * `:dropcap` - Enables dropcap styling if set to `true` (default: `false`).
     * `:class` - Additional custom classes (optional).
+    * `:locale` - The locale for the text (optional).
 
   ## Examples
 
@@ -46,6 +105,7 @@ defmodule PortfolioWeb.Components.Typography do
   attr :font, :string, default: nil
   attr :dropcap, :boolean, default: false
   attr :class, :string, default: nil
+  attr :locale, :string, default: nil
   slot :inner_block, required: true
 
   alias PortfolioWeb.Components.TypographyHelpers

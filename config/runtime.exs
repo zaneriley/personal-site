@@ -30,14 +30,22 @@ database =
     database
   end
 
-config :portfolio, Portfolio.Repo,
-  url: System.get_env("DATABASE_URL"),
-  username: db_user,
-  password: System.get_env("POSTGRES_PASSWORD", "password"),
-  database: database,
-  hostname: System.get_env("POSTGRES_HOST", "postgres"),
-  port: String.to_integer(System.get_env("POSTGRES_PORT", "5432")),
-  pool_size: String.to_integer(System.get_env("POSTGRES_POOL", "15"))
+# Merge the new database configuration with any existing config
+# This preserves the pool setting for the test environment
+repo_config = Application.get_env(:portfolio, Portfolio.Repo) || []
+
+repo_config =
+  Keyword.merge(repo_config,
+    url: System.get_env("DATABASE_URL"),
+    username: db_user,
+    password: System.get_env("POSTGRES_PASSWORD", "password"),
+    database: database,
+    hostname: System.get_env("POSTGRES_HOST", "postgres"),
+    port: String.to_integer(System.get_env("POSTGRES_PORT", "5432")),
+    pool_size: String.to_integer(System.get_env("POSTGRES_POOL", "15"))
+  )
+
+config :portfolio, Portfolio.Repo, repo_config
 
 config :portfolio, :github_token, System.get_env("GITHUB_TOKEN")
 

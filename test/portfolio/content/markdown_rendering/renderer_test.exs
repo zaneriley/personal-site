@@ -143,4 +143,54 @@ defmodule Portfolio.Content.MarkdownRendering.RendererTest do
       refute Portfolio.Cache.exists?(cache_key)
     end
   end
+
+  describe "render/2 with column layout" do
+    test "renders content with column layout from frontmatter" do
+      markdown = """
+      ---
+      layout: columns
+      columns:
+        - width: 1
+          content: main
+        - width: 2
+          content: sidebar
+      ---
+      # Column Layout Example
+
+      This content should be in a column layout.
+      """
+
+      assert {:ok, result} = Renderer.render(markdown)
+
+      # The result should contain a column_layout component in the AST
+      assert is_list(result)
+
+      # Find the column_layout component
+      column_layout_component =
+        Enum.find(result, fn
+          {:component, module, function, _attrs, _content} ->
+            function == :column_layout
+
+          _ ->
+            false
+        end)
+
+      # Verify the component is present with expected attributes
+      assert column_layout_component != nil
+
+      {:component, _module, :column_layout, attrs, content} =
+        column_layout_component
+
+      # Check column specifications
+      assert is_list(attrs[:columns])
+      assert length(attrs[:columns]) == 2
+      assert Enum.at(attrs[:columns], 0)[:width] == "1"
+      assert Enum.at(attrs[:columns], 1)[:width] == "2"
+
+      # Check content (slot for column_layout)
+      assert is_list(content)
+      assert length(content) == 1
+      assert match?(%{__slot__: :column, index: 0}, Enum.at(content, 0))
+    end
+  end
 end

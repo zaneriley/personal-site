@@ -8,14 +8,17 @@ defmodule PortfolioWeb.NoteLive.Index do
 
   @impl true
   def on_mount(:default, _params, session, socket) do
-    {:cont, PortfolioWeb.LiveHelpers.setup_common_assigns(socket, _params, session)}
+    {:cont,
+     PortfolioWeb.LiveHelpers.setup_common_assigns(socket, _params, session)}
   end
 
   @impl true
   def mount(_params, _session, socket) do
     env = Application.get_env(:portfolio, :environment)
 
-    Logger.debug("Note index mounted with locale: #{socket.assigns.user_locale}")
+    Logger.debug(
+      "Note index mounted with locale: #{socket.assigns.user_locale}"
+    )
 
     {:ok,
      socket

@@ -43,6 +43,8 @@ defmodule Portfolio.Content.EntryManager do
           | {:error, :invalid_content_type}
           | {:error, any()}
   def create_content(attrs) do
+    Logger.debug("Create content called with attrs: #{inspect(attrs)}")
+
     case get_schema(attrs["content_type"]) do
       {:error, :invalid_content_type} = error ->
         error
@@ -71,6 +73,27 @@ defmodule Portfolio.Content.EntryManager do
           {:ok, String.t()}
           | {:error, :empty_compiled_content | :empty_content | any()}
   defp compile_content(content, content_type) do
+    # First, get the AST for the content
+    ast_result =
+      Renderer.render_and_cache(
+        content.content,
+        content_type,
+        content.id,
+        return_ast: true
+      )
+
+    # Store the AST in the content record
+    case ast_result do
+      {:ok, ast} when is_list(ast) ->
+        # Store the AST in the database
+        Repo.update(Ecto.Changeset.change(content, stored_ast: ast))
+
+      _ ->
+        # Don't update if we couldn't get the AST
+        :ok
+    end
+
+    # Continue with HTML rendering
     case Renderer.render_and_cache(content.content, content_type, content.id) do
       {:ok, compiled_content}
       when is_binary(compiled_content) and compiled_content != "" ->
@@ -81,6 +104,37 @@ defmodule Portfolio.Content.EntryManager do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  @doc """
+  Gets the AST for a content entry.
+
+  ## Parameters
+
+    * `content` - The content entry to get the AST for.
+    * `content_type` - The type of the content.
+
+  ## Returns
+
+    * `{:ok, ast}` if the AST is successfully retrieved.
+    * `{:error, reason}` if there was an error during retrieval.
+  """
+  @spec get_content_ast(Note.t() | CaseStudy.t(), Types.content_type()) ::
+          {:ok, list()} | {:error, any()}
+  def get_content_ast(content, content_type) do
+    # If we have stored AST, use it
+    if content.stored_ast && is_map(content.stored_ast) &&
+         Map.has_key?(content.stored_ast, :ast) do
+      {:ok, content.stored_ast.ast}
+    else
+      # Otherwise, render and cache
+      Renderer.render_and_cache(
+        content.content,
+        content_type,
+        content.id,
+        return_ast: true
+      )
     end
   end
 
@@ -109,30 +163,56 @@ defmodule Portfolio.Content.EntryManager do
   @spec update_content(Note.t() | CaseStudy.t(), map(), content_type()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, any()}
   def update_content(content, attrs, content_type) do
-    Logger.info("Updating content with attrs: #{inspect(attrs)}")
-
-    with changeset <- apply_changeset(content, attrs),
-         {:ok, updated_content} <- update_content_transaction(changeset),
-         {:ok, compiled_content} <-
-           compile_content(updated_content, content_type),
-         {:ok, content_with_compiled} <-
-           update_compiled_content(updated_content, compiled_content) do
-      {:ok, content_with_compiled}
-    else
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  @spec update_content_transaction(Ecto.Changeset.t()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
-  defp update_content_transaction(changeset) do
+    # Start a transaction
     Repo.transaction(fn ->
-      case Repo.update(changeset) do
-        {:ok, updated_content} -> updated_content
-        {:error, changeset} -> Repo.rollback(changeset)
+      # Update basic attributes first
+      with {:ok, content} <- do_update_content(content, attrs),
+           # Then handle content compilation if content was updated
+           {:ok, content} <- maybe_compile_content(content, attrs, content_type) do
+        content
+      else
+        {:error, reason} -> Repo.rollback(reason)
       end
     end)
   end
+
+  # Private helper to perform the actual update
+  defp do_update_content(content, attrs) do
+    content
+    |> Ecto.Changeset.cast(attrs, [
+      :title,
+      :url,
+      :content,
+      :published,
+      :published_at
+    ])
+    |> Ecto.Changeset.validate_required([:title, :url, :content])
+    |> Repo.update()
+  end
+
+  # Only compile content if it has changed
+  defp maybe_compile_content(content, %{content: new_content}, content_type)
+       when is_binary(new_content) do
+    # Render and get both HTML and AST
+    with {:ok, ast} <-
+           Renderer.render_and_cache(new_content, content_type, content.id,
+             return_ast: true
+           ),
+         {:ok, html} <-
+           Renderer.render_and_cache(new_content, content_type, content.id) do
+      # Update with both compiled content and stored AST
+      content
+      |> Ecto.Changeset.change(
+        compiled_content: html,
+        # Wrap the AST in a map
+        stored_ast: %{ast: ast}
+      )
+      |> Repo.update()
+    end
+  end
+
+  # If content wasn't updated, return content as is
+  defp maybe_compile_content(content, _attrs, _content_type), do: {:ok, content}
 
   @doc """
   Deletes a content entry.
@@ -188,12 +268,21 @@ defmodule Portfolio.Content.EntryManager do
             raise Ecto.NoResultsError, queryable: query
 
           content ->
+            # Use the enhanced renderer
             {:ok, compiled_html} =
               Renderer.render_and_cache(
                 content.content,
                 content_type,
                 content.id
               )
+
+            # Also pre-cache the AST for later use
+            Renderer.render_and_cache(
+              content.content,
+              content_type,
+              content.id,
+              return_ast: true
+            )
 
             %{content | compiled_content: compiled_html}
         end
@@ -356,9 +445,11 @@ defmodule Portfolio.Content.EntryManager do
     end
   end
 
-  @spec compile_content(Note.t() | CaseStudy.t(), Types.content_type(), [
-          String.t()
-        ]) ::
+  @spec compile_content(
+          %{id: binary(), content: String.t()},
+          Types.content_type(),
+          [String.t()]
+        ) ::
           {:ok, String.t()}
           | {:error, atom()}
           | {:error, :empty_content}
@@ -368,12 +459,22 @@ defmodule Portfolio.Content.EntryManager do
     is_markdown = "content" in markdown_fields
 
     try do
+      # Use enhanced renderer for HTML output
       case Renderer.render_and_cache(content.content, content_type, content.id,
              is_markdown: is_markdown
            ) do
         {:ok, compiled} when is_binary(compiled) and compiled != "" ->
           Logger.debug(
             "Successfully compiled content for #{content_type} with ID: #{content.id}"
+          )
+
+          # Also cache the AST for future use
+          Renderer.render_and_cache(
+            content.content,
+            content_type,
+            content.id,
+            is_markdown: is_markdown,
+            return_ast: true
           )
 
           {:ok, compiled}
@@ -546,4 +647,151 @@ defmodule Portfolio.Content.EntryManager do
 
   defp apply_changeset(%CaseStudy{} = case_study, attrs),
     do: CaseStudy.changeset(case_study, attrs)
+
+  # Helper function to make AST serializable for JSON
+  defp serialize_ast(ast) when is_list(ast) do
+    Enum.map(ast, &serialize_ast_node/1)
+  end
+
+  # Convert tuple-based AST nodes to maps
+  defp serialize_ast_node({:component, type, attrs, content, meta}) do
+    %{
+      type: :component,
+      component_type: type,
+      attrs: serialize_attrs(attrs),
+      content: serialize_ast(content),
+      meta: meta
+    }
+  end
+
+  # Convert tuple-based AST nodes to maps - typography specific case
+  defp serialize_ast_node({:typography, tag, attrs, content, meta}) do
+    %{
+      type: :typography,
+      tag: tag,
+      attrs: serialize_attrs(attrs),
+      content: serialize_ast(content),
+      meta: meta
+    }
+  end
+
+  # Convert HTML tag tuples to maps
+  defp serialize_ast_node({tag, attrs, content, meta}) when is_binary(tag) do
+    %{
+      type: :tag,
+      tag: tag,
+      attrs: serialize_attrs(attrs),
+      content: serialize_ast(content),
+      meta: meta
+    }
+  end
+
+  # Handle two-element tuples (like {"href", url})
+  defp serialize_ast_node({key, value}) when is_binary(key) do
+    %{tuple_key: key, tuple_value: serialize_ast_node(value)}
+  end
+
+  # Pass through non-tuple nodes
+  defp serialize_ast_node(node) when is_binary(node), do: node
+  defp serialize_ast_node(node) when is_map(node), do: node
+  defp serialize_ast_node(node) when is_list(node), do: serialize_ast(node)
+  defp serialize_ast_node(node), do: to_string(node)
+
+  # Helper function to serialize attributes
+  defp serialize_attrs(attrs) when is_map(attrs) do
+    Enum.map(attrs, fn {k, v} -> {k, serialize_ast_node(v)} end)
+    |> Enum.into(%{})
+  end
+
+  defp serialize_attrs(attrs), do: attrs
+
+  # Helper function to deserialize the AST
+  defp deserialize_ast(ast) when is_list(ast) do
+    Enum.map(ast, &deserialize_ast_node/1)
+  end
+
+  # Deserialize component node
+  defp deserialize_ast_node(%{
+         type: :component,
+         component_type: type,
+         attrs: attrs,
+         content: content,
+         meta: meta
+       }) do
+    {:component, type, deserialize_attrs(attrs), deserialize_ast(content), meta}
+  end
+
+  # Deserialize typography node
+  defp deserialize_ast_node(%{
+         type: :typography,
+         tag: tag,
+         attrs: attrs,
+         content: content,
+         meta: meta
+       }) do
+    {:typography, tag, deserialize_attrs(attrs), deserialize_ast(content), meta}
+  end
+
+  # Deserialize tag node
+  defp deserialize_ast_node(%{
+         type: :tag,
+         tag: tag,
+         attrs: attrs,
+         content: content,
+         meta: meta
+       }) do
+    {tag, deserialize_attrs(attrs), deserialize_ast(content), meta}
+  end
+
+  # Deserialize two-element tuple
+  defp deserialize_ast_node(%{tuple_key: key, tuple_value: value})
+       when is_binary(key) do
+    {key, deserialize_ast_node(value)}
+  end
+
+  # Passthrough for strings, maps, and lists
+  defp deserialize_ast_node(node) when is_binary(node), do: node
+
+  defp deserialize_ast_node(node) when is_map(node) do
+    if Map.has_key?(node, :type) or Map.has_key?(node, "type") do
+      case node[:type] || node["type"] do
+        :component ->
+          {:component, node[:component_type] || node["component_type"],
+           deserialize_attrs(node[:attrs] || node["attrs"]),
+           deserialize_ast(node[:content] || node["content"]),
+           node[:meta] || node["meta"]}
+
+        :typography ->
+          {:typography, node[:tag] || node["tag"],
+           deserialize_attrs(node[:attrs] || node["attrs"]),
+           deserialize_ast(node[:content] || node["content"]),
+           node[:meta] || node["meta"]}
+
+        :tag ->
+          {node[:tag] || node["tag"],
+           deserialize_attrs(node[:attrs] || node["attrs"]),
+           deserialize_ast(node[:content] || node["content"]),
+           node[:meta] || node["meta"]}
+
+        _ ->
+          node
+      end
+    else
+      if Map.has_key?(node, :tuple_key) or Map.has_key?(node, "tuple_key") do
+        {node[:tuple_key] || node["tuple_key"],
+         deserialize_ast_node(node[:tuple_value] || node["tuple_value"])}
+      else
+        node
+      end
+    end
+  end
+
+  defp deserialize_ast_node(node) when is_list(node), do: deserialize_ast(node)
+  defp deserialize_ast_node(node), do: node
+
+  # Helper function to deserialize attributes
+  defp deserialize_attrs(attrs) when is_map(attrs) do
+    Enum.map(attrs, fn {k, v} -> {k, deserialize_ast_node(v)} end)
+    |> Enum.into(%{})
+  end
 end
