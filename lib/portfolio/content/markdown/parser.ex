@@ -131,7 +131,7 @@ defmodule Portfolio.Content.Markdown.Parser do
   # Insert custom components back into the AST
   defp insert_custom_components(ast, []), do: ast
 
-  defp insert_custom_components(ast, components) do
+  defp insert_custom_components(ast, _components) do
     # TODO: Implement custom component insertion
     # For now, just return the AST unchanged
     ast
