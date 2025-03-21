@@ -64,34 +64,54 @@ defmodule Portfolio.Content.Markdown.Ast do
     end)
   end
 
+  @doc """
+  Apply a transformation function to each node in the AST, recursively.
+
+  The transform_fn receives each node and should return a transformed node.
+  """
+  def transform(ast, transform_fn) when is_list(ast) and is_function(transform_fn, 1) do
+    Enum.map(ast, &traverse_node(&1, transform_fn))
+  end
+
   # Private helpers
 
-  defp traverse_node({tag, attrs, children, meta} = node, transform_fn)
-       when is_binary(tag) do
-    # Transform children first (depth-first)
-    transformed_children = traverse(children, transform_fn)
-    # Then transform the node itself with the updated children
-    transform_fn.({tag, attrs, transformed_children, meta})
+  defp traverse_node({tag, attrs, children, meta} = _node, transform_fn) when is_binary(tag) do
+    # Apply transform to this node
+    transformed_node = transform_fn.({tag, attrs, children, meta})
+
+    # If the node wasn't completely replaced, recursively transform its children
+    case transformed_node do
+      {t, a, c, m} when is_list(c) ->
+        {t, a, Enum.map(c, &traverse_node(&1, transform_fn)), m}
+      _ ->
+        transformed_node
+    end
   end
 
-  defp traverse_node(
-         {:component, type, attrs, children, meta} = node,
-         transform_fn
-       ) do
-    # Transform children first (depth-first)
-    transformed_children = traverse(children, transform_fn)
-    # Then transform the node itself with the updated children
-    transform_fn.({:component, type, attrs, transformed_children, meta})
+  defp traverse_node({:component, type, attrs, children, meta} = _node, transform_fn) do
+    # Apply transform to this node
+    transformed_node = transform_fn.({:component, type, attrs, children, meta})
+
+    # If the node wasn't completely replaced, recursively transform its children
+    case transformed_node do
+      {:component, t, a, c, m} when is_list(c) ->
+        {:component, t, a, Enum.map(c, &traverse_node(&1, transform_fn)), m}
+      _ ->
+        transformed_node
+    end
   end
 
-  defp traverse_node(
-         {:typography, type, attrs, children, meta} = node,
-         transform_fn
-       ) do
-    # Transform children first (depth-first)
-    transformed_children = traverse(children, transform_fn)
-    # Then transform the node itself with the updated children
-    transform_fn.({:typography, type, attrs, transformed_children, meta})
+  defp traverse_node({:typography, type, attrs, children, meta} = _node, transform_fn) do
+    # Apply transform to this node
+    transformed_node = transform_fn.({:typography, type, attrs, children, meta})
+
+    # If the node wasn't completely replaced, recursively transform its children
+    case transformed_node do
+      {:typography, t, a, c, m} when is_list(c) ->
+        {:typography, t, a, Enum.map(c, &traverse_node(&1, transform_fn)), m}
+      _ ->
+        transformed_node
+    end
   end
 
   defp traverse_node(node, transform_fn) when is_binary(node) do
