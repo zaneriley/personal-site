@@ -79,8 +79,8 @@ defmodule Portfolio.Content.Markdown.Transforms.Layout do
     end
   end
 
-  # Process grid layout (placeholder for future implementation)
-  defp process_grid_layout(ast, metadata) do
+  # Process grid layout nodes
+  defp process_grid_layout(ast, _metadata) do
     # Extract grid specifications from metadata
     # This is a placeholder for future grid layout implementation
     require Logger
