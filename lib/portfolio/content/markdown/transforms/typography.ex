@@ -72,29 +72,24 @@ defmodule Portfolio.Content.Markdown.Transforms.Typography do
   end
 
   # Process heading nodes (h1-h6)
-  defp process_node({"h" <> level, attrs, content, meta}, options, state) when level in ["1", "2", "3", "4", "5", "6"] do
+  defp process_node({"h" <> level, attrs, content, meta}, options, state)
+       when level in ["1", "2", "3", "4", "5", "6"] do
     attrs_map = attrs_to_map(attrs)
+    tag = "h" <> level
 
     # Convert level to integer for sizing logic
     _level_int = String.to_integer(level)
 
-    # Determine size based on heading level
-    size = case level do
-      "1" -> "4xl"
-      "2" -> "3xl"
-      "3" -> "2xl"
-      "4" -> "xl"
-      "5" -> "lg"
-      "6" -> "md"
-    end
+    # Get size from options or use defaults
+    size = Map.get(options.heading_sizes, tag)
 
     # Add font for headings if configured
     attrs_map = Map.put(attrs_map, :size, size)
 
-    # Add default font if configured
+    # Add headings font if configured
     attrs_map =
-      if options.default_font do
-        Map.put(attrs_map, :font, options.default_font)
+      if options.headings_font do
+        Map.put(attrs_map, :font, options.headings_font)
       else
         attrs_map
       end

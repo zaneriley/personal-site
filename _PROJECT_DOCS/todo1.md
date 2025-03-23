@@ -14,8 +14,7 @@ The two-phase markdown rendering system should:
 
 - **Markdown First**: Keep content as close to standard markdown as possible for author friendliness
 - **Component Integration**: Allow Phoenix components to be embedded within markdown content
-- **SEO Preservation**: Maintain full server-side rendering for optimal SEO
-- **No Duplicate Logic**: Avoid recreating Phoenix/HEEx validation and component logic
+s- **No Duplicate Logic**: Avoid recreating Phoenix/HEEx validation and component logic
 - **DX Consistency**: Use existing Phoenix patterns where possible instead of inventing new ones
 - **Performance**: Minimize performance impact and enable caching where appropriate
 - **Maintainability**: Follow Elixir best practices and keep the codebase maintainable
@@ -29,24 +28,7 @@ The two-phase markdown rendering system should:
   - LiveView templates should render translated content properly regardless of format
   - Translation storage should continue to use raw content, not rendered output
   - Ensure all LiveView tests for translations continue to pass with component AST
-
-## Implementation Approach
-
-We will enhance the existing `markdown_rendering` modules rather than creating a new system. The current folder structure:
-
-```
-lib/portfolio/content/markdown_rendering/
-├── custom_parser.ex    - Parses markdown into AST
-├── html_compiler.ex    - Transforms AST to component calls
-└── renderer.ex         - Handles rendering and caching
-```
-
-This existing architecture already aligns well with our two-phase rendering requirements:
-1. Phase 1: Parse markdown + component syntax → AST (enhance `custom_parser.ex`)
-2. Phase 2: Render AST → LiveView components (enhance `html_compiler.ex`)
-
-We'll extend these modules to support embedded components while maintaining backward compatibility.
-
+s
 ### Guiding Principles
 
 After exploring options, we're adopting the following principles:
@@ -162,13 +144,12 @@ This approach streamlines our architecture and eliminates redundant processing, 
 
 *   **Component Architecture:**
     *   [x] New `Portfolio.Content.MarkdownRendering.Components.Definition` module for component definition.
-    *   [x] New `Portfolio.Content.MarkdownRendering.Components.Registry` (GenServer-based) for component registration and lookup.
+    *   [x] New `Portfolio.Content.Markdown.Component.Registry` (GenServer-based) for component registration and lookup.
     *   [ ] Migration of all components to the new `Definition` and Registry.
     *   [ ] Deprecation/removal of the older `component_registry.ex` (ETS-based).
 *   **Rendering Pipeline:**
     *   [x] Pipeline stages defined using `Portfolio.Content.MarkdownRendering.Pipeline.Stage` behavior.
     *   [x] Implemented `TypographyEnhancement`, `ComponentResolution`, `LayoutProcessing` stages.
-    *   [ ] Integration of `figure` and `carousel` components into the pipeline.
     *   [x] Fixed pipeline option passing issues (BadMapError).
 *   **File Reorganization:**
     *   [x] Create new `lib/portfolio/content/markdown/` namespace
@@ -177,17 +158,6 @@ This approach streamlines our architecture and eliminates redundant processing, 
     *   [ ] Create public API facade in `lib/portfolio/content/markdown.ex`
 
 ## Actionable TODO List
-
-**1. Architectural Refactoring (High Priority)**
-
-*   [x] **Consolidate Component Registries:**
-    *   [x] Create new `Portfolio.Content.Markdown.ComponentRegistry` GenServer-based registry.
-    *   [x] Implement component registration and lookup functionality.
-    *   [x] Add proper tests for the registry with passing test cases.
-    *   [ ] Deprecate and remove the old `srv/personal-site/lib/portfolio/content/markdown_rendering/component_registry.ex` (ETS-based) registry.
-    *   [ ] Migrate any components still registered in the old registry to the new registry.
-    *   [ ] Update all code that uses component registries to point to the *new* GenServer-based registry.
-    *   [ ] Update documentation to reflect the single, GenServer-based registry as the standard.
 
 **2. Debugging Pipeline Option Passing (High Priority - Fixes `BadMapError` tests)**
 
@@ -200,17 +170,13 @@ This approach streamlines our architecture and eliminates redundant processing, 
 **3. Component Implementation (Medium Priority)**
 
 *   [ ] **Implement `FigureComponent`:**
-    *   [ ] Create `srv/personal-site/lib/portfolio_web/components/figure_component.ex` using the `Definition` module.
+    *   [ ] Create `srv/personal-site/lib/portfolio_web/components/figure.ex` using the `Definition` module.
     *   [ ] Define attributes for `FigureComponent` (src, alt, caption, class, etc.).
-    *   [ ] Implement the rendering logic in `figure_component/1`.
+    *   [ ] Figcaption should use the Typography component utilizing the figcaption element.
+    *   [ ] Implement the rendering logic in `figure/1`.
     *   [ ] Write tests for `FigureComponent` (unit tests).
-*   [ ] **Implement `CarouselComponent`:**
-    *   [ ] Create `srv/personal-site/lib/portfolio_web/components/carousel_component.ex` using the `Definition` module.
-    *   [ ] Define attributes for `CarouselComponent` (title, autoplay, class, etc., and slots for carousel items).
-    *   [ ] Implement the rendering logic in `carousel_component/1`, handling slots for carousel items.
-    *   [ ] Write tests for `CarouselComponent` (unit tests).
 *   [ ] **Register New Components:**
-    *   [ ] Register `figure` and `carousel` components in the new GenServer-based registry (in `Portfolio.Application.register_components` or in the component modules themselves using `register()` callback).
+    *   [ ] Register `figure` components in the new GenServer-based registry (in `Portfolio.Application.register_components` or in the component modules themselves using `register()` callback).
 
 **4. Test Fixes (High Priority - Unblock development)**
 
@@ -279,38 +245,6 @@ DO NOT MAKE CAROUSELS OR FIGURE COMPONENTS. ITS OUT OF SCOPE. I'LL BE FIRED IF Y
   - Documentation of the decision process and final approach
   - CI pipeline validates syntax examples against chosen parser
     - RUn `./run elixir:lint` then `./run elixir:format` to check for linting and formatting errors
-  - Run `./run elixir:test` to make sure all tests pass.
-
-- [ ] **Story 1.2**: Define component syntax specification
-  - Document the hybrid syntax approach with examples
-  - Define rules for standard markdown element transformation
-  - Define custom delimiter syntax for complex components
-  - Specify frontmatter structure for layout control
-  - Create formal grammar for custom syntax elements
-  
-  **Definition of Done:**
-  - Formal syntax specification document in Markdown
-  - At least 10 example snippets covering standard markdown and custom components
-  - Automated syntax validator that can check example validity
-  - Test cases covering edge cases and error conditions
-    - RUn `./run elixir:lint` then `./run elixir:format` to check for linting and formatting errors
-  - Run `./run elixir:test` to make sure all tests pass.
-
-- [ ] **Story 1.3**: Design attribute syntax and parsing rules
-  - Define syntax for different attribute types in custom components
-  - Specify how to extract attributes from standard markdown elements
-  - Ensure attribute syntax is compatible with Phoenix component attributes
-  - Document escaping rules for special characters in attributes
-    - RUn `./run elixir:lint` then `./run elixir:format` to check for linting and formatting errors
-  - Run `./run elixir:test` to make sure all tests pass.
-  
-  **Definition of Done:**
-  - Attribute syntax specification document
-  - Test module with parsers for each attribute type
-  - Automated tests verifying conversion between syntax and Elixir types
-  - Documentation of escape sequence handling with examples
-    - RUn `./run elixir:lint` then `./run elixir:format` to check for linting and formatting errors
-  - Run `./run elixir:test` to make sure all tests pass.
 
 - [x] **Story 1.4**: Create component registry design
   - Design module for mapping component names to Phoenix component modules/functions
@@ -479,18 +413,6 @@ DO NOT MAKE CAROUSELS OR FIGURE COMPONENTS. ITS OUT OF SCOPE. I'LL BE FIRED IF Y
   - HTML generation code removed from renderer
   - All verification steps pass
 
-- [ ] **Story 4.3** OUT OF SCOPE, WON'T DO: Optimize performance and error handling
-  - Identify and optimize performance bottlenecks
-  - Implement comprehensive error handling
-  - Add telemetry for monitoring
-  - Document performance characteristics
-  
-  
-  **Definition of Done:**
-  - Performance optimization results documented
-  - Error handling covers all failure scenarios
-  - Telemetry in place for monitoring
-  - All verification steps pass with improved performance metrics
 
 ## Phase 5: Content System Integration
 
@@ -528,6 +450,29 @@ DO NOT MAKE CAROUSELS OR FIGURE COMPONENTS. ITS OUT OF SCOPE. I'LL BE FIRED IF Y
   - API compatibility tests with existing code
   - Performance benchmarks for AST operations
 
+- [ ] **Story 5.3**: Refactor EntryManager into modular components
+  - **NOTE**: This task should only begin after fixing AST rendering/serialization issues
+  - Address high complexity in EntryManager by splitting into focused modules:
+    - `records.ex`: Core database operations for content entries
+    - `ast_serialization.ex`: Handle conversion between tuple AST and serializable format
+    - `compiler.ex`: Content compilation and transformation
+    - `translations.ex`: Translation-specific functionality
+    - `source.ex`: File-based content operations
+  - Reorganize into `managers/entry/` folder structure
+  - Fix existing tests to work with refactored structure
+  - Ensure compatibility with all Content context functions
+  
+  **Definition of Done:**
+  - EntryManager functionality split into focused modules
+  - Organized folder structure for better maintainability
+  - All existing tests passing with refactored structure
+  - No regression in functionality or performance
+  - Cyclomatic complexity metrics improved
+  - All verification steps pass:
+    - Format: `./run elixir:format` exits with code 0
+    - Lint: `./run elixir:lint` shows improved metrics
+    - Tests: `./run elixir:test` passes
+    - Static Analysis: `./run elixir:static-analysis` shows reduced warnings
 
 - [ ] **Story 5.4**: Update translation system for component AST compatibility
   - Modify `compile_translations` in EntryManager to handle component AST nodes
@@ -619,82 +564,6 @@ DO NOT MAKE CAROUSELS OR FIGURE COMPONENTS. ITS OUT OF SCOPE. I'LL BE FIRED IF Y
   - Error message tests for various validation failures
   - Type coercion tests for all supported types
 
-## Phase 8: Testing and Optimization
-
-- [ ] **Story 8.1**: Create comprehensive test suite
-  - Implement unit tests for parser and renderer
-  - Add integration tests for LiveView rendering
-  - Create benchmarks for performance testing
-  - Add regression tests for existing functionality
-  
-  **Definition of Done:**
-  - Test suite with at least 90% overall code coverage
-  - Integration tests for all key user flows
-  - Benchmark suite with baseline performance metrics
-  - Regression tests for all existing markdown content
-
-- [ ] **Story 8.2**: Optimize performance
-  - Profile and optimize parsing performance
-  - Implement render caching for frequently accessed content
-  - Add configuration for performance tuning
-  - Document performance characteristics
-  
-  **Definition of Done:**
-  - Performance profiling report
-  - Optimized code with measurable improvements
-  - Caching implementation with hit ratio metrics
-  - Configuration documentation with performance impact
-
-- [ ] **Story 8.3**: SEO and accessibility testing
-  - Verify SEO compatibility of rendered content
-  - Test screen reader compatibility
-  - Check performance metrics for various devices
-  - Document best practices for SEO with components
-  
-  **Definition of Done:**
-  - Automated HTML inspection verifies presence of required SEO elements (title, meta tags)
-  - HTML output validates against WCAG requirements using HTML validator
-  - Response time tests stay within defined thresholds on CI environment
-  - Static analysis tool confirms proper semantic HTML structure
-
-## Phase 9: Documentation and Training
-
-- [ ] **Story 9.1**: Create developer documentation
-  - Document the pipeline architecture
-  - Create guidelines for developing compatible components
-  - Add API documentation for all public functions
-  - Provide configuration guide
-  
-  **Definition of Done:**
-  - Documentation markdown files committed to repository
-  - Documentation code snippets verified by automated tests
-  - Module documentation strings present for all public functions
-  - @spec type annotations present and pass dialyzer for all public functions
-
-- [ ] **Story 9.2**: Create authoring documentation
-  - Document markdown and component syntax for authors
-  - Create examples of common component patterns
-  - Add troubleshooting guide for syntax errors
-  - Provide best practices for content organization
-  
-  **Definition of Done:**
-  - Syntax guide markdown file with examples committed
-  - Example validator script verifies all examples are valid
-  - Error case examples produce expected error messages
-  - Documentation linter passes on all authored content
-
-- [ ] **Story 9.3**: Implement example content
-  - Create sample case study using components
-  - Develop note templates with component examples
-  - Document lessons learned from examples
-  - Create showcase of component capabilities
-  
-  **Definition of Done:**
-  - Example content files committed to repository
-  - Validation script verifies all examples parse correctly
-  - Rendering tests pass for all example content
-  - Component coverage report shows usage of all components
-
 ## Refactoring Verification Process
 
 For each phase of refactoring, we will run the following verification steps:
@@ -737,5 +606,3 @@ The implementation will:
    - Keep existing entry points working
    - Support gradual migration
    - Add new capabilities alongside existing ones
-
-This approach ensures that all content is rendered through Phoenix components while maintaining the cleanest possible markdown experience for authors. The refactoring follows Elixir's functional paradigm and improves maintainability without disrupting existing functionality.

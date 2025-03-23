@@ -13,6 +13,8 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
   @type component_type :: atom()
   @type component_impl :: {module(), atom()}
 
+  @pubsub_topic "component_registration"
+
   @doc """
   Starts the component registry.
   """
@@ -102,7 +104,52 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
 
   @impl GenServer
   def init(_opts) do
+    # Subscribe to the component registration PubSub topic
+    Phoenix.PubSub.subscribe(Portfolio.PubSub, @pubsub_topic)
+
+    # Return initial state (empty registry)
     {:ok, %{}}
+  end
+
+  @impl GenServer
+  def handle_info({:register_component, type, {module, function}}, components) do
+    # Handle registration messages from PubSub
+    case Map.get(components, type) do
+      nil ->
+        # Register new component
+        Logger.debug(
+          "PubSub: Registering component #{inspect(type)} with #{inspect(module)}.#{function}"
+        )
+
+        {:noreply, Map.put(components, type, {module, function})}
+
+      {^module, _existing_function} ->
+        # Update existing component from same module
+        Logger.debug(
+          "PubSub: Updating component #{inspect(type)} with #{inspect(module)}.#{function}"
+        )
+
+        {:noreply, Map.put(components, type, {module, function})}
+
+      {other_module, _} ->
+        # Different module is trying to register same component type
+        # For hot reloading, we allow replacing the component
+        Logger.info(
+          "PubSub: Replacing component #{inspect(type)} from #{inspect(other_module)} with #{inspect(module)}.#{function}"
+        )
+
+        {:noreply, Map.put(components, type, {module, function})}
+    end
+  end
+
+  @impl GenServer
+  def handle_info(message, state) do
+    # Ignore unknown messages
+    Logger.debug(
+      "Component Registry received unknown message: #{inspect(message)}"
+    )
+
+    {:noreply, state}
   end
 
   @impl GenServer

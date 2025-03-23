@@ -12,7 +12,7 @@ defmodule PortfolioWeb.Components.Typography do
 
   use Phoenix.Component
 
-  use Portfolio.Content.MarkdownRendering.Components.Definition,
+  use Portfolio.Content.Markdown.Component.Definition,
     type: :typography,
     function: :typography,
     description:

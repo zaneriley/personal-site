@@ -94,7 +94,7 @@ defmodule Portfolio.Content.MarkdownRendering.PipelineTest do
   describe "using real pipeline stages" do
     setup do
       # Register a test component to use in the component resolution stage
-      alias Portfolio.Content.MarkdownRendering.Components.Registry
+      alias Portfolio.Content.Markdown.Component.Registry
       Registry.stop()
       {:ok, _} = start_supervised(Registry)
 

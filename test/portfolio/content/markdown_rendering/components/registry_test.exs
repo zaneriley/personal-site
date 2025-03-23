@@ -1,4 +1,4 @@
-defmodule Portfolio.Content.MarkdownRendering.Components.RegistryTest do
+defmodule Portfolio.Content.Markdown.Component.RegistryTest do
   use ExUnit.Case, async: false
 
   alias Portfolio.Content.MarkdownRendering.Components.{Registry, Definition}

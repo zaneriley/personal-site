@@ -19,7 +19,7 @@ defmodule PortfolioWeb.Components.ColumnLayout do
 
   use Phoenix.Component
 
-  use Portfolio.Content.MarkdownRendering.Components.Definition,
+  use Portfolio.Content.Markdown.Component.Definition,
     type: :column_layout,
     function: :column_layout,
     description: "A component for rendering content in a multi-column layout",

@@ -2,7 +2,7 @@ defmodule Portfolio.Content.MarkdownRendering.ComponentBuilderTest do
   use ExUnit.Case, async: false
   alias Portfolio.Content.MarkdownRendering.ComponentBuilder
   alias Portfolio.Content.MarkdownRendering.AST
-  alias Portfolio.Content.MarkdownRendering.Components.Registry
+  alias Portfolio.Content.Markdown.Component.Registry
 
   setup do
     # Ensure registry is stopped and restarted for each test
