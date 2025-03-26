@@ -10,7 +10,7 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
       use Ecto.Schema
       import Ecto.Changeset
       alias Portfolio.Content.Schemas.Translation
-      alias Portfolio.Content.MarkdownRendering.Renderer
+      alias Portfolio.Content.Markdown.Renderer
       alias Portfolio.Cache
 
       @primary_key {:id, :binary_id, autogenerate: true}

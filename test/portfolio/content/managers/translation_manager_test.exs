@@ -79,18 +79,25 @@ defmodule Portfolio.Content.TranslationTest do
       attrs = %{"title" => "翻訳されたタイトル", "content" => "翻訳されたコンテンツ"}
       TranslationManager.create_or_update_translations(case_study, "ja", attrs)
 
-      {:ok, content, translations, compiled_content} =
+      {:ok, content, translations, ast_result} =
         Content.get_with_translations("case_study", case_study.url, "ja")
 
       assert content.id == case_study.id
       assert translations["title"] == "翻訳されたタイトル"
 
-      # Parse the HTML content
-      {:ok, parsed_html} = Floki.parse_fragment(translations["content"])
+      # Check that we get AST content
+      assert is_list(ast_result)
 
-      # Check if it's a paragraph and contains the expected text
-      assert [{"p", _, [text]}] = parsed_html
-      assert text == "翻訳されたコンテンツ"
+      # Find content in the AST that contains our translation
+      content_found = Enum.any?(ast_result, fn
+        {:typography, "p", _, content, _} ->
+          # Check if content contains our translated text
+          content_string = if is_list(content), do: Enum.join(content, ""), else: content
+          content_string =~ "翻訳されたコンテンツ"
+        _ -> false
+      end)
+
+      assert content_found, "Could not find translated content in AST"
     end
 
     test "upsert_from_file creates new content and Japanese translations" do
@@ -114,7 +121,7 @@ defmodule Portfolio.Content.TranslationTest do
       fresh_note = Portfolio.Repo.get!(Portfolio.Content.Schemas.Note, note.id)
 
       # Check Japanese translations
-      {:ok, retrieved_note, translations, compiled_content} =
+      {:ok, retrieved_note, translations, ast_result} =
         Content.get_with_translations("note", fresh_note.url, "ja")
 
       assert retrieved_note.id == fresh_note.id
@@ -122,13 +129,23 @@ defmodule Portfolio.Content.TranslationTest do
       assert translations["title"] == "新しいタイトル",
              "Expected '新しいタイトル', but got '#{translations["title"]}'. Full translations: #{inspect(translations)}"
 
-      assert {:ok, content_html} = Floki.parse_fragment(translations["content"])
-      assert Floki.text(content_html) == "新しいコンテンツ"
+      # Check for content in AST
+      assert is_list(ast_result)
 
+      # Find our translated content in the AST
+      content_found = Enum.any?(ast_result, fn
+        {:typography, "p", _, content, _} ->
+          # Check if content contains our translated text
+          content_string = if is_list(content), do: Enum.join(content, ""), else: content
+          content_string =~ "新しいコンテンツ"
+        _ -> false
+      end)
+
+      assert content_found, "Could not find translated content in AST"
       assert translations["introduction"] == "新しい紹介"
 
       # Check that there are no French translations
-      {:ok, _retrieved_note, fr_translations, _compiled_content} =
+      {:ok, _retrieved_note, fr_translations, _ast_result} =
         Content.get_with_translations("note", fresh_note.url, "fr")
 
       assert fr_translations == %{}
@@ -147,17 +164,24 @@ defmodule Portfolio.Content.TranslationTest do
       assert {:ok, updated_note} = Content.upsert_from_file("note", attrs)
       assert updated_note.id == existing_note.id
 
-      assert {:ok, content, translations, compiled_content} =
+      assert {:ok, content, translations, ast_result} =
                Content.get_with_translations("note", "existing-note", "ja")
 
       assert translations["title"] == "更新されたタイトル"
 
-      # Parse the HTML content
-      {:ok, parsed_html} = Floki.parse_fragment(translations["content"])
+      # Check for content in AST
+      assert is_list(ast_result)
 
-      # Check if it's a paragraph and contains the expected text
-      assert [{"p", _, [text]}] = parsed_html
-      assert text == "更新されたコンテンツ"
+      # Find our updated translated content in the AST
+      content_found = Enum.any?(ast_result, fn
+        {:typography, "p", _, content, _} ->
+          # Check if content contains our translated text
+          content_string = if is_list(content), do: Enum.join(content, ""), else: content
+          content_string =~ "更新されたコンテンツ"
+        _ -> false
+      end)
+
+      assert content_found, "Could not find updated translated content in AST"
     end
   end
 end

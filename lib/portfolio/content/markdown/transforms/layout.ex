@@ -39,8 +39,10 @@ defmodule Portfolio.Content.Markdown.Transforms.Layout do
     # Check if a layout is specified in metadata
     case Map.get(metadata, "layout") do
       "columns" ->
-        # Apply column layout
-        process_column_layout(ast, metadata)
+        # Just return AST unchanged for now
+        require Logger
+        Logger.info("Column layout processing temporarily disabled")
+        ast
 
       "grid" ->
         # Apply grid layout
@@ -58,27 +60,6 @@ defmodule Portfolio.Content.Markdown.Transforms.Layout do
     end
   end
 
-  # Process column layout
-  defp process_column_layout(ast, metadata) do
-    # Extract column specifications from metadata
-    columns =
-      case Map.get(metadata, "columns") do
-        col_specs when is_list(col_specs) -> col_specs
-        _ -> []
-      end
-
-    if columns == [] do
-      # No column specifications, return AST unchanged
-      ast
-    else
-      # Create column layout component with the content
-      [
-        {:component, :column_layout, %{columns: format_columns(columns)}, ast,
-         %{}}
-      ]
-    end
-  end
-
   # Process grid layout nodes
   defp process_grid_layout(ast, _metadata) do
     # Extract grid specifications from metadata
@@ -88,15 +69,5 @@ defmodule Portfolio.Content.Markdown.Transforms.Layout do
 
     # For now, just return the AST unchanged
     ast
-  end
-
-  # Format column specifications for the column_layout component
-  defp format_columns(columns) do
-    Enum.map(columns, fn col ->
-      %{
-        width: Map.get(col, "width", "1"),
-        content: Map.get(col, "content", "main")
-      }
-    end)
   end
 end

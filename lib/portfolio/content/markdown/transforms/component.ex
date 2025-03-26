@@ -105,6 +105,20 @@ defmodule Portfolio.Content.Markdown.Transforms.Component do
     end
   end
 
+  # Handle image nodes specifically (HTML img tag)
+  defp resolve_node(
+         {"img", attrs, content, meta},
+         registry_fn,
+         ignore_missing
+       ) do
+    # Convert to :image component
+    resolve_node(
+      {:component, :image, attrs, content, meta},
+      registry_fn,
+      ignore_missing
+    )
+  end
+
   # Typography nodes are passed through without registry lookup
   defp resolve_node(
          {:typography, tag, attrs, content, meta},

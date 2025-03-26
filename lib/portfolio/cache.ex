@@ -21,10 +21,13 @@ defmodule Portfolio.Cache do
   @spec child_spec(any()) :: Supervisor.child_spec()
   def child_spec(_opts) do
     cache_opts = Application.get_env(:portfolio, :cache, [])
+    Logger.info("Cache child_spec called. Disabled?: #{disabled?()}")
 
     if disabled?() do
+      Logger.info("Cache starting in DISABLED mode.")
       %{id: __MODULE__, start: {__MODULE__, :start_link_disabled, []}}
     else
+      Logger.info("Cache starting in ENABLED mode with opts: #{inspect(cache_opts)}")
       %{
         id: __MODULE__,
         start: {Cachex, :start_link, [@cache_name, cache_opts]}
@@ -190,6 +193,7 @@ defmodule Portfolio.Cache do
   """
   @spec start_link_disabled() :: Agent.on_start()
   def start_link_disabled do
+    Logger.info("Cache.start_link_disabled called.")
     Agent.start_link(fn -> %{} end, name: @cache_name)
   end
 

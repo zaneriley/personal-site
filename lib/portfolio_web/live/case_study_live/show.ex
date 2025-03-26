@@ -6,6 +6,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   alias PortfolioWeb.Router.Helpers, as: Routes
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.ContentMetadata
+  import Phoenix.HTML, only: [content_tag: 3]
+  import Portfolio.Content.Markdown.Renderer, only: [render_ast: 1]
 
   @dialyzer {:nowarn_function, mount: 3}
   @impl true
@@ -18,19 +20,18 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   def mount(%{"locale" => user_locale, "url" => url}, _session, socket) do
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations, compiled_content} ->
+        {:ok, case_study, translations, ast_content} when is_list(ast_content) ->
           {page_title, introduction} =
             set_page_metadata(case_study, translations)
 
           Logger.debug("Case study translations: #{inspect(translations)}")
-          debug_slice = compiled_content |> String.slice(0, 100)
-          Logger.debug("Compiled content: #{inspect(debug_slice)}...")
 
           {:ok,
            assign(socket,
              case_study: case_study,
              translations: translations,
-             compiled_content: compiled_content,
+             ast_content: ast_content,
+             compiled_content: nil,
              page_title: page_title,
              page_description: introduction
            )}
@@ -42,6 +43,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
            assign(socket,
              case_study: case_study,
              translations: translations,
+             ast_content: nil,
              compiled_content: nil,
              compile_error: reason,
              page_title: case_study.title,
@@ -76,7 +78,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations, compiled_content} ->
+        {:ok, case_study, translations, ast_content} when is_list(ast_content) ->
           Logger.debug(
             "HELLO! Case study translations: #{inspect(translations)}"
           )
@@ -88,7 +90,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
            assign(socket,
              case_study: case_study,
              translations: translations,
-             compiled_content: compiled_content,
+             ast_content: ast_content,
+             compiled_content: nil,
              page_title: page_title,
              page_description: introduction
            )}
@@ -101,6 +104,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
            assign(socket,
              case_study: case_study,
              translations: translations,
+             ast_content: nil,
              compiled_content: nil,
              compile_error: compile_error,
              page_title: page_title,
@@ -134,4 +138,5 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
     {page_title, introduction}
   end
+
 end

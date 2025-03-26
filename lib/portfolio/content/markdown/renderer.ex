@@ -26,7 +26,7 @@ defmodule Portfolio.Content.Markdown.Renderer do
   def render(content, content_type \\ :note, options \\ [])
   def render("", _content_type, _options), do: {:error, "Empty content"}
 
-  def render(content, _content_type, _options) do
+  def render(content, content_type, options) do
     # Simple AST for testing
     simple_ast = [
       {"h1", %{}, ["Simple Heading"], %{}}
@@ -63,10 +63,19 @@ defmodule Portfolio.Content.Markdown.Renderer do
           ]
       end
 
-    # Apply transforms to enhance the AST
-    transformed_ast = transform_ast(ast)
+    # Configure stages based on content type
+    pipeline_opts = [
+      stages: [
+        Portfolio.Content.Markdown.Transforms.Typography,
+        Portfolio.Content.Markdown.Transforms.Component
+      ]
+    ]
 
-    {:ok, transformed_ast}
+    # Merge user options with pipeline options
+    merged_opts = Keyword.merge(options, pipeline_opts)
+
+    # Apply transforms using the pipeline
+    Portfolio.Content.Markdown.Pipeline.process(ast, merged_opts)
   end
 
   @doc """
@@ -147,34 +156,35 @@ defmodule Portfolio.Content.Markdown.Renderer do
 
   # Private functions
 
-  # Transform AST for testing
-  defp transform_ast(ast) do
-    # Mock transform that converts regular nodes to typography nodes
-    Enum.map(ast, fn
-      {"h1", attrs, content, meta} ->
-        {:typography, "h1",
-         Map.merge(attrs || %{}, %{size: "4xl", font: "cardinal"}), content,
-         meta}
+  @doc """
+  Renders a Markdown AST into HEEx-safe content.
+  This generic function handles different AST types:
+  - A binary is returned as-is.
+  - A list is recursively processed and concatenated.
+  - Tuples representing nodes (e.g. {:typography, tag, attrs, children, meta}) are rendered as HTML tags.
+  Fallback: Converts the node to string and wraps it as safe content.
+  """
+  def render_ast(ast) when is_binary(ast), do: ast
 
-      {"p", attrs, content, meta} ->
-        {:typography, "p", Map.merge(attrs || %{}, %{size: "base"}), content,
-         meta}
+  def render_ast(ast) when is_list(ast) do
+    ast
+    |> Enum.map(&render_ast/1)
+    |> Enum.join()
+    |> Phoenix.HTML.raw()
+  end
 
-      {"li", attrs, content, meta} ->
-        {:typography, "li", attrs, content, meta}
+  def render_ast({:typography, tag, attrs, children, _meta}) do
+    content = render_ast(children)
+    # You could extend to merge attrs and build a proper tag using your Typography component, but for now we keep it simple.
+    Phoenix.HTML.raw("<#{tag}>" <> content <> "</#{tag}>")
+  end
 
-      {"ul", attrs, children, meta} ->
-        {"ul", attrs,
-         Enum.map(children, fn
-           {"li", child_attrs, child_content, child_meta} ->
-             {:typography, "li", child_attrs, child_content, child_meta}
+  def render_ast({tag, _attrs, children, _meta}) when is_binary(tag) do
+    content = render_ast(children)
+    Phoenix.HTML.raw("<#{tag}>" <> content <> "</#{tag}>")
+  end
 
-           other ->
-             other
-         end), meta}
-
-      other ->
-        other
-    end)
+  def render_ast(ast) do
+    Phoenix.HTML.raw(to_string(ast))
   end
 end

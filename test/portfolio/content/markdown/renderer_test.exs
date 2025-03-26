@@ -11,6 +11,19 @@ defmodule Portfolio.Content.Markdown.RendererTest do
     on_exit(fn -> Application.delete_env(:portfolio, :cache) end)
     Cache.clear()
 
+    # Start the component registry for testing only if it's not already started
+    registry_pid = ensure_component_registry_started()
+
+    # Register basic test components
+    Portfolio.Content.Markdown.Component.Registry.register(:image, __MODULE__)
+    Portfolio.Content.Markdown.Component.Registry.register(:figure, __MODULE__)
+
+    on_exit(fn ->
+      if registry_pid && Process.alive?(registry_pid) do
+        Process.exit(registry_pid, :normal)
+      end
+    end)
+
     # Test content
     markdown = """
     # Heading
@@ -217,17 +230,60 @@ defmodule Portfolio.Content.Markdown.RendererTest do
 
       # Check for typography-enhanced elements
       assert Enum.any?(ast, fn
-               {:typography, "h1", _, _, _} -> true
+               {:typography, "h1", attrs, _, _} ->
+                 # Validate specific attributes are set
+                 assert Map.has_key?(attrs, :size)
+                 assert Map.has_key?(attrs, :font)
+                 true
                _ -> false
              end)
     end
 
     test "applies component transforms", %{markdown: markdown} do
-      # This test just verifies that component transforms don't crash
-      # and that the AST is successfully processed
+      # This test verifies that component transforms produce valid AST
       {:ok, ast} = Renderer.render(markdown, :note)
       assert is_list(ast)
       assert length(ast) > 0
+
+      # Verify image becomes a component inside a paragraph
+      image_paragraph = Enum.find(ast, fn
+        {:typography, "p", _attrs, content, _meta} ->
+          Enum.any?(content, fn
+            {:component, :image, attrs, _content, _meta} ->
+              Map.has_key?(attrs, :src) || Map.has_key?(attrs, :alt)
+            _ -> false
+          end)
+        _ -> false
+      end)
+
+      assert image_paragraph != nil, "Expected to find a paragraph containing an image component"
+    end
+  end
+
+  # Define render function for test module to handle image/figure components
+  def render(assigns) do
+    # Simple render function that satisfies the registry lookup
+    # but doesn't actually render anything complex
+    %{
+      component: component,
+      attrs: attrs
+    } = assigns
+
+    # Return a format that our test can identify as a component
+    {:component, component, attrs, [], %{}}
+  end
+
+  # Helper to ensure the component registry is running for tests
+  defp ensure_component_registry_started do
+    case Process.whereis(Portfolio.Content.Markdown.Component.Registry) do
+      nil ->
+        # Not started, start it now
+        {:ok, pid} = Portfolio.Content.Markdown.Component.Registry.start_link()
+        pid
+
+      _pid ->
+        # Already running
+        nil
     end
   end
 end

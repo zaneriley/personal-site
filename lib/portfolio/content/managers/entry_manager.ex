@@ -10,7 +10,7 @@ defmodule Portfolio.Content.EntryManager do
   alias Portfolio.Content.Types
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
   alias Portfolio.Content.TranslationManager
-  alias Portfolio.Content.MarkdownRendering.Renderer
+  alias Portfolio.Content.Markdown.Renderer
   import Ecto.Query
   require Logger
 
@@ -70,10 +70,10 @@ defmodule Portfolio.Content.EntryManager do
   end
 
   @spec compile_content(Note.t() | CaseStudy.t(), Types.content_type()) ::
-          {:ok, String.t()}
+          {:ok, Note.t() | CaseStudy.t()}
           | {:error, :empty_compiled_content | :empty_content | any()}
   defp compile_content(content, content_type) do
-    # First, get the AST for the content
+    # Render and cache the AST for the content
     ast_result =
       Renderer.render_and_cache(
         content.content,
@@ -85,24 +85,17 @@ defmodule Portfolio.Content.EntryManager do
     # Store the AST in the content record
     case ast_result do
       {:ok, ast} when is_list(ast) ->
-        # Store the AST in the database
-        Repo.update(Ecto.Changeset.change(content, stored_ast: ast))
-
-      _ ->
-        # Don't update if we couldn't get the AST
-        :ok
-    end
-
-    # Continue with HTML rendering
-    case Renderer.render_and_cache(content.content, content_type, content.id) do
-      {:ok, compiled_content}
-      when is_binary(compiled_content) and compiled_content != "" ->
-        {:ok, compiled_content}
-
-      {:ok, _} ->
-        {:error, :empty_compiled_content}
+        # Convert AST tuples to maps for storage
+        serialized_ast = serialize_ast(ast)
+        # Store the AST in the database and update the content record
+        Repo.update(Ecto.Changeset.change(content,
+          stored_ast: serialized_ast,
+          # Set the compiled_content field to nil to indicate we're using AST
+          compiled_content: nil
+        ))
 
       {:error, reason} ->
+        # If we couldn't get the AST, return the error
         {:error, reason}
     end
   end
@@ -183,7 +176,7 @@ defmodule Portfolio.Content.EntryManager do
       :title,
       :url,
       :content,
-      :published,
+      :is_draft,
       :published_at
     ])
     |> Ecto.Changeset.validate_required([:title, :url, :content])
@@ -193,19 +186,17 @@ defmodule Portfolio.Content.EntryManager do
   # Only compile content if it has changed
   defp maybe_compile_content(content, %{content: new_content}, content_type)
        when is_binary(new_content) do
-    # Render and get both HTML and AST
+    # Render and cache the AST
     with {:ok, ast} <-
            Renderer.render_and_cache(new_content, content_type, content.id,
              return_ast: true
-           ),
-         {:ok, html} <-
-           Renderer.render_and_cache(new_content, content_type, content.id) do
-      # Update with both compiled content and stored AST
+           ) do
+      # Update with stored AST and set compiled_content to nil
       content
       |> Ecto.Changeset.change(
-        compiled_content: html,
-        # Wrap the AST in a map
-        stored_ast: %{ast: ast}
+        compiled_content: nil,
+        # Serialize the AST for storage
+        stored_ast: serialize_ast(ast)
       )
       |> Repo.update()
     end
@@ -648,15 +639,35 @@ defmodule Portfolio.Content.EntryManager do
   defp apply_changeset(%CaseStudy{} = case_study, attrs),
     do: CaseStudy.changeset(case_study, attrs)
 
-  # Helper function to make AST serializable for JSON
+  # Convert AST from tuples to maps format
   defp serialize_ast(ast) when is_list(ast) do
     Enum.map(ast, &serialize_ast_node/1)
   end
 
-  # Convert tuple-based AST nodes to maps
+  # Handle different node types for serialization
+  defp serialize_ast_node({tag, attrs, content, meta}) when is_binary(tag) do
+    %{
+      type: "element",
+      tag: tag,
+      attrs: serialize_attrs(attrs),
+      content: serialize_ast(content),
+      meta: meta
+    }
+  end
+
+  defp serialize_ast_node({:typography, tag, attrs, content, meta}) do
+    %{
+      type: "typography",
+      tag: tag,
+      attrs: serialize_attrs(attrs),
+      content: serialize_ast(content),
+      meta: meta
+    }
+  end
+
   defp serialize_ast_node({:component, type, attrs, content, meta}) do
     %{
-      type: :component,
+      type: "component",
       component_type: type,
       attrs: serialize_attrs(attrs),
       content: serialize_ast(content),
@@ -664,46 +675,20 @@ defmodule Portfolio.Content.EntryManager do
     }
   end
 
-  # Convert tuple-based AST nodes to maps - typography specific case
-  defp serialize_ast_node({:typography, tag, attrs, content, meta}) do
-    %{
-      type: :typography,
-      tag: tag,
-      attrs: serialize_attrs(attrs),
-      content: serialize_ast(content),
-      meta: meta
-    }
+  defp serialize_ast_node(content) when is_binary(content) do
+    %{type: "text", content: content}
   end
 
-  # Convert HTML tag tuples to maps
-  defp serialize_ast_node({tag, attrs, content, meta}) when is_binary(tag) do
-    %{
-      type: :tag,
-      tag: tag,
-      attrs: serialize_attrs(attrs),
-      content: serialize_ast(content),
-      meta: meta
-    }
+  defp serialize_ast_node(other) do
+    # For any other type, convert to string representation
+    %{type: "unknown", content: inspect(other)}
   end
 
-  # Handle two-element tuples (like {"href", url})
-  defp serialize_ast_node({key, value}) when is_binary(key) do
-    %{tuple_key: key, tuple_value: serialize_ast_node(value)}
-  end
-
-  # Pass through non-tuple nodes
-  defp serialize_ast_node(node) when is_binary(node), do: node
-  defp serialize_ast_node(node) when is_map(node), do: node
-  defp serialize_ast_node(node) when is_list(node), do: serialize_ast(node)
-  defp serialize_ast_node(node), do: to_string(node)
-
-  # Helper function to serialize attributes
+  # Convert attributes to a serializable format
   defp serialize_attrs(attrs) when is_map(attrs) do
-    Enum.map(attrs, fn {k, v} -> {k, serialize_ast_node(v)} end)
-    |> Enum.into(%{})
+    attrs
   end
-
-  defp serialize_attrs(attrs), do: attrs
+  defp serialize_attrs(nil), do: %{}
 
   # Helper function to deserialize the AST
   defp deserialize_ast(ast) when is_list(ast) do

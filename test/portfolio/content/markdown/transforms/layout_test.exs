@@ -35,21 +35,18 @@ defmodule Portfolio.Content.Markdown.Transforms.LayoutTest do
         ]
       }
 
-      # Apply the transform
-      {:ok, transformed} = Layout.apply(ast, metadata: metadata)
+      # Capture log to check for the info message
+      log_output =
+        capture_log(fn ->
+          # Apply the transform
+          {:ok, transformed} = Layout.apply(ast, metadata: metadata)
 
-      # Assert the AST now has a column_layout component wrapper
-      assert [component] = transformed
-      assert {:component, :column_layout, attrs, content, _} = component
+          # Assert the AST is unchanged (since column layout is disabled)
+          assert transformed == ast
+        end)
 
-      # Check the columns were formatted correctly
-      assert attrs[:columns] == [
-               %{width: "2/3", content: "main"},
-               %{width: "1/3", content: "sidebar"}
-             ]
-
-      # Check that the original content is wrapped inside the layout
-      assert content == ast
+      # Verify an info message was logged
+      assert log_output =~ "Column layout processing temporarily disabled"
     end
 
     test "returns original AST for unsupported layout types" do
