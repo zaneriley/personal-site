@@ -30,7 +30,10 @@ defmodule Portfolio.DataCase do
   setup tags do
     Application.ensure_all_started(:portfolio)
 
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Portfolio.Repo, shared: not tags[:async])
+    pid =
+      Ecto.Adapters.SQL.Sandbox.start_owner!(Portfolio.Repo,
+        shared: not tags[:async]
+      )
 
     on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
     :ok

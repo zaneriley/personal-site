@@ -57,10 +57,10 @@
   <!-- Main Content -->
   <div class="space-y-md drop-cap">
     <%= if @translations["content"] do %>
-      <%= render_ast(@translations["content"]) %>
+      <%= render_html(@translations["content"]) %>
     <% else %>
       <%= if @ast_content do %>
-        <%= render_ast(@ast_content) %>
+        <%= render_html(@ast_content) %>
       <% else %>
         <%= if @compile_error do %>
           <p>

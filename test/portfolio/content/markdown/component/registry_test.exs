@@ -16,6 +16,16 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
     end
   end
 
+  setup do
+    # Ensure the application is started
+    Application.ensure_all_started(:portfolio)
+
+    # Clear the registry state before each test
+    Registry.clear_all_components()
+
+    :ok
+  end
+
   describe "Registry API - using global registry" do
     test "registers a component successfully" do
       component_type = :test_component_api
@@ -23,6 +33,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       # Verify the component can be looked up
       assert {:ok, {TestComponent, :render}} = Registry.lookup(component_type)
+
+      # Cleanup
+      Registry.unregister(component_type)
     end
 
     test "handles registering the same component twice" do
@@ -49,7 +62,8 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
     end
 
     test "handles lookup for non-existent component" do
-      assert {:error, :not_found} = Registry.lookup(:non_existent_test_component)
+      assert {:error, :not_found} =
+               Registry.lookup(:non_existent_test_component)
     end
 
     test "unregisters components successfully" do
@@ -81,6 +95,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       # Verify the component was registered via PubSub
       assert {:ok, {TestComponent, :render}} = Registry.lookup(:pubsub_test)
+
+      # Cleanup
+      Registry.unregister(:pubsub_test)
     end
 
     test "registry receives updated component registrations" do
@@ -103,6 +120,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       Process.sleep(50)
       assert {:ok, {TestComponent, :custom}} = Registry.lookup(:update_test)
+
+      # Cleanup
+      Registry.unregister(:update_test)
     end
 
     # New test case for multiple components registering in sequence
@@ -131,6 +151,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
       # Verify all components were registered
       for {type, module, function} <- components do
         assert {:ok, {^module, ^function}} = Registry.lookup(type)
+
+        # Cleanup
+        Registry.unregister(type)
       end
     end
 
@@ -158,6 +181,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       Process.sleep(50)
       assert {:ok, {TestComponent, :updated}} = Registry.lookup(component_type)
+
+      # Cleanup
+      Registry.unregister(component_type)
     end
 
     # New test case for handling component replacement from different module
@@ -186,16 +212,17 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       assert {:ok, {AnotherComponent, :render}} =
                Registry.lookup(component_type)
+
+      # Cleanup
+      Registry.unregister(component_type)
     end
   end
 
   describe "Registry startup" do
     test "registry subscribes to PubSub on startup" do
-      # Stop the existing registry
-      GenServer.stop(Registry)
-
-      # Start a new registry
-      {:ok, _pid} = Registry.start_link()
+      # Since we're using the global registry, we'll test by clearing it
+      # and then sending a PubSub message to verify it's subscribed
+      Registry.clear_all_components()
 
       # Broadcast a registration message
       Phoenix.PubSub.broadcast(
@@ -209,20 +236,13 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       # Verify the component was registered
       assert {:ok, {TestComponent, :render}} = Registry.lookup(:startup_test)
+
+      # Cleanup
+      Registry.unregister(:startup_test)
     end
   end
 
   describe "Component self-registration" do
-    setup do
-      # Start the Registry specifically for this test case
-      # (it might have been stopped by previous tests)
-      unless Process.whereis(Registry) do
-        {:ok, _pid} = Registry.start_link()
-      end
-
-      :ok
-    end
-
     test "component automatically registers itself when using Definition" do
       # Dynamic component creation with Definition
       module_name =
@@ -253,14 +273,12 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
       # Verify the component was registered
       assert {:ok, {^module_name, :render}} =
                Registry.lookup(:self_registering_test)
+
+      # Cleanup
+      Registry.unregister(:self_registering_test)
     end
 
     test "component re-registers itself during hot code reloading" do
-      # Ensure Registry is running for this test
-      unless Process.whereis(Registry) do
-        {:ok, _pid} = Registry.start_link()
-      end
-
       # This test simulates hot code reloading by registering the same component type
       # with a different module implementation
 
@@ -322,6 +340,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       assert second_registered_module == second_module_name
       assert second_registered_module != first_registered_module
+
+      # Cleanup
+      Registry.unregister(:hot_reload_test)
     end
 
     test "components can register at compile time through PubSub" do
@@ -361,6 +382,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
       # Verify the component was registered
       assert {:ok, {^module_name, :render}} =
                Registry.lookup(:compile_time_test)
+
+      # Cleanup
+      Registry.unregister(:compile_time_test)
     end
   end
 end

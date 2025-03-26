@@ -13,7 +13,7 @@ defmodule Portfolio.Content.ContentTest do
       assert retrieved_note.id == note.id
       assert retrieved_note.title == note.title
       assert retrieved_note.content == note.content
-      assert is_binary(retrieved_note.compiled_content)
+      assert is_list(retrieved_note.compiled_content)
     end
 
     test "get!/2 returns the content item with given url" do
@@ -22,7 +22,7 @@ defmodule Portfolio.Content.ContentTest do
       assert retrieved_note.id == note.id
       assert retrieved_note.title == note.title
       assert retrieved_note.content == note.content
-      assert is_binary(retrieved_note.compiled_content)
+      assert is_list(retrieved_note.compiled_content)
     end
 
     test "get!/2 raises Ecto.NoResultsError for non-existent content" do
@@ -88,7 +88,7 @@ defmodule Portfolio.Content.ContentTest do
       assert note.id == updated_note.id
       assert note.title == updated_note.title
       assert note.content == updated_note.content
-      assert is_binary(updated_note.compiled_content)
+      assert is_list(updated_note.compiled_content)
     end
   end
 
@@ -151,7 +151,7 @@ defmodule Portfolio.Content.ContentTest do
       assert retrieved_note.title == "English Title"
       assert translations["title"] == "Titre Français"
       assert translations["url"] == "test-note-with-translations"
-      assert is_binary(compiled_content)
+      assert is_list(compiled_content)
     end
 
     test "get_with_translations handles partial translations" do
@@ -287,12 +287,12 @@ defmodule Portfolio.Content.ContentTest do
       assert retrieved_note.id == note.id
       assert translations["title"] == "Titre Français"
 
-      # Use Floki to extract text content
-      html_content = translations["content"]
-      text_content = Floki.text(html_content)
+      # Extract text content from AST
+      ast_content = translations["content"]
+      text_content = extract_text_from_ast(ast_content)
 
       assert text_content == "Contenu Français"
-      assert is_binary(compiled_content)
+      assert is_list(compiled_content)
     end
   end
 
@@ -327,4 +327,28 @@ defmodule Portfolio.Content.ContentTest do
       assert translations["title"] in ["タイトル1", "タイトル2"]
     end
   end
+
+  # Helper function to extract text from AST
+  defp extract_text_from_ast(nil), do: ""
+
+  defp extract_text_from_ast(ast) when is_list(ast) do
+    ast
+    |> Enum.map(&extract_text_from_ast/1)
+    |> Enum.join("")
+  end
+
+  defp extract_text_from_ast({_tag, _attrs, children, _meta}) do
+    extract_text_from_ast(children)
+  end
+
+  defp extract_text_from_ast({:typography, _tag, _attrs, children, _meta}) do
+    extract_text_from_ast(children)
+  end
+
+  defp extract_text_from_ast({:component, _type, _attrs, children, _meta}) do
+    extract_text_from_ast(children)
+  end
+
+  defp extract_text_from_ast(text) when is_binary(text), do: text
+  defp extract_text_from_ast(_), do: ""
 end

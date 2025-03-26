@@ -235,28 +235,39 @@ defmodule Portfolio.Content.Markdown.RendererTest do
                  assert Map.has_key?(attrs, :size)
                  assert Map.has_key?(attrs, :font)
                  true
-               _ -> false
+
+               _ ->
+                 false
              end)
     end
 
-    test "applies component transforms", %{markdown: markdown} do
+    test "integration with transform pipeline applies component transforms", %{
+      markdown: markdown
+    } do
       # This test verifies that component transforms produce valid AST
       {:ok, ast} = Renderer.render(markdown, :note)
       assert is_list(ast)
       assert length(ast) > 0
 
       # Verify image becomes a component inside a paragraph
-      image_paragraph = Enum.find(ast, fn
-        {:typography, "p", _attrs, content, _meta} ->
-          Enum.any?(content, fn
-            {:component, :image, attrs, _content, _meta} ->
-              Map.has_key?(attrs, :src) || Map.has_key?(attrs, :alt)
-            _ -> false
-          end)
-        _ -> false
-      end)
+      image_paragraph =
+        Enum.find(ast, fn
+          {:typography, "p", _attrs, content, _meta} ->
+            Enum.any?(content, fn
+              {:component, :image, attrs, _content, _meta} ->
+                attrs_map = Enum.into(attrs, %{})
+                Map.has_key?(attrs_map, "src") || Map.has_key?(attrs_map, "alt")
 
-      assert image_paragraph != nil, "Expected to find a paragraph containing an image component"
+              _ ->
+                false
+            end)
+
+          _ ->
+            false
+        end)
+
+      assert image_paragraph != nil,
+             "Expected to find a paragraph containing an image component"
     end
   end
 

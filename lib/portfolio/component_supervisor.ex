@@ -10,6 +10,7 @@ defmodule Portfolio.ComponentSupervisor do
     children = [
       {Portfolio.Content.Markdown.Component.Registry, []}
     ]
+
     Supervisor.init(children, strategy: :one_for_one)
   end
 end

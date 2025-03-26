@@ -23,7 +23,7 @@ defmodule Portfolio.Application do
       {DNSCluster,
        query: Application.get_env(:portfolio, :dns_cluster_query) || :ignore},
       {Finch, name: Portfolio.Finch},
-      PortfolioWeb.Endpoint,
+      PortfolioWeb.Endpoint
     ]
 
     # Add file watcher for all environments
@@ -38,9 +38,12 @@ defmodule Portfolio.Application do
       children ++ [{Portfolio.Content.FileManagement.Watcher, watcher_config}]
 
     opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
+
     Supervisor.start_link(children, opts)
-    |> tap(fn {:ok, _} -> Logger.info("Portfolio Application started successfully.")
-             {:error, _} -> Logger.error("Portfolio Application failed to start.") end)
+    |> tap(fn
+      {:ok, _} -> Logger.info("Portfolio Application started successfully.")
+      {:error, _} -> Logger.error("Portfolio Application failed to start.")
+    end)
   end
 
   @impl true

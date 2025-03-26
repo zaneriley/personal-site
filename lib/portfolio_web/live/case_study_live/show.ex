@@ -7,7 +7,9 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.ContentMetadata
   import Phoenix.HTML, only: [content_tag: 3]
-  import Portfolio.Content.Markdown.Renderer, only: [render_ast: 1]
+
+  import Portfolio.Content.Markdown.Renderer,
+    only: [render_ast: 1, render_html: 1]
 
   @dialyzer {:nowarn_function, mount: 3}
   @impl true
@@ -20,7 +22,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   def mount(%{"locale" => user_locale, "url" => url}, _session, socket) do
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations, ast_content} when is_list(ast_content) ->
+        {:ok, case_study, translations, ast_content}
+        when is_list(ast_content) ->
           {page_title, introduction} =
             set_page_metadata(case_study, translations)
 
@@ -78,7 +81,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
     if valid_slug?(url) do
       case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations, ast_content} when is_list(ast_content) ->
+        {:ok, case_study, translations, ast_content}
+        when is_list(ast_content) ->
           Logger.debug(
             "HELLO! Case study translations: #{inspect(translations)}"
           )
@@ -138,5 +142,4 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
     {page_title, introduction}
   end
-
 end

@@ -11,6 +11,8 @@ defmodule Portfolio.Content.Markdown.Renderer do
   """
 
   alias Portfolio.Cache
+  alias Portfolio.Content.Markdown.{Parser, Pipeline, Transforms}
+  require Logger
 
   @doc """
   Renders markdown content into an AST for LiveView.
@@ -27,55 +29,27 @@ defmodule Portfolio.Content.Markdown.Renderer do
   def render("", _content_type, _options), do: {:error, "Empty content"}
 
   def render(content, content_type, options) do
-    # Simple AST for testing
-    simple_ast = [
-      {"h1", %{}, ["Simple Heading"], %{}}
-    ]
+    # Parse the markdown content into an AST
+    case Parser.parse(content) do
+      {:ok, %{ast: raw_ast, frontmatter: frontmatter}} ->
+        # Configure stages based on content type
+        pipeline_opts =
+          Keyword.merge(options,
+            stages: [
+              Transforms.Typography,
+              Transforms.Component
+            ],
+            metadata: frontmatter,
+            content_type: content_type
+          )
 
-    ast =
-      case content do
-        "# Simple Heading" ->
-          simple_ast
+        # Apply transforms using the pipeline
+        Pipeline.process(raw_ast, pipeline_opts)
 
-        "# Modified Heading" ->
-          [{"h1", %{}, ["Modified Heading"], %{}}]
-
-        _ ->
-          # More complex AST for testing
-          [
-            {"h1", %{}, ["Heading"], %{}},
-            {"p", %{},
-             [
-               "This is a paragraph with ",
-               {"em", %{}, ["emphasized"], %{}},
-               " and ",
-               {"strong", %{}, ["strong"], %{}},
-               " text."
-             ], %{}},
-            {"p", %{},
-             [{"img", %{src: "path/to/image.jpg", alt: "An image"}, [], %{}}],
-             %{}},
-            {"ul", %{},
-             [
-               {"li", %{}, ["List item 1"], %{}},
-               {"li", %{}, ["List item 2"], %{}}
-             ], %{}}
-          ]
-      end
-
-    # Configure stages based on content type
-    pipeline_opts = [
-      stages: [
-        Portfolio.Content.Markdown.Transforms.Typography,
-        Portfolio.Content.Markdown.Transforms.Component
-      ]
-    ]
-
-    # Merge user options with pipeline options
-    merged_opts = Keyword.merge(options, pipeline_opts)
-
-    # Apply transforms using the pipeline
-    Portfolio.Content.Markdown.Pipeline.process(ast, merged_opts)
+      {:error, reason} ->
+        Logger.error("Failed to parse markdown content: #{inspect(reason)}")
+        {:error, :parsing_failed}
+    end
   end
 
   @doc """
@@ -157,34 +131,94 @@ defmodule Portfolio.Content.Markdown.Renderer do
   # Private functions
 
   @doc """
-  Renders a Markdown AST into HEEx-safe content.
-  This generic function handles different AST types:
-  - A binary is returned as-is.
-  - A list is recursively processed and concatenated.
-  - Tuples representing nodes (e.g. {:typography, tag, attrs, children, meta}) are rendered as HTML tags.
-  Fallback: Converts the node to string and wraps it as safe content.
+  Processes a Markdown AST, recursively handling nested structures.
+  This function preserves the AST structure while ensuring all nested nodes are processed.
   """
   def render_ast(ast) when is_binary(ast), do: ast
 
   def render_ast(ast) when is_list(ast) do
+    Enum.map(ast, &render_ast/1)
+  end
+
+  def render_ast({:typography, tag, attrs, children, meta}) do
+    processed_children = render_ast(children)
+    {:typography, tag, attrs, processed_children, meta}
+  end
+
+  def render_ast({:component, type, attrs, children, meta}) do
+    processed_children = render_ast(children)
+    {:component, type, attrs, processed_children, meta}
+  end
+
+  def render_ast({tag, attrs, children, meta}) when is_binary(tag) do
+    processed_children = render_ast(children)
+    {tag, attrs, processed_children, meta}
+  end
+
+  # Catch-all for anything else (should ideally not be hit with well-formed AST)
+  def render_ast(other), do: other
+
+  @doc """
+  Renders the AST to HTML strings for display in templates.
+
+  This function should be used when you need to convert the AST to
+  HTML for display in a template or when HTML is required.
+  """
+  def render_html(ast) when is_binary(ast), do: ast
+
+  def render_html(ast) when is_list(ast) do
     ast
-    |> Enum.map(&render_ast/1)
-    |> Enum.join()
-    |> Phoenix.HTML.raw()
+    |> Enum.map(&render_html/1)
+    |> Enum.join("")
   end
 
-  def render_ast({:typography, tag, attrs, children, _meta}) do
-    content = render_ast(children)
-    # You could extend to merge attrs and build a proper tag using your Typography component, but for now we keep it simple.
-    Phoenix.HTML.raw("<#{tag}>" <> content <> "</#{tag}>")
+  def render_html({:typography, tag, attrs, children, _meta}) do
+    attrs_str =
+      attrs
+      |> Enum.map(fn {k, v} -> "#{k}=\"#{v}\"" end)
+      |> Enum.join(" ")
+
+    attrs_html = if attrs_str == "", do: "", else: " " <> attrs_str
+
+    "<#{tag}#{attrs_html}>#{render_html(children)}</#{tag}>"
   end
 
-  def render_ast({tag, _attrs, children, _meta}) when is_binary(tag) do
-    content = render_ast(children)
-    Phoenix.HTML.raw("<#{tag}>" <> content <> "</#{tag}>")
+  def render_html({:component, type, attrs, children, _meta}) do
+    # Look up the component in the registry
+    case Portfolio.Content.Markdown.Component.Registry.lookup(type) do
+      {:ok, module} ->
+        # Convert keyword list to map for component
+        attrs_map = Enum.into(attrs, %{})
+
+        # Render the component
+        module.render(%{
+          component: type,
+          attrs: attrs_map,
+          content: render_html(children)
+        })
+
+      {:error, _reason} ->
+        # Fallback rendering if component not found
+        "<div class=\"component-error\">Component '#{type}' not found</div>"
+    end
   end
 
-  def render_ast(ast) do
-    Phoenix.HTML.raw(to_string(ast))
+  def render_html({tag, attrs, children, _meta}) when is_binary(tag) do
+    attrs_str =
+      attrs
+      |> Enum.map(fn {k, v} -> "#{k}=\"#{v}\"" end)
+      |> Enum.join(" ")
+
+    attrs_html = if attrs_str == "", do: "", else: " " <> attrs_str
+
+    "<#{tag}#{attrs_html}>#{render_html(children)}</#{tag}>"
   end
+
+  def render_html(other), do: to_string(other)
+
+  @doc """
+  Preserves the AST structure without converting to HTML.
+  This function simply returns the AST, making it suitable
+  for passing to components that can handle AST nodes directly.
+  """
 end

@@ -27,7 +27,10 @@ defmodule Portfolio.Cache do
       Logger.info("Cache starting in DISABLED mode.")
       %{id: __MODULE__, start: {__MODULE__, :start_link_disabled, []}}
     else
-      Logger.info("Cache starting in ENABLED mode with opts: #{inspect(cache_opts)}")
+      Logger.info(
+        "Cache starting in ENABLED mode with opts: #{inspect(cache_opts)}"
+      )
+
       %{
         id: __MODULE__,
         start: {Cachex, :start_link, [@cache_name, cache_opts]}

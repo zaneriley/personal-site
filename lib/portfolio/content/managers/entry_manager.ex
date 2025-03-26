@@ -88,11 +88,13 @@ defmodule Portfolio.Content.EntryManager do
         # Convert AST tuples to maps for storage
         serialized_ast = serialize_ast(ast)
         # Store the AST in the database and update the content record
-        Repo.update(Ecto.Changeset.change(content,
-          stored_ast: serialized_ast,
-          # Set the compiled_content field to nil to indicate we're using AST
-          compiled_content: nil
-        ))
+        Repo.update(
+          Ecto.Changeset.change(content,
+            stored_ast: serialized_ast,
+            # Set the compiled_content field to nil to indicate we're using AST
+            compiled_content: nil
+          )
+        )
 
       {:error, reason} ->
         # If we couldn't get the AST, return the error
@@ -441,7 +443,7 @@ defmodule Portfolio.Content.EntryManager do
           Types.content_type(),
           [String.t()]
         ) ::
-          {:ok, String.t()}
+          {:ok, String.t() | list()}
           | {:error, atom()}
           | {:error, :empty_content}
           | {:error, :unexpected_result}
@@ -450,22 +452,21 @@ defmodule Portfolio.Content.EntryManager do
     is_markdown = "content" in markdown_fields
 
     try do
-      # Use enhanced renderer for HTML output
-      case Renderer.render_and_cache(content.content, content_type, content.id,
+      # Render and get the AST directly
+      case Renderer.render_and_cache(content.content, content.id, content_type,
              is_markdown: is_markdown
            ) do
+        {:ok, ast} when is_list(ast) ->
+          Logger.debug(
+            "Successfully compiled AST for #{content_type} with ID: #{content.id}"
+          )
+
+          # Return the AST directly
+          {:ok, ast}
+
         {:ok, compiled} when is_binary(compiled) and compiled != "" ->
           Logger.debug(
             "Successfully compiled content for #{content_type} with ID: #{content.id}"
-          )
-
-          # Also cache the AST for future use
-          Renderer.render_and_cache(
-            content.content,
-            content_type,
-            content.id,
-            is_markdown: is_markdown,
-            return_ast: true
           )
 
           {:ok, compiled}
@@ -507,23 +508,39 @@ defmodule Portfolio.Content.EntryManager do
     Enum.reduce_while(translations, {:ok, %{}}, fn {key, value}, {:ok, acc} ->
       is_markdown = to_string(key) in markdown_fields
 
-      case Renderer.render_and_cache(value, content_type, "#{key}_translation",
-             is_markdown: is_markdown
-           ) do
-        {:ok, compiled} when is_binary(compiled) and compiled != "" ->
-          Logger.debug("Successfully compiled translation for key: #{key}")
-          {:cont, {:ok, Map.put(acc, key, compiled)}}
+      # For now, just directly return non-markdown fields
+      if not is_markdown do
+        {:cont, {:ok, Map.put(acc, key, value)}}
+      else
+        # Only render markdown fields through the renderer
+        case Renderer.render_and_cache(
+               value,
+               "#{key}_translation",
+               content_type,
+               is_markdown: is_markdown
+             ) do
+          {:ok, ast} when is_list(ast) ->
+            Logger.debug(
+              "Successfully compiled AST translation for key: #{key}"
+            )
 
-        {:ok, ""} ->
-          Logger.warning("Compiled translation is empty for key: #{key}")
-          {:halt, {:error, :empty_translation}}
+            {:cont, {:ok, Map.put(acc, key, ast)}}
 
-        {:error, reason} ->
-          Logger.error(
-            "Error compiling translation for key: #{key}. Error: #{inspect(reason)}"
-          )
+          {:ok, compiled} when is_binary(compiled) and compiled != "" ->
+            Logger.debug("Successfully compiled translation for key: #{key}")
+            {:cont, {:ok, Map.put(acc, key, compiled)}}
 
-          {:halt, {:error, reason}}
+          {:ok, ""} ->
+            Logger.warning("Compiled translation is empty for key: #{key}")
+            {:halt, {:error, :empty_translation}}
+
+          {:error, reason} ->
+            Logger.error(
+              "Error compiling translation for key: #{key}. Error: #{inspect(reason)}"
+            )
+
+            {:halt, {:error, reason}}
+        end
       end
     end)
   end
@@ -686,9 +703,18 @@ defmodule Portfolio.Content.EntryManager do
 
   # Convert attributes to a serializable format
   defp serialize_attrs(attrs) when is_map(attrs) do
-    attrs
+    Map.new(attrs, fn {k, v} -> {to_string(k), v} end)
   end
+
   defp serialize_attrs(nil), do: %{}
+  defp serialize_attrs([]), do: %{}
+
+  defp serialize_attrs(attrs) when is_list(attrs) do
+    Enum.into(attrs, %{}, fn {k, v} -> {to_string(k), v} end)
+  end
+
+  # Catch-all clause to handle any other type of attributes
+  defp serialize_attrs(_), do: %{}
 
   # Helper function to deserialize the AST
   defp deserialize_ast(ast) when is_list(ast) do

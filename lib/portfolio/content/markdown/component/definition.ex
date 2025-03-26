@@ -99,13 +99,19 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
 
       if component_type != nil do
         # Get the component function name, default to the component type name
-        function_name = Module.get_attribute(module_name, :component_function) || component_type
+        function_name =
+          Module.get_attribute(module_name, :component_function) ||
+            component_type
+
         register_component(module_name, component_type, function_name)
       end
     catch
       :error, %ArgumentError{} ->
         require Logger
-        Logger.debug("PubSub not available during compilation, component will register at runtime")
+
+        Logger.debug(
+          "PubSub not available during compilation, component will register at runtime"
+        )
     end
   end
 
