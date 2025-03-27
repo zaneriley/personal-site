@@ -264,6 +264,9 @@ defmodule Portfolio.Content.ContentTest do
     end
 
     test "get_with_translations/3 returns content with specified locale translations" do
+      # Clear out anything in the cache to prevent interference
+      Portfolio.DataCase.clear_cache()
+
       # Create a note manually
       {:ok, note} =
         Content.create("note", %{
@@ -273,7 +276,7 @@ defmodule Portfolio.Content.ContentTest do
           "locale" => "en"
         })
 
-      # Create translations manually
+      # Create translations manually for French content
       TranslationManager.create_or_update_translations(note, "fr", %{
         "title" => "Titre Français",
         "content" => "Contenu Français"

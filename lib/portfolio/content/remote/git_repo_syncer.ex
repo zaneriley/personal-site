@@ -17,7 +17,6 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
   """
   @spec sync_repo(String.t(), String.t()) :: sync_result()
   def sync_repo(repo_url, local_path) do
-
     # Check network connectivity without using ping
     connectivity_check = check_http_connectivity("github.com")
 
