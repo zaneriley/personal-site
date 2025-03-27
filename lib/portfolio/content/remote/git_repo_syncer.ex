@@ -6,9 +6,7 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
   require Logger
 
   @git_env [
-    {"GIT_TERMINAL_PROMPT", "0"},
-    {"GIT_TRACE", "1"},
-    {"GIT_CURL_VERBOSE", "1"}
+    {"GIT_TERMINAL_PROMPT", "0"}
   ]
   @default_branch "main"
 
@@ -19,25 +17,11 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
   """
   @spec sync_repo(String.t(), String.t()) :: sync_result()
   def sync_repo(repo_url, local_path) do
-    Logger.info("Starting sync for repo: #{repo_url} at path: #{local_path}")
-    Logger.debug("Environment variables: #{inspect(@git_env)}")
-
-    Logger.debug(
-      "Git version: #{inspect(System.cmd("git", ["--version"], stderr_to_stdout: true))}"
-    )
 
     # Check network connectivity without using ping
     connectivity_check = check_http_connectivity("github.com")
 
-    Logger.debug(
-      "Network connectivity check to github.com: #{inspect(connectivity_check)}"
-    )
-
     result = do_sync_repo(repo_url, local_path)
-
-    Logger.info(
-      "Finished sync for repo: #{repo_url} with result: #{inspect(result)}"
-    )
 
     result
   end
@@ -90,11 +74,13 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
     Logger.info("Updating existing repo at path: #{inspect(local_path)}")
 
     with {:ok, fetch_output} <- fetch_all(local_path),
-         _ = Logger.debug("Fetch output: #{inspect(fetch_output)}"),
          {:ok, reset_output} <- reset_to_origin(local_path),
-         _ = Logger.debug("Reset output: #{inspect(reset_output)}"),
-         {:ok, clean_output} <- clean_repo(local_path),
-         _ = Logger.debug("Clean output: #{inspect(clean_output)}") do
+         {:ok, clean_output} <- clean_repo(local_path) do
+      # Logging outputs here
+      Logger.debug("Fetch output: #{inspect(fetch_output)}")
+      Logger.debug("Reset output: #{inspect(reset_output)}")
+      Logger.debug("Clean output: #{inspect(clean_output)}")
+
       {:ok, local_path}
     else
       {:error, reason} ->

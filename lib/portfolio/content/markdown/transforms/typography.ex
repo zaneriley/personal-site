@@ -1,9 +1,18 @@
 defmodule Portfolio.Content.Markdown.Transforms.Typography do
   @moduledoc """
-  Transform for enhancing typography elements in the markdown AST.
+  A pipeline stage for enhancing typography elements in the Markdown AST.
 
-  This transform converts standard HTML tags like headings and paragraphs
-  into typography component references with appropriate styling attributes.
+  This transform operates on the AST provided by the `Portfolio.Content.Markdown.Pipeline`.
+  It identifies standard text-based HTML element nodes (like `{"h1", ...}`, `{"p", ...}`)
+  and converts them into specific `{:typography, tag, attrs, children, meta}` nodes.
+
+  Key transformations include:
+  - Adding size attributes based on heading levels (`h1` -> `4xl`, etc.).
+  - Applying specific fonts for headings or default text.
+  - Optionally applying `dropcap: true` styling to the first paragraph encountered.
+
+  The resulting AST nodes are intended to be rendered using the
+  `PortfolioWeb.Components.Typography` component.
   """
 
   @doc """

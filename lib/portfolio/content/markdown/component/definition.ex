@@ -1,25 +1,28 @@
 defmodule Portfolio.Content.Markdown.Component.Definition do
   @moduledoc """
-  Defines components for use in markdown rendering with automatic registration.
+  Provides a macro (`use`) for defining Markdown pipeline-aware components.
 
-  This module provides a macro for defining components that can be used in markdown
-  content. Components defined with this module are automatically registered with
-  the component registry through PubSub events.
+  This module simplifies the process of creating Phoenix function components
+  that can be discovered and used by the `Portfolio.Content.Markdown.Pipeline`.
 
-  ## Example
+  When a module `use`s this definition, it:
+  1. Defines functions to access component metadata (type, function, attributes, etc.).
+  2. **Automatically registers** the component with the `Portfolio.Content.Markdown.Component.Registry`
+     via `Phoenix.PubSub`. This registration happens during module compilation
+     (or runtime initialization if PubSub isn't ready at compile time), enabling
+     discovery by the pipeline and supporting hot-reloading.
+
+  Example Usage:
 
       defmodule MyComponent do
         use Portfolio.Content.Markdown.Component.Definition,
           type: :my_component,
           function: :render,
-          description: "A custom component for markdown content",
-          attributes: %{
-            size: %{type: :string, required: true, description: "Component size"}
-          }
+          attributes: %{size: %{type: :string, required: true}}
 
         def render(assigns) do
           ~H\"\"\"
-          <div class={@size}>My component content</div>
+          <div class={@size}>My Component</div>
           \"\"\"
         end
       end

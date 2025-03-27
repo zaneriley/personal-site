@@ -1,9 +1,19 @@
 defmodule Portfolio.Content.Markdown.Ast do
   @moduledoc """
-  Utilities for working with Markdown AST nodes.
+  Provides utility functions for traversing and manipulating Markdown AST nodes.
 
-  This module provides functions for traversing and manipulating AST nodes
-  that represent markdown content with embedded components.
+  The Markdown processing pipeline (`Portfolio.Content.Markdown.Pipeline` and its
+  transform stages) operates on an Abstract Syntax Tree (AST) represented primarily
+  by nested tuples and lists. This module offers helper functions to work with this
+  structure effectively.
+
+  Key functions include:
+  - `traverse/2`: Applies a function recursively to every node in the AST.
+  - `find_nodes/2`: Locates all nodes within the AST that match a given predicate.
+  - `transform/2`: Alias for `traverse/2`, emphasizing node transformation.
+
+  These utilities are used internally by the `Parser` and various `Transform` stages
+  to inspect and modify the AST during processing.
   """
 
   @doc """

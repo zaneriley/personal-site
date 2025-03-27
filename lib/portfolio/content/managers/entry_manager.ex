@@ -508,10 +508,8 @@ defmodule Portfolio.Content.EntryManager do
     Enum.reduce_while(translations, {:ok, %{}}, fn {key, value}, {:ok, acc} ->
       is_markdown = to_string(key) in markdown_fields
 
-      # For now, just directly return non-markdown fields
-      if not is_markdown do
-        {:cont, {:ok, Map.put(acc, key, value)}}
-      else
+      # Use positive condition
+      if is_markdown do
         # Only render markdown fields through the renderer
         case Renderer.render_and_cache(
                value,
@@ -541,6 +539,9 @@ defmodule Portfolio.Content.EntryManager do
 
             {:halt, {:error, reason}}
         end
+      else
+        # For now, just directly return non-markdown fields
+        {:cont, {:ok, Map.put(acc, key, value)}}
       end
     end)
   end

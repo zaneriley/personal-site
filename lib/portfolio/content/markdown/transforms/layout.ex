@@ -1,10 +1,15 @@
 defmodule Portfolio.Content.Markdown.Transforms.Layout do
   @moduledoc """
-  Transform for processing layout structures in the markdown AST.
+  A pipeline stage for applying structural layout components based on metadata.
 
-  This transform examines metadata (usually from frontmatter) and applies
-  appropriate layout components to wrap the content according to layout
-  specifications.
+  This transform operates on the AST provided by the `Portfolio.Content.Markdown.Pipeline`.
+  It inspects the `:metadata` option (typically derived from the content's frontmatter)
+  to determine if a specific layout (e.g., columns, grid) should be applied.
+
+  If a recognized layout is specified, this stage restructures the AST, often by
+  wrapping the existing content nodes within appropriate layout component nodes
+  (e.g., `{:component, :columns, ...}`). If no layout or an unsupported layout
+  is specified, it passes the AST through unchanged.
   """
 
   @doc """

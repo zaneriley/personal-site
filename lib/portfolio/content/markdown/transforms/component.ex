@@ -1,9 +1,18 @@
 defmodule Portfolio.Content.Markdown.Transforms.Component do
   @moduledoc """
-  Transform that resolves component references in the markdown AST.
+  A pipeline stage for resolving and enriching component references in the Markdown AST.
 
-  This transform ensures that component nodes reference valid components from the registry
-  and enriches them with metadata from the registry lookup.
+  This transform operates on the AST provided by the `Portfolio.Content.Markdown.Pipeline`.
+  It searches for nodes representing components, which can be:
+  - Custom components parsed from `::component::` syntax (represented as `{:component, type, ...}`).
+  - Standard elements designated to become components (e.g., transforming `{"img", ...}` to `{:component, :figure, ...}`).
+
+  For each component node found, it uses the `Portfolio.Content.Markdown.Component.Registry`
+  to look up the component `type`. If found, it enriches the node's metadata with
+  information about the implementing module and function.
+
+  It handles cases where components might be missing from the registry, either by
+  raising an error or logging a warning based on the `ignore_missing` option.
   """
 
   require Logger

@@ -1,10 +1,23 @@
 defmodule Portfolio.Content.Markdown.Parser do
   @moduledoc """
-  Parses markdown content into a structured AST.
+  Parses raw Markdown text into an initial Abstract Syntax Tree (AST).
 
-  This module is responsible for the first step in the markdown rendering pipeline,
-  converting raw markdown text into an intermediate AST (Abstract Syntax Tree)
-  representation that can be further processed by transform functions.
+  This module acts as the bridge between the raw text content (potentially including
+  YAML frontmatter) and a structured AST suitable for further processing by the
+  `Portfolio.Content.Markdown.Pipeline`.
+
+  It performs two key functions:
+  1.  **Standard Markdown Parsing:** Leverages the `Earmark` library to parse standard
+      Markdown syntax (headings, lists, links, etc.) into an AST.
+  2.  **(Planned) Custom Component Syntax Handling:** Includes logic (currently marked with TODOs
+      in `preprocess_custom_components` and `insert_custom_components`) to recognize, extract,
+      and represent custom component blocks (e.g., `::my-component{...} ... ::end::`)
+      within the final AST structure. This typically involves pre-processing the raw string
+      before Earmark runs and post-processing the Earmark AST to insert the custom nodes.
+
+  The output is a map containing the parsed frontmatter and the initial AST, which
+  represents the document's structure including both standard elements and placeholders
+  or nodes for custom components.
   """
 
   require Logger

@@ -6,14 +6,6 @@ defmodule Portfolio.Content.TranslationTest do
   alias Portfolio.ContentFixtures
   alias Portfolio.AstTestHelpers
 
-  # Helper to inspect AST structures for debugging
-  defp debug_inspect(value, label) do
-    IO.puts("\n=== DEBUG #{label} ===")
-    IO.inspect(value, label: "Value", pretty: true, limit: :infinity)
-    IO.puts("=== END DEBUG #{label} ===\n")
-    value
-  end
-
   describe "translation functionality" do
     test "create_or_update_translations creates new translations" do
       note = ContentFixtures.note_fixture()
@@ -59,8 +51,6 @@ defmodule Portfolio.Content.TranslationTest do
       db_translations =
         TranslationManager.get_translations(note.id, "note", "ja")
 
-      debug_inspect(db_translations, "DB Translations after update")
-
       assert length(translations) == 2
 
       assert Enum.find(translations, &(&1.field_name == "title")).field_value ==
@@ -83,7 +73,6 @@ defmodule Portfolio.Content.TranslationTest do
 
       translations =
         TranslationManager.get_translations(case_study.id, "case_study", "ja")
-        |> debug_inspect("Translations from get_translations")
 
       # We now expect to handle both string and AST values
       title_text = AstTestHelpers.extract_text(translations["title"])
@@ -102,8 +91,6 @@ defmodule Portfolio.Content.TranslationTest do
 
       {:ok, content, translations, ast_result} =
         Content.get_with_translations("case_study", case_study.url, "ja")
-
-      debug_inspect(translations, "Translations from get_with_translations")
 
       assert content.id == case_study.id
 
@@ -144,16 +131,9 @@ defmodule Portfolio.Content.TranslationTest do
       raw_translations =
         TranslationManager.get_translations(fresh_note.id, "note", "ja")
 
-      debug_inspect(raw_translations, "Raw translations from DB")
-
       # Check Japanese translations
       {:ok, retrieved_note, translations, ast_result} =
         Content.get_with_translations("note", fresh_note.url, "ja")
-
-      debug_inspect(
-        translations,
-        "Compiled translations from get_with_translations"
-      )
 
       assert retrieved_note.id == fresh_note.id
 
@@ -200,15 +180,8 @@ defmodule Portfolio.Content.TranslationTest do
       raw_translations =
         TranslationManager.get_translations(updated_note.id, "note", "ja")
 
-      debug_inspect(raw_translations, "Raw translations from DB")
-
       assert {:ok, content, translations, ast_result} =
                Content.get_with_translations("note", "existing-note", "ja")
-
-      debug_inspect(
-        translations,
-        "Compiled translations from get_with_translations"
-      )
 
       # Extract text for comparison
       title_text = AstTestHelpers.extract_text(translations["title"])

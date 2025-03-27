@@ -1,10 +1,15 @@
 defmodule Portfolio.Content.Markdown.Pipeline do
   @moduledoc """
-  A pipeline for transforming Markdown AST through a series of stages.
+  Orchestrates the transformation of a Markdown AST through configurable stages.
 
-  The pipeline processes an AST representation of markdown content through a
-  configurable series of transform stages. Each stage can modify the AST
-  before passing it to the next stage.
+  This module takes an initial AST (produced by `Portfolio.Content.Markdown.Parser`)
+  and applies a series of transformation functions (stages) to it sequentially.
+  Each stage module must implement an `apply/2` function that accepts the AST
+  and options, returning either `{:ok, transformed_ast}` or `{:error, reason}`.
+
+  The pipeline allows for modular enhancement and modification of the Markdown
+  content structure before final rendering. Stages are configured via the `:stages`
+  option passed to `process/2`. If any stage returns an error, the pipeline halts.
   """
 
   require Logger

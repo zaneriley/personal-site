@@ -1,13 +1,24 @@
 defmodule Portfolio.Content.Markdown.Renderer do
   @moduledoc """
-  Handles the rendering of markdown content into AST for Phoenix LiveView.
+  Renders Markdown content into a final AST representation, managing caching.
 
-  This module provides functions for the markdown rendering pipeline:
-  1. Parse the markdown content
-  2. Apply transforms to enhance the AST
-  3. Return the AST for use in Phoenix LiveView components
+  This module serves as the primary public interface for the Markdown processing pipeline.
+  Its main functions, `render/3` and `render_and_cache/4`, orchestrate the conversion
+  of raw Markdown text into a final, transformed Abstract Syntax Tree (AST) ready for
+  display in LiveView.
 
-  It also provides caching functionality to avoid re-processing the same content.
+  Workflow:
+  1. Receives raw Markdown content, a unique content ID, and options.
+  2. Invokes `Portfolio.Content.Markdown.Parser` to get the initial AST and frontmatter.
+  3. Invokes `Portfolio.Content.Markdown.Pipeline` to apply configured transformations
+     (like `Typography`, `Component`, `Layout`) to the initial AST.
+  4. Uses `Portfolio.Cache` to store the *final AST* result, keyed by the content ID,
+     to avoid redundant processing on subsequent requests. Handles cache checking,
+     bypassing (`force_refresh`), and invalidation.
+  5. Returns the final AST (`{:ok, ast}`) or an error.
+
+  It also provides `render_ast/1`, a helper typically used within LiveView components
+  or templates to recursively render the final AST nodes into HEEx output.
   """
 
   alias Portfolio.Cache
@@ -167,16 +178,13 @@ defmodule Portfolio.Content.Markdown.Renderer do
   def render_html(ast) when is_binary(ast), do: ast
 
   def render_html(ast) when is_list(ast) do
-    ast
-    |> Enum.map(&render_html/1)
-    |> Enum.join("")
+    Enum.map_join(ast, "", &render_html/1)
   end
 
   def render_html({:typography, tag, attrs, children, _meta}) do
     attrs_str =
       attrs
-      |> Enum.map(fn {k, v} -> "#{k}=\"#{v}\"" end)
-      |> Enum.join(" ")
+      |> Enum.map_join(" ", fn {k, v} -> "#{k}=\"#{v}\"" end)
 
     attrs_html = if attrs_str == "", do: "", else: " " <> attrs_str
 
@@ -206,8 +214,7 @@ defmodule Portfolio.Content.Markdown.Renderer do
   def render_html({tag, attrs, children, _meta}) when is_binary(tag) do
     attrs_str =
       attrs
-      |> Enum.map(fn {k, v} -> "#{k}=\"#{v}\"" end)
-      |> Enum.join(" ")
+      |> Enum.map_join(" ", fn {k, v} -> "#{k}=\"#{v}\"" end)
 
     attrs_html = if attrs_str == "", do: "", else: " " <> attrs_str
 

@@ -1,13 +1,15 @@
 defmodule Portfolio.Cache do
   @moduledoc """
-  Wrapper for caching operations.
+  Provides a unified interface for application-wide caching using Cachex.
 
-  This module provides a unified interface for cache operations, supporting
-  bypassing and disabling of the cache. It uses Cachex as the underlying
-  cache implementation when enabled.
+  This module acts as a wrapper around `Cachex`, offering standard cache operations
+  like `get/2`, `put/3`, `delete/2`, `exists?/2`, etc. It supports enabling/disabling
+  the cache via application configuration (`config :portfolio, :cache, disabled: true`).
 
-  The cache can be configured using the `:portfolio, :cache` application
-  environment variable. Set `[disabled: true]` to disable the cache.
+  Within the context of Markdown rendering (`Portfolio.Content.Markdown.Renderer`),
+  this cache is specifically used to store the **final processed AST** after all
+  pipeline transformations have been applied. This significantly improves performance
+  by avoiding repeated parsing and transformation of unchanged Markdown content.
   """
 
   require Logger

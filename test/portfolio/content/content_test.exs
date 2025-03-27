@@ -332,9 +332,7 @@ defmodule Portfolio.Content.ContentTest do
   defp extract_text_from_ast(nil), do: ""
 
   defp extract_text_from_ast(ast) when is_list(ast) do
-    ast
-    |> Enum.map(&extract_text_from_ast/1)
-    |> Enum.join("")
+    Enum.map_join(ast, "", &extract_text_from_ast/1)
   end
 
   defp extract_text_from_ast({_tag, _attrs, children, _meta}) do

@@ -1,9 +1,14 @@
 defmodule Portfolio.Content.FileManagement.Reader do
   @moduledoc """
-  Reads and parses markdown files for content management.
+  Reads and parses raw Markdown files from the filesystem.
 
-  Extracts content, frontmatter, and metadata from markdown files. Handles
-  YAML parsing, content type determination, and locale extraction.
+  This module is the first step in the content ingestion process. It takes a file
+  path, reads the raw file content, splits YAML frontmatter from the main Markdown body,
+  parses the frontmatter, determines the content type and locale based on the file path,
+  and calculates initial metadata like word count and read time.
+
+  It outputs a map containing the raw Markdown content, parsed frontmatter attributes,
+  and inferred metadata, ready to be passed to the `Portfolio.Content.Markdown.Parser`.
   """
   alias Portfolio.Content.Types
   alias Portfolio.Content.Utils.MetadataCalculator
