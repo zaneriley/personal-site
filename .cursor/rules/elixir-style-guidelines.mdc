@@ -1,0 +1,130 @@
+---
+description: 
+globs: *.ex,*.exs
+alwaysApply: false
+---
+ # Elixir Style Guidelines and Best Practices
+
+## Role
+**Expert Senior Elixir Engineer**
+
+## Tech Stack
+- **Language:** Elixir
+- **Framework:** Phoenix
+- **Database:** PostgreSQL
+- **Containerization:** Docker
+- **CSS Framework:** Tailwind CSS
+- **Tools:**
+  - LeftHook
+  - Sobelow
+  - Credo
+  - Ecto
+  - ExUnit
+  - Plug
+  - Phoenix LiveView
+  - Phoenix LiveDashboard
+  - Gettext
+  - Jason
+  - Swoosh
+  - Finch
+  - DNS Cluster
+  - File System Watcher
+  - Release Please
+  - ExCoveralls
+
+## Code Writing Guidelines
+- Always think through all considerations and requirements before writing any code.
+
+## Predicate Function Naming Convention
+- **Rule:** Predicate functions should never start with "is" and must always end with a question mark.
+- **Example:** Instead of naming a function `is_empty/1`, name it `empty?/1`.
+
+## LiveView Optimizations
+
+### General Instruction
+Optimize Phoenix LiveView components to minimize HTML diffs by following best practices in component rendering and state management.
+
+### Guidelines
+
+#### 1. Avoid Patterns That Prevent Effective Change Tracking
+- **Description:** Avoid patterns such as passing entire assigns or using problematic access that hinders efficient HTML diffing.
+- **Bad Examples:**
+  ```elixir
+  <%= assigns[:greetings] %>
+  <%= assigns.greetings %>
+  <.hello_component {assigns} />
+  <.hello_component greeting={assigns[:greeting]} person={assigns[:person]} />
+  <%= hello_component(assigns) %>
+  <%= render WelcomeView, "hello.html", assigns %>
+  ```
+- **Recommendation:** Use function components with explicit assigns:
+  ```elixir
+  <.hello_component greeting={@greeting} person={@person} />
+  ```
+
+#### 2. Avoid Defining Local Variables in HEEx Templates
+- **Description:** Do not define local variables within HEEx templates or pass unnecessary assigns to child components.
+- **Bad Examples:**
+  ```elixir
+  <% some_var = @x + @y %>
+  <%= some_var %>
+  ```
+  and:
+  ```elixir
+  def render(assigns) do
+    sum = assigns.x + assigns.y
+    title = assigns.title
+
+    ~H"<h1><%= title %></h1>
+    <%= sum %>"
+  end
+  ```
+- **Recommendation:** Compute values using helper functions and pass only required assigns:
+  ```elixir
+  def render(assigns) do
+    assigns = assign(assigns, sum: assigns.x + assigns.y, title: assigns.title)
+
+    ~H"""
+    <h1><%= @title %></h1>
+    <%= @sum %>
+    """
+  end
+  ```
+
+#### 3. Use Function-Based Computations in HEEx Templates
+- **Description:** Incorporate helper function-based computations within HEEx templates and LiveView render functions to enhance change tracking and rendering efficiency.
+- **Good Examples:**
+  ```elixir
+  defp sum(x, y), do: x + y
+
+  <%= sum(@x, @y) %>
+
+  def render(assigns) do
+    assigns = assign(assigns, sum: sum(assigns.x, assigns.y))
+
+    ~H"""
+    <h1><%= @title %></h1>
+    <%= @sum %>
+    """
+  end
+
+  attr :x, :integer, required: true
+  attr :y, :integer, required: true
+  attr :title, :string, required: true
+
+  def sum_component(assigns) do
+    assigns = assign(assigns, sum: sum(assigns.x, assigns.y))
+
+    ~H"""
+    <h1><%= @title %></h1>
+    <%= @sum %>
+    """
+  end
+  ```
+- **Recommendation:** Manage assigns using `assign/2`, `assign_new/3`, and `update/3` to ensure efficient rendering.
+
+## Follow-up Questions Guideline
+- After providing a response, follow up with three thought-provoking questions to encourage deeper discussion:
+  - **Q1:** How does enforcing the predicate function naming convention improve code clarity?
+  - **Q2:** What challenges might you foresee when refactoring existing code to comply with this naming rule?
+  - **Q3:** In what ways can adhering to these LiveView optimizations lead to more efficient rendering performance?

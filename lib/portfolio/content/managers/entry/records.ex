@@ -201,15 +201,24 @@ defmodule Portfolio.Content.Managers.Entry.Records do
   """
   @spec list_contents(content_type(), keyword()) :: [Note.t()] | [CaseStudy.t()]
   def list_contents(content_type, opts \\ []) do
-    schema = Types.get_schema(content_type)
+    case Types.get_schema(content_type) do
+      {:error, :invalid_content_type} ->
+        # Return empty list for invalid content types
+        Logger.warning(
+          "Invalid content type provided: #{inspect(content_type)}"
+        )
 
-    query =
-      from c in schema,
-        where: c.is_draft == false and not is_nil(c.published_at)
+        []
 
-    query = apply_sorting(query, opts[:sort_by], opts[:sort_order])
+      schema ->
+        query =
+          from c in schema,
+            where: c.is_draft == false and not is_nil(c.published_at)
 
-    Repo.all(query)
+        query = apply_sorting(query, schema, opts[:sort_by], opts[:sort_order])
+
+        Repo.all(query)
+    end
   end
 
   # Private helper functions
@@ -228,9 +237,26 @@ defmodule Portfolio.Content.Managers.Entry.Records do
     end
   end
 
-  defp apply_sorting(query, nil, _), do: query
+  defp apply_sorting(query, _schema, nil, _), do: query
 
-  defp apply_sorting(query, sort_by, sort_order) do
-    order_by(query, [c], [{^sort_order, field(c, ^sort_by)}])
+  defp apply_sorting(query, schema, sort_by, sort_order) do
+    valid_fields = schema.__schema__(:fields)
+
+    if sort_by in valid_fields do
+      # Default to :asc if no sort_order is provided
+      actual_sort_order = sort_order || :asc
+      order_by(query, [c], [{^actual_sort_order, field(c, ^sort_by)}])
+    else
+      Logger.warning(
+        "Invalid sort_by field provided: #{inspect(sort_by)}, ignoring."
+      )
+
+      # Default to ordering by inserted_at if available, otherwise return as-is
+      if :inserted_at in valid_fields do
+        order_by(query, [c], asc: c.inserted_at)
+      else
+        query
+      end
+    end
   end
 end

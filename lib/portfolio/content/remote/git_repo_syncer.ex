@@ -73,13 +73,11 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
     Logger.info("Updating existing repo at path: #{inspect(local_path)}")
 
     with {:ok, fetch_output} <- fetch_all(local_path),
+         _ = Logger.debug("Fetch output: #{inspect(fetch_output)}"),
          {:ok, reset_output} <- reset_to_origin(local_path),
-         {:ok, clean_output} <- clean_repo(local_path) do
-      # Logging outputs here
-      Logger.debug("Fetch output: #{inspect(fetch_output)}")
-      Logger.debug("Reset output: #{inspect(reset_output)}")
-      Logger.debug("Clean output: #{inspect(clean_output)}")
-
+         _ = Logger.debug("Reset output: #{inspect(reset_output)}"),
+         {:ok, clean_output} <- clean_repo(local_path),
+         _ = Logger.debug("Clean output: #{inspect(clean_output)}") do
       {:ok, local_path}
     else
       {:error, reason} ->

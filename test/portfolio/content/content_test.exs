@@ -264,9 +264,6 @@ defmodule Portfolio.Content.ContentTest do
     end
 
     test "get_with_translations/3 returns content with specified locale translations" do
-      # Clear out anything in the cache to prevent interference
-      Portfolio.DataCase.clear_cache()
-
       # Create a note manually
       {:ok, note} =
         Content.create("note", %{
@@ -276,7 +273,7 @@ defmodule Portfolio.Content.ContentTest do
           "locale" => "en"
         })
 
-      # Create translations manually for French content
+      # Create translations manually
       TranslationManager.create_or_update_translations(note, "fr", %{
         "title" => "Titre Français",
         "content" => "Contenu Français"
@@ -335,7 +332,9 @@ defmodule Portfolio.Content.ContentTest do
   defp extract_text_from_ast(nil), do: ""
 
   defp extract_text_from_ast(ast) when is_list(ast) do
-    Enum.map_join(ast, "", &extract_text_from_ast/1)
+    ast
+    |> Enum.map(&extract_text_from_ast/1)
+    |> Enum.join("")
   end
 
   defp extract_text_from_ast({_tag, _attrs, children, _meta}) do
