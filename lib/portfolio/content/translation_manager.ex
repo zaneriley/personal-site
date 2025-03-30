@@ -208,30 +208,4 @@ defmodule Portfolio.Content.TranslationManager do
         nil
     end
   end
-
-  # defp create_translation(attrs) do
-  #   %Translation{}
-  #   |> Translation.changeset(attrs)
-  #   |> Repo.insert()
-  #   |> case do
-  #     {:ok, translation} ->
-  #       {:ok, translation}
-
-  #     {:error, changeset} ->
-  #       {:error, "Failed to create translation: #{inspect(changeset.errors)}"}
-  #   end
-  # end
-
-  # defp update_translation(translation, attrs) do
-  #   translation
-  #   |> Translation.changeset(attrs)
-  #   |> Repo.update()
-  #   |> case do
-  #     {:ok, translation} ->
-  #       {:ok, translation}
-
-  #     {:error, changeset} ->
-  #       {:error, "Failed to update translation: #{inspect(changeset.errors)}"}
-  #   end
-  # end
 end

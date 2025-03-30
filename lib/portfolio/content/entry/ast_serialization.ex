@@ -1,4 +1,4 @@
-defmodule Portfolio.Content.Managers.Entry.AstSerialization do
+defmodule Portfolio.Content.Entry.AstSerialization do
   @moduledoc """
   Handles serialization and deserialization of Abstract Syntax Tree (AST) nodes.
 

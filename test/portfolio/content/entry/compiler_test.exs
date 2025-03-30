@@ -1,8 +1,8 @@
-defmodule Portfolio.Content.Managers.Entry.CompilerTest do
+defmodule Portfolio.Content.Entry.CompilerTest do
   use Portfolio.DataCase
 
-  alias Portfolio.Content.Managers.Entry.Compiler
-  alias Portfolio.Content.Managers.Entry.AstSerialization
+  alias Portfolio.Content.Entry.Compiler
+  alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.ContentFixtures
   alias Portfolio.Content.TranslationManager
 

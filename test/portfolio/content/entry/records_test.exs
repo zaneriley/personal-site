@@ -1,10 +1,11 @@
-defmodule Portfolio.Content.Managers.Entry.RecordsTest do
+defmodule Portfolio.Content.Entry.RecordsTest do
   use Portfolio.DataCase
 
-  alias Portfolio.Content.Schemas.Note
-  alias Portfolio.ContentFixtures
-  alias Portfolio.Content.Managers.Entry.Records
-  alias Portfolio.Content.Managers.Entry.AstSerialization
+  import Portfolio.ContentFixtures
+
+  alias Portfolio.Content.Schemas.{Note, CaseStudy}
+  alias Portfolio.Content.Entry.Records
+  alias Portfolio.Content.Entry.AstSerialization
 
   describe "apply_changeset/2" do
     test "applies the Note changeset correctly" do
@@ -49,7 +50,7 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
 
   describe "update_content_attributes/2" do
     test "updates content attributes" do
-      note = ContentFixtures.note_fixture()
+      note = note_fixture()
 
       attrs = %{
         title: "Updated Title",
@@ -64,7 +65,7 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
     end
 
     test "returns error for invalid updates" do
-      note = ContentFixtures.note_fixture()
+      note = note_fixture()
 
       # Set title to nil (invalid)
       attrs = %{
@@ -80,7 +81,7 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
 
   describe "update_stored_ast/2" do
     test "updates stored_ast field with serialized AST" do
-      note = ContentFixtures.note_fixture()
+      note = note_fixture()
 
       ast = [
         %{
@@ -111,7 +112,7 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
 
   describe "delete_content/1" do
     test "deletes a content entry" do
-      note = ContentFixtures.note_fixture()
+      note = note_fixture()
       assert {:ok, _} = Records.delete_content(note)
 
       assert_raise Ecto.NoResultsError, fn ->
@@ -122,13 +123,13 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
 
   describe "get_content_by_id_or_url/2" do
     test "retrieves content by ID" do
-      note = ContentFixtures.note_fixture()
+      note = note_fixture()
       found_note = Records.get_content_by_id_or_url("note", note.id)
       assert found_note.id == note.id
     end
 
     test "retrieves content by URL" do
-      note = ContentFixtures.note_fixture()
+      note = note_fixture()
       found_note = Records.get_content_by_id_or_url("note", note.url)
       assert found_note.id == note.id
     end
@@ -148,8 +149,8 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
 
   describe "fetch_content_items/2" do
     test "fetches multiple content items by IDs" do
-      note1 = ContentFixtures.note_fixture(%{"title" => "Note 1"})
-      note2 = ContentFixtures.note_fixture(%{"title" => "Note 2"})
+      note1 = note_fixture(%{"title" => "Note 1"})
+      note2 = note_fixture(%{"title" => "Note 2"})
 
       {:ok, notes} = Records.fetch_content_items([note1.id, note2.id], "note")
 
@@ -171,18 +172,18 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
   describe "list_contents/2" do
     test "lists published content with default sorting" do
       # Create a draft note
-      ContentFixtures.note_fixture(%{"is_draft" => true})
+      note_fixture(%{"is_draft" => true})
 
       # Create published notes
       published1 =
-        ContentFixtures.note_fixture(%{
+        note_fixture(%{
           "title" => "Published 1",
           "is_draft" => false,
           "published_at" => DateTime.utc_now() |> DateTime.add(-1, :day)
         })
 
       published2 =
-        ContentFixtures.note_fixture(%{
+        note_fixture(%{
           "title" => "Published 2",
           "is_draft" => false,
           "published_at" => DateTime.utc_now()
@@ -201,13 +202,13 @@ defmodule Portfolio.Content.Managers.Entry.RecordsTest do
 
     test "supports sorting" do
       # Create notes with specific titles for sorting
-      ContentFixtures.note_fixture(%{
+      note_fixture(%{
         "title" => "B Note",
         "is_draft" => false,
         "published_at" => DateTime.utc_now()
       })
 
-      ContentFixtures.note_fixture(%{
+      note_fixture(%{
         "title" => "A Note",
         "is_draft" => false,
         "published_at" => DateTime.utc_now()

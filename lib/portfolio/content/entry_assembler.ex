@@ -1,4 +1,4 @@
-defmodule Portfolio.Content.Managers.Entry.Translations do
+defmodule Portfolio.Content.EntryAssembler do
   @moduledoc """
   Handles translation-related operations for content entries.
 
@@ -9,8 +9,8 @@ defmodule Portfolio.Content.Managers.Entry.Translations do
   alias Portfolio.Content.Types
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
   alias Portfolio.Content.TranslationManager
-  alias Portfolio.Content.Managers.Entry.Compiler
-  alias Portfolio.Content.Managers.Entry.Records
+  alias Portfolio.Content.Entry.Compiler
+  alias Portfolio.Content.Entry.Records
 
   require Logger
 
@@ -28,13 +28,13 @@ defmodule Portfolio.Content.Managers.Entry.Translations do
     - {:ok, content, translations, ast} if successful
     - {:error, reason} if there was an error
   """
-  @spec get_with_compiled_translations(
+  @spec get_assembled_entry(
           content_type(),
           String.t() | integer(),
           String.t()
         ) ::
           {:ok, Note.t() | CaseStudy.t(), map(), list()} | {:error, atom()}
-  def get_with_compiled_translations(content_type, id_or_url, locale) do
+  def get_assembled_entry(content_type, id_or_url, locale) do
     Logger.debug(
       "Fetching #{content_type} with translations for locale: #{locale}"
     )
@@ -88,9 +88,9 @@ defmodule Portfolio.Content.Managers.Entry.Translations do
   ## Returns
     - List of content items with merged translations
   """
-  @spec list_with_translations(content_type(), keyword(), String.t()) ::
+  @spec list_assembled_entries(content_type(), keyword(), String.t()) ::
           [Note.t()] | [CaseStudy.t()]
-  def list_with_translations(content_type, opts \\ [], locale \\ "en") do
+  def list_assembled_entries(content_type, opts \\ [], locale \\ "en") do
     # Get base content items
     contents = Records.list_contents(content_type, opts)
 

@@ -1,4 +1,4 @@
-defmodule Portfolio.Content.Managers.Entry.Compiler do
+defmodule Portfolio.Content.Entry.Compiler do
   @moduledoc """
   Responsible for compiling content entries into renderable formats.
 
@@ -15,7 +15,7 @@ defmodule Portfolio.Content.Managers.Entry.Compiler do
 
   alias Portfolio.Content.Markdown.Parser
   alias Portfolio.Content.Markdown.Renderer
-  alias Portfolio.Content.Managers.Entry.AstSerialization
+  alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.TranslationManager
   alias Portfolio.Content.Utils.LanguageUtils

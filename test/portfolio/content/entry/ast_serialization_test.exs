@@ -1,6 +1,6 @@
-defmodule Portfolio.Content.Managers.Entry.AstSerializationTest do
+defmodule Portfolio.Content.Entry.AstSerializationTest do
   use ExUnit.Case, async: true
-  alias Portfolio.Content.Managers.Entry.AstSerialization
+  alias Portfolio.Content.Entry.AstSerialization
 
   describe "serialize_ast/1" do
     test "serializes a simple text node" do

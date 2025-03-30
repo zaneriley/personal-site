@@ -1,4 +1,4 @@
-defmodule Portfolio.Content.Managers.Entry.Records do
+defmodule Portfolio.Content.Entry.Records do
   @moduledoc """
   Provides core database operations for content entries.
 
@@ -13,12 +13,31 @@ defmodule Portfolio.Content.Managers.Entry.Records do
   alias Portfolio.Repo
   alias Portfolio.Content.Types
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
-  alias Portfolio.Content.Managers.Entry.AstSerialization
+  alias Portfolio.Content.Entry.AstSerialization
   import Ecto.Query
   require Logger
 
   @type content_type :: Types.content_type()
   @type id_or_url :: String.t() | integer()
+
+  @doc """
+  Gets the schema module for a content type.
+
+  ## Parameters
+    - content_type: The type of content to get the schema for
+
+  ## Returns
+    - {:ok, schema} if the content type is valid
+    - {:error, :invalid_content_type} if the content type is invalid
+  """
+  @spec get_schema(content_type()) ::
+          {:ok, module()} | {:error, :invalid_content_type}
+  def get_schema(content_type) do
+    case Types.get_schema(content_type) do
+      {:error, :invalid_content_type} = error -> error
+      schema -> {:ok, schema}
+    end
+  end
 
   @doc """
   Applies the appropriate changeset function based on the schema type.
@@ -30,11 +49,26 @@ defmodule Portfolio.Content.Managers.Entry.Records do
   ## Returns
     - An Ecto.Changeset
   """
-  @spec apply_changeset(Note.t() | CaseStudy.t(), map()) :: Ecto.Changeset.t()
+  @spec apply_changeset(Note.t() | CaseStudy.t() | struct(), map()) ::
+          Ecto.Changeset.t()
   def apply_changeset(%Note{} = note, attrs), do: Note.changeset(note, attrs)
 
   def apply_changeset(%CaseStudy{} = case_study, attrs),
     do: CaseStudy.changeset(case_study, attrs)
+
+  def apply_changeset(struct, attrs) when is_struct(struct) do
+    case struct.__struct__ do
+      Note ->
+        Note.changeset(struct, attrs)
+
+      CaseStudy ->
+        CaseStudy.changeset(struct, attrs)
+
+      _ ->
+        raise ArgumentError,
+              "Unsupported schema struct: #{inspect(struct.__struct__)}"
+    end
+  end
 
   @doc """
   Inserts a content entry into the database.
@@ -222,13 +256,6 @@ defmodule Portfolio.Content.Managers.Entry.Records do
   end
 
   # Private helper functions
-
-  defp get_schema(content_type) do
-    case Types.get_schema(content_type) do
-      {:error, :invalid_content_type} = error -> error
-      schema -> {:ok, schema}
-    end
-  end
 
   defp uuid?(string) do
     case UUID.info(string) do

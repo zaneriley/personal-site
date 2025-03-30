@@ -3,11 +3,15 @@ defmodule Portfolio.Content do
   The Content context.
 
   Provides a unified interface for managing content-related operations,
-  delegating to specialized modules like EntryManager and TranslationManager.
+  delegating to specialized modules like Records, Compiler, EntryAssembler,
+  Source, and TranslationManager.
   """
   alias Portfolio.Content.Types
-  alias Portfolio.Content.EntryManager
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
+  alias Portfolio.Content.EntryAssembler
+  alias Portfolio.Content.Entry.Records
+  alias Portfolio.Content.Entry.Compiler
+  alias Portfolio.Content.Entry.Source
   require Logger
 
   defmodule InvalidContentTypeError do
@@ -34,7 +38,7 @@ defmodule Portfolio.Content do
           [Note.t()] | [CaseStudy.t()]
   def list(type, opts \\ [], locale \\ nil) do
     locale = locale || Application.get_env(:portfolio, :default_locale)
-    EntryManager.list_contents(type, opts, locale)
+    EntryAssembler.list_assembled_entries(type, opts, locale)
   end
 
   @doc """
@@ -83,20 +87,16 @@ defmodule Portfolio.Content do
   @spec fetch_content(content_type(), content_identifier()) ::
           Note.t() | CaseStudy.t() | no_return()
   defp fetch_content(type, id_or_url) do
-    # Fetch content from EntryManager
-    content = EntryManager.get_content_by_id_or_url(type, id_or_url)
+    # Fetch content directly from Records
+    content = Records.get_content_by_id_or_url(type, id_or_url)
 
     # For our tests, we need to ensure compiled_content is always an AST list
     if content.stored_ast do
-      ast =
-        Portfolio.Content.Managers.Entry.Compiler.deserialize_and_process_ast(
-          content.stored_ast
-        )
-
+      ast = Compiler.deserialize_and_process_ast(content.stored_ast)
       %{content | compiled_content: ast}
     else
       # If no stored_ast, then compile the content to get an AST
-      case Portfolio.Content.Managers.Entry.Compiler.compile(content.content) do
+      case Compiler.compile(content.content) do
         {:ok, %{ast: ast}} ->
           %{content | compiled_content: ast}
 
@@ -118,7 +118,18 @@ defmodule Portfolio.Content do
     Logger.debug("Modified attrs: #{inspect(attrs)}")
 
     try do
-      EntryManager.create_content(attrs)
+      # Get the schema based on content type
+      with {:ok, schema} <- Records.get_schema(attrs["content_type"]),
+           # Apply changeset to the struct
+           changeset <- Records.apply_changeset(struct(schema), attrs),
+           # Insert the content
+           {:ok, content} <- Records.insert_content(changeset),
+           # Compile the content
+           {:ok, %{ast: ast}} <- Compiler.compile(content.content),
+           # Update with the compiled AST
+           {:ok, updated_content} <- Records.update_stored_ast(content, ast) do
+        {:ok, updated_content}
+      end
     rescue
       Portfolio.Content.InvalidContentTypeError ->
         {:error, :invalid_content_type}
@@ -127,20 +138,44 @@ defmodule Portfolio.Content do
 
   @spec update(content_type(), Note.t() | CaseStudy.t(), map()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
-  def update(type, content, attrs) do
-    # Call EntryManager to update the content
-    result = EntryManager.update_content(content, attrs, type)
+  def update(_type, content, attrs) do
+    # Use a transaction to ensure consistency
+    result =
+      Portfolio.Repo.transaction(fn ->
+        # Update basic attributes first
+        case Records.update_content_attributes(content, attrs) do
+          {:ok, updated_content} ->
+            # If content was updated, compile it and update stored AST
+            if Map.has_key?(attrs, :content) || Map.has_key?(attrs, "content") do
+              content_value = attrs[:content] || attrs["content"]
+
+              case Compiler.compile(content_value) do
+                {:ok, %{ast: ast}} ->
+                  # Update with stored AST
+                  case Records.update_stored_ast(updated_content, ast) do
+                    {:ok, content_with_ast} -> content_with_ast
+                    {:error, reason} -> Portfolio.Repo.rollback(reason)
+                  end
+
+                {:error, reason} ->
+                  Portfolio.Repo.rollback(reason)
+              end
+            else
+              # If content wasn't updated, return content as is
+              updated_content
+            end
+
+          {:error, reason} ->
+            Portfolio.Repo.rollback(reason)
+        end
+      end)
 
     # For test compatibility, if update was successful, ensure content has AST in compiled_content
     case result do
       {:ok, updated_content} ->
         # Convert stored_ast to AST and set compiled_content for test compatibility
         if updated_content.stored_ast do
-          ast =
-            Portfolio.Content.Managers.Entry.Compiler.deserialize_and_process_ast(
-              updated_content.stored_ast
-            )
-
+          ast = Compiler.deserialize_and_process_ast(updated_content.stored_ast)
           {:ok, %{updated_content | compiled_content: ast}}
         else
           result
@@ -154,7 +189,7 @@ defmodule Portfolio.Content do
   @spec delete(content_type(), Note.t() | CaseStudy.t()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
   def delete(_type, content) do
-    EntryManager.delete_content(content)
+    Records.delete_content(content)
   end
 
   @spec change(content_type(), Note.t() | CaseStudy.t() | map(), map()) ::
@@ -165,16 +200,26 @@ defmodule Portfolio.Content do
     Logger.debug("  content: #{inspect(content)}")
     Logger.debug("  attrs: #{inspect(attrs)}")
 
-    case Types.get_schema(type) do
+    case Records.get_schema(type) do
+      {:ok, schema} ->
+        Logger.debug("Using schema: #{inspect(schema)}")
+
+        # Use the appropriate struct for the changeset
+        struct_to_use =
+          if is_struct(content) do
+            content
+          else
+            struct(schema)
+          end
+
+        # Apply the changeset
+        changeset = Records.apply_changeset(struct_to_use, attrs)
+        Logger.debug("Resulting changeset: #{inspect(changeset)}")
+        changeset
+
       {:error, :invalid_content_type} ->
         Logger.error("Invalid content type: #{inspect(type)}")
         {:error, :invalid_content_type}
-
-      schema when is_atom(schema) ->
-        Logger.debug("Using schema: #{inspect(schema)}")
-        changeset = schema.changeset(content, attrs)
-        Logger.debug("Resulting changeset: #{inspect(changeset)}")
-        changeset
     end
   end
 
@@ -209,14 +254,14 @@ defmodule Portfolio.Content do
         ) ::
           {:ok, Note.t() | CaseStudy.t(), map(), String.t()} | {:error, atom()}
   def get_with_translations(content_type, identifier, locale) do
-    EntryManager.get_content_with_translations(content_type, identifier, locale)
+    EntryAssembler.get_assembled_entry(content_type, identifier, locale)
   end
 
   @doc """
   Upserts content from a file based on the content type and attributes provided.
 
-  This function delegates the actual upsert operation to EntryManager after
-  performing some basic logging. It handles both atom and string content types.
+  This function delegates the actual upsert operation to Source.upsert_from_file
+  after performing some basic logging. It handles both atom and string content types.
 
   ## Parameters
     - content_type: The type of content (e.g., :note, :case_study, "note", or "case_study").
@@ -245,7 +290,7 @@ defmodule Portfolio.Content do
       "Upserting #{content_type} with URL: #{attrs["url"]} and locale: #{attrs["locale"]}"
     )
 
-    EntryManager.upsert_from_file(content_type, attrs)
+    Source.upsert_from_file(content_type, attrs)
   end
 
   @doc """

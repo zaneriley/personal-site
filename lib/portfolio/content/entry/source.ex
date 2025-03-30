@@ -1,4 +1,4 @@
-defmodule Portfolio.Content.Managers.Entry.Source do
+defmodule Portfolio.Content.Entry.Source do
   @moduledoc """
   Handles file-based operations for content entries.
 
@@ -11,8 +11,8 @@ defmodule Portfolio.Content.Managers.Entry.Source do
   alias Portfolio.Content.Types
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
   alias Portfolio.Content.TranslationManager
-  alias Portfolio.Content.Managers.Entry.Compiler
-  alias Portfolio.Content.Managers.Entry.Records
+  alias Portfolio.Content.Entry.Compiler
+  alias Portfolio.Content.Entry.Records
 
   require Logger
 
