@@ -167,16 +167,11 @@ defmodule Portfolio.Content.Markdown.Renderer do
   def render_html(ast) when is_binary(ast), do: ast
 
   def render_html(ast) when is_list(ast) do
-    ast
-    |> Enum.map(&render_html/1)
-    |> Enum.join("")
+    Enum.map_join(ast, "", &render_html/1)
   end
 
   def render_html({:typography, tag, attrs, children, _meta}) do
-    attrs_str =
-      attrs
-      |> Enum.map(fn {k, v} -> "#{k}=\"#{v}\"" end)
-      |> Enum.join(" ")
+    attrs_str = Enum.map_join(attrs, " ", fn {k, v} -> "#{k}=\"#{v}\"" end)
 
     attrs_html = if attrs_str == "", do: "", else: " " <> attrs_str
 
@@ -204,10 +199,7 @@ defmodule Portfolio.Content.Markdown.Renderer do
   end
 
   def render_html({tag, attrs, children, _meta}) when is_binary(tag) do
-    attrs_str =
-      attrs
-      |> Enum.map(fn {k, v} -> "#{k}=\"#{v}\"" end)
-      |> Enum.join(" ")
+    attrs_str = Enum.map_join(attrs, " ", fn {k, v} -> "#{k}=\"#{v}\"" end)
 
     attrs_html = if attrs_str == "", do: "", else: " " <> attrs_str
 
