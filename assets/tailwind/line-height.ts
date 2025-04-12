@@ -1,4 +1,4 @@
-import { LineHeightConfig } from "./configs/type-config.ts";
+import type { LineHeightConfig } from "./configs/type-config.ts";
 
 /**
  * Calculates unitless line-height value aligned to the baseline grid.
@@ -76,7 +76,7 @@ export const calculateLineHeight = (
 
   // Step 3: Calculate the desired line height before scaling
   let desiredLineHeightPx = fontSize * config.baseLineHeight;
-  desiredLineHeightPx = parseFloat(desiredLineHeightPx.toFixed(4));
+  desiredLineHeightPx = Number.parseFloat(desiredLineHeightPx.toFixed(4));
   console.log("\nStep 3: Initial Desired Line Height");
   console.log(
     `desiredLineHeightPx = ${fontSize} * ${config.baseLineHeight} = ${desiredLineHeightPx}px`,
@@ -88,7 +88,7 @@ export const calculateLineHeight = (
     const scalingCalculation =
       1 - config.scalingFactor * (fontSizeDifference / config.baseFontSize);
     const scalingAdjustment = Math.abs(
-      parseFloat(scalingCalculation.toFixed(10)),
+      Number.parseFloat(scalingCalculation.toFixed(10)),
     );
 
     console.log("\nStep 4: Scaling Adjustment");
@@ -99,7 +99,7 @@ export const calculateLineHeight = (
     console.log(`Scaling adjustment: ${scalingAdjustment}`);
 
     const previousHeight = desiredLineHeightPx;
-    desiredLineHeightPx = parseFloat(
+    desiredLineHeightPx = Number.parseFloat(
       (desiredLineHeightPx * scalingAdjustment).toFixed(4),
     );
     console.log(
@@ -124,17 +124,17 @@ export const calculateLineHeight = (
 
   const multiplier = incrementMultipliers[config.incrementStep] || 2;
 
-  if (!incrementMultipliers.hasOwnProperty(config.incrementStep)) {
+  if (!Object.hasOwn(incrementMultipliers, config.incrementStep)) {
     console.warn(
       `Invalid incrementStep: ${config.incrementStep}. Defaulting to 'half'.`,
     );
   }
   let roundedUnits = Math.round(unitsRaw * multiplier) / multiplier;
-  roundedUnits = parseFloat(roundedUnits.toFixed(4));
+  roundedUnits = Number.parseFloat(roundedUnits.toFixed(4));
   console.log(`roundedUnits (${config.incrementStep}) = ${roundedUnits}`);
 
   // Step 7: Calculate the aligned line height in pixels
-  const alignedLineHeightPx = parseFloat(
+  const alignedLineHeightPx = Number.parseFloat(
     (roundedUnits * baselineUnit).toFixed(4),
   );
   console.log("\nStep 7: Aligned Line Height");
@@ -143,7 +143,7 @@ export const calculateLineHeight = (
   );
 
   // Step 8: Compute the unitless line height value
-  const finalLineHeight = parseFloat(
+  const finalLineHeight = Number.parseFloat(
     (alignedLineHeightPx / fontSize).toFixed(10),
   );
   console.log("\nStep 8: Final Line Height");
