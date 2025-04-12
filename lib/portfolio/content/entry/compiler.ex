@@ -64,10 +64,17 @@ defmodule Portfolio.Content.Entry.Compiler do
     ast
   end
 
+  # Add this clause to handle the error case explicitly
+  defp extract_ast_from_parser_result({:error, _reason} = error_tuple) do
+    Logger.error("Parser returned an error: #{inspect(error_tuple)}")
+    # Return the error tuple itself so it can be handled upstream
+    error_tuple
+  end
+
   defp extract_ast_from_parser_result(other) do
     Logger.error("Unexpected parser result format: #{inspect(other)}")
-    # Return an empty list as a fallback
-    []
+    # Return an error tuple for unexpected formats too
+    {:error, :unexpected_format}
   end
 
   @doc """
@@ -207,25 +214,46 @@ defmodule Portfolio.Content.Entry.Compiler do
     # Collect translations for all available locales
     locales = LanguageUtils.available_locales()
 
+    # Use flat_map to iterate through locales and collect results from the helper
     Enum.flat_map(locales, fn locale ->
-      trans =
-        TranslationManager.get_translations(content_id, content_type, locale)
+      # Delegate all logic for fetching and structuring translations for the locale to the helper
+      fetch_and_structure_translations_for_locale(
+        content_id,
+        content_type,
+        locale
+      )
 
-      if map_size(trans) > 0 do
-        # Convert the map to Translation structs
-        Enum.map(trans, fn {field_name, field_value} ->
-          %Translation{
-            translatable_id: content_id,
-            translatable_type: content_type,
-            locale: locale,
-            field_name: field_name,
-            field_value: field_value
-          }
-        end)
-      else
-        []
-      end
+      # flat_map will automatically handle the empty lists returned by the helper for locales with no translations
     end)
+  end
+
+  # Helper to fetch and structure translations for a single locale
+  # Returns a list of Translation structs or an empty list.
+  defp fetch_and_structure_translations_for_locale(
+         content_id,
+         content_type,
+         locale
+       ) do
+    # Fetch the raw translation map for the given locale
+    trans_map =
+      TranslationManager.get_translations(content_id, content_type, locale)
+
+    # Check if the map is not empty
+    if map_size(trans_map) > 0 do
+      # Convert the map to a list of Translation structs
+      Enum.map(trans_map, fn {field_name, field_value} ->
+        %Translation{
+          translatable_id: content_id,
+          translatable_type: content_type,
+          locale: locale,
+          field_name: field_name,
+          field_value: field_value
+        }
+      end)
+    else
+      # Return an empty list if no translations were found for this locale
+      []
+    end
   end
 
   # Helper function to compile content for each locale
@@ -237,33 +265,40 @@ defmodule Portfolio.Content.Entry.Compiler do
        ) do
     available_locales = LanguageUtils.available_locales()
 
-    # Compile for each available locale
-    Enum.reduce(available_locales, %{}, fn locale, acc ->
-      # For original locale, use the original content
-      if locale == original_locale do
-        # Generate HTML but preserve original AST
-        compiled_content = render_ast(primary_ast)
+    available_locales
+    |> Stream.map(fn locale ->
+      # Calculate the result tuple {:ok, data} or {:error, reason} for each locale
+      result_tuple =
+        if locale == original_locale do
+          # Original locale logic
+          compiled_content = render_ast(primary_ast)
 
-        Map.put(acc, locale, %{
-          compiled_content: compiled_content,
-          ast: primary_ast,
-          source: :original
-        })
-      else
-        # For other locales, use translations if available
-        case compile_for_translation(
-               primary_ast,
-               content_entry,
-               translations_by_locale,
-               locale
-             ) do
-          {:ok, result} ->
-            Map.put(acc, locale, result)
-
-          _ ->
-            acc
+          {:ok,
+           %{
+             compiled_content: compiled_content,
+             ast: primary_ast,
+             source: :original
+           }}
+        else
+          # Translated locale logic - relies on compile_for_translation
+          compile_for_translation(
+            primary_ast,
+            content_entry,
+            translations_by_locale,
+            locale
+          )
         end
-      end
+
+      # Return locale paired with its result tuple
+      {locale, result_tuple}
+    end)
+    |> Stream.filter(fn {_locale, result_tuple} ->
+      # Keep only entries where the compilation was successful
+      match?({:ok, _}, result_tuple)
+    end)
+    |> Enum.into(%{}, fn {locale, {:ok, result}} ->
+      # Build the final map {locale => result_map}
+      {locale, result}
     end)
   end
 
@@ -304,22 +339,33 @@ defmodule Portfolio.Content.Entry.Compiler do
 
   # Process translated content fields that need AST parsing
   defp process_translated_content(translated_content, _primary_ast) do
-    # For now, a simple implementation that preserves the AST structure
-    # More complex processing can be added here as needed
-    Enum.reduce(translated_content, %{}, fn {key, value}, acc ->
-      case key do
-        "content" when is_binary(value) ->
-          # Parse "content" field to AST if it's markdown
-          case parse_to_ast(value) do
-            {:ok, ast} -> Map.put(acc, key, process_ast(ast))
-            _ -> Map.put(acc, key, value)
-          end
-
-        _ ->
-          # Keep other fields as-is
-          Map.put(acc, key, value)
-      end
+    # Use Map.new for a functional transformation
+    Map.new(translated_content, fn {key, value} ->
+      # Delegate processing of each field to the multi-head helper
+      processed_value = process_single_translation_field(key, value)
+      # Return the {key, processed_value} tuple for Map.new
+      {key, processed_value}
     end)
+  end
+
+  # Helper function using pattern matching on the key
+
+  # Head specifically for the "content" key when value is binary
+  defp process_single_translation_field("content", value)
+       when is_binary(value) do
+    # Logic specifically for the "content" field: parse and process AST
+    case parse_to_ast(value) do
+      # Return processed AST
+      {:ok, ast} -> process_ast(ast)
+      # Return original value on parse error
+      _ -> value
+    end
+  end
+
+  # Catch-all head for any other key or non-binary "content" value
+  defp process_single_translation_field(_key, value) do
+    # Logic for all other fields: keep value as-is
+    value
   end
 
   # Create a map of translated fields from the translations
