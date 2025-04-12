@@ -150,33 +150,9 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
   @impl GenServer
   def handle_continue(:subscribe_pubsub, state) do
     # Check if PubSub module exists first
-    if is_pubsub_defined?() do
-      # Then check if specific PubSub instance is available
-      if is_pubsub_available?() do
-        # PubSub is available, try to subscribe
-        case safe_pubsub_subscribe() do
-          :ok ->
-            Logger.info(
-              "Component Registry subscribed to PubSub topic: #{@pubsub_topic}"
-            )
-
-            {:noreply, %{state | subscribed: true}}
-
-          {:error, reason} ->
-            Logger.warning(
-              "PubSub subscription failed: #{inspect(reason)}, scheduling retry"
-            )
-
-            schedule_retry()
-            {:noreply, %{state | retries: state.retries + 1}}
-        end
-      else
-        # PubSub not yet registered, reschedule check
-        Logger.debug("PubSub not yet registered, rescheduling subscribe check")
-        schedule_pubsub_check()
-        # Not incrementing retries for PubSub availability checks
-        {:noreply, state}
-      end
+    if pubsub_defined?() do
+      # Delegate the subscription attempt logic to the helper
+      attempt_pubsub_subscription(state)
     else
       # PubSub module not loaded, registry will operate without PubSub
       Logger.warning(
@@ -187,9 +163,40 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
     end
   end
 
+  # Helper function to attempt PubSub subscription if it's available.
+  # Assumes pubsub_defined?() was already true.
+  defp attempt_pubsub_subscription(state) do
+    # Check if specific PubSub instance is available
+    if pubsub_available?() do
+      # PubSub is available, try to subscribe
+      case safe_pubsub_subscribe() do
+        :ok ->
+          Logger.info(
+            "Component Registry subscribed to PubSub topic: #{@pubsub_topic}"
+          )
+
+          {:noreply, %{state | subscribed: true}}
+
+        {:error, reason} ->
+          Logger.warning(
+            "PubSub subscription failed: #{inspect(reason)}, scheduling retry"
+          )
+
+          schedule_retry()
+          {:noreply, %{state | retries: state.retries + 1}}
+      end
+    else
+      # PubSub not yet registered, reschedule check
+      Logger.debug("PubSub not yet registered, rescheduling subscribe check")
+      schedule_pubsub_check()
+      # Not incrementing retries for PubSub availability checks
+      {:noreply, state}
+    end
+  end
+
   @impl GenServer
   def handle_info(:check_pubsub, state) do
-    if is_pubsub_defined?() && is_pubsub_available?() do
+    if pubsub_defined?() && pubsub_available?() do
       # PubSub is now available, try to subscribe
       case safe_pubsub_subscribe() do
         :ok ->
@@ -217,7 +224,7 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
   @impl GenServer
   def handle_info(:retry_subscribe, %{retries: retries} = state) do
     # Check if PubSub is registered before attempting to subscribe
-    if is_pubsub_defined?() && is_pubsub_available?() do
+    if pubsub_defined?() && pubsub_available?() do
       # PubSub is available, try to subscribe
       case safe_pubsub_subscribe() do
         :ok ->
@@ -359,11 +366,11 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
     Process.send_after(self(), :check_pubsub, @pubsub_check_interval)
   end
 
-  defp is_pubsub_defined? do
+  defp pubsub_defined? do
     Code.ensure_loaded?(Phoenix.PubSub)
   end
 
-  defp is_pubsub_available? do
+  defp pubsub_available? do
     pubsub_name =
       if Process.whereis(Portfolio.PubSub),
         do: Portfolio.PubSub,
