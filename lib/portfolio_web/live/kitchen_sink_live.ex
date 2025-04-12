@@ -287,6 +287,7 @@ defmodule PortfolioWeb.KitchenSinkLive do
   end
 
   # Helper function to get space values (you can customize these)
+  # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
   def get_space_value(size) do
     case size do
       "5xl" -> "clamp(7.59rem, -1.67rem + 46.29vi, 40rem)"
