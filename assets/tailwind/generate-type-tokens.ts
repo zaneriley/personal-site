@@ -1,16 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
+  cjkSpaceConfig,
+  cjkTypeConfig,
+  latinSpaceConfig,
+  latinTypeConfig,
+} from "./configs/type-config.ts";
+import fontMetrics from "./font-metrics.json";
+import {
   generateSpaceCSSVariables,
   generateTypeCSSVariables,
 } from "./font-size.ts";
-import {
-  latinTypeConfig,
-  latinSpaceConfig,
-  cjkTypeConfig,
-  cjkSpaceConfig,
-} from "./configs/type-config.ts";
-import fontMetrics from "./font-metrics.json";
 
 // Constants
 const DEFAULT_OUTPUT_PATH = path.resolve("css/_typography.css");
