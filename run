@@ -52,7 +52,7 @@ function mix:install {
 
 function mix:clean {
   # Clean mix dependencies
-  _build_run_down web mix deps.clean ${@}
+  _build_run_down web mix deps.clean "${@}"
 }
 
 
@@ -395,18 +395,18 @@ function ci:run-all {
 
 function lint:all {
     elixir:lint
-    js:lint
+    js:lint "$@"
     css:lint
 }
 
 function format:all {
     elixir:format
-    js:fix
+    js:fix "$@"
     css:lint
 }
 
 function test:all {
-    elixir:test
+    elixir:test "$@"
     js:test
 }
 
