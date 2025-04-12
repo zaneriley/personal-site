@@ -54,22 +54,28 @@ defmodule Portfolio.Content.Markdown.Transforms.Component do
     end
   end
 
+  # Helper to create the default registry lookup function
+  defp create_default_registry_fn(opts) do
+    # Use the Registry module by default
+    registry_module = Keyword.get(opts, :registry, Registry)
+
+    fn component_type ->
+      case registry_module.lookup(to_atom(component_type)) do
+        {:ok, {module, function}} ->
+          {:ok, %{module: module, function: function}}
+
+        {:error, :not_found} ->
+          nil
+      end
+    end
+  end
+
   # Get the registry lookup function - either from options or use Registry module
   defp get_registry_fn(opts) do
     case Keyword.get(opts, :registry_fn) do
       nil ->
-        # Use the Registry module by default
-        registry_module = Keyword.get(opts, :registry, Registry)
-
-        fn component_type ->
-          case registry_module.lookup(to_atom(component_type)) do
-            {:ok, {module, function}} ->
-              {:ok, %{module: module, function: function}}
-
-            {:error, :not_found} ->
-              nil
-          end
-        end
+        # Default logic moved to helper function
+        create_default_registry_fn(opts)
 
       registry_fn when is_function(registry_fn, 1) ->
         registry_fn
