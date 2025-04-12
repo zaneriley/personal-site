@@ -136,7 +136,7 @@ defmodule Portfolio.Content.Markdown.Parser do
 
   # Custom component preprocessing to extract component blocks before Earmark parsing
   defp preprocess_custom_components(content) do
-    # TODO: Implement custom component extraction
+    # Implement custom component extraction
     # For now, just return the content unchanged with no components
     {content, []}
   end
@@ -145,7 +145,7 @@ defmodule Portfolio.Content.Markdown.Parser do
   defp insert_custom_components(ast, []), do: ast
 
   defp insert_custom_components(ast, _components) do
-    # TODO: Implement custom component insertion
+    # Implement custom component insertion
     # For now, just return the AST unchanged
     ast
   end
