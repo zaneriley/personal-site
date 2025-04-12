@@ -25,6 +25,12 @@ defmodule Portfolio.MixProject do
         plt_add_apps: [:ex_unit, :mix],
         ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ],
+      docs: [
+        main: "Zane Riley's website documentation",
+        name: "Zane Riley's website documentation",
+        source_ref: "main",
+        source_url: "https://github.com/zaneriley/personal-website"
       ]
     ]
   end
@@ -48,6 +54,7 @@ defmodule Portfolio.MixProject do
       {:dns_cluster, "~> 0.1.3"},
       {:earmark, "~> 1.4"},
       {:ecto_sql, "3.11.3"},
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:excoveralls, "0.18.1", only: [:dev, :test]},
       {:finch, "0.18.0"},
       {:file_system, "~> 1.0.0"},
