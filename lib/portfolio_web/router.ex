@@ -47,6 +47,12 @@ defmodule PortfolioWeb.Router do
     pipe_through :api
   end
 
+  # Documentation route - add before other routes to bypass locale redirection
+  scope "/docs" do
+    pipe_through :browser
+    # The actual files will be served by Plug.Static in endpoint.ex
+  end
+
   # Enables LiveDashboard only for development.
   #
   # If you want to use the LiveDashboard in production, you should put
