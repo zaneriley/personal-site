@@ -1,12 +1,13 @@
 # Mostly created by https://www.gitignore.io
 
 # just for now
-
+*.zip
+Untitled-1.sh
 
 ### Tests #######################################################################
 **/coverage
 
-### Ops ###########################################################################
+### Ops ############w###############################################################
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
 
@@ -181,3 +182,4 @@ flycheck_*.el
 
 # network security
 /network-security.data
+/priv/static/docs/
