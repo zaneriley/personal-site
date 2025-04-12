@@ -1,10 +1,82 @@
 defmodule Portfolio.Content do
   @moduledoc """
-  The Content context.
+  The primary interface for managing content entries within the Portfolio application.
 
-  Provides a unified interface for managing content-related operations,
-  delegating to specialized modules like Records, Compiler, EntryAssembler,
-  Source, and TranslationManager.
+  This context module acts as a facade, providing a consistent API for interacting
+  with different types of content, primarily `Note` and `CaseStudy` records.
+  It orchestrates operations across specialized sub-modules responsible for
+  database interactions (`Records`), content compilation (`Compiler`), data assembly
+  (`EntryAssembler`), file-based ingestion (`Source`), and translation management
+  (`TranslationManager`).
+
+  ## Core Responsibilities
+
+  *   **Abstraction:** Hides the complexity of the underlying storage, compilation,
+      and translation mechanisms.
+  *   **Consistency:** Offers a unified way to handle different content types.
+  *   **Data Integrity:** Ensures required fields and basic validations are met
+      during create/update operations via changesets.
+
+  ## Key Functions
+
+  This module provides functions to:
+
+  *   **List Content:**
+      *   `list/3`: Retrieve lists of published `Note` or `CaseStudy` items,
+          optionally sorted and localized with merged translation data.
+          (`list(content_type, opts \\ [], locale \\ nil)`)
+
+  *   **Retrieve Content:**
+      *   `get!/2`: Fetch a single `Note` or `CaseStudy` by its ID or URL slug.
+          Returns the content struct (with `compiled_content` often containing
+          the processed AST) or raises `Ecto.NoResultsError` if not found,
+          or `Portfolio.Content.InvalidContentTypeError` for bad types.
+          (`get!(content_type, id_or_url)`)
+      *   `get_with_translations/3`: Fetch a single content item along with its
+          translations for a specific locale and its primary AST. Returns
+          `{:ok, content, translations_map, ast}` or `{:error, reason}`.
+          (`get_with_translations(content_type, id_or_url, locale)`)
+
+  *   **Modify Content:**
+      *   `create/2`: Create a new `Note` or `CaseStudy` from attributes. Returns
+          `{:ok, content}` or `{:error, changeset | reason}`.
+          (`create(content_type, attrs)`)
+      *   `update/3`: Update an existing `Note` or `CaseStudy`. Returns
+          `{:ok, content}` or `{:error, changeset | reason}`.
+          (`update(content_type, content_struct, attrs)`)
+      *   `delete/2`: Delete a `Note` or `CaseStudy`. Returns `{:ok, content}` or
+          `{:error, changeset}`.
+          (`delete(content_type, content_struct)`)
+      *   `change/3`: Generate an `Ecto.Changeset` for a `Note` or `CaseStudy`,
+          useful for forms. Returns `changeset` or `{:error, :invalid_content_type}`.
+          (`change(content_type, content_struct_or_map, attrs \\ %{})`)
+
+  *   **File-Based Operations:**
+      *   `upsert_from_file/2`: Create or update content based on attributes derived
+          from a file, handling default locale content and translations for other locales.
+          (`upsert_from_file(content_type, attrs)`)
+      *   `extract_locale/1`: Helper to determine the locale from a content file path.
+          (`extract_locale(file_path)`)
+
+  ## Content Types
+
+  Functions typically require a `content_type` argument, which should be one of the
+  atoms or strings defined in `Portfolio.Content.Types` (e.g., `"note"`, `:note`,
+  `"case_study"`, `:case_study`).
+
+  ## Translations
+
+  Functions like `list/3` and `get_with_translations/3` automatically handle
+  fetching and merging translated fields based on the specified locale. The underlying
+  `TranslationManager` handles storage.
+
+  ## AST vs Compiled Content
+
+  Note that this context often works with Abstract Syntax Trees (AST) for content
+  representation, especially after recent refactoring. Functions returning content
+  may place the processed AST in the `:compiled_content` field (or return it separately
+  as in `get_with_translations`) rather than pre-rendered HTML, facilitating flexible
+  rendering in components.
   """
   alias Portfolio.Content.Types
   alias Portfolio.Content.Schemas.{Note, CaseStudy}
@@ -125,10 +197,9 @@ defmodule Portfolio.Content do
            # Insert the content
            {:ok, content} <- Records.insert_content(changeset),
            # Compile the content
-           {:ok, %{ast: ast}} <- Compiler.compile(content.content),
-           # Update with the compiled AST
-           {:ok, updated_content} <- Records.update_stored_ast(content, ast) do
-        {:ok, updated_content}
+           {:ok, %{ast: ast}} <- Compiler.compile(content.content) do
+        # Update with the compiled AST
+        Records.update_stored_ast(content, ast)
       end
     rescue
       Portfolio.Content.InvalidContentTypeError ->
@@ -137,36 +208,22 @@ defmodule Portfolio.Content do
   end
 
   @spec update(content_type(), Note.t() | CaseStudy.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, Note.t() | CaseStudy.t()}
+          | {:error, Ecto.Changeset.t() | atom()}
   def update(_type, content, attrs) do
     # Use a transaction to ensure consistency
     result =
       Portfolio.Repo.transaction(fn ->
-        # Update basic attributes first
-        case Records.update_content_attributes(content, attrs) do
-          {:ok, updated_content} ->
-            # If content was updated, compile it and update stored AST
-            if Map.has_key?(attrs, :content) || Map.has_key?(attrs, "content") do
-              content_value = attrs[:content] || attrs["content"]
-
-              case Compiler.compile(content_value) do
-                {:ok, %{ast: ast}} ->
-                  # Update with stored AST
-                  case Records.update_stored_ast(updated_content, ast) do
-                    {:ok, content_with_ast} -> content_with_ast
-                    {:error, reason} -> Portfolio.Repo.rollback(reason)
-                  end
-
-                {:error, reason} ->
-                  Portfolio.Repo.rollback(reason)
-              end
-            else
-              # If content wasn't updated, return content as is
-              updated_content
-            end
-
-          {:error, reason} ->
-            Portfolio.Repo.rollback(reason)
+        # Use 'with' to chain the attribute update and the conditional compilation/AST update
+        with {:ok, updated_content} <-
+               Records.update_content_attributes(content, attrs),
+             {:ok, final_content} <-
+               compile_and_update_ast_if_changed(updated_content, attrs) do
+          # If both steps succeed, return the final content struct
+          final_content
+        else
+          # If either step returns an error, roll back the transaction
+          {:error, reason} -> Portfolio.Repo.rollback(reason)
         end
       end)
 
@@ -183,6 +240,27 @@ defmodule Portfolio.Content do
 
       error ->
         error
+    end
+  end
+
+  # Helper function to compile and update AST if content changed
+  defp compile_and_update_ast_if_changed(content, attrs) do
+    # Check if the 'content' key exists in the attributes map (atom or string key)
+    if Map.has_key?(attrs, :content) || Map.has_key?(attrs, "content") do
+      content_value = attrs[:content] || attrs["content"]
+
+      # Use 'with' for cleaner chaining of compilation and update steps
+      with {:ok, %{ast: ast}} <- Compiler.compile(content_value),
+           {:ok, content_with_ast} <- Records.update_stored_ast(content, ast) do
+        # Return the content with updated AST on success
+        {:ok, content_with_ast}
+      else
+        # Propagate errors from compile or update_stored_ast
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      # No content change, operation is successful, return the original content struct
+      {:ok, content}
     end
   end
 
