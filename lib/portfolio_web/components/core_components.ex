@@ -807,7 +807,7 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <%= Phoenix.HTML.Tag.content_tag(
       String.to_atom(@name),
-      Phoenix.LiveView.Engine.eval_string(@inner_block),
+      @inner_block,
       assigns_to_attributes(assigns, [:name, :inner_block])
     ) %>
     """
