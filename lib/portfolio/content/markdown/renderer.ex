@@ -71,45 +71,67 @@ defmodule Portfolio.Content.Markdown.Renderer do
         content_type \\ :note,
         options \\ []
       ) do
-    # Determine cache key for AST
     ast_cache_key = "#{content_id}_ast"
-
     force_refresh = Keyword.get(options, :force_refresh, false)
     bypass_cache = Keyword.get(options, :bypass_cache, false)
 
-    # Check if we should render fresh or use cache
     cond do
-      # Forced refresh or bypass cache - render fresh
-      force_refresh || bypass_cache ->
+      # Case 1: Forced refresh, but don't bypass cache (render and store)
+      force_refresh && !bypass_cache ->
+        Logger.debug("Forcing refresh and caching for key: #{ast_cache_key}")
+
         case render(content, content_type, options) do
           {:ok, ast} ->
-            # Cache if not bypassing
-            unless bypass_cache do
-              Cache.put(ast_cache_key, ast)
-            end
-
-            {:ok, ast}
-
-          error ->
-            error
-        end
-
-      # Check cache first
-      Cache.exists?(ast_cache_key) ->
-        # AST is in cache - unwrap if returned as tuple
-        ast = unwrap_cache_value(Cache.get(ast_cache_key))
-        {:ok, ast}
-
-      # Cache miss - render and cache
-      true ->
-        case render(content, content_type, options) do
-          {:ok, ast} ->
+            # Overwrite cache
             Cache.put(ast_cache_key, ast)
             {:ok, ast}
 
           error ->
             error
         end
+
+      # Case 2: Forced refresh OR bypass cache (render but don't store if bypassing)
+      force_refresh || bypass_cache ->
+        Logger.debug(
+          "Rendering fresh (force_refresh: #{force_refresh}, bypass_cache: #{bypass_cache}) for key: #{ast_cache_key}"
+        )
+
+        # Simply render without interacting with the cache store action
+        render(content, content_type, options)
+
+      # Case 3: Standard behaviour (not forced, not bypassed)
+      true ->
+        Logger.debug("Standard cache check/render for key: #{ast_cache_key}")
+        get_or_render_ast(ast_cache_key, content, content_type, options)
+    end
+  end
+
+  # Helper for the "get from cache or render and cache on miss" logic
+  defp get_or_render_ast(ast_cache_key, content, content_type, options) do
+    if Cache.exists?(ast_cache_key) do
+      # Cache hit
+      Logger.debug("Cache hit for key: #{ast_cache_key}")
+      {:ok, unwrap_cache_value(Cache.get(ast_cache_key))}
+    else
+      # Cache miss: render, cache, and return
+      Logger.debug(
+        "Cache miss for key: #{ast_cache_key}. Rendering and caching."
+      )
+
+      case render(content, content_type, options) do
+        {:ok, ast} ->
+          # Store the newly rendered AST
+          Cache.put(ast_cache_key, ast)
+          {:ok, ast}
+
+        error ->
+          Logger.error(
+            "Render failed during cache miss for key: #{ast_cache_key}. Error: #{inspect(error)}"
+          )
+
+          # Propagate render error
+          error
+      end
     end
   end
 
@@ -181,16 +203,19 @@ defmodule Portfolio.Content.Markdown.Renderer do
   def render_html({:component, type, attrs, children, _meta}) do
     # Look up the component in the registry
     case Portfolio.Content.Markdown.Component.Registry.lookup(type) do
-      {:ok, module} ->
+      {:ok, {module, function}} ->
         # Convert keyword list to map for component
         attrs_map = Enum.into(attrs, %{})
 
-        # Render the component
-        module.render(%{
+        # Prepare assigns for the component function
+        component_assigns = %{
           component: type,
           attrs: attrs_map,
           content: render_html(children)
-        })
+        }
+
+        # Render the component using apply/3
+        apply(module, function, [component_assigns])
 
       {:error, _reason} ->
         # Fallback rendering if component not found
@@ -213,4 +238,5 @@ defmodule Portfolio.Content.Markdown.Renderer do
   This function simply returns the AST, making it suitable
   for passing to components that can handle AST nodes directly.
   """
+  def preserve_ast(ast), do: ast
 end
