@@ -129,24 +129,30 @@ defmodule Portfolio.Content.EntryAssembler do
     Enum.reduce_while(translations, {:ok, %{}}, fn {key, value}, {:ok, acc} ->
       is_markdown = to_string(key) in markdown_fields
 
-      # For non-markdown fields, return as-is
-      if not is_markdown do
-        {:cont, {:ok, Map.put(acc, key, value)}}
+      if is_markdown do
+        # Delegate markdown processing to the helper function
+        process_markdown_translation(key, value, acc)
       else
-        # For markdown fields, compile to AST
-        case Compiler.compile(value) do
-          {:ok, %{ast: ast}} ->
-            # Use the AST directly
-            {:cont, {:ok, Map.put(acc, key, ast)}}
-
-          {:error, reason} ->
-            Logger.error(
-              "Error compiling translation for key: #{key}. Error: #{inspect(reason)}"
-            )
-
-            {:halt, {:error, reason}}
-        end
+        # Non-markdown fields: directly put the value
+        {:cont, {:ok, Map.put(acc, key, value)}}
       end
     end)
+  end
+
+  # Handles the compilation logic for a single markdown translation field
+  defp process_markdown_translation(key, value, acc) do
+    case Compiler.compile(value) do
+      {:ok, %{ast: ast}} ->
+        # Compilation successful, store the AST
+        {:cont, {:ok, Map.put(acc, key, ast)}}
+
+      {:error, reason} ->
+        # Compilation failed, log the error and halt the reduction
+        Logger.error(
+          "Error compiling translation for key: #{key}. Error: #{inspect(reason)}"
+        )
+
+        {:halt, {:error, reason}}
+    end
   end
 end
