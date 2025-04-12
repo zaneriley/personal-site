@@ -9,7 +9,7 @@ defmodule PortfolioWeb.NoteLive.Index do
   @impl true
   def on_mount(:default, _params, session, socket) do
     {:cont,
-     PortfolioWeb.LiveHelpers.setup_common_assigns(socket, _params, session)}
+     PortfolioWeb.LiveHelpers.on_mount(:default, _params, session, socket)}
   end
 
   @impl true
