@@ -55,6 +55,7 @@ body {
 html[lang="ja"] * {
   line-height: var(--cjk-lh) !important;
 }
+
 @supports (text-justify: inter-character) {
   .text-justify {
     text-align: justify;
