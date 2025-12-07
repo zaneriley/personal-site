@@ -1,4 +1,4 @@
-import type { LineHeightConfig } from "./configs/type-config.ts";
+import type { LineHeightConfig } from "./configs/type-config";
 
 /**
  * Calculates unitless line-height value aligned to the baseline grid.
@@ -124,7 +124,12 @@ export const calculateLineHeight = (
 
   const multiplier = incrementMultipliers[config.incrementStep] || 2;
 
-  if (!Object.hasOwn(incrementMultipliers, config.incrementStep)) {
+  if (
+    !Object.prototype.hasOwnProperty.call(
+      incrementMultipliers,
+      config.incrementStep,
+    )
+  ) {
     console.warn(
       `Invalid incrementStep: ${config.incrementStep}. Defaulting to 'half'.`,
     );

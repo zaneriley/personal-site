@@ -20,6 +20,12 @@
           "px": ["/^border/"]
         }
       }
+    ],
+    "custom-property-pattern": [
+      "^([a-z][a-z0-9-]+|_[a-z][a-z0-9-]+)$",
+      {
+        "message": "Expected custom property name to be kebab-case (e.g. --my-property) or start with underscore for local scope (e.g. --_my-property)"
+      }
     ]
   }
 }

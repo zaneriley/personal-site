@@ -62,7 +62,7 @@ interface TypeStepConfig extends TypeSizeConfig {
   relativeTo: "viewport" | "viewport-width" | "container";
 }
 
-interface TypeStepResult {
+export interface TypeStepResult {
   step: number;
   minFontSize: number;
   maxFontSize: number;
@@ -130,7 +130,8 @@ const defaultSpaceLabels = [
   "3xs",
 ];
 
-const assignLabels = (
+// Export this function
+export const assignLabels = (
   sizes: Size[],
   labels: string[],
 ): (Size & { label: string })[] => {
@@ -326,6 +327,7 @@ const calculateTypeStep = (
     step,
     minFontSize: roundValue(minFontSize),
     maxFontSize: roundValue(maxFontSize),
+    lineHeight: 0,
     wcagViolation: wcag?.length
       ? {
           from: Math.round(wcag[0]),
@@ -390,22 +392,38 @@ export const calculateSpaceScale = (config: SpaceConfig) => {
 };
 
 export const generateTypeCSSVariables = (config: TypeConfig): string => {
-  const typeScale = calculateTypeScale(config);
+  const typeScale: TypeStepResult[] = calculateTypeScale(config);
   const labels = config.typeLabels || defaultTypeLabels;
 
   if (!labels.includes("md")) {
     throw new Error("The label array must include 'md' as the base size.");
   }
 
-  const labeledSizes = assignLabels(typeScale, labels);
+  // Map TypeStepResult[] to Size[] before passing to assignLabels
+  const sizeCompatibleScale: Size[] = typeScale.map((tsResult) => ({
+    step: tsResult.step,
+    minFontSize: tsResult.minFontSize,
+    maxFontSize: tsResult.maxFontSize,
+    clamp: tsResult.clamp,
+    isFixed: tsResult.isFixed.toString(), // Convert boolean to string to fit Size
+    // Omit wcagViolation and lineHeight as they don't fit Size
+  }));
+
+  const labeledSizes = assignLabels(sizeCompatibleScale, labels);
 
   return labeledSizes
     .map((size) => {
-      if (size.isFixed) {
-        const pixelValue = Number.parseFloat(size.clamp) * 16; // Convert rem to px
+      // We need to access the original isFixed boolean, retrieve from typeScale
+      const originalStep = typeScale.find((s) => s.step === size.step);
+      const isFixed = originalStep ? originalStep.isFixed : false;
+
+      if (isFixed) {
+        const pixelValue = Number.parseFloat(size.clamp as string) * 16;
         return `  --fs-${size.label}: ${size.clamp}; /* ${roundValue(pixelValue)}px */`;
       }
-      return `  --fs-${size.label}: ${size.clamp}; /* min: ${size.minFontSize}px, max: ${size.maxFontSize}px */`;
+      const minFs = size.minFontSize as number;
+      const maxFs = size.maxFontSize as number;
+      return `  --fs-${size.label}: ${size.clamp}; /* min: ${minFs.toString()}px, max: ${maxFs.toString()}px */`;
     })
     .join("\n");
 };

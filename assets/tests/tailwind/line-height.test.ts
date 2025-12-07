@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { LineHeightConfig } from "../../tailwind/configs/type-config";
 import { calculateLineHeight } from "../../tailwind/line-height";
 
@@ -42,7 +42,16 @@ describe("calculateLineHeight", () => {
     });
 
     it("should calculate correct line-height for line-heights under 1", () => {
+      console.log(
+        "Test 'line-heights under 1' using config:",
+        JSON.stringify(latinConfig),
+      );
+      console.log("Test 'line-heights under 1' using fontSize:", 72);
       const lineHeight = calculateLineHeight(latinConfig, 72);
+      console.log(
+        "Test 'line-heights under 1' received lineHeight:",
+        lineHeight,
+      );
       expect(lineHeight).toBeCloseTo(0.7778, 3);
     });
 
@@ -51,10 +60,44 @@ describe("calculateLineHeight", () => {
         "Font size must be positive.",
       );
     });
+
+    it("should warn and default if incrementStep is invalid", () => {
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      // Define a looser type for the test setup
+      type TestConfig = Omit<LineHeightConfig, "incrementStep"> & {
+        incrementStep: string;
+      };
+
+      const invalidConfig: TestConfig = {
+        ...latinConfig,
+        incrementStep: "invalid_step", // Now valid for TestConfig
+      };
+
+      // Calculation should still proceed, likely defaulting to 'half'
+      // Pass the TestConfig; calculateLineHeight should handle the string internally
+      const lineHeight = calculateLineHeight(
+        invalidConfig as LineHeightConfig,
+        18,
+      );
+      expect(lineHeight).toBeGreaterThan(0); // Basic check that calculation didn't fail
+
+      // Check that console.warn was called
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid incrementStep: invalid_step"),
+      );
+
+      consoleWarnSpy.mockRestore(); // Clean up spy
+    });
   });
   describe("CJK Script", () => {
     it("should calculate baselineUnit as characterSize", () => {
+      console.log("Test 'CJK Script' using config:", JSON.stringify(cjkConfig));
+      console.log("Test 'CJK Script' using fontSize:", 42);
       const lineHeight = calculateLineHeight(cjkConfig, 42);
+      console.log("Test 'CJK Script' received lineHeight:", lineHeight);
       expect(lineHeight).toBeCloseTo(0.8571428572, 3);
     });
   });

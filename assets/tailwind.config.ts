@@ -1,7 +1,4 @@
 import type { Config } from "tailwindcss";
-import { generateAndWriteCSS } from "./tailwind/generate-type-tokens.ts";
-
-generateAndWriteCSS();
 
 const config: Config = {
   content: [

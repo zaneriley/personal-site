@@ -11,6 +11,20 @@
   initial-value: 15deg;
 }
 
+* {
+  font-variation-settings: "wght" var(--font-wght), "wdth" var(--font-wdth);
+  font-feature-settings: "fina" 1, "kern" 1, "liga" 1, "onum" 1, "zero" 1,
+    "ss05" 1, "ss01" 1;
+  font-synthesis: none;
+}
+
+body {
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  min-height: 100vh;
+  hanging-punctuation: allow-end last; /* Safari only */
+}
+
 .u-container {
   max-width: var(--grid-max-width);
   padding-inline: var(--grid-outer-margins);
@@ -26,20 +40,6 @@
   grid-column: span 12;
 }
 
-body {
-  font-size: var(--fs-base);
-  line-height: 1.5;
-  min-height: 100vh;
-  hanging-punctuation: allow-end last; /* Safari only */
-}
-
-* {
-  font-variation-settings: "wght" var(--font-wght), "wdth" var(--font-wdth);
-  font-feature-settings: "fina" 1, "kern" 1, "liga" 1, "onum" 1, "zero" 1,
-    "ss05" 1, "ss01" 1;
-  font-synthesis: none;
-}
-
 .dropcap {
   display: block;
   float: left;
@@ -50,6 +50,22 @@ body {
   margin-top: 0.11em; /* magic unit, needs to be computed somehow */
   margin-right: var(--space-1xs);
   font-style: normal;
+}
+
+/* Optical Adjustment for Vertical Alignment */
+.optical-adjustment {
+  /* Use inline-block to allow margins to apply */
+  display: inline-block;
+
+  /* Apply top and bottom margins based on locally scoped variables */
+
+  /* lh = snapped line height (unitless) */
+
+  /* dt = distance-top (unitless factor of em) */
+
+  /* db = distance-bottom (unitless factor of em) */
+  margin-top: calc(((var(--_lh) - 1) * -0.5em) + (var(--_dt) * 1em));
+  margin-bottom: calc(((var(--_lh) - 1) * -0.5em) + (var(--_db) * 1em));
 }
 
 html[lang="ja"] * {

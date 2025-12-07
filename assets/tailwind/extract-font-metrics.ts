@@ -3,6 +3,14 @@ import path from "node:path";
 import * as fontkit from "fontkit";
 import type { Font, FontCollection } from "fontkit";
 
+// Add utility function for kebab-casing
+function toKebabCase(str: string): string {
+  return str
+    .replace(/([a-z])([A-Z])/g, "$1-$2") // Convert camelCase/PascalCase boundaries
+    .replace(/[\s_]+/g, "-") // Replace spaces and underscores with hyphens
+    .toLowerCase(); // Convert to lowercase
+}
+
 export interface FontMetrics {
   unitsPerEm: number;
   capHeight: number; // Normalized value (0 to 1)
@@ -187,10 +195,11 @@ export function generateFontMetricsJSON(
     const fontMetrics: { [key: string]: FontMetrics } = {};
 
     for (const fontPath of fontPaths) {
-      const fontName = path.basename(fontPath, path.extname(fontPath));
+      const originalFontName = path.basename(fontPath, path.extname(fontPath));
+      const kebabFontName = toKebabCase(originalFontName); // Convert to kebab-case
       try {
         const metrics = extractFontMetrics(fontPath);
-        fontMetrics[fontName] = metrics;
+        fontMetrics[kebabFontName] = metrics; // Use kebab-case key
       } catch (error) {
         console.error(`Failed to extract metrics for font: ${fontPath}`, error);
       }

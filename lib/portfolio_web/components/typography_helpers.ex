@@ -79,7 +79,7 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     "flexa" => %{
       "en" => "font-gt-flexa",
       # Example Japanese equivalent
-      "ja" => "font-ud-reimin"
+      "ja" => "font-noto-sans-jp"
     },
     "noto" => %{
       # Noto Sans JP can work for English too
@@ -87,6 +87,16 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
       "ja" => "font-noto-sans-jp"
     }
     # Add other fonts as needed
+  }
+
+  # Maps logical font keys (used in assigns) to the keys used in font-metrics.json
+  # These metric keys are derived from font file names.
+  @logical_to_metric_key %{
+    "cardinal" => "cardinal-fruit-web-medium-trial",
+    "cheee" => "cheee-small",
+    "flexa" => "gt-flexa-trial-vf",
+    "noto" => "noto-sans-jp"
+    # Add mappings as needed
   }
 
   # --- Public API ---
@@ -203,6 +213,15 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
   end
 
   @doc false
+  # Retrieves the font metric key corresponding to a logical font key.
+  @spec get_metric_key(String.t() | nil) :: String.t() | nil
+  defp get_metric_key(logical_font_key) when is_binary(logical_font_key) do
+    Map.get(@logical_to_metric_key, logical_font_key)
+  end
+
+  defp get_metric_key(_), do: nil
+
+  @doc false
   # Determines the default font key based on the locale.
   @spec default_font_for_locale(String.t()) :: String.t()
   defp default_font_for_locale(locale) do
@@ -211,6 +230,52 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
       "ja" -> "noto"
       # Default to GT Flexa for English/others
       _ -> "flexa"
+    end
+  end
+
+  # --- Optical Correction Helpers ---
+
+  @doc """
+  Determines the names of CSS variables needed for optical correction based on assigns.
+
+  Returns a map with `:lh_var`, `:dt_var`, and `:db_var` keys containing the
+  variable names (e.g., "--lh-en-md", "--cheee-small-distance-top") if optical
+  correction should apply (Latin locale, known font metrics). Otherwise, returns `nil`.
+
+  ## Parameters
+
+    - `assigns` - A map containing typography options (see `@moduledoc`).
+
+  ## Returns
+
+    - `%{lh_var: String.t(), dt_var: String.t(), db_var: String.t()}` | `nil`
+  """
+  @spec generate_optical_style(map()) ::
+          %{lh_var: String.t(), dt_var: String.t(), db_var: String.t()} | nil
+  def generate_optical_style(assigns) do
+    effective_locale = determine_locale(assigns, nil)
+
+    # Optical correction currently only applies to Latin script ('en')
+    if effective_locale == "en" do
+      logical_font_key = determine_font_key(assigns, effective_locale)
+      metric_key = get_metric_key(logical_font_key)
+
+      # Only proceed if we have a valid metric key for the font
+      if metric_key do
+        size_key = assigns[:size] || "md"
+
+        lh_var = "--lh-#{effective_locale}-#{size_key}"
+        dt_var = "--#{metric_key}-distance-top"
+        db_var = "--#{metric_key}-distance-bottom"
+
+        %{lh_var: lh_var, dt_var: dt_var, db_var: db_var}
+      else
+        # Valid locale ('en'), but no metric key found for the font
+        nil
+      end
+    else
+      # Not an English locale, no correction applied
+      nil
     end
   end
 end

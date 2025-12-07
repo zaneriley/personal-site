@@ -206,7 +206,8 @@ describe("generateFontMetricsJSON", () => {
 
     // Check that metrics for known fonts are present
     expect(metrics).toHaveProperty("cheee-small");
-    expect(metrics).toHaveProperty("CardinalFruitWeb-Medium-Trial");
+    expect(metrics).toHaveProperty("cardinal-fruit-web-medium-trial");
+    expect(metrics).toHaveProperty("noto-sans-jp");
   });
 
   it("should handle missing CSS file gracefully", () => {

@@ -30,6 +30,10 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
 
   require Logger
 
+  @behaviour Portfolio.Content.Markdown.Component.DefinitionBehaviour
+
+  @after_compile Portfolio.Content.Markdown.Component.Definition
+
   @doc """
   A macro for defining markdown components with automatic registration.
 
@@ -58,7 +62,6 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
       # Register the component when the module is compiled
       @on_definition Portfolio.Content.Markdown.Component.Definition
       @before_compile Portfolio.Content.Markdown.Component.Definition
-      @after_compile Portfolio.Content.Markdown.Component.Definition
 
       # Define component metadata accessors
       def component_type, do: @component_type

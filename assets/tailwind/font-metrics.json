@@ -13,21 +13,21 @@
     "descent": -0.288,
     "xHeight": 0.543
   },
-  "CardinalFruitWeb-Medium-Trial": {
+  "cardinal-fruit-web-medium-trial": {
     "unitsPerEm": 1000,
     "capHeight": 0.75,
     "ascent": 1.02,
     "descent": -0.32,
     "xHeight": 0.5
   },
-  "CardinalFruitWeb-MediumItalic-Trial": {
+  "cardinal-fruit-web-medium-italic-trial": {
     "unitsPerEm": 1000,
     "capHeight": 0.75,
     "ascent": 1.02,
     "descent": -0.32,
     "xHeight": 0.5
   },
-  "GT-Flexa-Trial-VF": {
+  "gt-flexa-trial-vf": {
     "unitsPerEm": 1000,
     "capHeight": 0.7,
     "ascent": 0.982,

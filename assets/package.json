@@ -33,6 +33,7 @@
     "lint:css": "stylelint \"./css/**/*.css\"",
     "lint:css:fix": "stylelint \"./css/**/*.css\" --fix",
     "test:browser": "vitest --workspace=vitest.workspace.ts",
-    "assets:font-metrics": "ts-node ./tailwind/extract-font-metrics.ts"
+    "assets:font-metrics": "ts-node ./tailwind/extract-font-metrics.ts",
+    "generate:typography": "ts-node ./tailwind/generate-type-tokens.ts"
   }
 }

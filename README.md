@@ -34,7 +34,7 @@ I'm product designer with +10 years of experience, based in Tokyo, Japan (prev i
 
 **Why all this for a website?**
 - It's a personal website. It's one of the few times you can build what you want without compromises. 
-- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to  build something that automated the pain from my last portfolio, with more infra and a better DX (e.g. admin interface, metrics, gitops)
+- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something that automated the pain from my last portfolio, with more infra and a better DX (e.g. admin interface, metrics, gitops)
 - Maybe it'll be reusable for future app development
 - This is also a homelab project
 
@@ -91,6 +91,7 @@ On the frontend, we use:
 - esbuild: An extremely fast JavaScript bundler and minifier
 - TailwindCSS: A utility-first CSS framework
 - Heroicons: For SVG icons
+
 
 ### Database and Content Management
 
@@ -184,13 +185,3 @@ If you're using this project as a base for your own portfolio website, I ask tha
 This project is based on [Zane Riley's Portfolio](https://github.com/zaneriley/personal-site).
 ```
 By providing credit, you help support open-source projects and allow others to discover and learn from the original work. Thank you for your consideration!
-
-
-## Contributing
-Contributions are welcome, but obviously since this is my personal site I'd be amazed if anyone would want to.
-
-## Contact
-
-Project Link: [https://github.com/zaneriley/personal-site](https://github.com/zaneriley/personal-site)
-
----
