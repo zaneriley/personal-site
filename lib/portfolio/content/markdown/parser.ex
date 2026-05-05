@@ -141,12 +141,8 @@ defmodule Portfolio.Content.Markdown.Parser do
     {content, []}
   end
 
-  # Insert custom components back into the AST
+  # Insert custom components back into the AST.
+  # Currently a placeholder — preprocess_custom_components/1 always returns [],
+  # so only the empty-list clause is reachable.
   defp insert_custom_components(ast, []), do: ast
-
-  defp insert_custom_components(ast, _components) do
-    # Implement custom component insertion
-    # For now, just return the AST unchanged
-    ast
-  end
 end

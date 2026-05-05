@@ -214,12 +214,10 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
 
   @doc false
   # Retrieves the font metric key corresponding to a logical font key.
-  @spec get_metric_key(String.t() | nil) :: String.t() | nil
+  @spec get_metric_key(String.t()) :: String.t() | nil
   defp get_metric_key(logical_font_key) when is_binary(logical_font_key) do
     Map.get(@logical_to_metric_key, logical_font_key)
   end
-
-  defp get_metric_key(_), do: nil
 
   @doc false
   # Determines the default font key based on the locale.

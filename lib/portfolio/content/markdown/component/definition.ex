@@ -156,12 +156,6 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
 
   # Check if PubSub is available and started
   defp ensure_pubsub_started? do
-    case Application.started_applications() do
-      apps when is_list(apps) ->
-        Enum.any?(apps, fn {app, _, _} -> app == :phoenix_pubsub end)
-
-      _ ->
-        false
-    end
+    Enum.any?(Application.started_applications(), fn {app, _, _} -> app == :phoenix_pubsub end)
   end
 end

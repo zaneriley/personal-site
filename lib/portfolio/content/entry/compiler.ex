@@ -51,30 +51,12 @@ defmodule Portfolio.Content.Entry.Compiler do
     end
   end
 
-  # Extract AST from various parser result formats
-  defp extract_ast_from_parser_result({:ok, %{ast: ast}}) do
-    ast
-  end
+  # Parser.parse/1 returns {:ok, %{ast: _}} | {:error, String.t()}.
+  defp extract_ast_from_parser_result({:ok, %{ast: ast}}), do: ast
 
-  defp extract_ast_from_parser_result(%{ast: ast}) do
-    ast
-  end
-
-  defp extract_ast_from_parser_result(ast) when is_list(ast) do
-    ast
-  end
-
-  # Add this clause to handle the error case explicitly
   defp extract_ast_from_parser_result({:error, _reason} = error_tuple) do
     Logger.error("Parser returned an error: #{inspect(error_tuple)}")
-    # Return the error tuple itself so it can be handled upstream
     error_tuple
-  end
-
-  defp extract_ast_from_parser_result(other) do
-    Logger.error("Unexpected parser result format: #{inspect(other)}")
-    # Return an error tuple for unexpected formats too
-    {:error, :unexpected_format}
   end
 
   @doc """
