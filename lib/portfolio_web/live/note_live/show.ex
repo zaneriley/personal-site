@@ -1,7 +1,6 @@
 # lib/portfolio_web/live/note_live/show.ex
 defmodule PortfolioWeb.NoteLive.Show do
   use PortfolioWeb, :live_view
-  alias PortfolioWeb.Router.Helpers, as: Routes
   alias Portfolio.Content
   require Logger
   import PortfolioWeb.Components.Typography

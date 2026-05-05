@@ -1,7 +1,6 @@
 defmodule PortfolioWeb.Layouts do
   @moduledoc false
   use PortfolioWeb, :html
-  alias PortfolioWeb.Router.Helpers, as: Routes
   use Gettext, backend: PortfolioWeb.Gettext
   import PortfolioWeb.Components.Typography
   embed_templates "layouts/*"
@@ -26,11 +25,13 @@ defmodule PortfolioWeb.Layouts do
       |> Enum.at(2, "")
       |> String.trim_leading("/")
 
+    base_url = url(conn, ~p"/") |> String.trim_trailing("/")
+
     tags =
       @supported_locales
       |> Enum.map(fn locale ->
         locale_path = "/#{locale}/#{path_without_locale}"
-        locale_url = Routes.url(conn) <> locale_path
+        locale_url = base_url <> locale_path
 
         query_string =
           if conn.query_string != "", do: "?#{conn.query_string}", else: ""
@@ -41,7 +42,7 @@ defmodule PortfolioWeb.Layouts do
       end)
 
     # Add x-default tag (usually pointing to the default locale or homepage)
-    default_url = Routes.url(conn) <> "/"
+    default_url = base_url <> "/"
 
     default_tag =
       ~s(<link rel="alternate" hreflang="x-default" href="#{default_url}" />)

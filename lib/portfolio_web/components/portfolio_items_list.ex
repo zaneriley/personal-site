@@ -14,7 +14,7 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
 
       <.portfolio_item_list
         items={@items}
-        navigate_to={&Routes.item_show_path(@socket, :show, @user_locale, &1.url)}
+        navigate_to={fn item -> ~p"/\#{@user_locale}/note/\#{item.url}" end}
       />
   """
   attr :items, :list, required: true

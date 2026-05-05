@@ -23,7 +23,6 @@ defmodule PortfolioWeb.Navigation do
   - `build_localized_path/2`: Generates localized paths
   """
   use PortfolioWeb, :live_component
-  alias PortfolioWeb.Router.Helpers, as: Routes
   import PortfolioWeb.Components.ThemeSwitcher
   import PortfolioWeb.Components.Typography
 
@@ -51,7 +50,7 @@ defmodule PortfolioWeb.Navigation do
     <nav role="banner" class="grid grid-cols-12 items-center w-full">
       <!-- Logo -->
       <.link
-        navigate={Routes.home_path(@socket, :index, @user_locale)}
+        navigate={~p"/#{@user_locale}"}
         class="col-span-2"
         aria-label={gettext("Zane Riley Portfolio Logo")}
       >
@@ -64,7 +63,7 @@ defmodule PortfolioWeb.Navigation do
         <ul class="flex space-x-1xl">
           <li>
             <.link
-              navigate={Routes.case_study_index_path(@socket, :index, @user_locale)}
+              navigate={~p"/#{@user_locale}/case-studies"}
               class={active_class(@current_path, :case_studies)}
             >
               <.typography locale={@user_locale} tag="span" size="md">
@@ -74,7 +73,7 @@ defmodule PortfolioWeb.Navigation do
           </li>
           <li>
             <.link
-              navigate={Routes.note_index_path(@socket, :index, @user_locale)}
+              navigate={~p"/#{@user_locale}/notes"}
               class={active_class(@current_path, :notes)}
             >
               <.typography locale={@user_locale} tag="span" size="md">
@@ -84,7 +83,7 @@ defmodule PortfolioWeb.Navigation do
           </li>
           <li>
             <.link
-              navigate={Routes.about_path(@socket, :index, @user_locale)}
+              navigate={~p"/#{@user_locale}/self"}
               class={active_class(@current_path, :about)}
             >
               <.typography locale={@user_locale} tag="span" size="md">

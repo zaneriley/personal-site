@@ -4,7 +4,6 @@ defmodule PortfolioWeb.NoteLive.Index do
   import PortfolioWeb.LiveHelpers
   alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note
-  alias PortfolioWeb.Router.Helpers, as: Routes
 
   def on_mount(:default, params, session, socket) do
     {:cont,

@@ -1,7 +1,6 @@
 defmodule PortfolioWeb.HomeLive do
   require Logger
   use PortfolioWeb, :live_view
-  alias PortfolioWeb.Router.Helpers, as: Routes
   alias Portfolio.Content
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
@@ -96,7 +95,7 @@ defmodule PortfolioWeb.HomeLive do
         "Based in Tokyo. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
       ) %>
 
-      <.link navigate={Routes.about_path(@socket, :index, @user_locale)}>
+      <.link navigate={~p"/#{@user_locale}/self"}>
         <%= gettext("More about me.") %>
       </.link>
     </.typography>
@@ -109,14 +108,7 @@ defmodule PortfolioWeb.HomeLive do
         <%= for case_study <- @case_studies do %>
           <div class="space-y-3xs">
             <.link
-              navigate={
-                Routes.case_study_show_path(
-                  @socket,
-                  :show,
-                  @user_locale,
-                  case_study.url
-                )
-              }
+              navigate={~p"/#{@user_locale}/case-study/#{case_study.url}"}
               aria-label={
                 gettext("Read more about %{title}",
                   title: case_study.translations["title"] || case_study.title

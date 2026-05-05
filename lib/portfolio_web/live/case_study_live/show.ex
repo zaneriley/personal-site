@@ -3,7 +3,6 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   use PortfolioWeb, :live_view
   alias Portfolio.Content
   import PortfolioWeb.LiveHelpers
-  alias PortfolioWeb.Router.Helpers, as: Routes
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.ContentMetadata
 

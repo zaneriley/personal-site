@@ -12,7 +12,7 @@
   rows={@streams.notes}
   row_click={
     fn {_id, note} ->
-      JS.navigate(Routes.note_show_path(@socket, :show, @user_locale, note.url))
+      JS.navigate(~p"/#{@user_locale}/note/#{note.url}")
     end
   }
 >
@@ -20,9 +20,7 @@
   <:col :let={{_id, note}} label="Content"><%= note.content %></:col>
   <:action :let={{_id, note}}>
     <div class="sr-only">
-      <.link navigate={
-        Routes.note_show_path(@socket, :show, @user_locale, note.url)
-      }>
+      <.link navigate={~p"/#{@user_locale}/note/#{note.url}"}>
         Show
       </.link>
     </div>
@@ -44,7 +42,7 @@
   title={@page_title}
   action={@live_action}
   note={@note}
-  patch={Routes.note_index_path(@socket, :index, @user_locale)}
+  patch={~p"/#{@user_locale}/notes"}
   show
-  on_cancel={JS.patch(Routes.note_index_path(@socket, :index, @user_locale))}
+  on_cancel={JS.patch(~p"/#{@user_locale}/notes")}
 />

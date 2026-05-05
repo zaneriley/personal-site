@@ -2,7 +2,7 @@
   <nav aria-label="Breadcrumb" class="text-sm">
     <div class="flex items-center space-x-2">
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        <.link navigate={Routes.home_path(@socket, :index, @user_locale)}>
+        <.link navigate={~p"/#{@user_locale}"}>
           <%= ngettext("Case Study", "Case Studies", 1) %>
         </.link>
       </.typography>
