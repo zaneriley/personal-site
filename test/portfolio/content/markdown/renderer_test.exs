@@ -97,7 +97,7 @@ defmodule Portfolio.Content.Markdown.RendererTest do
 
       # Just verify that the AST was processed successfully
       assert is_list(ast)
-      assert length(ast) > 0
+      assert ast != []
     end
 
     test "passes options to transform functions", %{simple_markdown: markdown} do
@@ -247,7 +247,7 @@ defmodule Portfolio.Content.Markdown.RendererTest do
       # This test verifies that component transforms produce valid AST
       {:ok, ast} = Renderer.render(markdown, :note)
       assert is_list(ast)
-      assert length(ast) > 0
+      assert ast != []
 
       # Verify image becomes a component inside a paragraph
       image_paragraph =

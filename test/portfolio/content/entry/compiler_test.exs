@@ -14,7 +14,7 @@ defmodule Portfolio.Content.Entry.CompilerTest do
       assert is_list(ast)
 
       # The actual AST format may vary, but we can check for common elements
-      assert length(ast) > 0
+      assert ast != []
     end
 
     test "returns error for invalid content" do
@@ -156,7 +156,7 @@ defmodule Portfolio.Content.Entry.CompilerTest do
 
       # Verify the result
       assert is_list(processed_ast)
-      assert length(processed_ast) > 0
+      assert processed_ast != []
     end
 
     test "handles nil input" do
