@@ -257,24 +257,17 @@ function yarn:build:js {
 # -----------------------------------------------------------------------------
 
 function yarn:build:css {
-  # Build CSS assets, now correctly runs inside the js container
+  # Build CSS assets, runs inside the css container (mirrors yarn:build:js).
   local args=()
 
-  # Determine args based on environment (same as before)
   if [ "${NODE_ENV:-}" == "production" ]; then
     args=(--minify)
   else
     args=(--watch)
   fi
 
-  # Ensure the output directory exists on the host system (good practice)
-  # This command runs on the host before executing inside the container
   mkdir -p ../priv/static/css
-
-  # Execute tailwindcss *inside* the js container using _dc and npx
-  # Pass input/output paths relative to the container's working directory (/app/assets)
-  # Pass the constructed arguments (${args[@]})
-  _dc js npx tailwindcss --postcss -i css/app.css -o ../priv/static/css/app.css "${args[@]}"
+  npx tailwindcss --postcss -i css/app.css -o ../priv/static/css/app.css "${args[@]}"
 }
 
 function css:lint {
