@@ -1,5 +1,5 @@
 # Stage 1: Build assets
-FROM node:22.9-bookworm-slim AS assets
+FROM node:22.21-bookworm-slim AS assets
 
 LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 

@@ -62,6 +62,7 @@ vi.mock("../../tailwind/font-metrics.json", () => ({
 // --- Test Subject ---
 import fs from "node:fs";
 import * as generateTypeTokensModule from "../../tailwind/generate-type-tokens";
+
 // Import latinTypeConfig if needed for labels, although the test doesn't directly use it now
 // import { latinTypeConfig } from "../../tailwind/configs/type-config";
 

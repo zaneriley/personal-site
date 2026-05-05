@@ -186,3 +186,6 @@ flycheck_*.el
 
 # LLM scratch / unfinished thinking
 .tmp/
+
+# Process core dumps
+core

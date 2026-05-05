@@ -4,8 +4,8 @@ import process from "node:process";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   CSSParsingError,
-  type FontMetrics,
   extractFontMetrics,
+  type FontMetrics,
   generateFontMetricsJSON,
   getFontPathsFromCSS,
 } from "../../tailwind/extract-font-metrics";
@@ -14,7 +14,10 @@ import {
 // Skip describes that need them when the fonts directory isn't populated;
 // the tests pass once you mount or check in the font fixtures.
 const fontsAvailable = fs.existsSync(
-  path.resolve(__dirname, "../../static/fonts/trials/CardinalFruitWeb-Medium-Trial.woff2"),
+  path.resolve(
+    __dirname,
+    "../../static/fonts/trials/CardinalFruitWeb-Medium-Trial.woff2",
+  ),
 );
 const describeWithFonts = fontsAvailable ? describe : describe.skip;
 
@@ -92,27 +95,32 @@ describe("getFontPathsFromCSS", () => {
     }
   });
 
-  it.skipIf(!fontsAvailable)("should resolve relative and absolute font paths correctly", () => {
-    console.log(`Current working directory: ${process.cwd()}`);
-    console.log(`Directory of current file: ${__dirname}`);
-    console.log(
-      `Absolute path of this test file: ${path.resolve(__dirname, __filename)}`,
-    );
+  it.skipIf(!fontsAvailable)(
+    "should resolve relative and absolute font paths correctly",
+    () => {
+      console.log(`Current working directory: ${process.cwd()}`);
+      console.log(`Directory of current file: ${__dirname}`);
+      console.log(
+        `Absolute path of this test file: ${path.resolve(__dirname, __filename)}`,
+      );
 
-    const webRoot = path.resolve(__dirname, "../../static");
-    console.log(`Calculated webRoot: ${webRoot}`);
+      const webRoot = path.resolve(__dirname, "../../static");
+      console.log(`Calculated webRoot: ${webRoot}`);
 
-    const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
-    console.log(`CSS file path: ${cssFilePath}`);
+      const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
+      console.log(`CSS file path: ${cssFilePath}`);
 
-    const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
+      const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
 
-    for (const absoluteFontPath of fontPaths) {
-      const exists = fs.existsSync(absoluteFontPath);
-      console.log(`Checking if file exists: ${absoluteFontPath} -> ${exists}`);
-      expect(exists).toBe(true);
-    }
-  });
+      for (const absoluteFontPath of fontPaths) {
+        const exists = fs.existsSync(absoluteFontPath);
+        console.log(
+          `Checking if file exists: ${absoluteFontPath} -> ${exists}`,
+        );
+        expect(exists).toBe(true);
+      }
+    },
+  );
 });
 
 describeWithFonts("extractFontMetrics", () => {
@@ -290,7 +298,7 @@ describeWithFonts("generateFontMetricsJSON", () => {
     const metrics = JSON.parse(data);
 
     for (const fontName in metrics) {
-      if (Object.prototype.hasOwnProperty.call(metrics, fontName)) {
+      if (Object.hasOwn(metrics, fontName)) {
         const fontMetrics = metrics[fontName];
         expect(fontMetrics.capHeight).toBeGreaterThan(0);
         expect(fontMetrics.capHeight).toBeLessThanOrEqual(1);

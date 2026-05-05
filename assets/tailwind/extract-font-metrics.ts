@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import * as fontkit from "fontkit";
 import type { Font, FontCollection } from "fontkit";
+import * as fontkit from "fontkit";
 
 // Add utility function for kebab-casing
 function toKebabCase(str: string): string {

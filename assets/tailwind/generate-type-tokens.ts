@@ -1,12 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
-  LineHeightConfig,
-  TypeConfig,
   cjkSpaceConfig,
   cjkTypeConfig,
+  LineHeightConfig,
   latinSpaceConfig,
   latinTypeConfig,
+  TypeConfig,
 } from "./configs/type-config";
 
 // Use require for JSON import
@@ -14,11 +14,11 @@ import {
 const fontMetrics = require("./font-metrics.json");
 
 import {
-  type TypeStepResult,
   assignLabels,
   calculateTypeScale,
   generateSpaceCSSVariables,
   generateTypeCSSVariables,
+  type TypeStepResult,
 } from "./font-size";
 import { calculateLineHeight } from "./line-height";
 

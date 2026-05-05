@@ -155,7 +155,10 @@ html[data-theme="light"] {
     var(--color-grad-4) 50%
   );
   background-attachment: fixed;
-  transition: --color-grad-1 5s, --color-grad-2 5s, --color-grad-3 5s,
+  transition:
+    --color-grad-1 5s,
+    --color-grad-2 5s,
+    --color-grad-3 5s,
     --color-grad-4 5s;
   background-size: 400% 400%;
   animation: gradient var(--grad-bg-time) ease infinite;

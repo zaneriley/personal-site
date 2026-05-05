@@ -12,9 +12,17 @@
 }
 
 * {
-  font-variation-settings: "wght" var(--font-wght), "wdth" var(--font-wdth);
-  font-feature-settings: "fina" 1, "kern" 1, "liga" 1, "onum" 1, "zero" 1,
-    "ss05" 1, "ss01" 1;
+  font-variation-settings:
+    "wght" var(--font-wght),
+    "wdth" var(--font-wdth);
+  font-feature-settings:
+    "fina" 1,
+    "kern" 1,
+    "liga" 1,
+    "onum" 1,
+    "zero" 1,
+    "ss05" 1,
+    "ss01" 1;
   font-synthesis: none;
 }
 
@@ -46,7 +54,10 @@ body {
   text-align: left;
   text-transform: uppercase;
   line-height: 0.7;
-  font-size: calc(3em + 2rem); /* em is # of lines, rem is # of line-height units between lines */
+  font-size: calc(
+    3em +
+    2rem
+  ); /* em is # of lines, rem is # of line-height units between lines */
   margin-top: 0.11em; /* magic unit, needs to be computed somehow */
   margin-right: var(--space-1xs);
   font-style: normal;
