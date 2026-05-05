@@ -19,6 +19,7 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
   """
   attr :items, :list, required: true
   attr :navigate_to, :any, required: true
+  attr :user_locale, :string, required: true
 
   def portfolio_item_list(assigns) do
     ~H"""

@@ -5,6 +5,7 @@
 <.portfolio_item_list
   items={@streams.case_studies}
   navigate_to={fn item -> ~p"/#{@user_locale}/case-study/#{item.url}" end}
+  user_locale={@user_locale}
 />
 
 <.modal
