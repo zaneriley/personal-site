@@ -2,7 +2,7 @@
 
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
-**Updated:** 2026-05-06 (mid Group 5 of dep upgrades).
+**Updated:** 2026-05-06 (deps upgrade phase complete; pushed to origin).
 
 ---
 
@@ -21,9 +21,9 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 | 2.2 — Group 2 (Ecto) | ✅ done | ecto_sql 3.11→3.13, postgrex 0.18→0.22 |
 | 2.3 — Group 3 (other libs) | ✅ done | cachex 3→4, gettext 0.24→0.26, swoosh, finch, cowboy, etc. |
 | 2.4 — Group 4 (Phoenix ecosystem) | ✅ done | phoenix 1.7→1.8, LV 0.20→1.1.30 |
-| 2.5 — Group 5 (JS-only deps) | 🔄 **in progress** | bumping vitest, biome, esbuild, jsdom, etc. Tailwind v3 stays. |
-| 2.6 — Push final to origin | ⏸ pending | 1 unpushed commit currently (Phoenix ecosystem) |
-| 2.7 — Triage GitHub vulnerabilities | ⏸ pending | Was 6, now 48 after deps bumps. Many likely transitive — investigate |
+| 2.5 — Group 5 (JS-only deps) | ✅ done | `9053f70` — vitest 2→4, biome 1→2, esbuild 0.23→0.28, jsdom 25→29 (forced Node 22.9→22.21 in Dockerfile), stylelint 16→17, vite added as vitest peer. |
+| 2.6 — Push final to origin | ✅ done | All commits pushed; tag baseline `9053f70`. |
+| 2.7 — Triage GitHub vulnerabilities | ✅ done | All 213 historical npm alerts auto-resolved by the Group 5 upgrade (timestamps line up exactly with the push). 0 open, 0 hex/elixir-side advisories. The 48-figure on push was a stale snapshot. |
 | 3 — Cold-start hardening | ⏸ pending | Audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` has 5 wins ranked. Target: 400ms remote. |
 | 4 — Tier-2/3 audit followups | ⏸ pending | ~24 inventoried, ranked. Pick what's load-bearing. |
 | 5 — Typography redesign | ⏸ pending | Figma changes; JA/EN dynamic typography swap; optical alignment via `text-box-trim` (80% support) + existing fontkit polyfill. Touches `typography.ex`, `typography_helpers.ex`, the tailwind generator pipeline. |
