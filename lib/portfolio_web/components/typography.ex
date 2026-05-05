@@ -141,7 +141,7 @@ defmodule PortfolioWeb.Components.Typography do
       |> assign(:optical_adjustment_class, "optical-adjustment")
 
     ~H"""
-    <.dynamic_tag name={@tag} id={@id} class={@all_classes}>
+    <.dynamic_tag tag_name={@tag} id={@id} class={@all_classes}>
       <span class={@optical_adjustment_class} style={@optical_style_attr}>
         
         <%= if @dropcap do %>
