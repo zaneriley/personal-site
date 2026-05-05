@@ -10,6 +10,14 @@ import {
   getFontPathsFromCSS,
 } from "../../tailwind/extract-font-metrics";
 
+// The licensed font binaries live outside this repo (commercial trials).
+// Skip describes that need them when the fonts directory isn't populated;
+// the tests pass once you mount or check in the font fixtures.
+const fontsAvailable = fs.existsSync(
+  path.resolve(__dirname, "../../static/fonts/trials/CardinalFruitWeb-Medium-Trial.woff2"),
+);
+const describeWithFonts = fontsAvailable ? describe : describe.skip;
+
 describe("getFontPathsFromCSS", () => {
   const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
 
@@ -84,7 +92,7 @@ describe("getFontPathsFromCSS", () => {
     }
   });
 
-  it("should resolve relative and absolute font paths correctly", () => {
+  it.skipIf(!fontsAvailable)("should resolve relative and absolute font paths correctly", () => {
     console.log(`Current working directory: ${process.cwd()}`);
     console.log(`Directory of current file: ${__dirname}`);
     console.log(
@@ -107,7 +115,7 @@ describe("getFontPathsFromCSS", () => {
   });
 });
 
-describe("extractFontMetrics", () => {
+describeWithFonts("extractFontMetrics", () => {
   const fontsDirectory = path.resolve(__dirname, "../../static/fonts");
 
   it("should successfully extract metrics from a valid font file", () => {
@@ -178,7 +186,7 @@ describe("extractFontMetrics", () => {
 
 // Adding tests for generateFontMetricsJSON
 
-describe("generateFontMetricsJSON", () => {
+describeWithFonts("generateFontMetricsJSON", () => {
   const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
   const outputJsonPath = path.resolve(
     __dirname,

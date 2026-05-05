@@ -12,6 +12,11 @@ log() {
 log "Copying static assets..."
 cp -r /public/. /app/priv/static/
 
+# Trust paths git operates on inside the container. Bind-mounted volumes
+# (e.g. priv/content) are owned by the host UID, which trips git ≥ 2.35's
+# safe.directory check.
+git config --global --add safe.directory '*' >/dev/null 2>&1 || true
+
 # Detect environment
 if [ -d "/app/releases" ] && [ -f "/app/bin/portfolio" ]; then
     log "Detected release environment"
