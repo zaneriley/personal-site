@@ -2,7 +2,7 @@
 
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
-**Updated:** 2026-05-06 (deps upgrade phase complete; pushed to origin).
+**Updated:** 2026-05-06 (deps + dependabot done; deploy/ops scope grilled into `AGENTS.md`).
 
 ---
 
@@ -24,7 +24,13 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 | 2.5 — Group 5 (JS-only deps) | ✅ done | `9053f70` — vitest 2→4, biome 1→2, esbuild 0.23→0.28, jsdom 25→29 (forced Node 22.9→22.21 in Dockerfile), stylelint 16→17, vite added as vitest peer. |
 | 2.6 — Push final to origin | ✅ done | All commits pushed; tag baseline `9053f70`. |
 | 2.7 — Triage GitHub vulnerabilities | ✅ done | All 213 historical npm alerts auto-resolved by the Group 5 upgrade (timestamps line up exactly with the push). 0 open, 0 hex/elixir-side advisories. The 48-figure on push was a stale snapshot. |
-| 3 — Cold-start hardening | ⏸ pending | Audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` has 5 wins ranked. Target: 400ms remote. |
+| 3 — Deploy/ops scope | 🔄 **active** | `/grill-me` ran 2026-05-06. Vision + objectives + 6 strategies in `AGENTS.md`. Hard-constraints + taste-seeding cut short — re-run `/grill-me` next time. |
+| 3.1 — Content-pipeline sync | ⏸ next | `personal-website-content` webhook hardening. PM rank #1 — site is meaningless without content. |
+| 3.2 — CI gates | ⏸ pending | LLM-mistake catcher. Parallelizable with 3.1. |
+| 3.3 — Resource-frugality of the app | ⏸ pending | Measure cold-start, p50, memory, cache-hit rate. Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` queued. **Hardware decision falls out of this, not before.** |
+| 3.4 — Front-edge cache (CDN) | ⏸ pending | `/literature` required before tool selection. |
+| 3.5 — Origin substrate + deploy pipeline | ⏸ pending | `/literature` required. Hardware + blue/green + deploy mechanics. |
+| 3.6 — Observability + rollback loop | ⏸ pending | `/literature` required. No Grafana (Z veto). |
 | 4 — Tier-2/3 audit followups | ⏸ pending | ~24 inventoried, ranked. Pick what's load-bearing. |
 | 5 — Typography redesign | ⏸ pending | Figma changes; JA/EN dynamic typography swap; optical alignment via `text-box-trim` (80% support) + existing fontkit polyfill. Touches `typography.ex`, `typography_helpers.ex`, the tailwind generator pipeline. |
 
