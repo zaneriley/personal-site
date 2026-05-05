@@ -15,7 +15,8 @@ defmodule PortfolioWeb.Components.TypographyTest do
          [style | _] <- Floki.attribute(span, "style") do
       style
     else
-      _ -> nil # Return nil if span or style attribute is not found
+      # Return nil if span or style attribute is not found
+      _ -> nil
     end
   end
 
@@ -31,14 +32,21 @@ defmodule PortfolioWeb.Components.TypographyTest do
   end
 
   describe "typography component rendering behavior" do
-    test "renders defaults and applies full optical style for 'en' locale", %{conn: _conn} do
-      assigns = %{locale: "en"} # Uses default font 'flexa' for en
-      rendered = render_component(&Typography.typography/1, assigns) do
-        "Default English Text"
-      end
+    test "renders defaults and applies full optical style for 'en' locale", %{
+      conn: _conn
+    } do
+      # Uses default font 'flexa' for en
+      assigns = %{locale: "en"}
+
+      rendered =
+        render_component(&Typography.typography/1, assigns) do
+          "Default English Text"
+        end
 
       assert outer_classes = get_outer_classes(rendered, "p")
-      assert outer_classes =~ "text-md" && outer_classes =~ "text-main" && outer_classes =~ "font-gt-flexa"
+
+      assert outer_classes =~ "text-md" && outer_classes =~ "text-main" &&
+               outer_classes =~ "font-gt-flexa"
 
       assert style_attr = get_optical_style(rendered)
       assert style_attr =~ "--_lh: var(--lh-en-md);"
@@ -47,16 +55,19 @@ defmodule PortfolioWeb.Components.TypographyTest do
     end
 
     test "applies only CJK line height for 'ja' locale", %{conn: _conn} do
-      assigns = %{locale: "ja", font: "noto", size: "md"} # Use a known CJK font
+      # Use a known CJK font
+      assigns = %{locale: "ja", font: "noto", size: "md"}
 
-      rendered = render_component(&Typography.typography/1, assigns) do
-        "日本語テキスト"
-      end
+      rendered =
+        render_component(&Typography.typography/1, assigns) do
+          "日本語テキスト"
+        end
 
       # Verify outer tag and classes (Japanese font mapping)
       assert outer_classes = get_outer_classes(rendered, "p")
       assert outer_classes =~ "text-md"
-      assert outer_classes =~ "font-noto-sans-jp" # Default font for 'ja'
+      # Default font for 'ja'
+      assert outer_classes =~ "font-noto-sans-jp"
       # The helper also adds bold for this specific combo in font_variants
       assert outer_classes =~ "bold"
 

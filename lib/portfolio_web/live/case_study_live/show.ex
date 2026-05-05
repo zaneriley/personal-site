@@ -11,7 +11,8 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
   @dialyzer {:nowarn_function, mount: 3}
   def on_mount(:default, params, session, socket) do
-    {:cont, PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
+    {:cont,
+     PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
   end
 
   @impl true

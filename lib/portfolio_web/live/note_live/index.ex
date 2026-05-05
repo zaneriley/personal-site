@@ -7,7 +7,8 @@ defmodule PortfolioWeb.NoteLive.Index do
   alias PortfolioWeb.Router.Helpers, as: Routes
 
   def on_mount(:default, params, session, socket) do
-    {:cont, PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
+    {:cont,
+     PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
   end
 
   @impl true

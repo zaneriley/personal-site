@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.Components.TypographyHelpersTest do
   # Use ConnCase for potential environment stability, even if overkill
-  use PortfolioWeb.ConnCase, async: true # ConnCase provides helpers, _conn often unused here
+  # ConnCase provides helpers, _conn often unused here
+  use PortfolioWeb.ConnCase, async: true
 
   alias PortfolioWeb.Components.TypographyHelpers
 

@@ -44,8 +44,14 @@ defmodule PortfolioWeb.Components.ContentMetadata do
       |> then(fn a ->
         a
         |> assign(:read_time_segment, render_read_time(a.read_time))
-        |> assign(:word_count_segment, render_word_count(a.word_count, a.user_locale))
-        |> assign(:updated_on_segment, render_updated_at(a.updated_at, a.user_locale))
+        |> assign(
+          :word_count_segment,
+          render_word_count(a.word_count, a.user_locale)
+        )
+        |> assign(
+          :updated_on_segment,
+          render_updated_at(a.updated_at, a.user_locale)
+        )
         |> assign(:separator, gettext("Metadata separator"))
       end)
 

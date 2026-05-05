@@ -114,7 +114,8 @@ defmodule PortfolioWeb.Components.Typography do
 
     # --- FIX: Call the helper with the assigns map ---
     # Get the map of variable names (or nil) from the helper
-    optical_vars_map = TypographyHelpers.generate_optical_style(assigns) # Correct call
+    # Correct call
+    optical_vars_map = TypographyHelpers.generate_optical_style(assigns)
 
     # Construct the inline style string based on the returned map
     optical_style_attr =
@@ -142,13 +143,13 @@ defmodule PortfolioWeb.Components.Typography do
     ~H"""
     <.dynamic_tag name={@tag} id={@id} class={@all_classes}>
       <span class={@optical_adjustment_class} style={@optical_style_attr}>
-        <%# Dropcap logic uses @inner_block directly %>
+        
         <%= if @dropcap do %>
           <% text =
-               render_slot(@inner_block)
-               |> Phoenix.HTML.Safe.to_iodata()
-               |> IO.iodata_to_binary()
-               |> String.trim() %>
+            render_slot(@inner_block)
+            |> Phoenix.HTML.Safe.to_iodata()
+            |> IO.iodata_to_binary()
+            |> String.trim() %>
           <%= if starts_with_hanging_punct?(text) do %>
             <% {hanging_punct, rest} = String.split_at(text, 1) %>
             <span class="dropcap hanging-punct font-noto-sans-jp" aria-hidden="true">
@@ -163,7 +164,7 @@ defmodule PortfolioWeb.Components.Typography do
             <span class="sr-only"><%= text %></span>
           <% end %>
         <% else %>
-          <%# Render slot normally if not dropcap %>
+          
           <%= render_slot(@inner_block) %>
         <% end %>
       </span>
