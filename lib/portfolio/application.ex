@@ -20,8 +20,6 @@ defmodule Portfolio.Application do
       Portfolio.ComponentSupervisor,
       # Other services that don't have critical dependencies
       Portfolio.Cache,
-      {DNSCluster,
-       query: Application.get_env(:portfolio, :dns_cluster_query) || :ignore},
       {Finch, name: Portfolio.Finch},
       PortfolioWeb.Endpoint
     ]

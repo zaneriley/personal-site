@@ -51,7 +51,6 @@ defmodule Portfolio.MixProject do
       {:cowboy, "~> 2.14"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:dns_cluster, "~> 0.2"},
       {:earmark, "~> 1.4"},
       {:ecto_sql, "~> 3.13"},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},

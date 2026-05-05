@@ -9,6 +9,15 @@ config :logger, :console,
   metadata: :all,
   level: :info
 
+# Compile-time purge: prod binary should not contain :debug calls at all.
+# Cuts ~hot-path call overhead and the cold-start cost of evaluating debug
+# format strings. Re-enable per-call by lifting Logger.debug to Logger.info
+# when a specific signal is needed in prod.
+config :logger,
+  compile_time_purge_matching: [
+    [level_lower_than: :info]
+  ]
+
 config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Portfolio.Finch
 
 config :portfolio, Portfolio.Content.FileManagement.Watcher,
