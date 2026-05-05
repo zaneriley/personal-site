@@ -183,3 +183,6 @@ flycheck_*.el
 # network security
 /network-security.data
 /priv/static/docs/
+
+# LLM scratch / unfinished thinking
+.tmp/
