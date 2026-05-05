@@ -17,34 +17,7 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
   """
   @spec sync_repo(String.t(), String.t()) :: sync_result()
   def sync_repo(repo_url, local_path) do
-    # Check network connectivity without using ping
-    connectivity_check = check_http_connectivity("github.com")
-
-    result = do_sync_repo(repo_url, local_path)
-
-    result
-  end
-
-  # Check HTTP connectivity to a host
-  defp check_http_connectivity(host) do
-    try do
-      case :httpc.request(
-             :get,
-             {~c"https://#{host}", []},
-             [{:timeout, 5000}, {:connect_timeout, 5000}],
-             []
-           ) do
-        {:ok, _} ->
-          {:ok, "Connected successfully to #{host}"}
-
-        {:error, reason} ->
-          {:error, "Failed to connect to #{host}: #{inspect(reason)}"}
-      end
-    rescue
-      e -> {:error, "Exception checking connectivity: #{Exception.message(e)}"}
-    catch
-      _, reason -> {:error, "Error checking connectivity: #{inspect(reason)}"}
-    end
+    do_sync_repo(repo_url, local_path)
   end
 
   @spec do_sync_repo(String.t(), String.t()) :: sync_result()

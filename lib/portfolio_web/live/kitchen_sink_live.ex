@@ -173,7 +173,7 @@ defmodule PortfolioWeb.KitchenSinkLive do
                 <% end %>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-                  <%= for {font, name} <- [
+                  <%= for {font, _name} <- [
                       {"cheee", "Cheee"},
                       {"cardinal", "Cardinal"},
                       {"gt-flexa", "GT Flexa"},

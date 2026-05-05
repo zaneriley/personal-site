@@ -21,7 +21,6 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   @report_only Application.compile_env(:portfolio, [:csp, :report_only], false)
   @default_scheme "https"
   @default_port "443"
-  @default_host "localhost"
 
   @spec generate_csp_for_testing(map()) :: String.t()
   def generate_csp_for_testing(config) do

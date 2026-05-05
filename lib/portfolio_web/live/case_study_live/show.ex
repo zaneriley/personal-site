@@ -6,16 +6,12 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   alias PortfolioWeb.Router.Helpers, as: Routes
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.ContentMetadata
-  import Phoenix.HTML, only: [content_tag: 3]
 
-  import Portfolio.Content.Markdown.Renderer,
-    only: [render_ast: 1, render_html: 1]
+  import Portfolio.Content.Markdown.Renderer, only: [render_html: 1]
 
   @dialyzer {:nowarn_function, mount: 3}
-  @impl true
-  def on_mount(:default, _params, session, socket) do
-    {:cont,
-     PortfolioWeb.LiveHelpers.on_mount(:default, _params, session, socket)}
+  def on_mount(:default, params, session, socket) do
+    {:cont, PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
   end
 
   @impl true

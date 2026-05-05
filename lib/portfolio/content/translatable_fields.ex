@@ -38,7 +38,6 @@ defmodule Portfolio.Content.TranslatableFields do
   """
   @spec translatable_fields(schema()) :: [field()]
   def translatable_fields(schema) do
-    all_fields = schema.__schema__(:fields)
     default_translatable = default_translatable_fields(schema)
 
     case schema do

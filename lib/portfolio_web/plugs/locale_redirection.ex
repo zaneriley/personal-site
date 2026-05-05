@@ -87,10 +87,9 @@ defmodule PortfolioWeb.Plugs.LocaleRedirection do
 
           # If a valid path is found, reset the redirect count and perform the redirection
           path ->
-            conn =
-              conn
-              |> put_session(:redirect_count, 0)
-              |> redirect_to_locale(path, user_locale)
+            conn
+            |> put_session(:redirect_count, 0)
+            |> redirect_to_locale(path, user_locale)
         end
     end
   end

@@ -30,8 +30,6 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
 
   require Logger
 
-  @behaviour Portfolio.Content.Markdown.Component.DefinitionBehaviour
-
   @after_compile Portfolio.Content.Markdown.Component.Definition
 
   @doc """

@@ -6,18 +6,15 @@ defmodule PortfolioWeb.HomeLive do
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
 
-  @impl true
   def on_mount(:default, params, session, socket) do
     {:cont,
      PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
   end
 
-  @impl true
   def page_title(_assigns) do
     gettext("Zane Riley | Product Designer (Tokyo) | 10+ Years Experience")
   end
 
-  @impl true
   def page_description(_assigns) do
     gettext(
       "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."

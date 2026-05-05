@@ -150,7 +150,7 @@ defmodule Portfolio.Content.Entry.Source do
   end
 
   # Update an existing content entry
-  defp update_content(content, attrs, content_type) do
+  defp update_content(content, attrs, _content_type) do
     # Start a transaction
     Repo.transaction(fn ->
       # Update basic attributes first

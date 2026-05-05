@@ -70,8 +70,6 @@ defmodule PortfolioWeb.Components.Typography do
       """
     ]
 
-  alias Phoenix.HTML.Safe
-
   @doc """
   Renders a typography element with the specified attributes.
 

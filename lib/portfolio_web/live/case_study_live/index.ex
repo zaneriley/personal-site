@@ -7,7 +7,6 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   alias PortfolioWeb.Router.Helpers, as: Routes
   import PortfolioWeb.Components.PortfolioItemList
 
-  @impl true
   def on_mount(:default, params, session, socket) do
     {:cont,
      PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
@@ -35,7 +34,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :edit, %{"url" => url}) do
+  defp apply_action(socket, :edit, %{"url" => _url}) do
     case_studies = Content.list("case_study", [], socket.assigns.user_locale)
 
     socket
@@ -85,10 +84,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
       Ecto.NoResultsError ->
         {:noreply, put_flash(socket, :error, "Case study not found")}
 
-      e in [
-        Portfolio.Content.ContentTypeMismatchError,
-        Portfolio.Content.InvalidContentTypeError
-      ] ->
+      e in Portfolio.Content.InvalidContentTypeError ->
         {:noreply, put_flash(socket, :error, e.message)}
 
       e ->

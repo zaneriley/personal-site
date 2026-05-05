@@ -125,7 +125,6 @@ defmodule Portfolio.Content do
 
   ## Raises
     - Ecto.NoResultsError: If no content is found
-    - ContentTypeMismatchError: If the found content type doesn't match the requested type
     - InvalidContentTypeError: If an invalid content type is provided
 
   ## Examples

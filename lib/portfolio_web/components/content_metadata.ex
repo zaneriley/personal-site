@@ -38,17 +38,16 @@ defmodule PortfolioWeb.Components.ContentMetadata do
   attr :user_locale, :string, default: nil
   @spec content_metadata(map()) :: Phoenix.LiveView.Rendered.t()
   def content_metadata(assigns) do
-    assigns = assign_new(assigns, :user_locale, fn -> Gettext.get_locale() end)
-
-    read_time_segment = render_read_time(assigns.read_time)
-
-    word_count_segment =
-      render_word_count(assigns.word_count, assigns.user_locale)
-
-    updated_on_segment =
-      render_updated_at(assigns.updated_at, assigns.user_locale)
-
-    separator = gettext("Metadata separator")
+    assigns =
+      assigns
+      |> assign_new(:user_locale, fn -> Gettext.get_locale() end)
+      |> then(fn a ->
+        a
+        |> assign(:read_time_segment, render_read_time(a.read_time))
+        |> assign(:word_count_segment, render_word_count(a.word_count, a.user_locale))
+        |> assign(:updated_on_segment, render_updated_at(a.updated_at, a.user_locale))
+        |> assign(:separator, gettext("Metadata separator"))
+      end)
 
     ~H"""
     <.typography
@@ -59,22 +58,22 @@ defmodule PortfolioWeb.Components.ContentMetadata do
       color="accent"
       class="flex items-center space-x-1xl"
     >
-      <%= if updated_on_segment != "" do %>
-        <span><%= updated_on_segment %></span>
+      <%= if @updated_on_segment != "" do %>
+        <span><%= @updated_on_segment %></span>
       <% end %>
 
-      <%= if read_time_segment != "" or word_count_segment != "" do %>
+      <%= if @read_time_segment != "" or @word_count_segment != "" do %>
         <span>
-          <%= if read_time_segment != "" do %>
-            <span><%= read_time_segment %></span>
+          <%= if @read_time_segment != "" do %>
+            <span><%= @read_time_segment %></span>
           <% end %>
 
-          <%= if read_time_segment != "" and word_count_segment != "" do %>
-            <span><%= separator %></span>
+          <%= if @read_time_segment != "" and @word_count_segment != "" do %>
+            <span><%= @separator %></span>
           <% end %>
 
-          <%= if word_count_segment != "" do %>
-            <span><%= word_count_segment %></span>
+          <%= if @word_count_segment != "" do %>
+            <span><%= @word_count_segment %></span>
           <% end %>
         </span>
       <% end %>

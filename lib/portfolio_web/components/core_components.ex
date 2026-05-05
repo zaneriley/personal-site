@@ -791,25 +791,4 @@ defmodule PortfolioWeb.CoreComponents do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
 
-  @doc """
-  Renders a dynamic tag with the given name and attributes.
-
-  ## Examples
-
-      <.dynamic_tag name="div" class="bg-red-500">Content</.dynamic_tag>
-      <.dynamic_tag name="button" type="button">Click me</.dynamic_tag>
-  """
-  attr :name, :string, required: true
-  attr :rest, :global
-  slot :inner_block, required: true
-
-  def dynamic_tag(assigns) do
-    ~H"""
-    <%= Phoenix.HTML.Tag.content_tag(
-      String.to_atom(@name),
-      @inner_block,
-      assigns_to_attributes(assigns, [:name, :inner_block])
-    ) %>
-    """
-  end
 end

@@ -6,10 +6,8 @@ defmodule PortfolioWeb.NoteLive.Index do
   alias Portfolio.Content.Schemas.Note
   alias PortfolioWeb.Router.Helpers, as: Routes
 
-  @impl true
-  def on_mount(:default, _params, session, socket) do
-    {:cont,
-     PortfolioWeb.LiveHelpers.on_mount(:default, _params, session, socket)}
+  def on_mount(:default, params, session, socket) do
+    {:cont, PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
   end
 
   @impl true
@@ -82,10 +80,7 @@ defmodule PortfolioWeb.NoteLive.Index do
       Ecto.NoResultsError ->
         {:noreply, put_flash(socket, :error, "Note not found")}
 
-      e in [
-        Portfolio.Content.ContentTypeMismatchError,
-        Portfolio.Content.InvalidContentTypeError
-      ] ->
+      e in Portfolio.Content.InvalidContentTypeError ->
         {:noreply, put_flash(socket, :error, e.message)}
 
       e ->

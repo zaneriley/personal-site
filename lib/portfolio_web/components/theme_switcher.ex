@@ -36,11 +36,12 @@ defmodule PortfolioWeb.Components.ThemeSwitcher do
 
   @spec theme_switcher(map()) :: Phoenix.LiveView.Rendered.t()
   def theme_switcher(assigns) do
-    themes = [
-      %{value: "light", label: gettext("Light")},
-      %{value: "dark", label: gettext("Dark")},
-      %{value: "system", label: gettext("System")}
-    ]
+    assigns =
+      assign(assigns, :themes, [
+        %{value: "light", label: gettext("Light")},
+        %{value: "dark", label: gettext("Dark")},
+        %{value: "system", label: gettext("System")}
+      ])
 
     ~H"""
     <fieldset
@@ -50,7 +51,7 @@ defmodule PortfolioWeb.Components.ThemeSwitcher do
     >
       <legend class="sr-only"><%= gettext("Theme") %></legend>
       <form id="theme-switcher-form">
-        <%= for theme <- themes do %>
+        <%= for theme <- @themes do %>
           <% theme_id = "theme_#{theme.value}" %>
           <label for={theme_id}>
             <input

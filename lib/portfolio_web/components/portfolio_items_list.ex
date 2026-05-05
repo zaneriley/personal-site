@@ -4,7 +4,6 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
 
   """
   use Phoenix.Component
-  import PortfolioWeb.Gettext
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
 

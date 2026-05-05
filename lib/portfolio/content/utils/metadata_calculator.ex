@@ -192,8 +192,6 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
 
   @doc false
   @spec extract_text_from_ast(any(), keyword()) :: [String.t()]
-  defp extract_text_from_ast(ast, opts \\ [])
-
   defp extract_text_from_ast(ast, opts) do
     exclude_code = Keyword.get(opts, :exclude_code, false)
     do_extract_text_from_ast(ast, exclude_code)
