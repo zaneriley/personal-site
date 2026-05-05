@@ -1,7 +1,7 @@
 defmodule PortfolioWeb.Components.ThemeSwitcherTest do
   use PortfolioWeb.ConnCase, async: true
   import Phoenix.LiveViewTest
-  import PortfolioWeb.Gettext
+  use Gettext, backend: PortfolioWeb.Gettext
   alias Floki
 
   alias PortfolioWeb.Components.ThemeSwitcher

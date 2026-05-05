@@ -18,7 +18,7 @@ defmodule PortfolioWeb.Components.ThemeSwitcher do
   """
 
   use Phoenix.Component
-  import PortfolioWeb.Gettext
+  use Gettext, backend: PortfolioWeb.Gettext
 
   @doc """
   Renders a theme switcher component.

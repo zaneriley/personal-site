@@ -3,7 +3,7 @@ defmodule PortfolioWeb.Components.ContentMetadataTest do
   use Phoenix.Component
   import Phoenix.LiveViewTest
   import PortfolioWeb.Components.ContentMetadata
-  import PortfolioWeb.Gettext
+  use Gettext, backend: PortfolioWeb.Gettext
   alias Timex
 
   describe "content_metadata/1" do

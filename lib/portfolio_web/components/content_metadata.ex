@@ -6,7 +6,7 @@ defmodule PortfolioWeb.Components.ContentMetadata do
   """
   require Logger
   use Phoenix.Component
-  import PortfolioWeb.Gettext
+  use Gettext, backend: PortfolioWeb.Gettext
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   alias Timex
 

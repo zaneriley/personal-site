@@ -95,7 +95,7 @@ defmodule Portfolio.Cache do
   defp put_with_ttl(cache, key, value, nil), do: Cachex.put(cache, key, value)
 
   defp put_with_ttl(cache, key, value, ttl),
-    do: Cachex.put(cache, key, value, ttl: ttl)
+    do: Cachex.put(cache, key, value, expire: ttl)
 
   @doc """
   Deletes a value from the cache.

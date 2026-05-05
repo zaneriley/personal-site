@@ -2,7 +2,7 @@ defmodule PortfolioWeb.Layouts do
   @moduledoc false
   use PortfolioWeb, :html
   alias PortfolioWeb.Router.Helpers, as: Routes
-  import PortfolioWeb.Gettext
+  use Gettext, backend: PortfolioWeb.Gettext
   import PortfolioWeb.Components.Typography
   embed_templates "layouts/*"
 

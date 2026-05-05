@@ -33,7 +33,7 @@ defmodule PortfolioWeb.LiveHelpers do
   """
 
   import Phoenix.Component
-  import PortfolioWeb.Gettext
+  use Gettext, backend: PortfolioWeb.Gettext
 
   @default_title gettext("Zane Riley | Product Designer")
   @default_description gettext(

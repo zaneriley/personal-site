@@ -12,7 +12,7 @@ defmodule PortfolioWeb.ErrorHTML do
   "Not Found".
   """
   use PortfolioWeb, :html
-  import PortfolioWeb.Gettext
+  use Gettext, backend: PortfolioWeb.Gettext
 
   embed_templates "error_html/*"
 
