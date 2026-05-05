@@ -81,53 +81,29 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
     end
   end
 
-  describe "PubSub registration" do
-    test "registry receives component registration via PubSub" do
-      # Directly publish a registration message to PubSub
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, :pubsub_test, {TestComponent, :render}}
-      )
+  describe "synchronous registration" do
+    test "registry stores a component immediately after register/3 returns" do
+      assert :ok = Registry.register(:sync_test, TestComponent)
+      assert {:ok, {TestComponent, :render}} = Registry.lookup(:sync_test)
 
-      # Allow time for message processing
-      Process.sleep(50)
-
-      # Verify the component was registered via PubSub
-      assert {:ok, {TestComponent, :render}} = Registry.lookup(:pubsub_test)
-
-      # Cleanup
-      Registry.unregister(:pubsub_test)
+      Registry.unregister(:sync_test)
     end
 
-    test "registry receives updated component registrations" do
-      # Register component
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, :update_test, {TestComponent, :render}}
-      )
-
-      Process.sleep(50)
+    test "registry updates an existing registration on second call" do
+      assert :ok = Registry.register(:update_test, TestComponent)
       assert {:ok, {TestComponent, :render}} = Registry.lookup(:update_test)
 
-      # Update component with different function
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, :update_test, {TestComponent, :custom}}
-      )
+      assert :ok =
+               Registry.register(:update_test, TestComponent,
+                 custom_function: :custom
+               )
 
-      Process.sleep(50)
       assert {:ok, {TestComponent, :custom}} = Registry.lookup(:update_test)
 
-      # Cleanup
       Registry.unregister(:update_test)
     end
 
-    # New test case for multiple components registering in sequence
-    test "multiple components can register via PubSub in sequence" do
-      # Register several components in sequence
+    test "multiple components can register in sequence" do
       components = [
         {:component_a, TestComponent, :render},
         {:component_b, AnotherComponent, :render},
@@ -135,109 +111,65 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
       ]
 
       for {type, module, function} <- components do
-        Phoenix.PubSub.broadcast(
-          Portfolio.PubSub,
-          "component_registration",
-          {:register_component, type, {module, function}}
-        )
-
-        # Small delay between registrations
-        Process.sleep(10)
+        assert :ok =
+                 Registry.register(type, module, custom_function: function)
       end
 
-      # Allow time for all messages to be processed
-      Process.sleep(50)
-
-      # Verify all components were registered
       for {type, module, function} <- components do
         assert {:ok, {^module, ^function}} = Registry.lookup(type)
 
-        # Cleanup
         Registry.unregister(type)
       end
     end
 
-    # New test case for handling component replacement from same module
     test "registry allows same component type to be replaced by same module" do
-      # Define a test component type
       component_type = :replaceable_component
 
-      # Register with initial function
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, component_type, {TestComponent, :initial}}
-      )
+      assert :ok =
+               Registry.register(component_type, TestComponent,
+                 custom_function: :initial
+               )
 
-      Process.sleep(50)
-      assert {:ok, {TestComponent, :initial}} = Registry.lookup(component_type)
+      assert {:ok, {TestComponent, :initial}} =
+               Registry.lookup(component_type)
 
-      # Register same type with different function but same module
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, component_type, {TestComponent, :updated}}
-      )
+      assert :ok =
+               Registry.register(component_type, TestComponent,
+                 custom_function: :updated
+               )
 
-      Process.sleep(50)
-      assert {:ok, {TestComponent, :updated}} = Registry.lookup(component_type)
+      assert {:ok, {TestComponent, :updated}} =
+               Registry.lookup(component_type)
 
-      # Cleanup
       Registry.unregister(component_type)
     end
 
-    # New test case for handling component replacement from different module
     test "registry allows component replacement from different module" do
-      # Define a test component type
       component_type = :different_module_component
 
-      # Register with initial module
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, component_type, {TestComponent, :render}}
-      )
+      assert :ok = Registry.register(component_type, TestComponent)
 
-      Process.sleep(50)
-      assert {:ok, {TestComponent, :render}} = Registry.lookup(component_type)
+      assert {:ok, {TestComponent, :render}} =
+               Registry.lookup(component_type)
 
-      # Register same type with different module
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, component_type, {AnotherComponent, :render}}
-      )
-
-      Process.sleep(50)
+      assert :ok = Registry.register(component_type, AnotherComponent)
 
       assert {:ok, {AnotherComponent, :render}} =
                Registry.lookup(component_type)
 
-      # Cleanup
       Registry.unregister(component_type)
     end
   end
 
   describe "Registry startup" do
-    test "registry subscribes to PubSub on startup" do
-      # Since we're using the global registry, we'll test by clearing it
-      # and then sending a PubSub message to verify it's subscribed
+    test "registry is responsive after startup and accepts registrations" do
       Registry.clear_all_components()
 
-      # Broadcast a registration message
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        "component_registration",
-        {:register_component, :startup_test, {TestComponent, :render}}
-      )
+      assert :ok = Registry.register(:startup_test, TestComponent)
 
-      # Allow time for message processing
-      Process.sleep(50)
+      assert {:ok, {TestComponent, :render}} =
+               Registry.lookup(:startup_test)
 
-      # Verify the component was registered
-      assert {:ok, {TestComponent, :render}} = Registry.lookup(:startup_test)
-
-      # Cleanup
       Registry.unregister(:startup_test)
     end
   end
@@ -263,12 +195,9 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
           end
         end
 
-      # Define the module
+      # Define the module — registration runs synchronously inside
+      # __after_compile__, so the registry is updated before this returns.
       Code.eval_quoted(module_definition)
-
-      # No need to manually call register - it should happen automatically
-      # But we'll sleep to allow time for any async registration
-      Process.sleep(50)
 
       # Verify the component was registered
       assert {:ok, {^module_name, :render}} =
@@ -303,7 +232,6 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       # Define first implementation
       Code.eval_quoted(first_module_definition)
-      Process.sleep(50)
 
       # Verify first registration
       {:ok, {first_registered_module, :render}} =
@@ -332,7 +260,6 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
       # Define second implementation
       Code.eval_quoted(second_module_definition)
-      Process.sleep(50)
 
       # Verify component was re-registered with the new implementation
       {:ok, {second_registered_module, :render}} =
@@ -345,27 +272,21 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
       Registry.unregister(:hot_reload_test)
     end
 
-    test "components can register at compile time through PubSub" do
-      # This test simulates a component registering itself during compilation
+    test "components register synchronously on compile via Definition" do
+      # This test simulates a component registering itself during compilation.
+      # With synchronous registration the assertion can run immediately after
+      # Code.eval_quoted/1 returns — no sleep or async waiting needed.
 
-      # Create a dynamic module that will broadcast registration on module compilation
       module_name =
         :"Elixir.CompileTimeComponent#{System.unique_integer([:positive])}"
 
-      # Define the module with compile-time registration
       module_code =
         quote do
           defmodule unquote(module_name) do
-            # Simulate __on_definition__ callback that will be in the Definition module
-            @on_define Phoenix.PubSub.broadcast(
-                         Portfolio.PubSub,
-                         "component_registration",
-                         {:register_component, :compile_time_test,
-                          {__MODULE__, :render}}
-                       )
-
-            # This would be evaluated at compile time via a macro
-            Code.eval_quoted(@on_define)
+            use Portfolio.Content.Markdown.Component.Definition,
+              type: :compile_time_test,
+              function: :render,
+              description: "Compile-time registration test"
 
             def render(_assigns) do
               # Dummy implementation
@@ -373,17 +294,11 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
           end
         end
 
-      # Evaluate the module definition
       Code.eval_quoted(module_code)
 
-      # Allow time for registration to propagate
-      Process.sleep(50)
-
-      # Verify the component was registered
       assert {:ok, {^module_name, :render}} =
                Registry.lookup(:compile_time_test)
 
-      # Cleanup
       Registry.unregister(:compile_time_test)
     end
   end

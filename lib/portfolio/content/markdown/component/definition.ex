@@ -7,10 +7,13 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
 
   When a module `use`s this definition, it:
   1. Defines functions to access component metadata (type, function, attributes, etc.).
-  2. **Automatically registers** the component with the `Portfolio.Content.Markdown.Component.Registry`
-     via `Phoenix.PubSub`. This registration happens during module compilation
-     (or runtime initialization if PubSub isn't ready at compile time), enabling
-     discovery by the pipeline and supporting hot-reloading.
+  2. **Automatically registers** the component with the
+     `Portfolio.Content.Markdown.Component.Registry` via a synchronous
+     `GenServer.call/3`. Registration runs from `__after_compile__/2`.
+     If the registry is not running (e.g. during `mix compile` before the
+     application supervision tree starts), registration is silently skipped
+     and the component will register on its next compile inside a running
+     system (hot-reload / runtime recompile).
 
   Example Usage:
 
@@ -30,7 +33,7 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
 
   require Logger
 
-  @after_compile Portfolio.Content.Markdown.Component.Definition
+  alias Portfolio.Content.Markdown.Component.Registry
 
   @doc """
   A macro for defining markdown components with automatic registration.
@@ -38,7 +41,7 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
   This macro:
   1. Processes the component metadata
   2. Generates registration functions
-  3. Automatically registers the component via PubSub
+  3. Automatically registers the component with the Registry
   4. Handles hot reloading for development
 
   ## Options
@@ -60,6 +63,7 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
       # Register the component when the module is compiled
       @on_definition Portfolio.Content.Markdown.Component.Definition
       @before_compile Portfolio.Content.Markdown.Component.Definition
+      @after_compile Portfolio.Content.Markdown.Component.Definition
 
       # Define component metadata accessors
       def component_type, do: @component_type
@@ -97,33 +101,25 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
   @doc false
   # Triggered by @after_compile - register the component
   def __after_compile__(env, _bytecode) do
-    try do
-      module_name = env.module
-      component_type = Module.get_attribute(module_name, :component_type)
+    module_name = env.module
+    component_type = Module.get_attribute(module_name, :component_type)
 
-      if component_type != nil do
-        # Get the component function name, default to the component type name
-        function_name =
-          Module.get_attribute(module_name, :component_function) ||
-            component_type
+    if component_type != nil do
+      # Get the component function name, default to the component type name
+      function_name =
+        Module.get_attribute(module_name, :component_function) ||
+          component_type
 
-        register_component(module_name, component_type, function_name)
-      end
-    catch
-      :error, %ArgumentError{} ->
-        require Logger
-
-        Logger.debug(
-          "PubSub not available during compilation, component will register at runtime"
-        )
+      register_component(module_name, component_type, function_name)
     end
   end
 
   @doc """
-  Registers a component with the registry via PubSub.
+  Registers a component with the registry synchronously.
 
-  This function broadcasts a registration message to the PubSub system,
-  which is picked up by the component registry.
+  Calls into the `Registry` GenServer's `handle_call({:register, ...}, ...)`
+  clause. If the registry is not running (compile-time before app boot),
+  the call would `:exit` — caught here and logged at debug level.
 
   ## Parameters
 
@@ -131,31 +127,30 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
   * `type` - The component type identifier
   * `function` - The function to use for rendering
   """
-  @pubsub_topic "component_registration"
+  @spec register_component(module(), atom(), atom()) :: :ok
   def register_component(module, type, function) do
     Logger.debug(
       "Registering component #{inspect(type)} from #{inspect(module)}"
     )
 
-    # When PubSub is not available at compile time, this will raise an ArgumentError
-    # which is caught by the __after_compile__ function
-    if Code.ensure_loaded?(Phoenix.PubSub) and ensure_pubsub_started?() do
-      Phoenix.PubSub.broadcast(
-        Portfolio.PubSub,
-        @pubsub_topic,
-        {:register_component, type, {module, function}}
-      )
+    if Process.whereis(Registry) do
+      try do
+        _ = Registry.register(type, module, custom_function: function)
+        :ok
+      catch
+        :exit, _reason ->
+          Logger.debug(
+            "Registry not reachable for #{inspect(module)}; will register at runtime."
+          )
+
+          :ok
+      end
     else
       Logger.debug(
-        "PubSub not available for #{inspect(module)}. Registration will happen at runtime."
+        "Registry not running for #{inspect(module)}; will register at runtime."
       )
+
+      :ok
     end
-
-    :ok
-  end
-
-  # Check if PubSub is available and started
-  defp ensure_pubsub_started? do
-    Enum.any?(Application.started_applications(), fn {app, _, _} -> app == :phoenix_pubsub end)
   end
 end

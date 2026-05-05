@@ -5,6 +5,12 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
   This module provides a central registry for components that can be used
   in markdown content. It maps component types (atoms) to component modules
   and functions, allowing the rendering system to resolve component references.
+
+  Registration is synchronous: callers (typically `Definition.__after_compile__/2`)
+  invoke `register/3`, which routes through `GenServer.call/3` to the
+  `handle_call({:register, ...}, ...)` clause. The registry's mutable state is
+  the only justification for the GenServer wrapper — it serializes writes so
+  module/type collisions resolve deterministically.
   """
 
   use GenServer
@@ -12,14 +18,6 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
 
   @type component_type :: atom()
   @type component_impl :: {module(), atom()}
-
-  @pubsub_topic "component_registration"
-  # 100ms for fast retries, especially in tests
-  @retry_interval 100
-  # Increased from 10 to handle longer test environments
-  @max_retries 30
-  # Check PubSub existence every 20ms
-  @pubsub_check_interval 20
 
   @doc """
   Starts the component registry.
@@ -141,171 +139,8 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
 
   @impl GenServer
   def init(_opts) do
-    Logger.info("Component Registry initializing with async pattern...")
-    # Initial state with retry counter
-    {:ok, %{components: %{}, retries: 0, subscribed: false},
-     {:continue, :subscribe_pubsub}}
-  end
-
-  @impl GenServer
-  def handle_continue(:subscribe_pubsub, state) do
-    # Check if PubSub module exists first
-    if pubsub_defined?() do
-      # Delegate the subscription attempt logic to the helper
-      attempt_pubsub_subscription(state)
-    else
-      # PubSub module not loaded, registry will operate without PubSub
-      Logger.warning(
-        "PubSub module not defined, registry will operate without PubSub integration"
-      )
-
-      {:noreply, %{state | subscribed: false}}
-    end
-  end
-
-  # Helper function to attempt PubSub subscription if it's available.
-  # Assumes pubsub_defined?() was already true.
-  defp attempt_pubsub_subscription(state) do
-    # Check if specific PubSub instance is available
-    if pubsub_available?() do
-      # PubSub is available, try to subscribe
-      case safe_pubsub_subscribe() do
-        :ok ->
-          Logger.info(
-            "Component Registry subscribed to PubSub topic: #{@pubsub_topic}"
-          )
-
-          {:noreply, %{state | subscribed: true}}
-
-        {:error, reason} ->
-          Logger.warning(
-            "PubSub subscription failed: #{inspect(reason)}, scheduling retry"
-          )
-
-          schedule_retry()
-          {:noreply, %{state | retries: state.retries + 1}}
-      end
-    else
-      # PubSub not yet registered, reschedule check
-      Logger.debug("PubSub not yet registered, rescheduling subscribe check")
-      schedule_pubsub_check()
-      # Not incrementing retries for PubSub availability checks
-      {:noreply, state}
-    end
-  end
-
-  @impl GenServer
-  def handle_info(:check_pubsub, state) do
-    if pubsub_defined?() && pubsub_available?() do
-      # PubSub is now available, try to subscribe
-      case safe_pubsub_subscribe() do
-        :ok ->
-          Logger.info(
-            "Component Registry subscribed to PubSub topic: #{@pubsub_topic}"
-          )
-
-          {:noreply, %{state | subscribed: true}}
-
-        {:error, reason} ->
-          Logger.warning(
-            "PubSub subscription failed: #{inspect(reason)}, scheduling retry"
-          )
-
-          schedule_retry()
-          {:noreply, %{state | retries: state.retries + 1}}
-      end
-    else
-      # Still not available, check again later
-      schedule_pubsub_check()
-      {:noreply, state}
-    end
-  end
-
-  @impl GenServer
-  def handle_info(:retry_subscribe, %{retries: retries} = state) do
-    # Check if PubSub is registered before attempting to subscribe
-    if pubsub_defined?() && pubsub_available?() do
-      # PubSub is available, try to subscribe
-      case safe_pubsub_subscribe() do
-        :ok ->
-          Logger.info(
-            "Component Registry successfully subscribed to PubSub on retry"
-          )
-
-          {:noreply, %{state | retries: 0, subscribed: true}}
-
-        {:error, reason} when retries >= @max_retries ->
-          Logger.error(
-            "Max retries reached for PubSub subscription: #{inspect(reason)}"
-          )
-
-          # Continue operating even with PubSub failures - graceful degradation
-          {:noreply, %{state | retries: 0}}
-
-        {:error, reason} ->
-          Logger.warning(
-            "PubSub subscription retry failed: #{inspect(reason)}, attempting again"
-          )
-
-          schedule_retry()
-          {:noreply, %{state | retries: retries + 1}}
-      end
-    else
-      # PubSub not yet registered, reschedule check
-      Logger.debug(
-        "PubSub not yet registered on retry attempt, rescheduling subscribe check"
-      )
-
-      schedule_pubsub_check()
-      # Not incrementing retries for PubSub availability checks
-      {:noreply, state}
-    end
-  end
-
-  @impl GenServer
-  def handle_info({:register_component, type, {module, function}}, state) do
-    # Handle registration messages from PubSub
-    components = state.components
-
-    case Map.get(components, type) do
-      nil ->
-        # Register new component
-        Logger.debug(
-          "PubSub: Registering component #{inspect(type)} with #{inspect(module)}.#{function}"
-        )
-
-        {:noreply,
-         %{state | components: Map.put(components, type, {module, function})}}
-
-      {^module, _existing_function} ->
-        # Update existing component from same module
-        Logger.debug(
-          "PubSub: Updating component #{inspect(type)} with #{inspect(module)}.#{function}"
-        )
-
-        {:noreply,
-         %{state | components: Map.put(components, type, {module, function})}}
-
-      {other_module, _} ->
-        # Different module is trying to register same component type
-        # For hot reloading, we allow replacing the component
-        Logger.info(
-          "PubSub: Replacing component #{inspect(type)} from #{inspect(other_module)} with #{inspect(module)}.#{function}"
-        )
-
-        {:noreply,
-         %{state | components: Map.put(components, type, {module, function})}}
-    end
-  end
-
-  @impl GenServer
-  def handle_info(message, state) do
-    # Ignore unknown messages
-    Logger.debug(
-      "Component Registry received unknown message: #{inspect(message)}"
-    )
-
-    {:noreply, state}
+    Logger.info("Component Registry initializing")
+    {:ok, %{components: %{}}}
   end
 
   @impl GenServer
@@ -324,12 +159,14 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
         {:reply, :ok, %{state | components: new_components}}
 
       {other_module, _} ->
-        # Component already registered with different module
-        Logger.warning(
-          "Component '#{type}' already registered with #{inspect(other_module)}"
+        # Component already registered with different module — replace it
+        # (hot-reload semantics: a re-compiled module wins over the stale binding)
+        Logger.info(
+          "Replacing component #{inspect(type)} from #{inspect(other_module)} with #{inspect(module)}.#{function}"
         )
 
-        {:reply, {:error, :already_registered}, state}
+        new_components = Map.put(components, type, {module, function})
+        {:reply, :ok, %{state | components: new_components}}
     end
   end
 
@@ -357,53 +194,12 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
     {:reply, :ok, %{state | components: %{}}}
   end
 
-  # Private functions
-  defp schedule_retry do
-    Process.send_after(self(), :retry_subscribe, @retry_interval)
-  end
+  @impl GenServer
+  def handle_info(message, state) do
+    Logger.debug(
+      "Component Registry received unknown message: #{inspect(message)}"
+    )
 
-  defp schedule_pubsub_check do
-    Process.send_after(self(), :check_pubsub, @pubsub_check_interval)
-  end
-
-  defp pubsub_defined? do
-    Code.ensure_loaded?(Phoenix.PubSub)
-  end
-
-  defp pubsub_available? do
-    pubsub_name =
-      if Process.whereis(Portfolio.PubSub),
-        do: Portfolio.PubSub,
-        else: get_test_pubsub()
-
-    pubsub_name != nil
-  end
-
-  defp get_test_pubsub do
-    try do
-      :persistent_term.get({:phoenix_pubsub, Portfolio.PubSub})
-    rescue
-      _ -> nil
-    end
-  end
-
-  defp safe_pubsub_subscribe do
-    pubsub_name =
-      if Process.whereis(Portfolio.PubSub),
-        do: Portfolio.PubSub,
-        else: get_test_pubsub()
-
-    if pubsub_name do
-      try do
-        Phoenix.PubSub.subscribe(pubsub_name, @pubsub_topic)
-      rescue
-        e -> {:error, "PubSub subscribe error: #{inspect(e)}"}
-      catch
-        kind, reason ->
-          {:error, "PubSub subscribe error (#{kind}): #{inspect(reason)}"}
-      end
-    else
-      {:error, :pubsub_not_available}
-    end
+    {:noreply, state}
   end
 end
