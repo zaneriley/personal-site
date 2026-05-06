@@ -26,7 +26,7 @@ export function initThemeToggle() {
     const testKey = "__storage_test__";
     localStorage.setItem(testKey, testKey);
     localStorage.removeItem(testKey);
-  } catch (e) {
+  } catch {
     storageAvailable = false;
   }
 

@@ -49,7 +49,7 @@ defmodule PortfolioWeb.Components.ThemeSwitcher do
       id="theme-switcher"
       phx-hook="ThemeSwitcher"
     >
-      <legend class="sr-only"><%= gettext("Theme") %></legend>
+      <legend class="sr-only">{gettext("Theme")}</legend>
       <form id="theme-switcher-form">
         <%= for theme <- @themes do %>
           <% theme_id = "theme_#{theme.value}" %>
@@ -61,7 +61,7 @@ defmodule PortfolioWeb.Components.ThemeSwitcher do
               value={theme.value}
               checked={theme.value == "system"}
             />
-            <%= theme.label %>
+            {theme.label}
           </label>
         <% end %>
       </form>

@@ -112,7 +112,7 @@ defmodule PortfolioWeb.Components.Figure do
       />
       <%= if @caption do %>
         <Typography.typography tag="figcaption" size="sm" class="figure-caption">
-          <%= @caption %>
+          {@caption}
         </Typography.typography>
       <% end %>
     </figure>

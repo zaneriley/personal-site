@@ -1,8 +1,6 @@
 # Mostly created by https://www.gitignore.io
 
-# just for now
 *.zip
-Untitled-1.sh
 
 ### Tests #######################################################################
 **/coverage

@@ -23,7 +23,6 @@ defmodule Portfolio.MixProject do
       coveralls: [github_event_path: "/tmp/github_event.json"],
       dialyzer: [
         plt_add_apps: [:ex_unit, :mix],
-        ignore_warnings: ".dialyzer_ignore.exs",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ],
       docs: [
@@ -52,6 +51,7 @@ defmodule Portfolio.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:earmark, "~> 1.4"},
+      {:earmark_parser, "~> 1.4"},
       {:ecto_sql, "~> 3.13"},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18", only: [:dev, :test]},

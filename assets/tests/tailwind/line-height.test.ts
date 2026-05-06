@@ -2,12 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import type { LineHeightConfig } from "../../tailwind/configs/type-config";
 import { calculateLineHeight } from "../../tailwind/line-height";
 
-// Define minimum line height thresholds per configuration
-const minLineHeightThresholds: { [key: string]: number } = {
-  latin: 1.0,
-  cjk: 1.0, // Adjust as needed per script
-};
-
 const latinConfig: LineHeightConfig = {
   baseFontSize: 18,
   baseLineHeight: 1.555555556,

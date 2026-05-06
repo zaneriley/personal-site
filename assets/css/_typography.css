@@ -12,48 +12,56 @@
     8.7161vi,
     12.7145rem
   ); /* min: 64.4973px, max: 203.4316px */
+
   --latin-fs-6xl: clamp(
     3.3592rem,
     2.2285rem +
     5.6538vi,
     8.9918rem
   ); /* min: 53.7477px, max: 143.8696px */
+
   --latin-fs-5xl: clamp(
     2.7994rem,
     2.0847rem +
     3.5732vi,
     6.3592rem
   ); /* min: 44.7898px, max: 101.7465px */
+
   --latin-fs-4xl: clamp(
     2.3328rem,
     1.8983rem +
     2.1726vi,
     4.4973rem
   ); /* min: 37.3248px, max: 71.9565px */
+
   --latin-fs-3xl: clamp(
     1.944rem,
     1.6958rem +
     1.2412vi,
     3.1805rem
   ); /* min: 31.104px, max: 50.8886px */
+
   --latin-fs-2xl: clamp(
     1.62rem,
     1.4937rem +
     0.6317vi,
     2.2493rem
   ); /* min: 25.92px, max: 35.9891px */
+
   --latin-fs-1xl: clamp(
     1.35rem,
     1.3017rem +
     0.2417vi,
     1.5908rem
   ); /* min: 21.6px, max: 25.452px */
+
   --latin-fs-md: clamp(
     1.125rem,
     1.125rem +
     0vi,
     1.125rem
   ); /* min: 18px, max: 18px */
+
   --latin-fs-1xs: 0.9375rem; /* 15px */
   --latin-fs-2xs: 0.7813rem; /* 12.5008px */
 
@@ -64,48 +72,56 @@
     46.2946vi,
     40rem
   ); /* min: 121.5px, max: 640px */
+
   --latin-space-4xl: clamp(
     5.0625rem,
     0.7946rem +
     21.3393vi,
     20rem
   ); /* min: 81px, max: 320px */
+
   --latin-space-3xl: clamp(
     3.375rem,
     1.4821rem +
     9.4643vi,
     10rem
   ); /* min: 54px, max: 160px */
+
   --latin-space-2xl: clamp(
     2.25rem,
     1.4643rem +
     3.9286vi,
     5rem
   ); /* min: 36px, max: 80px */
+
   --latin-space-1xl: clamp(
     1.5rem,
     1.2143rem +
     1.4286vi,
     2.5rem
   ); /* min: 24px, max: 40px */
+
   --latin-space-md: clamp(
     1rem,
     0.9286rem +
     0.3571vi,
     1.25rem
   ); /* min: 16px, max: 20px */
+
   --latin-space-1xs: clamp(
     0.625rem,
     0.6786rem +
     -0.0595vi,
     0.6667rem
   ); /* min: 10.6667px, max: 10px */
+
   --latin-space-2xs: clamp(
     0.3125rem,
     0.4821rem +
     -0.1885vi,
     0.4444rem
   ); /* min: 7.1111px, max: 5px */
+
   --latin-space-3xs: clamp(
     0.1563rem,
     0.3363rem +
@@ -120,48 +136,56 @@
     8.7161vi,
     12.7145rem
   ); /* min: 64.4973px, max: 203.4316px */
+
   --cjk-fs-6xl: clamp(
     3.3592rem,
     2.2285rem +
     5.6538vi,
     8.9918rem
   ); /* min: 53.7477px, max: 143.8696px */
+
   --cjk-fs-5xl: clamp(
     2.7994rem,
     2.0847rem +
     3.5732vi,
     6.3592rem
   ); /* min: 44.7898px, max: 101.7465px */
+
   --cjk-fs-4xl: clamp(
     2.3328rem,
     1.8983rem +
     2.1726vi,
     4.4973rem
   ); /* min: 37.3248px, max: 71.9565px */
+
   --cjk-fs-3xl: clamp(
     1.944rem,
     1.6958rem +
     1.2412vi,
     3.1805rem
   ); /* min: 31.104px, max: 50.8886px */
+
   --cjk-fs-2xl: clamp(
     1.62rem,
     1.4937rem +
     0.6317vi,
     2.2493rem
   ); /* min: 25.92px, max: 35.9891px */
+
   --cjk-fs-1xl: clamp(
     1.35rem,
     1.3017rem +
     0.2417vi,
     1.5908rem
   ); /* min: 21.6px, max: 25.452px */
+
   --cjk-fs-md: clamp(
     1.125rem,
     1.125rem +
     0vi,
     1.125rem
   ); /* min: 18px, max: 18px */
+
   --cjk-fs-1xs: 0.9375rem; /* 15px */
   --cjk-fs-2xs: 0.7813rem; /* 12.5008px */
   --cjk-lh: calc(1em + 1rem);
@@ -173,48 +197,56 @@
     46.2946vi,
     40rem
   ); /* min: 121.5px, max: 640px */
+
   --cjk-space-4xl: clamp(
     5.0625rem,
     0.7946rem +
     21.3393vi,
     20rem
   ); /* min: 81px, max: 320px */
+
   --cjk-space-3xl: clamp(
     3.375rem,
     1.4821rem +
     9.4643vi,
     10rem
   ); /* min: 54px, max: 160px */
+
   --cjk-space-2xl: clamp(
     2.25rem,
     1.4643rem +
     3.9286vi,
     5rem
   ); /* min: 36px, max: 80px */
+
   --cjk-space-1xl: clamp(
     1.5rem,
     1.2143rem +
     1.4286vi,
     2.5rem
   ); /* min: 24px, max: 40px */
+
   --cjk-space-md: clamp(
     1rem,
     0.9286rem +
     0.3571vi,
     1.25rem
   ); /* min: 16px, max: 20px */
+
   --cjk-space-1xs: clamp(
     0.625rem,
     0.6786rem +
     -0.0595vi,
     0.6667rem
   ); /* min: 10.6667px, max: 10px */
+
   --cjk-space-2xs: clamp(
     0.3125rem,
     0.4821rem +
     -0.1885vi,
     0.4444rem
   ); /* min: 7.1111px, max: 5px */
+
   --cjk-space-3xs: clamp(
     0.1563rem,
     0.3363rem +

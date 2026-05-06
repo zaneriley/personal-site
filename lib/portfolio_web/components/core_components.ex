@@ -86,13 +86,13 @@ defmodule PortfolioWeb.CoreComponents do
               <div id={"#{@id}-content"}>
                 <header :if={@title != []}>
                   <h1 id={"#{@id}-title"}>
-                    <%= render_slot(@title) %>
+                    {render_slot(@title)}
                   </h1>
                   <p :if={@subtitle != []} id={"#{@id}-description"}>
-                    <%= render_slot(@subtitle) %>
+                    {render_slot(@subtitle)}
                   </p>
                 </header>
-                <%= render_slot(@inner_block) %>
+                {render_slot(@inner_block)}
                 <div :if={@confirm != [] or @cancel != []}>
                   <.button
                     :for={confirm <- @confirm}
@@ -100,13 +100,13 @@ defmodule PortfolioWeb.CoreComponents do
                     phx-click={@on_confirm}
                     phx-disable-with
                   >
-                    <%= render_slot(confirm) %>
+                    {render_slot(confirm)}
                   </.button>
                   <.link
                     :for={cancel <- @cancel}
                     phx-click={hide_modal(@on_cancel, @id)}
                   >
-                    <%= render_slot(cancel) %>
+                    {render_slot(cancel)}
                   </.link>
                 </div>
               </div>
@@ -247,7 +247,7 @@ defmodule PortfolioWeb.CoreComponents do
           :if={@kind == :error}
           mini
           class="inline-block h-1xs w-1xs"
-        />> <%= @title %>
+        />> {@title}
         <Heroicons.information_circle
           :if={@kind == :info}
           mini
@@ -257,9 +257,9 @@ defmodule PortfolioWeb.CoreComponents do
           :if={@kind == :error}
           mini
           class="inline-block h-1xs w-1xs"
-        />> <%= @title %>
+        />> {@title}
       </p>
-      <p><%= msg %></p>
+      <p>{msg}</p>
       <button :if={@close} type="button" aria-label={gettext("close")}>
         <Heroicons.x_mark solid />
       </button>
@@ -331,9 +331,9 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div>
-        <%= render_slot(@inner_block, f) %>
+        {render_slot(@inner_block, f)}
         <div :for={action <- @actions}>
-          <%= render_slot(action, f) %>
+          {render_slot(action, f)}
         </div>
       </div>
     </.form>
@@ -365,7 +365,7 @@ defmodule PortfolioWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </button>
     """
   end
@@ -444,9 +444,9 @@ defmodule PortfolioWeb.CoreComponents do
           checked={@checked}
           {@rest}
         />
-        <%= @label %>
+        {@label}
       </label>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -454,12 +454,12 @@ defmodule PortfolioWeb.CoreComponents do
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}><%= @label %></.label>
+      <.label for={@id}>{@label}</.label>
       <select id={@id} name={@name} multiple={@multiple} {@rest}>
-        <option :if={@prompt} value=""><%= @prompt %></option>
-        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+        <option :if={@prompt} value="">{@prompt}</option>
+        {Phoenix.HTML.Form.options_for_select(@options, @value)}
       </select>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -467,7 +467,7 @@ defmodule PortfolioWeb.CoreComponents do
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}><%= @label %></.label>
+      <.label for={@id}>{@label}</.label>
       <textarea
         id={@id || @name}
         name={@name}
@@ -481,7 +481,7 @@ defmodule PortfolioWeb.CoreComponents do
         ]}
         {@rest}
       ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -489,7 +489,7 @@ defmodule PortfolioWeb.CoreComponents do
   def input(assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}><%= @label %></.label>
+      <.label for={@id}>{@label}</.label>
       <input
         type={@type}
         name={@name}
@@ -505,7 +505,7 @@ defmodule PortfolioWeb.CoreComponents do
         ]}
         {@rest}
       />
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -519,7 +519,7 @@ defmodule PortfolioWeb.CoreComponents do
   def label(assigns) do
     ~H"""
     <label for={@for}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </label>
     """
   end
@@ -534,7 +534,7 @@ defmodule PortfolioWeb.CoreComponents do
     <p>
       <Heroicons.exclamation_circle mini class="inline-block h-1xs w-1xs" />
       <Heroicons.exclamation_circle mini class="inline-block h-1xs w-1xs" />
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </p>
     """
   end
@@ -556,13 +556,13 @@ defmodule PortfolioWeb.CoreComponents do
     ]}>
       <div>
         <h1>
-          <%= render_slot(@inner_block) %>
+          {render_slot(@inner_block)}
         </h1>
         <p :if={@subtitle != []}>
-          <%= render_slot(@subtitle) %>
+          {render_slot(@subtitle)}
         </p>
       </div>
-      <div><%= render_slot(@actions) %></div>
+      <div>{render_slot(@actions)}</div>
     </header>
     """
   end
@@ -612,10 +612,10 @@ defmodule PortfolioWeb.CoreComponents do
         <thead>
           <tr>
             <th :for={col <- @col}>
-              <%= col[:label] %>
+              {col[:label]}
             </th>
             <th :if={@action != []}>
-              <span><%= gettext("Actions") %></span>
+              <span>{gettext("Actions")}</span>
             </th>
           </tr>
         </thead>
@@ -635,7 +635,7 @@ defmodule PortfolioWeb.CoreComponents do
               <div>
                 <span />
                 <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
-                  <%= render_slot(col, @row_item.(row)) %>
+                  {render_slot(col, @row_item.(row))}
                 </span>
               </div>
             </td>
@@ -643,7 +643,7 @@ defmodule PortfolioWeb.CoreComponents do
               <div>
                 <span />
                 <span :for={action <- @action}>
-                  <%= render_slot(action, @row_item.(row)) %>
+                  {render_slot(action, @row_item.(row))}
                 </span>
               </div>
             </td>
@@ -674,9 +674,9 @@ defmodule PortfolioWeb.CoreComponents do
       <dl>
         <div :for={item <- @item}>
           <dt>
-            <%= item.title %>
+            {item.title}
           </dt>
-          <dd><%= render_slot(item) %></dd>
+          <dd>{render_slot(item)}</dd>
         </div>
       </dl>
     </div>
@@ -699,7 +699,7 @@ defmodule PortfolioWeb.CoreComponents do
       <.link navigate={@navigate}>
         <Heroicons.arrow_left solid class="inline-block h-1xs w-1xs" />
         <Heroicons.arrow_left solid class="inline-block h-1xs w-1xs" />
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </.link>
     </div>
     """

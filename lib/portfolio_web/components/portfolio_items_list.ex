@@ -35,7 +35,7 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
                   size="1xl"
                   font="cardinal"
                 >
-                  <%= item.title %>
+                  {item.title}
                 </.typography>
                 <.typography
                   locale={@user_locale}
@@ -43,11 +43,11 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
                   size="1xs"
                   font="cheee"
                 >
-                  <%= format_date(item.published_at) %>
+                  {format_date(item.published_at)}
                 </.typography>
               </div>
               <.typography locale={@user_locale} tag="p" size="1xs" class="mb-2">
-                <%= item.introduction %>
+                {item.introduction}
               </.typography>
               <.content_metadata
                 read_time={item.translations["read_time"] || item.read_time}

@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <.live_title>
-      <%= assigns[:page_title] ||
-        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience" %>
+      {assigns[:page_title] ||
+        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"}
     </.live_title>
 
     <meta charset="utf-8" />
@@ -64,7 +64,7 @@
   </head>
   <body class="min-h-screen text-md">
     <a href="#main-content" class="sr-only" tabindex="0">
-      <%= gettext("Skip to main content") %>
+      {gettext("Skip to main content")}
     </a>
     <div class="min-h-screen flex items-center justify-center">
       <div
@@ -73,7 +73,7 @@
       >
         /********************************************** <br />
         <a href="/" class="" aria-label="Return to homepage">
-          <%= dynamic_home_url() %>
+          {dynamic_home_url()}
         </a>
         <h1>ERROR 500 <br /> INTERNAL SERVER ERROR</h1>
         * SYSTEM: Zane's Design Portfolio <br />

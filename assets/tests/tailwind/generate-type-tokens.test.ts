@@ -1,13 +1,5 @@
 import path from "node:path";
-import {
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Corrected fs mock for both sync and async usage in tests
 vi.mock("node:fs", async (importOriginal) => {
@@ -157,22 +149,11 @@ describe("Critical Functional Tests - writeCSS", () => {
   });
 
   it("should attempt to write the provided CSS to the correct file using sync methods", () => {
-    // Note: writeCSS internally calls generateCSS again, ignoring the input 'css' parameter.
-    // This seems like a bug in writeCSS. The test should reflect what it *actually* does.
-    // Let's test that it attempts to write *something* generated.
-    writeCSS(mockCSS); // Pass mockCSS, but it will be ignored by the current implementation
+    writeCSS(mockCSS);
     expect(fs.mkdirSync).toHaveBeenCalledWith(path.dirname(expectedPath), {
       recursive: true,
     });
-    // It actually writes the result of generateCSS(), not the passed mockCSS.
-    // We verify it calls writeFileSync with the expected path and *some* string content.
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
-      expectedPath,
-      expect.any(String),
-    );
-    // We can optionally check if the written content matches the generatedCSS from the other suite,
-    // but expect.any(String) is sufficient to test the write mechanism.
-    // expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, generateCSS()); // This would be more precise if needed
+    expect(fs.writeFileSync).toHaveBeenCalledWith(expectedPath, mockCSS);
   });
 
   it("should handle sync write errors gracefully", () => {

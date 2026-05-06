@@ -67,7 +67,7 @@ defmodule PortfolioWeb.Navigation do
               class={active_class(@current_path, :case_studies)}
             >
               <.typography locale={@user_locale} tag="span" size="md">
-                <%= ngettext("Case Study", "Case Studies", 2) %>
+                {ngettext("Case Study", "Case Studies", 2)}
               </.typography>
             </.link>
           </li>
@@ -77,7 +77,7 @@ defmodule PortfolioWeb.Navigation do
               class={active_class(@current_path, :notes)}
             >
               <.typography locale={@user_locale} tag="span" size="md">
-                <%= ngettext("Note", "Notes", 2) %>
+                {ngettext("Note", "Notes", 2)}
               </.typography>
             </.link>
           </li>
@@ -87,7 +87,7 @@ defmodule PortfolioWeb.Navigation do
               class={active_class(@current_path, :about)}
             >
               <.typography locale={@user_locale} tag="span" size="md">
-                <%= gettext("Self") %>
+                {gettext("Self")}
               </.typography>
             </.link>
           </li>

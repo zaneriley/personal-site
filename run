@@ -77,6 +77,18 @@ function lint:dockerfile {
     hadolint/hadolint hadolint --ignore DL3008 -t style "${@}" - < Dockerfile
 }
 
+function lint:shell {
+  # Lint shell scripts
+  if command -v shellcheck >/dev/null 2>&1; then
+    shellcheck run bin/*
+  else
+    docker container run --rm \
+      -v "${PWD}:/mnt" \
+      -w /mnt \
+      koalaman/shellcheck:stable run bin/*
+  fi
+}
+
 function elixir:lint {
   # Lint Elixir code
   mix credo
@@ -177,7 +189,7 @@ function js:format {
 }
 
 function js:fix:check {
-  # Fix formatting issues
+  # Check Biome formatting and lint rules without writing changes
   _dc js biome check .
 }
 
@@ -359,13 +371,17 @@ function ci:setup-env {
     docker compose logs
 }
 
+function ci:compile {
+    mix compile --force
+}
+
 function ci:lint {
-    shellcheck run bin/*
+    lint:shell
     lint:dockerfile "${@}"
     elixir:lint
-    elixir:format
-    js:fix
-    css:lint
+    elixir:format:check
+    js:fix:check
+    css:lint:check
 }
 
 function ci:security-check {
@@ -376,17 +392,43 @@ function ci:setup-db {
     mix ecto.setup
 }
 
+function ci:test:elixir {
+    elixir:test --seed 0
+}
+
+function ci:test:js {
+    js:test:run
+}
+
 function ci:test {
-    test:coverage "${@}"
+    ci:test:elixir
+    ci:test:js
 }
 
 function ci:static-analysis {
-    elixir:static-analysis:ci || true
+    elixir:static-analysis:ci
+}
+
+function ci:secret-scan {
+    local scan_dir
+
+    scan_dir="$(mktemp -d)"
+    trap 'rm -rf "${scan_dir}"' EXIT
+
+    git ls-files -z --cached --others --exclude-standard | while IFS= read -r -d '' path; do
+        if [[ -f "${path}" ]]; then
+            mkdir -p "${scan_dir}/$(dirname "${path}")"
+            cp "${path}" "${scan_dir}/${path}"
+        fi
+    done
+
+    gitleaks dir "${scan_dir}" --redact --exit-code 1
 }
 
 function ci:run-all {
     ci:install-deps
     ci:setup-env
+    ci:compile
     ci:lint "$@"
     ci:security-check
     # ci:setup-db

@@ -32,6 +32,22 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
                      :reading_configs
                    ]
 
+  @typep ast :: EarmarkParser.ast()
+  @typep ast_fragment :: EarmarkParser.ast() | EarmarkParser.ast_node()
+  @typep reading_config :: %{
+           required(:counting_method) => :words | :characters,
+           required(:native_reading_speed) => number(),
+           required(:non_native_reading_speed) => number(),
+           required(:code_reading_speed) => number()
+         }
+  @typep text_count_map ::
+           %{required(:word_count) => non_neg_integer()}
+           | %{required(:character_count) => non_neg_integer()}
+  @typep reading_speeds :: %{
+           required(:text) => number(),
+           required(:code) => number()
+         }
+
   @doc """
   Calculates word/character count, code word count, image count, and estimated read times.
 
@@ -54,64 +70,74 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   """
   @spec calculate(String.t(), String.t()) :: {:ok, map()} | {:error, String.t()}
   def calculate(content, locale) do
-    case get_reading_config(locale) do
-      {:ok, reading_config} ->
-        # Parse the markdown content into an AST using EarmarkParser
-        {:ok, ast, _} = Earmark.Parser.as_ast(content)
+    with {:ok, reading_config} <- get_reading_config(locale),
+         {:ok, ast} <- parse_ast(content) do
+      text_count_map = calculate_text_count(ast, reading_config)
+      code_word_count = calculate_code_count(ast)
+      image_count = image_count_from_ast(ast)
 
-        text_count_map = calculate_text_count(ast, reading_config)
-        code_word_count = calculate_code_count(ast)
-        image_count = image_count_from_ast(ast)
-
-        reading_speeds = %{
-          native: %{
-            text: reading_config.native_reading_speed,
-            code: reading_config.code_reading_speed
-          },
-          non_native: %{
-            text: reading_config.non_native_reading_speed,
-            code: reading_config.code_reading_speed
-          }
+      reading_speeds = %{
+        native: %{
+          text: reading_config.native_reading_speed,
+          code: reading_config.code_reading_speed
+        },
+        non_native: %{
+          text: reading_config.non_native_reading_speed,
+          code: reading_config.code_reading_speed
         }
+      }
 
-        non_native_time_seconds =
-          read_time_seconds(
-            text_count_map,
-            code_word_count,
-            image_count,
-            reading_speeds.non_native
-          )
+      non_native_time_seconds =
+        read_time_seconds(
+          text_count_map,
+          code_word_count,
+          image_count,
+          reading_speeds.non_native
+        )
 
-        native_time_seconds =
-          read_time_seconds(
-            text_count_map,
-            code_word_count,
-            image_count,
-            reading_speeds.native
-          )
+      native_time_seconds =
+        read_time_seconds(
+          text_count_map,
+          code_word_count,
+          image_count,
+          reading_speeds.native
+        )
 
-        result =
-          Map.merge(
-            %{
-              image_count: image_count,
-              code_word_count: code_word_count,
-              non_native_read_time_seconds: non_native_time_seconds,
-              native_read_time_seconds: native_time_seconds
-            },
-            text_count_map
-          )
+      result =
+        Map.merge(
+          %{
+            image_count: image_count,
+            code_word_count: code_word_count,
+            non_native_read_time_seconds: non_native_time_seconds,
+            native_read_time_seconds: native_time_seconds
+          },
+          text_count_map
+        )
 
-        {:ok, result}
-
-      {:error, message} ->
-        {:error, message}
+      {:ok, result}
     end
   end
 
   # Configuration Functions
 
+  @spec parse_ast(String.t()) :: {:ok, ast()} | {:error, String.t()}
+  defp parse_ast(content) do
+    case EarmarkParser.as_ast(content) do
+      {:ok, ast, _messages} ->
+        {:ok, ast}
+
+      {:error, _ast, messages} ->
+        Logger.error(
+          "Error parsing markdown for metadata: #{inspect(messages)}"
+        )
+
+        {:error, "Error parsing markdown"}
+    end
+  end
+
   @doc false
-  @spec get_reading_config(String.t()) :: {:ok, map()} | {:error, String.t()}
+  @spec get_reading_config(String.t()) ::
+          {:ok, reading_config()} | {:error, String.t()}
   defp get_reading_config(locale) do
     case @reading_configs[locale] do
       nil -> {:error, "Unsupported locale: #{locale}"}
@@ -122,7 +148,7 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   # Calculation Functions
 
   @doc false
-  @spec calculate_text_count(list(), map()) :: map()
+  @spec calculate_text_count(ast(), reading_config()) :: text_count_map()
   defp calculate_text_count(ast, %{counting_method: :words} = _config) do
     text =
       extract_text_from_ast(ast, exclude_code: true)
@@ -139,7 +165,7 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   end
 
   @doc false
-  @spec calculate_text_count(list(), map()) :: map()
+  @spec calculate_text_count(ast(), reading_config()) :: text_count_map()
   defp calculate_text_count(ast, %{counting_method: :characters} = _config) do
     text =
       extract_text_from_ast(ast, exclude_code: true)
@@ -153,7 +179,7 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   end
 
   @doc false
-  @spec calculate_code_count(list()) :: integer()
+  @spec calculate_code_count(ast()) :: non_neg_integer()
   defp calculate_code_count(ast) do
     code_text =
       extract_code_from_ast(ast)
@@ -168,7 +194,12 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   end
 
   @doc false
-  @spec read_time_seconds(map(), integer(), integer(), map()) :: integer()
+  @spec read_time_seconds(
+          text_count_map(),
+          non_neg_integer(),
+          non_neg_integer(),
+          reading_speeds()
+        ) :: non_neg_integer()
   defp read_time_seconds(text_count_map, code_word_count, image_count, %{
          text: text_speed,
          code: code_speed
@@ -191,14 +222,16 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   # AST Parsing and Extraction Functions
 
   @doc false
-  @spec extract_text_from_ast(any(), keyword()) :: [String.t()]
+  @spec extract_text_from_ast(ast(), keyword()) :: [String.t()]
   defp extract_text_from_ast(ast, opts) do
     exclude_code = Keyword.get(opts, :exclude_code, false)
     do_extract_text_from_ast(ast, exclude_code)
   end
 
   @doc false
-  @spec do_extract_text_from_ast(any(), boolean()) :: [String.t()]
+  @spec do_extract_text_from_ast(ast_fragment() | term(), boolean()) :: [
+          String.t()
+        ]
   defp do_extract_text_from_ast([head | tail], exclude_code) do
     do_extract_text_from_ast(head, exclude_code) ++
       do_extract_text_from_ast(tail, exclude_code)
@@ -217,7 +250,7 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   defp do_extract_text_from_ast(_other, _exclude_code), do: []
 
   @doc false
-  @spec extract_code_from_ast(any()) :: [String.t()]
+  @spec extract_code_from_ast(ast_fragment() | term()) :: [String.t()]
   defp extract_code_from_ast(ast)
 
   defp extract_code_from_ast([head | tail]) do
@@ -236,7 +269,7 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   defp extract_code_from_ast(_), do: []
 
   @doc false
-  @spec extract_text(any()) :: [String.t()]
+  @spec extract_text(ast_fragment() | term()) :: [String.t()]
   defp extract_text(content) when is_list(content) do
     Enum.flat_map(content, &extract_text/1)
   end
@@ -249,7 +282,7 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   defp extract_text(_), do: []
 
   @doc false
-  @spec image_count_from_ast(any()) :: integer()
+  @spec image_count_from_ast(ast()) :: non_neg_integer()
   defp image_count_from_ast(ast) do
     Enum.reduce(ast, 0, fn
       {"img", _, _, _}, acc ->
@@ -284,14 +317,10 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   @spec word_count(String.t(), String.t()) ::
           {:ok, integer()} | {:error, String.t()}
   def word_count(content, locale) do
-    case get_reading_config(locale) do
-      {:ok, config} ->
-        {:ok, ast, _} = Earmark.Parser.as_ast(content)
-        count_map = calculate_text_count(ast, config)
-        {:ok, Map.values(count_map) |> hd()}
-
-      {:error, message} ->
-        {:error, message}
+    with {:ok, config} <- get_reading_config(locale),
+         {:ok, ast} <- parse_ast(content) do
+      count_map = calculate_text_count(ast, config)
+      {:ok, Map.values(count_map) |> hd()}
     end
   end
 
@@ -308,8 +337,10 @@ defmodule Portfolio.Content.Utils.MetadataCalculator do
   """
   @spec image_count(String.t()) :: integer()
   def image_count(content) do
-    {:ok, ast, _} = Earmark.Parser.as_ast(content)
-    image_count_from_ast(ast)
+    case parse_ast(content) do
+      {:ok, ast} -> image_count_from_ast(ast)
+      {:error, _message} -> 0
+    end
   end
 
   @doc """

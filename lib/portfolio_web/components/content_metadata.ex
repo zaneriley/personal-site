@@ -65,21 +65,21 @@ defmodule PortfolioWeb.Components.ContentMetadata do
       class="flex items-center space-x-1xl"
     >
       <%= if @updated_on_segment != "" do %>
-        <span><%= @updated_on_segment %></span>
+        <span>{@updated_on_segment}</span>
       <% end %>
 
       <%= if @read_time_segment != "" or @word_count_segment != "" do %>
         <span>
           <%= if @read_time_segment != "" do %>
-            <span><%= @read_time_segment %></span>
+            <span>{@read_time_segment}</span>
           <% end %>
 
           <%= if @read_time_segment != "" and @word_count_segment != "" do %>
-            <span><%= @separator %></span>
+            <span>{@separator}</span>
           <% end %>
 
           <%= if @word_count_segment != "" do %>
-            <span><%= @word_count_segment %></span>
+            <span>{@word_count_segment}</span>
           <% end %>
         </span>
       <% end %>

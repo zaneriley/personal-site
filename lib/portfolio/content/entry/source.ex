@@ -34,8 +34,7 @@ defmodule Portfolio.Content.Entry.Source do
     - {:error, changeset} if there was an error
   """
   @spec upsert_from_file(content_type() | String.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()}
-          | {:error, atom() | Ecto.Changeset.t()}
+          {:ok, Note.t() | CaseStudy.t()} | {:error, term()}
   def upsert_from_file(content_type, attrs) when is_atom(content_type) do
     upsert_from_file(Atom.to_string(content_type), attrs)
   end
@@ -165,17 +164,17 @@ defmodule Portfolio.Content.Entry.Source do
   end
 
   # Compile updated content if it has changed
-  defp compile_updated_content(content, %{content: new_content})
-       when is_binary(new_content) do
-    # Compile the new content and get the AST
-    with {:ok, %{ast: ast}} <- Compiler.compile(new_content) do
-      # Update with stored AST
-      Records.update_stored_ast(content, ast)
+  defp compile_updated_content(content, attrs) do
+    new_content = attrs[:content] || attrs["content"]
+
+    if is_binary(new_content) do
+      with {:ok, %{ast: ast}} <- Compiler.compile(new_content) do
+        Records.update_stored_ast(content, ast)
+      end
+    else
+      {:ok, content}
     end
   end
-
-  # If content wasn't updated, return content as is
-  defp compile_updated_content(content, _attrs), do: {:ok, content}
 
   # Apply the appropriate changeset for the content type
   defp apply_changeset(%Note{} = note, attrs), do: Note.changeset(note, attrs)

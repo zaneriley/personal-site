@@ -3,46 +3,46 @@
     <div class="flex items-center space-x-2">
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <.link navigate={~p"/#{@user_locale}"}>
-          <%= ngettext("Case Study", "Case Studies", 1) %>
+          {ngettext("Case Study", "Case Studies", 1)}
         </.link>
       </.typography>
       <span aria-hidden="true">
         <Heroicons.chevron_double_right class="inline-block h-md w-md" />
       </span>
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        <%= @translations["company"] || @case_study.company %>
+        {@translations["company"] || @case_study.company}
       </.typography>
     </div>
   </nav>
   <!-- Title -->
   <.typography locale={@user_locale} tag="h1" size="4xl" font="cardinal">
-    <%= @translations["title"] || @case_study.title %>
+    {@translations["title"] || @case_study.title}
   </.typography>
   <.typography locale={@user_locale} tag="h2" size="1xl" dropcap={true}>
-    <%= @translations["introduction"] || @case_study.introduction %>
+    {@translations["introduction"] || @case_study.introduction}
   </.typography>
   <!-- Meta Information -->
   <div class="grid grid-cols-12">
     <span class="col-span-3">
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        <%= gettext("Role") %>
+        {gettext("Role")}
       </.typography>
-      <br /><%= @translations["role"] || @case_study.role %>
+      <br />{@translations["role"] || @case_study.role}
     </span>
     <span class="col-span-3">
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        <%= gettext("Timeline") %>
+        {gettext("Timeline")}
       </.typography>
-      <br /><%= @translations["timeline"] || @case_study.timeline %>
+      <br />{@translations["timeline"] || @case_study.timeline}
     </span>
     <div class="col-span-3">
       <% platforms = @translations["platforms"] || @case_study.platforms %>
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        <%= ngettext("Platform", "Platforms", length(platforms)) %>
+        {ngettext("Platform", "Platforms", length(platforms))}
       </.typography>
       <ul>
         <%= for platform <- platforms do %>
-          <li><%= platform %></li>
+          <li>{platform}</li>
         <% end %>
       </ul>
     </div>
@@ -57,21 +57,21 @@
   <!-- Main Content -->
   <div class="space-y-md drop-cap">
     <%= if @translations["content"] do %>
-      <%= render_html(@translations["content"]) %>
+      {render_html(@translations["content"])}
     <% else %>
       <%= if @ast_content do %>
-        <%= render_html(@ast_content) %>
+        {render_html(@ast_content)}
       <% else %>
         <%= if @compile_error do %>
           <p>
-            <%= gettext(
+            {gettext(
               "We encountered an error while preparing this case study: %{error}",
               error: @compile_error
-            ) %>
+            )}
           </p>
         <% else %>
           <p>
-            <%= gettext("We ran into an issue loading this case study!") %>
+            {gettext("We ran into an issue loading this case study!")}
           </p>
         <% end %>
       <% end %>

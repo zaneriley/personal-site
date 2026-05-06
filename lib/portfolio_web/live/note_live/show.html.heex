@@ -1,5 +1,5 @@
 <.header>
-  Note <%= @note.id %>
+  Note {@note.id}
   <:subtitle>This is a note record from your database.</:subtitle>
   <:actions>
     <.link
@@ -16,37 +16,37 @@
     <ol class="flex items-center space-x-2">
       <li>
         <.link navigate={~p"/#{@user_locale}"}>
-          <%= ngettext("Note", "Notes", 1) %>
+          {ngettext("Note", "Notes", 1)}
         </.link>
       </li>
     </ol>
   </nav>
   <!-- Title -->
   <.typography locale={@user_locale} tag="h1" size="4xl">
-    <%= @translations["title"] || @note.title %>
+    {@translations["title"] || @note.title}
   </.typography>
   <!-- Meta Information -->
   <div class="grid grid-cols-subgrid">
     <span class="col-span-3">
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        <%= gettext("Read Time") %>:
+        {gettext("Read Time")}:
       </.typography>
-      <br /><%= @note.read_time %> <%= ngettext(
+      <br />{@note.read_time} {ngettext(
         "minute",
         "minutes",
         @note.read_time
-      ) %>
+      )}
     </span>
   </div>
   <!-- Main Content -->
   <div class="space-y-md">
     <%= if @translations["content"] do %>
-      <%= raw(@translations["content"]) %>
+      {raw(@translations["content"])}
     <% else %>
       <%= if @note.compiled_content do %>
-        <%= raw(@note.compiled_content) %>
+        {raw(@note.compiled_content)}
       <% else %>
-        <p><%= gettext("We ran into an issue loading this note!") %></p>
+        <p>{gettext("We ran into an issue loading this note!")}</p>
       <% end %>
     <% end %>
   </div>
