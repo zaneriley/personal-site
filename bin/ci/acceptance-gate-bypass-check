@@ -6,9 +6,9 @@ set -o pipefail
 
 DEFAULT_FIXTURE_ROOT="test/fixtures/ci/acceptance-gate-bypass"
 
-# These are the ci:* tasks that are allowed to become acceptance gates. A gate is
-# required in workflows when the task exists in run.
-GATE_CANDIDATES=(
+# These are the required ci:* acceptance gates. Deleting a task from run must
+# fail the checker; it must not silently remove the workflow requirement.
+CANONICAL_ACCEPTANCE_GATES=(
   "ci:compile"
   "ci:lint"
   "ci:workflow-lint"
@@ -17,9 +17,12 @@ GATE_CANDIDATES=(
   "ci:static-analysis"
   "ci:secret-scan"
   "ci:acceptance-gate-bypass-check"
+  "ci:acceptance-gate-bypass-check:test"
 )
 
 ISSUES=()
+FUNCTION_NAMES=()
+REACHABLE_FUNCTIONS=()
 REQUIRED_GATES=()
 WORKFLOW_ACTIVE_TEXT=""
 
@@ -32,7 +35,7 @@ Usage:
 
 Checks GitHub workflow acceptance gates for fake-green bypasses:
 continue-on-error, warning-only fallbacks, set +e, suppression flags, raw
-mix/npx/yarn replacements, skipped/narrowed/proxy gates, and gate-like workflow
+tool replacements, skipped/narrowed/proxy gates, and gate-like workflow
 steps that omit ./run.
 USAGE
 }
@@ -84,11 +87,97 @@ function add_issue {
   ISSUES+=("${file}:${line}: ${message}")
 }
 
+function value_in_list {
+  local candidate="$1"
+  shift
+  local value
+
+  for value in "$@"; do
+    if [[ "${candidate}" == "${value}" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 function gate_is_defined {
   local run_file="$1"
   local gate="$2"
 
   grep -Eq "^[[:space:]]*function[[:space:]]+${gate}[[:space:]]*\\{" "${run_file}"
+}
+
+function collect_function_names {
+  local run_file="$1"
+  local line
+
+  FUNCTION_NAMES=()
+
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    if [[ "${line}" =~ ^[[:space:]]*function[[:space:]]+([A-Za-z_][A-Za-z0-9_:-]*)[[:space:]]*\{ ]]; then
+      FUNCTION_NAMES+=("${BASH_REMATCH[1]}")
+    fi
+  done < "${run_file}"
+}
+
+function active_line_invokes_function {
+  local active="$1"
+  local function_name="$2"
+
+  [[ "${active}" =~ (^|[[:space:];|&])${function_name}([[:space:];|&]|$) ]]
+}
+
+function collect_reachable_functions {
+  local run_file="$1"
+  local line
+  local active
+  local function_name=""
+  local in_function=0
+  local changed=1
+  local candidate
+
+  REACHABLE_FUNCTIONS=()
+
+  for candidate in "${FUNCTION_NAMES[@]}"; do
+    if [[ "${candidate}" == ci:* ]]; then
+      REACHABLE_FUNCTIONS+=("${candidate}")
+    fi
+  done
+
+  while (( changed )); do
+    changed=0
+    in_function=0
+    function_name=""
+
+    while IFS= read -r line || [[ -n "${line}" ]]; do
+      if [[ "${line}" =~ ^[[:space:]]*function[[:space:]]+([A-Za-z_][A-Za-z0-9_:-]*)[[:space:]]*\{ ]]; then
+        in_function=1
+        function_name="${BASH_REMATCH[1]}"
+        continue
+      fi
+
+      if (( in_function )) && [[ "${line}" =~ ^[[:space:]]*\} ]]; then
+        in_function=0
+        function_name=""
+        continue
+      fi
+
+      if ! (( in_function )) || ! value_in_list "${function_name}" "${REACHABLE_FUNCTIONS[@]}"; then
+        continue
+      fi
+
+      active="$(clean_line "${line}")"
+      [[ -n "${active}" ]] || continue
+
+      for candidate in "${FUNCTION_NAMES[@]}"; do
+        if ! value_in_list "${candidate}" "${REACHABLE_FUNCTIONS[@]}" && active_line_invokes_function "${active}" "${candidate}"; then
+          REACHABLE_FUNCTIONS+=("${candidate}")
+          changed=1
+        fi
+      done
+    done < "${run_file}"
+  done
 }
 
 function collect_required_gates {
@@ -97,9 +186,11 @@ function collect_required_gates {
 
   REQUIRED_GATES=()
 
-  for gate in "${GATE_CANDIDATES[@]}"; do
-    if gate_is_defined "${run_file}" "${gate}"; then
-      REQUIRED_GATES+=("${gate}")
+  for gate in "${CANONICAL_ACCEPTANCE_GATES[@]}"; do
+    REQUIRED_GATES+=("${gate}")
+
+    if ! gate_is_defined "${run_file}" "${gate}"; then
+      add_issue "${run_file}" "0" "missing required run task: function ${gate}"
     fi
   done
 }
@@ -126,7 +217,10 @@ function expected_gate_for_step_name {
     return 0
   fi
 
-  if [[ "${name}" == *"acceptance"* && "${name}" == *"bypass"* ]] || [[ "${name}" == *"gate bypass"* ]]; then
+  if { [[ "${name}" == *"acceptance"* && "${name}" == *"bypass"* ]] || [[ "${name}" == *"gate bypass"* ]]; } \
+    && { [[ "${name}" == *"fixture"* || "${name}" == *"matrix"* || "${name}" == *"test"* ]]; }; then
+    printf "%s" "ci:acceptance-gate-bypass-check:test"
+  elif [[ "${name}" == *"acceptance"* && "${name}" == *"bypass"* ]] || [[ "${name}" == *"gate bypass"* ]]; then
     printf "%s" "ci:acceptance-gate-bypass-check"
   elif [[ "${name}" == *"workflow lint"* || "${name}" == *"actionlint"* ]]; then
     printf "%s" "ci:workflow-lint"
@@ -211,7 +305,7 @@ function scan_run_invocation {
   fi
 
   for gate in "${REQUIRED_GATES[@]}"; do
-    if [[ "${invoked}" == "${gate}:"* ]]; then
+    if ! is_required_gate "${invoked}" && [[ "${invoked}" == "${gate}:"* ]]; then
       add_issue "${file}" "${line_number}" "workflow uses narrowed gate ${invoked}; call ./run ${gate} directly"
     fi
   done
@@ -261,8 +355,10 @@ function scan_policy_line {
     add_issue "${file}" "${line_number}" "broad ignore/suppression/narrowing flag is forbidden on required gates"
   fi
 
-  if (( scan_raw_tools )) && [[ "${active_lower}" =~ (^|[[:space:];|&])(mix|npx|yarn)[[:space:]]+ ]]; then
-    add_issue "${file}" "${line_number}" "raw mix/npx/yarn workflow command bypasses ./run ci:*"
+  if (( scan_raw_tools )) \
+    && [[ "${active_lower}" =~ (^|[[:space:];|&])(actionlint|biome|credo|dialyzer|gitleaks|hadolint|mix|npx|shellcheck|sobelow|stylelint|vitest|yarn)[[:space:]]+ ]] \
+    && [[ ! "${active_lower}" =~ ^[[:space:]]*(actionlint|biome|credo|dialyzer|gitleaks|hadolint|mix|npx|shellcheck|sobelow|stylelint|vitest|yarn)[[:space:]]+(--version|version)([[:space:]#]|$) ]]; then
+    add_issue "${file}" "${line_number}" "raw tool workflow command bypasses ./run ci:*"
   fi
 
   scan_run_invocation "${file}" "${line_number}" "${active}"
@@ -334,12 +430,22 @@ function scan_workflow_file {
 
   while IFS= read -r line || [[ -n "${line}" ]]; do
     local active
+    local active_lower
 
     line_number=$((line_number + 1))
     active="$(clean_line "${line}")"
+    active_lower="$(lower "${active}")"
 
     if [[ -n "${active}" ]]; then
       WORKFLOW_ACTIVE_TEXT+="${active}"$'\n'
+    fi
+
+    if ! (( in_step )); then
+      scan_policy_line "${display_file}" "${line_number}" "${line}" 0
+
+      if [[ "${active_lower}" =~ ^[[:space:]]*(paths|paths-ignore)[[:space:]]*: ]]; then
+        add_issue "${display_file}" "${line_number}" "path-filtered workflow trigger can skip acceptance gates"
+      fi
     fi
 
     if [[ "${line}" =~ ^[[:space:]]*-[[:space:]]+[A-Za-z_][A-Za-z0-9_-]*: ]]; then
@@ -365,25 +471,25 @@ function scan_run_file {
   local display_file="$1"
   local line
   local line_number=0
-  local in_ci_function=0
+  local in_function=0
   local function_name=""
 
   while IFS= read -r line || [[ -n "${line}" ]]; do
     line_number=$((line_number + 1))
 
-    if [[ "${line}" =~ ^[[:space:]]*function[[:space:]]+(ci:[A-Za-z0-9_:-]+)[[:space:]]*\{ ]]; then
-      in_ci_function=1
+    if [[ "${line}" =~ ^[[:space:]]*function[[:space:]]+([A-Za-z_][A-Za-z0-9_:-]*)[[:space:]]*\{ ]]; then
+      in_function=1
       function_name="${BASH_REMATCH[1]}"
       continue
     fi
 
-    if (( in_ci_function )) && [[ "${line}" =~ ^[[:space:]]*\} ]]; then
-      in_ci_function=0
+    if (( in_function )) && [[ "${line}" =~ ^[[:space:]]*\} ]]; then
+      in_function=0
       function_name=""
       continue
     fi
 
-    if (( in_ci_function )); then
+    if (( in_function )) && value_in_list "${function_name}" "${REACHABLE_FUNCTIONS[@]}"; then
       scan_policy_line "${display_file}" "${line_number}" "${line}" 0
 
       if [[ "${function_name}" == "ci:run-all" ]] && [[ "$(clean_line "${line}")" =~ ci:run-all ]]; then
@@ -416,6 +522,8 @@ function check_project {
   if [[ ! -f "${run_file}" ]]; then
     add_issue "${run_file}" "0" "run file not found"
   else
+    collect_function_names "${run_file}"
+    collect_reachable_functions "${run_file}"
     collect_required_gates "${run_file}"
     scan_run_file "${run_file}"
   fi
@@ -447,13 +555,13 @@ function fixture_run_file {
   if [[ -f "${case_dir}/run" ]]; then
     printf "%s" "${case_dir}/run"
   else
-    printf "%s" "${fixture_root}/shared/run"
+    printf "%s" "${fixture_root}/fixture-run-stubs/run"
   fi
 }
 
 function check_root_run_file {
   local root="$1"
-  local shared_run="${root}/../../shared/run"
+  local shared_run="${root}/../../fixture-run-stubs/run"
 
   if [[ -f "${root}/run" ]]; then
     printf "%s" "${root}/run"

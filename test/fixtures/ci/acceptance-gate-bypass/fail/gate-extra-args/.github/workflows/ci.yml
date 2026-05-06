@@ -14,13 +14,13 @@ jobs:
         run: ./run ci:lint
 
       - name: Workflow lint
-        run: actionlint .github/workflows/*.yml
+        run: ./run ci:workflow-lint
 
       - name: Security check
         run: ./run ci:security-check
 
       - name: Run tests
-        run: ./run ci:test
+        run: ./run ci:test test/portfolio_web/live/home_live_test.exs
 
       - name: Static analysis
         run: ./run ci:static-analysis

@@ -18,6 +18,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
 
     steps:
       - uses: "actions/checkout@v4"
@@ -27,6 +28,9 @@ jobs:
 
       - name: "Acceptance-gate bypass check"
         run: ./run ci:acceptance-gate-bypass-check
+
+      - name: "Acceptance-gate bypass fixture test"
+        run: ./run ci:acceptance-gate-bypass-check:test
 
       - name: "Install CI dependencies"
         run: ./run ci:install-deps

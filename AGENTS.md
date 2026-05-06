@@ -10,7 +10,7 @@ This file was bootstrapped via `/grill-me` on 2026-05-06 against the deploy/ops 
 
 A change is mergeable only if all of the following hold. These are inherited expectations — running them locally or in CI catches the kinds of mistakes the gates exist for.
 
-The canonical command surface is `./run ci:*`. GitHub workflow YAML should call these buckets, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same checks. If a gate changes, update `run` first, then call the `./run ci:*` task from CI.
+The canonical command surface is `./run ci:*`. GitHub workflow YAML should call these canonical gate tasks, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same checks. If a gate changes, update `run` first, then call the `./run ci:*` task from CI.
 
 - `./run ci:compile` produces zero compile warnings.
 - `./run ci:workflow-lint` is clean: actionlint accepts every GitHub workflow file.

@@ -5,7 +5,7 @@ function ci:compile {
 }
 
 function ci:lint {
-  lint:all || true
+  :
 }
 
 function ci:workflow-lint {
@@ -21,10 +21,6 @@ function ci:test {
 }
 
 function ci:static-analysis {
-  :
-}
-
-function ci:secret-scan {
   :
 }
 

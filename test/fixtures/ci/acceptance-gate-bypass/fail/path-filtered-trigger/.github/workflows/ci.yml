@@ -2,6 +2,8 @@ name: Fixture CI
 
 on:
   pull_request:
+    paths:
+      - "docs/**"
 
 jobs:
   gates:
@@ -20,7 +22,7 @@ jobs:
         run: ./run ci:security-check
 
       - name: Run tests
-        run: ./run ci:test:js
+        run: ./run ci:test
 
       - name: Static analysis
         run: ./run ci:static-analysis
@@ -30,3 +32,6 @@ jobs:
 
       - name: Acceptance gate bypass check
         run: ./run ci:acceptance-gate-bypass-check
+
+      - name: Acceptance gate bypass fixture test
+        run: ./run ci:acceptance-gate-bypass-check:test

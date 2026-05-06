@@ -10,7 +10,7 @@ ARG GID=1000
 
 # Install build dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential \
+  && apt-get install -y --no-install-recommends build-essential=12.9 \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Update node user and group IDs and set ownership
@@ -54,7 +54,7 @@ ARG GID=1000
 
 # Install development dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates build-essential curl inotify-tools git  \
+  && apt-get install -y --no-install-recommends ca-certificates=20230311+deb12u1 build-essential=12.9 curl=7.88.1-10+deb12u14 inotify-tools=3.22.6.0-4 git=1:2.39.5-0+deb12u3 \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership
@@ -110,7 +110,7 @@ ARG GID=1000
 
 # Install production dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates curl inotify-tools git \
+  && apt-get install -y --no-install-recommends ca-certificates=20230311+deb12u1 curl=7.88.1-10+deb12u14 inotify-tools=3.22.6.0-4 git=1:2.39.5-0+deb12u3 \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership

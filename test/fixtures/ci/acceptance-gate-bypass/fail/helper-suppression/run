@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
+function lint:dockerfile {
+  hadolint --ignore DL3008 Dockerfile
+}
+
 function ci:compile {
   :
 }
 
 function ci:lint {
-  lint:all || true
+  lint:dockerfile
 }
 
 function ci:workflow-lint {

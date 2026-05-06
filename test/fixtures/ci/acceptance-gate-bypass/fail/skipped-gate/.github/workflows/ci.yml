@@ -31,3 +31,6 @@ jobs:
 
       - name: Acceptance gate bypass check
         run: ./run ci:acceptance-gate-bypass-check
+
+      - name: Acceptance gate bypass fixture test
+        run: ./run ci:acceptance-gate-bypass-check:test

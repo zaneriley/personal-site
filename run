@@ -17,7 +17,11 @@ fi
 # -----------------------------------------------------------------------------
 
 function _dc {
-  docker compose "${DC}" ${TTY} "${@}"
+  if [[ "${DC}" == "run" ]]; then
+    docker compose run --rm ${TTY} "${@}"
+  else
+    docker compose "${DC}" ${TTY} "${@}"
+  fi
 }
 
 function _build_run_down {
@@ -74,7 +78,7 @@ function secret {
 function lint:dockerfile {
   # Lint Dockerfile
   docker container run --rm -i \
-    hadolint/hadolint hadolint --ignore DL3008 -t style "${@}" - < Dockerfile
+    hadolint/hadolint hadolint -t style "${@}" - < Dockerfile
 }
 
 function lint:shell {
@@ -357,29 +361,44 @@ function clean {
 # -----------------------------------------------------------------------------
 
 function ci:install-deps {
-    # Unchanged
-    sudo apt-get install -y curl shellcheck
-    sudo curl \
-        -L https://raw.githubusercontent.com/nickjj/wait-until/v0.2.0/wait-until \
-        -o /usr/local/bin/wait-until && sudo chmod +x /usr/local/bin/wait-until
+    if command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get update
+        sudo apt-get install -y curl shellcheck
+        return 0
+    fi
+
+    echo "apt-get unavailable; using local tools or repository container fallbacks"
 }
 
 function ci:setup-env {
-    cp --no-clobber .env.example .env
+    if [[ ! -e .env ]]; then
+        cp .env.example .env
+    fi
+
     docker compose build
-    docker compose up -d
+    docker compose up -d postgres
 
     # shellcheck disable=SC1091
     . .env
-    wait-until "docker compose exec -T \
-        -e PGPASSWORD=${POSTGRES_PASSWORD} postgres \
-        psql -U ${POSTGRES_USER} ${POSTGRES_USER} -c 'SELECT 1'"
 
-    docker compose logs
+    local attempts=60
+    until docker compose exec -T \
+        -e "PGPASSWORD=${POSTGRES_PASSWORD}" postgres \
+        psql -U "${POSTGRES_USER}" "${POSTGRES_USER}" -c 'SELECT 1'; do
+        attempts=$((attempts - 1))
+        if [[ "${attempts}" -le 0 ]]; then
+            echo "Postgres did not become ready"
+            return 1
+        fi
+
+        sleep 1
+    done
+
+    docker compose ps
 }
 
 function ci:compile {
-    mix compile --force
+    mix compile --force --warnings-as-errors
 }
 
 function ci:workflow-lint {
@@ -457,10 +476,14 @@ function ci:acceptance-gate-bypass-check:test {
 }
 
 function ci:run-all {
+    local DC="run"
+
     ci:install-deps
-    ci:setup-env
     ci:workflow-lint
     ci:acceptance-gate-bypass-check
+    ci:acceptance-gate-bypass-check:test
+    ci:secret-scan
+    ci:setup-env
     ci:compile
     ci:lint "$@"
     ci:security-check

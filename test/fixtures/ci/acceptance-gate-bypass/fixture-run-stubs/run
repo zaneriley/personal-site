@@ -31,3 +31,7 @@ function ci:secret-scan {
 function ci:acceptance-gate-bypass-check {
   :
 }
+
+function ci:acceptance-gate-bypass-check:test {
+  :
+}

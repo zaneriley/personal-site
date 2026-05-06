@@ -14,7 +14,7 @@ jobs:
         run: ./run ci:lint
 
       - name: Workflow lint
-        run: actionlint .github/workflows/*.yml
+        run: ./run ci:workflow-lint
 
       - name: Security check
         run: ./run ci:security-check
@@ -30,6 +30,3 @@ jobs:
 
       - name: Acceptance gate bypass check
         run: ./run ci:acceptance-gate-bypass-check
-
-      - name: Acceptance gate bypass fixture test
-        run: ./run ci:acceptance-gate-bypass-check:test
