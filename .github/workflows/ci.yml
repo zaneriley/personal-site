@@ -9,6 +9,9 @@ on:
       - "main"
       - "master"
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: "ubuntu-22.04"
@@ -17,7 +20,13 @@ jobs:
       CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
 
     steps:
-      - uses: "actions/checkout@v2"
+      - uses: "actions/checkout@v4"
+
+      - name: "Workflow lint"
+        run: ./run ci:workflow-lint
+
+      - name: "Acceptance-gate bypass check"
+        run: ./run ci:acceptance-gate-bypass-check
 
       - name: "Install CI dependencies"
         run: ./run ci:install-deps

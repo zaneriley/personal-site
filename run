@@ -79,13 +79,20 @@ function lint:dockerfile {
 
 function lint:shell {
   # Lint shell scripts
+  local script
+  local scripts=(run)
+
+  while IFS= read -r -d '' script; do
+    scripts+=("${script}")
+  done < <(find bin -type f -print0)
+
   if command -v shellcheck >/dev/null 2>&1; then
-    shellcheck run bin/*
+    shellcheck "${scripts[@]}"
   else
     docker container run --rm \
       -v "${PWD}:/mnt" \
       -w /mnt \
-      koalaman/shellcheck:stable run bin/*
+      koalaman/shellcheck:stable "${scripts[@]}"
   fi
 }
 
@@ -375,6 +382,22 @@ function ci:compile {
     mix compile --force
 }
 
+function ci:workflow-lint {
+    local workflow
+    local workflows=()
+
+    while IFS= read -r -d '' workflow; do
+        workflows+=("${workflow}")
+    done < <(find .github/workflows -maxdepth 1 -type f \( -name '*.yml' -o -name '*.yaml' \) -print0)
+
+    if [[ "${#workflows[@]}" -eq 0 ]]; then
+        echo "No GitHub workflow files found"
+        return 1
+    fi
+
+    bin/ci/actionlint "${workflows[@]}"
+}
+
 function ci:lint {
     lint:shell
     lint:dockerfile "${@}"
@@ -425,9 +448,19 @@ function ci:secret-scan {
     gitleaks dir "${scan_dir}" --redact --exit-code 1
 }
 
+function ci:acceptance-gate-bypass-check {
+    bin/ci/acceptance-gate-bypass-check
+}
+
+function ci:acceptance-gate-bypass-check:test {
+    bin/ci/acceptance-gate-bypass-check --test-fixtures
+}
+
 function ci:run-all {
     ci:install-deps
     ci:setup-env
+    ci:workflow-lint
+    ci:acceptance-gate-bypass-check
     ci:compile
     ci:lint "$@"
     ci:security-check

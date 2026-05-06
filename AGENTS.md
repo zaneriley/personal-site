@@ -13,6 +13,8 @@ A change is mergeable only if all of the following hold. These are inherited exp
 The canonical command surface is `./run ci:*`. GitHub workflow YAML should call these buckets, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same checks. If a gate changes, update `run` first, then call the `./run ci:*` task from CI.
 
 - `./run ci:compile` produces zero compile warnings.
+- `./run ci:workflow-lint` is clean: actionlint accepts every GitHub workflow file.
+- `./run ci:acceptance-gate-bypass-check` is clean, and `./run ci:acceptance-gate-bypass-check:test` passes its fixture matrix: canonical workflow/run samples pass, and known fake-green patterns are rejected.
 - `./run ci:lint` is clean: ShellCheck, Hadolint, Credo, `mix format --check-formatted`, Biome check, and Stylelint check. The only allowed advisory is Biome `lint/complexity/noImportantStyles` for the intentional CJK line-height rule in `assets/css/app.css`; any other warning is red.
 - `./run ci:security-check` is clean: Sobelow with project config and nonzero exit on findings.
 - `./run ci:static-analysis` is clean: Dialyzer reports `Total errors: 0, Skipped: 0, Unnecessary Skips: 0`.
