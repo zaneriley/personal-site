@@ -12,6 +12,21 @@ if [[ ! -t 1 ]]; then
   TTY="-T"
 fi
 
+# GitHub-hosted runners use a different UID/GID than the image users. Keep CI
+# on the image-baked source tree instead of bind-mounting the checkout over /app
+# and creating permission noise.
+if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    export DOCKER_WEB_VOLUME="${CI_DOCKER_WEB_VOLUME:-/tmp:/tmp}"
+    export DOCKER_ASSETS_VOLUME="${CI_DOCKER_ASSETS_VOLUME:-/tmp:/tmp}"
+fi
+
+function _apply_ci_docker_volume_overrides {
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        export DOCKER_WEB_VOLUME="${CI_DOCKER_WEB_VOLUME:-/tmp:/tmp}"
+        export DOCKER_ASSETS_VOLUME="${CI_DOCKER_ASSETS_VOLUME:-/tmp:/tmp}"
+    fi
+}
+
 # -----------------------------------------------------------------------------
 # Helper functions start with _ and aren't listed in this script's help menu.
 # -----------------------------------------------------------------------------
@@ -380,6 +395,7 @@ function ci:setup-env {
 
     # shellcheck disable=SC1091
     . .env
+    _apply_ci_docker_volume_overrides
 
     local attempts=60
     until docker compose exec -T \

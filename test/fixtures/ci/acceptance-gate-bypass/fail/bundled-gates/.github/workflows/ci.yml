@@ -4,61 +4,32 @@ on:
   pull_request:
 
 jobs:
-  workflow-lint:
-    name: Workflow lint
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Workflow lint
         run: ./run ci:workflow-lint
 
-  gate-integrity:
-    name: Gate integrity
-    runs-on: ubuntu-latest
-    steps:
       - name: Acceptance gate bypass check
         run: ./run ci:acceptance-gate-bypass-check
 
       - name: Acceptance gate bypass fixture test
         run: ./run ci:acceptance-gate-bypass-check:test
 
-  compile:
-    name: Compile
-    runs-on: ubuntu-latest
-    steps:
       - name: Compile
         run: ./run ci:compile
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
       - name: Lint
         run: ./run ci:lint
 
-  security:
-    name: Security check
-    runs-on: ubuntu-latest
-    steps:
       - name: Security check
         run: ./run ci:security-check
 
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
       - name: Run tests
         run: ./run ci:test
 
-  static-analysis:
-    name: Static analysis
-    runs-on: ubuntu-latest
-    steps:
       - name: Static analysis
         run: ./run ci:static-analysis
 
-  secret-scan:
-    name: gitleaks
-    runs-on: ubuntu-latest
-    steps:
       - name: Secret scan
         run: ./run ci:secret-scan

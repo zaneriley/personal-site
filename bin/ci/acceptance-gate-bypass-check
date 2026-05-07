@@ -25,6 +25,10 @@ FUNCTION_NAMES=()
 REACHABLE_FUNCTIONS=()
 REQUIRED_GATES=()
 WORKFLOW_ACTIVE_TEXT=""
+CURRENT_JOB_ID=""
+CURRENT_JOB_NAME=""
+CURRENT_JOB_LINE=0
+CURRENT_JOB_STAGE_KEYS=()
 
 function usage {
   cat <<'USAGE'
@@ -63,6 +67,15 @@ function unquote {
 
 function lower {
   printf "%s" "$*" | tr '[:upper:]' '[:lower:]'
+}
+
+function normalize_stage_name {
+  local value
+
+  value="$(lower "$(unquote "$*")")"
+  value="$(printf "%s" "${value}" | tr ' _' '--')"
+
+  printf "%s" "${value}"
 }
 
 function clean_line {
@@ -258,6 +271,91 @@ function first_run_gate {
   done <<< "${text}"
 }
 
+function stage_key_for_gate {
+  case "$1" in
+    "ci:workflow-lint")
+      printf "%s" "workflow-lint"
+      ;;
+    "ci:acceptance-gate-bypass-check" | "ci:acceptance-gate-bypass-check:test")
+      printf "%s" "gate-integrity"
+      ;;
+    "ci:compile")
+      printf "%s" "compile"
+      ;;
+    "ci:lint")
+      printf "%s" "lint"
+      ;;
+    "ci:security-check")
+      printf "%s" "security-check"
+      ;;
+    "ci:test")
+      printf "%s" "test"
+      ;;
+    "ci:static-analysis")
+      printf "%s" "static-analysis"
+      ;;
+    "ci:secret-scan")
+      printf "%s" "gitleaks"
+      ;;
+  esac
+}
+
+function join_values {
+  local value
+  local joined=""
+
+  for value in "$@"; do
+    if [[ -z "${joined}" ]]; then
+      joined="${value}"
+    else
+      joined="${joined}, ${value}"
+    fi
+  done
+
+  printf "%s" "${joined}"
+}
+
+function current_job_check_name {
+  if [[ -n "${CURRENT_JOB_NAME}" ]]; then
+    printf "%s" "${CURRENT_JOB_NAME}"
+  else
+    printf "%s" "${CURRENT_JOB_ID}"
+  fi
+}
+
+function add_current_job_stage_key {
+  local stage_key="$1"
+
+  if [[ -z "${stage_key}" ]]; then
+    return 0
+  fi
+
+  if [[ "${#CURRENT_JOB_STAGE_KEYS[@]}" -eq 0 ]] || ! value_in_list "${stage_key}" "${CURRENT_JOB_STAGE_KEYS[@]}"; then
+    CURRENT_JOB_STAGE_KEYS+=("${stage_key}")
+  fi
+}
+
+function finish_current_workflow_job {
+  local file="$1"
+  local job_check_name
+  local stage_list
+
+  if [[ -z "${CURRENT_JOB_ID}" ]]; then
+    return 0
+  fi
+
+  if [[ "${#CURRENT_JOB_STAGE_KEYS[@]}" -gt 1 ]]; then
+    job_check_name="$(current_job_check_name)"
+    stage_list="$(join_values "${CURRENT_JOB_STAGE_KEYS[@]}")"
+    add_issue "${file}" "${CURRENT_JOB_LINE}" "job '${job_check_name}' bundles acceptance gate stages (${stage_list}); split them into dedicated GitHub check jobs"
+  fi
+
+  CURRENT_JOB_ID=""
+  CURRENT_JOB_NAME=""
+  CURRENT_JOB_LINE=0
+  CURRENT_JOB_STAGE_KEYS=()
+}
+
 function line_has_suppression_flag {
   local line
 
@@ -281,6 +379,79 @@ function line_has_suppression_flag {
   esac
 
   return 1
+}
+
+function scan_workflow_job_legibility {
+  local file="$1"
+  local display_file="$1"
+  local line
+  local line_number=0
+  local in_jobs=0
+  local active
+  local gate
+  local expected_stage
+  local job_check_name
+  local normalized_job_check_name
+
+  CURRENT_JOB_ID=""
+  CURRENT_JOB_NAME=""
+  CURRENT_JOB_LINE=0
+  CURRENT_JOB_STAGE_KEYS=()
+
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    line_number=$((line_number + 1))
+    active="$(clean_line "${line}")"
+
+    if [[ "${line}" =~ ^jobs:[[:space:]]*$ ]]; then
+      in_jobs=1
+      continue
+    fi
+
+    if (( in_jobs )) && [[ "${line}" =~ ^[^[:space:]][A-Za-z0-9_-]+:[[:space:]]* ]]; then
+      finish_current_workflow_job "${display_file}"
+      in_jobs=0
+    fi
+
+    if ! (( in_jobs )); then
+      continue
+    fi
+
+    if [[ "${line}" =~ ^[[:space:]]{2}([A-Za-z0-9_-]+):[[:space:]]*$ ]]; then
+      finish_current_workflow_job "${display_file}"
+      CURRENT_JOB_ID="${BASH_REMATCH[1]}"
+      CURRENT_JOB_NAME=""
+      CURRENT_JOB_LINE="${line_number}"
+      CURRENT_JOB_STAGE_KEYS=()
+      continue
+    fi
+
+    if [[ -n "${CURRENT_JOB_ID}" && "${line}" =~ ^[[:space:]]{4}name:[[:space:]]*(.*)$ ]]; then
+      CURRENT_JOB_NAME="$(unquote "${BASH_REMATCH[1]}")"
+      continue
+    fi
+
+    if [[ -z "${CURRENT_JOB_ID}" ]]; then
+      continue
+    fi
+
+    if [[ "${active}" =~ (^|[[:space:]])\./run[[:space:]]+(ci:[A-Za-z0-9_:-]+)([[:space:]]|$) ]]; then
+      gate="${BASH_REMATCH[2]}"
+
+      if is_required_gate "${gate}"; then
+        expected_stage="$(stage_key_for_gate "${gate}")"
+        add_current_job_stage_key "${expected_stage}"
+
+        job_check_name="$(current_job_check_name)"
+        normalized_job_check_name="$(normalize_stage_name "${job_check_name}")"
+
+        if [[ -n "${expected_stage}" && "${normalized_job_check_name}" != "${expected_stage}" ]]; then
+          add_issue "${display_file}" "${line_number}" "required gate ./run ${gate} must run in GitHub check job '${expected_stage}', not '${job_check_name}'"
+        fi
+      fi
+    fi
+  done < "${file}"
+
+  finish_current_workflow_job "${display_file}"
 }
 
 function scan_run_invocation {
@@ -534,6 +705,7 @@ function check_project {
     while IFS= read -r workflow_file; do
       [[ -n "${workflow_file}" ]] || continue
       scan_workflow_file "${workflow_file}"
+      scan_workflow_job_legibility "${workflow_file}"
     done < <(find "${workflow_dir}" -maxdepth 1 -type f \( -name '*.yml' -o -name '*.yaml' \) -print | sort)
   fi
 
