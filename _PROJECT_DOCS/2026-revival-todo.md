@@ -2,7 +2,7 @@
 
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
-**Updated:** 2026-05-07 (prod-build/nightly CI gate merged, `Prod build` required in branch protection, release `v0.4.3` published; content-pipeline sync is next).
+**Updated:** 2026-05-07 (prod-build/nightly CI gate merged, `Prod build` required in branch protection, release/image automation exercised; content-pipeline sync is next).
 
 ---
 
@@ -26,12 +26,12 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 | 2.7 — Triage GitHub vulnerabilities | ✅ done | All 213 historical npm alerts auto-resolved by the Group 5 upgrade (timestamps line up exactly with the push). 0 open, 0 hex/elixir-side advisories. The 48-figure on push was a stale snapshot. |
 | 3 — Deploy/ops scope | 🔄 **active** | `/grill-me` ran 2026-05-06. Vision + objectives + 6 strategies in `AGENTS.md`. Hard-constraints + taste-seeding cut short — re-run `/grill-me` next time. |
 | 3.1 — Content-pipeline sync | 🔄 active next | Make content push-to-main deterministic: authenticate webhook, validate repo/ref/after SHA, dedupe, sync exact commit, ingest/publish or reject, record accepted content SHA, keep last-good content on failure. See `_PROJECT_DOCS/deploy-ops-status-plan.md`. |
-| 3.2 — CI gates | ✅ done | `Prod build` merged in `v0.4.3` and required by branch protection. Gate covers release image build, migrations up/down/up, `/readyz`, route probes, release RPC introspection, rolling baseline seed, and nightly schedule. |
+| 3.2 — CI gates | ✅ done | `Prod build` is required by branch protection. Gate covers release image build, migrations up/down/up, `/readyz`, route probes, release RPC introspection, rolling baseline seed, and nightly schedule. |
 | 3.3 — Resource-frugality of the app | ⏸ pending | Measure cold-start, p50, memory, cache-hit rate, and runtime footprint on the same ruler before choosing hardware. Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` queued. |
 | 3.4 — Front-edge cache (CDN) | ⏸ pending | `/literature` required before tool selection. Needs app/cacheability measurements first. |
 | 3.5 — Origin substrate + deploy pipeline | ⏸ planning-gated | `/literature` required before tool selection. Philosophy: versioned/idempotent blue-green deploy to the smallest measured-good origin; free/FLOSS and compute-per-watt win only after visitor speed and rollback reliability hold. |
 | 3.6 — Observability + rollback loop | ⏸ planning-gated | `/literature` required before tool selection. Minimum signal set and rollback policy need planning; No Grafana (Z veto). |
-| 3.7 — GitHub Actions Node 24 readiness | ✅ done | Workflows opt into `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` ahead of GitHub's Node 20 action runtime deadlines. |
+| 3.7 — GitHub Actions Node 24 readiness | ✅ done | Workflows use Node 24 action majors for checkout, artifact upload, and Release Please; no temporary runtime override remains. |
 | 4 — Tier-2/3 audit followups | ⏸ pending | ~24 inventoried, ranked. Pick what's load-bearing. |
 | 5 — Typography redesign | ⏸ pending | Figma changes; JA/EN dynamic typography swap; optical alignment via `text-box-trim` (80% support) + existing fontkit polyfill. Touches `typography.ex`, `typography_helpers.ex`, the tailwind generator pipeline. |
 
@@ -41,7 +41,7 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 
 Current order of operations:
 
-1. **Lock the shipped CI guardrail.** Done: `Prod build` is required in branch protection and release `v0.4.3` exercised the image build/publish path.
+1. **Lock the shipped CI guardrail.** Done: `Prod build` is required in branch protection and release automation has exercised the image build/publish path.
 2. **Make content deployment deterministic.** Replace "webhook triggers git pull and the watcher hopefully notices" with an explicit content promotion path: signed payload → expected repo/ref/after SHA → single sync lock → exact git sync → parse/ingest affected markdown → record accepted or rejected content SHA.
 3. **Measure before choosing origin hardware.** Use the prod-build vocabulary for live/local runs: time-to-ready, cold-first response, warm p50/p95, memory, CPU, and power where available.
 4. **Plan origin and edge only after measurements.** The philosophical constraint is smallest honest origin, free/FLOSS where viable, but visitor speed and rollback reliability are the floor.
