@@ -4,7 +4,7 @@ defmodule Portfolio.MixProject do
   def project do
     [
       app: :portfolio,
-      version: "0.4.3",
+      version: "0.4.4",
       elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
