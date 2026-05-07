@@ -3,6 +3,62 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.2-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.4.1-alpha.1...v0.4.2-alpha.1) (2026-05-07)
+
+
+### Features
+
+* **design:** WIP frontend overhaul to match current design explorations ([091459f](https://github.com/zaneriley/personal-site/commit/091459f70667b5eaf62c51f60fa0a8e35537d0d1))
+* **docs:** Add documentation route to router ([adec14d](https://github.com/zaneriley/personal-site/commit/adec14dd640239ef11076c1eafc28307cf920086))
+* **docs:** Add ExDoc serving plug to endpoint ([bc05767](https://github.com/zaneriley/personal-site/commit/bc0576702bbca68da75f1ecc32a4ce58ad3d731e))
+* **i18n:** Add text justification for Japanese language ([ba8ca72](https://github.com/zaneriley/personal-site/commit/ba8ca7281f6c93a1913eb882265b282ef9419344))
+* **theme:** add theme switcher functionality - Implement ThemeSwitcherHook - Add theme switching logic and user preference management - Update CSS for dark and light mode support ([e908510](https://github.com/zaneriley/personal-site/commit/e908510445a3650ab47c8132a90b36f38337fb33))
+* **ui:** Add configuration and locale handling to typography helpers ([f790ff5](https://github.com/zaneriley/personal-site/commit/f790ff5f48aafd3b302a865a3530a60f394d3e49))
+* **ui:** Implement dark mode color variables and adjust themes ([77d61da](https://github.com/zaneriley/personal-site/commit/77d61da85f9d1b9ed59d3cc21139e2118b8d12d9))
+
+
+### Bug Fixes
+
+* **assets:** build tailwind directly inside css container ([3009e3e](https://github.com/zaneriley/personal-site/commit/3009e3e3ebf08271ccf35529f191f8b32527996a))
+* **components:** declare user_locale attr on PortfolioItemList ([f086a35](https://github.com/zaneriley/personal-site/commit/f086a3530757cec43c06756bbdd26088d5cda0e2))
+* **layout:** restore grid layout processing log message ([cc826ee](https://github.com/zaneriley/personal-site/commit/cc826eece9bdfa2573e059964826edda04f44f84))
+* **typography:** correct heading tag in typography transform ([3ac7c1e](https://github.com/zaneriley/personal-site/commit/3ac7c1ef61e8d29b6d7070e8a9e787ae31957934))
+
+
+### Documentation
+
+* **backend:** Update core Portfolio module documentation ([3256196](https://github.com/zaneriley/personal-site/commit/325619665dfb1694c576b9aa3f8f1d745be7cbc9))
+* bootstrap repo AGENTS.md from /grill-me on deploy/ops scope ([f334e36](https://github.com/zaneriley/personal-site/commit/f334e361f7f030e24adef7c5b8d8ac1603967bbf))
+* dependabot triage clean — 213 alerts auto-resolved by JS deps upgrade ([5ed9965](https://github.com/zaneriley/personal-site/commit/5ed99659fc7b466313375901cf9283a31b64e6fe))
+* **markdown:** Update comments in parser ([b543fcf](https://github.com/zaneriley/personal-site/commit/b543fcfd58e150347a8254d19ca63dccfcbd79bb))
+
+
+### CI
+
+* add gitleaks secret-scan gate ([a40fd9a](https://github.com/zaneriley/personal-site/commit/a40fd9a369340fb2b23bb6d3bf601cc9dbf5477e))
+* add strict acceptance gates ([acd481e](https://github.com/zaneriley/personal-site/commit/acd481edee2a16a2b715b01c86583cc483690f20))
+* add workflow gate integrity checks ([fb72f78](https://github.com/zaneriley/personal-site/commit/fb72f78ea0d98465cdd3125b373666af67aa9103))
+* close gate integrity review gaps ([ae50abf](https://github.com/zaneriley/personal-site/commit/ae50abf89bc2bc7426587d770da7bb67fb82f800))
+* expose acceptance gates as staged checks ([0927a49](https://github.com/zaneriley/personal-site/commit/0927a497012a64e95f995bfdf4db1a7e450c1701))
+* harden release-please automation ([5768aeb](https://github.com/zaneriley/personal-site/commit/5768aebdd3cef7e196d1fbfda6e9184789eeff2e))
+* make quality gates strict ([4298ab7](https://github.com/zaneriley/personal-site/commit/4298ab74ea778ccbbccbf92375c87526b82099b6))
+
+
+### Miscellaneous
+
+* **deps:** remove unused :dns_cluster + purge :debug logs in prod ([d12da17](https://github.com/zaneriley/personal-site/commit/d12da17db89cf2d775f53c590399898ad63765b9))
+* **deps:** Update dependencies for documentation ([26b7bad](https://github.com/zaneriley/personal-site/commit/26b7bad7af35bc7692c1992d0ab56a463c346262))
+* **deps:** update JS dependencies ([fe1b61c](https://github.com/zaneriley/personal-site/commit/fe1b61c5cd331b548d1dd4824f02499fe7db0e8e))
+* **dialyzer:** Ignore specific errors and patterns ([d0c2609](https://github.com/zaneriley/personal-site/commit/d0c2609c85d331d6e6d90dcfb7f3f0ecada3646a))
+* **git:** Update .gitignore exclusions ([e818fbb](https://github.com/zaneriley/personal-site/commit/e818fbbae1487fdd70a95ab0fca9734b5cd0890f))
+* ignore .tmp/ ([a8d91f6](https://github.com/zaneriley/personal-site/commit/a8d91f6ec3ad5383e5df7511677b21adf98ebf9c))
+* **lint:** Ignore specific Credo check in kitchen_sink_live ([7b8de16](https://github.com/zaneriley/personal-site/commit/7b8de1629682e631e4f71936612a41b30847585f))
+* remove .cursor rules ([67a75be](https://github.com/zaneriley/personal-site/commit/67a75be6c99c8fb349e5a04346487bedb1a72f03))
+* Remove temporary analysis and archive files ([0553457](https://github.com/zaneriley/personal-site/commit/0553457c2c8107bbf971d8a461f699bdda171d09))
+* **scripts:** Update run script helper functions ([e9ca95f](https://github.com/zaneriley/personal-site/commit/e9ca95f7fbc0003c1fe78eaa0a5fbb2e9dc95db5))
+* symlink elixir-phoenix-style skill into .agents/skills/ ([2528b5c](https://github.com/zaneriley/personal-site/commit/2528b5cf6f235e55e8589595018093c08f67e4bc))
+* Update generated timestamp in typography CSS ([8e45932](https://github.com/zaneriley/personal-site/commit/8e459324e886999ec1ebdd84cebaec092e797f53))
+
 ## [0.4.1-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.4.0-alpha.1...v0.4.1-alpha.1) (2024-09-14)
 
 
