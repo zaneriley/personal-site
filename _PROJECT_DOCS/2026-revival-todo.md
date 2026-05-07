@@ -2,7 +2,7 @@
 
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
-**Updated:** 2026-05-07 (prod-build/nightly CI gate implemented on `agent/prod-build-gate`; deploy substrate still pending).
+**Updated:** 2026-05-07 (prod-build/nightly CI gate merged, `Prod build` required in branch protection, release `v0.4.3` published; content-pipeline sync is next).
 
 ---
 
@@ -25,45 +25,27 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 | 2.6 — Push final to origin | ✅ done | All commits pushed; tag baseline `9053f70`. |
 | 2.7 — Triage GitHub vulnerabilities | ✅ done | All 213 historical npm alerts auto-resolved by the Group 5 upgrade (timestamps line up exactly with the push). 0 open, 0 hex/elixir-side advisories. The 48-figure on push was a stale snapshot. |
 | 3 — Deploy/ops scope | 🔄 **active** | `/grill-me` ran 2026-05-06. Vision + objectives + 6 strategies in `AGENTS.md`. Hard-constraints + taste-seeding cut short — re-run `/grill-me` next time. |
-| 3.1 — Content-pipeline sync | ⏸ next | `personal-website-content` webhook hardening. PM rank #1 — site is meaningless without content. |
-| 3.2 — CI gates | 🔄 in PR | Prod-build gate implemented: release build, migrations up/down/up, `/readyz`, route smoke, RPC introspection, rolling baseline seed, nightly schedule. Promote to required branch protection after the workflow is green on GitHub. |
-| 3.3 — Resource-frugality of the app | ⏸ pending | Measure cold-start, p50, memory, cache-hit rate. Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` queued. **Hardware decision falls out of this, not before.** |
-| 3.4 — Front-edge cache (CDN) | ⏸ pending | `/literature` required before tool selection. |
-| 3.5 — Origin substrate + deploy pipeline | ⏸ pending | `/literature` required. Hardware + blue/green + deploy mechanics. |
-| 3.6 — Observability + rollback loop | ⏸ pending | `/literature` required. No Grafana (Z veto). |
+| 3.1 — Content-pipeline sync | 🔄 active next | Make content push-to-main deterministic: authenticate webhook, validate repo/ref/after SHA, dedupe, sync exact commit, ingest/publish or reject, record accepted content SHA, keep last-good content on failure. See `_PROJECT_DOCS/deploy-ops-status-plan.md`. |
+| 3.2 — CI gates | ✅ done | `Prod build` merged in `v0.4.3` and required by branch protection. Gate covers release image build, migrations up/down/up, `/readyz`, route probes, release RPC introspection, rolling baseline seed, and nightly schedule. |
+| 3.3 — Resource-frugality of the app | ⏸ pending | Measure cold-start, p50, memory, cache-hit rate, and runtime footprint on the same ruler before choosing hardware. Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` queued. |
+| 3.4 — Front-edge cache (CDN) | ⏸ pending | `/literature` required before tool selection. Needs app/cacheability measurements first. |
+| 3.5 — Origin substrate + deploy pipeline | ⏸ planning-gated | `/literature` required before tool selection. Philosophy: versioned/idempotent blue-green deploy to the smallest measured-good origin; free/FLOSS and compute-per-watt win only after visitor speed and rollback reliability hold. |
+| 3.6 — Observability + rollback loop | ⏸ planning-gated | `/literature` required before tool selection. Minimum signal set and rollback policy need planning; No Grafana (Z veto). |
+| 3.7 — GitHub Actions Node 24 readiness | ✅ done | Workflows opt into `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` ahead of GitHub's Node 20 action runtime deadlines. |
 | 4 — Tier-2/3 audit followups | ⏸ pending | ~24 inventoried, ranked. Pick what's load-bearing. |
 | 5 — Typography redesign | ⏸ pending | Figma changes; JA/EN dynamic typography swap; optical alignment via `text-box-trim` (80% support) + existing fontkit polyfill. Touches `typography.ex`, `typography_helpers.ex`, the tailwind generator pipeline. |
 
 ---
 
-## Active workstream — Group 5 (JS-only deps)
+## Active workstream — Phase 3 deploy/ops
 
-In-flight as of this writing. Constraints:
-- Tailwind v3 stays (Z's ratification 2026-05-05 — cross-arch Docker bug + no daisyUI need + portfolio scale).
-- Skip new tooling; bump existing only.
-- Each version bump verified by `mix compile clean` + `vitest run` + route smoke + `mix test --seed 0`.
+Current order of operations:
 
-Bumping (per `assets/package.json`):
-- `@biomejs/biome` 1.9 → 2.4 (major)
-- `@vitest/*` + `vitest` 2.1 → 4.1 (two majors)
-- `esbuild` 0.23 → 0.28
-- `jsdom` 25 → 29 (forces Node base image bump from 22.9 to 22.21 in Dockerfile)
-- `playwright` 1.48 → 1.59
-- `postcss` 8.4 → 8.5; `postcss-import` 16.1.0 → 16.1.1
-- `prettier` 3.3 → 3.8
-- `stylelint` 16 → 17 (major); `stylelint-config-standard` 36 → 40 (major); `stylelint-config-tailwindcss` 0.0.7 → 1.0 (major)
-- `@types/fontkit` 2.0.7 → 2.0.9
-- `autoprefixer` 10.4 → 10.5
-- `topbar` 3.0.0 → 3.0.1
-
-Already done:
-- Node base image bumped 22.9 → 22.21 in Dockerfile (jsdom 29 needed it).
-
-Not yet done:
-- yarn install resolution + verify build works
-- vitest config compatibility with v4
-- biome config compatibility with v2
-- stylelint config compatibility with v17
+1. **Lock the shipped CI guardrail.** Done: `Prod build` is required in branch protection and release `v0.4.3` exercised the image build/publish path.
+2. **Make content deployment deterministic.** Replace "webhook triggers git pull and the watcher hopefully notices" with an explicit content promotion path: signed payload → expected repo/ref/after SHA → single sync lock → exact git sync → parse/ingest affected markdown → record accepted or rejected content SHA.
+3. **Measure before choosing origin hardware.** Use the prod-build vocabulary for live/local runs: time-to-ready, cold-first response, warm p50/p95, memory, CPU, and power where available.
+4. **Plan origin and edge only after measurements.** The philosophical constraint is smallest honest origin, free/FLOSS where viable, but visitor speed and rollback reliability are the floor.
+5. **Plan observability around deploy evidence.** Minimum useful signals: request health, release identity, content SHA, BEAM/runtime health, DB boundary, and cache/origin split after an edge substrate exists.
 
 ---
 

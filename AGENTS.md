@@ -22,8 +22,9 @@ GitHub CI must expose the real acceptance gates as legible top-level check jobs.
 - `./run ci:static-analysis` is clean: Dialyzer reports `Total errors: 0, Skipped: 0, Unnecessary Skips: 0`.
 - `./run ci:test` is clean: Elixir tests and JS tests have 0 failures.
 - The secret-scan workflow runs `./run ci:secret-scan`; gitleaks current-tree scan has 0 findings.
+- `./run ci:prod-build` is clean: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, release RPC introspection, and perf-baseline comparison all pass. GitHub branch protection must require the top-level `Prod build` check.
 
-Route smoke is not an always-on acceptance gate yet. Do not add placeholder route smoke just to make CI look broader. A route or release smoke gate belongs in the production-build work after the app has a meaningful readiness/content contract.
+Route smoke is part of the production-build gate, not a separate placeholder job. Do not add another route-smoke gate just to make CI look broader; widen `./run ci:prod-build` only when the app has a stronger readiness/content contract.
 
 ### Gate integrity: no fake green
 
@@ -70,7 +71,7 @@ The Elixir-side prescriptions (writing-controllers, writing-liveviews, writing-o
 - **Why now:** The repo just emerged from a multi-year "Backup from broken mac" state. Deps current, code clean, deps cleared GitHub vulnerabilities, branch merged. The infra layer is the next thing needed before design / typography rewrite work.
 - **Done looks like:** A push to main triggers CI gates; if green, an image is built and deployed via blue/green at the origin; smoke test runs; rollback is one command and tested. Visitors never see broken (CDN-cached front absorbs origin restarts and outages). Origin runs on the smallest hardware that meets the app's measured needs. Content-repo updates flow through the same loop. Observability emits metrics/logs Z can see; the next deploy reacts (auto-cancel rollout if error rate spikes).
 - **Out of scope:** No Grafana. No tool/stack prescription without `/literature` first (CDN, secrets, deploy substrate, observability all queued).
-- **Who else:** visitors (uptime + speed); future-Z (returning months later, expects deploy = forget nothing); LLMs working in this repo (CI is their guardrail); content-repo automation (`personal-website-content` webhook is a deploy "user").
+- **Who else:** visitors (uptime + speed); future-Z (returning months later, expects deploy = forget nothing); LLMs working in this repo (CI is their guardrail); content-repo automation (`personal-site-content` webhook is a deploy "user"; earlier notes may call this `personal-website-content`).
 
 ### Vision
 
@@ -86,8 +87,8 @@ The breadboard-frame-as-painting is an aspiration, not a romantic floor. Owned h
 
 In approximate PM rank order. #1 anchors first — site is meaningless without content flowing through.
 
-1. **Content-pipeline sync.** Finish the `personal-website-content` webhook story. Currently partially wired (`Portfolio.Release.pull_repository`, `GitHubWebhook` plug). Site is meaningless without content flowing through.
-2. **CI gates.** LLM-mistake catcher. Largely orthogonal to where prod runs; can ship while #1 is in flight. Includes hardening lint/test/dialyzer gates already passing locally; build-and-cache the prod image; run smoke tests against it; perf budget if/when measured baseline exists.
+1. **Content-pipeline sync.** Finish the content-repo webhook story. The configured repo is `personal-site-content` in `.env.example`; earlier notes may call it `personal-website-content`. The app path is currently partially wired (`Portfolio.Release.pull_repository`, `GitHubWebhook` plug). Site is meaningless without content flowing through.
+2. **CI gates.** LLM-mistake catcher. Shipped 2026-05-07: existing compile/lint/security/test/static-analysis/workflow/secret gates are required, and `Prod build` is now a required branch-protection check. The gate builds the release image, runs migrations up/down/up, boots the release, checks `/readyz`, probes canonical routes, runs release RPC introspection, and records perf data.
 3. **Resource-frugality of the app itself.** Measure cold-start, p50 request latency, memory footprint, cache-hit rate. Reduce until "small enough." Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` is queued input. Hardware decision falls out of this measurement, not before.
 4. **Front-edge cache substrate.** CDN choice. Depends on #3 to know what's safely cacheable and TTL bounds. **Requires `/literature` before tool selection.**
 5. **Origin substrate + deploy pipeline.** Hardware + release format + blue/green at origin + deploy mechanics. Hardware falls out of #3. **Requires `/literature` before tool selection.**
@@ -98,6 +99,8 @@ The order is not fully ratified beyond #1; #2 explicitly parallelizes with #1; #
 ### Round-trip deploy definition
 
 The "round-trip" is the full loop: **push → CI gates → image build → blue/green deploy → smoke test → notify → tested rollback path exercised on every deploy → content-repo updates flowing through the same loop → observability emits metrics/logs the next deploy reacts to (auto-cancel on error-rate spike).** All four pieces (the basic loop, rollback, content sync, observability feedback) are in scope; this is what success looks like.
+
+Current Phase 3 status and sequencing live in `_PROJECT_DOCS/deploy-ops-status-plan.md`. Keep that plan synchronized with `_PROJECT_DOCS/2026-revival-todo.md` when the active workstream changes.
 
 ### Hard constraints (partial — Step 4 of `/grill-me` was cut short)
 
