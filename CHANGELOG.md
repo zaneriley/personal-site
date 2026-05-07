@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.6](https://github.com/zaneriley/personal-site/compare/v0.4.5...v0.4.6) (2026-05-07)
+
+
+### Documentation
+
+* **ops:** avoid stale release status ([18f3fc4](https://github.com/zaneriley/personal-site/commit/18f3fc413ef1c18b0d811b57ea9e4c9d3ba357a5))
+
 ## [0.4.5](https://github.com/zaneriley/personal-site/compare/v0.4.4...v0.4.5) (2026-05-07)
 
 
