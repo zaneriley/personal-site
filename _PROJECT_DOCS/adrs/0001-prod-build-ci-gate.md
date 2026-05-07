@@ -1,6 +1,6 @@
 # ADR 0001 — Production-build CI gates
 
-**Status:** accepted 2026-05-07.
+**Status:** accepted 2026-05-07; implemented and promoted to required branch protection 2026-05-07.
 **Supersedes:** none.
 **Superseded by:** none.
 
@@ -20,7 +20,7 @@ There are four deployability levels:
 
 - **PR deployable**: the proposed app code passes acceptance gates, builds a prod release, boots with image-baked content, serves canonical routes, and stays inside the CI-side speed floor or baseline-drift policy.
 - **Release deployable**: the release tag creates an image that can be identified by tag, SHA, and digest; Release Please can merge only after the required gates pass.
-- **Content deployable**: a `personal-website-content` commit can be authenticated, deduped, synced, parsed, and either promoted or rejected without preventing the app from booting.
+- **Content deployable**: a content repo commit can be authenticated, deduped, synced, parsed, and either promoted or rejected without preventing the app from booting. The configured repo URL in `.env.example` currently points at `personal-site-content`; earlier planning notes may call this `personal-website-content`.
 - **Origin deployable**: the selected origin can pull or receive the release artifact, run migrations, flip blue/green, pass live smoke, and roll back to the last known-good app/content pair.
 
 This ADR implements the first level and prepares the second. Content and origin deployability remain follow-up work because they involve the webhook/sync path and the deploy substrate.
@@ -40,7 +40,7 @@ For release work:
 
 - Conventional commits feed Release Please.
 - Release Please opens or updates the release PR.
-- Auto-merge waits on the required gates, including `prod-build` once promoted to branch protection.
+- Auto-merge waits on the required gates, including `Prod build`.
 - A merged release creates an image tagged by release and commit SHA. Future deploy tooling consumes that identity, not a floating local build.
 
 For content work:
