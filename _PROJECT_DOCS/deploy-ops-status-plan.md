@@ -6,7 +6,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 
 ## Current status
 
-- `main` is current at release `v0.4.3`.
+- `main` is current; the exact release tag is tracked by `.release-please-manifest.json` and GitHub Releases, not duplicated here.
 - Branch protection requires `Workflow lint`, `Gate integrity`, `Compile`, `Lint`, `Security check`, `Test`, `Static analysis`, `gitleaks`, and `Prod build`.
 - `Prod build` runs on PRs, pushes to `main`, nightly schedule, and manual dispatch. It builds the prod image, runs migrations up/down/up, boots the release, waits for `/readyz`, probes canonical routes, runs release RPC introspection, compares perf data, and uploads measurements.
 - Release Please is automated enough for this pre-1.0 portfolio: conventional commits open release PRs, auto-merge waits on required gates, and release creation builds/pushes tagged images.
@@ -80,4 +80,4 @@ Open planning questions:
 
 ## Node 20 actions cleanup
 
-GitHub warned that Node 20 JavaScript actions move to Node 24 defaults on 2026-06-02 and lose Node 20 runner support on 2026-09-16. The workflows now set `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` so the repo tests the future runtime before the forced cutover.
+GitHub warned that Node 20 JavaScript actions move to Node 24 defaults on 2026-06-02 and lose Node 20 runner support on 2026-09-16. The workflows now use Node 24 action majors for the affected actions (`actions/checkout@v6`, `actions/upload-artifact@v7`, `googleapis/release-please-action@v5`), so no temporary runtime override is needed.
