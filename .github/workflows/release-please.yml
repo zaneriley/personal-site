@@ -5,9 +5,6 @@ on:
     branches:
       - "main"
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 jobs:
   release-please:
     runs-on: "ubuntu-22.04"
@@ -20,7 +17,7 @@ jobs:
       tag_name: ${{ steps.release.outputs.tag_name }}
       prerelease: ${{ steps.release.outputs.prerelease }}
     steps:
-      - uses: "googleapis/release-please-action@v4"
+      - uses: "googleapis/release-please-action@v5"
         id: release
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
@@ -51,7 +48,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v6"
 
       - name: "Set up Docker Buildx"
         uses: "docker/setup-buildx-action@v4"
