@@ -3,7 +3,7 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
-## [0.4.2-alpha.1](https://github.com/zaneriley/personal-site/compare/v0.4.1-alpha.1...v0.4.2-alpha.1) (2026-05-07)
+## [0.4.2](https://github.com/zaneriley/personal-site/compare/v0.4.1-alpha.1...v0.4.2) (2026-05-07)
 
 
 ### Features
