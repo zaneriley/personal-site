@@ -49,8 +49,30 @@ config :portfolio, Portfolio.Repo, repo_config
 
 config :portfolio, :github_token, System.get_env("GITHUB_TOKEN")
 
-config :portfolio,
-  github_webhook_secret: System.get_env("GITHUB_WEBHOOK_SECRET")
+github_webhook_secret_placeholder =
+  "generate-a-secret-token-for-your-repo-and-add-it-to-githubs-webhook-settings"
+
+current_env = config_env()
+
+github_webhook_secret =
+  case {System.get_env("GITHUB_WEBHOOK_SECRET"), current_env} do
+    {secret, _env}
+    when is_binary(secret) and byte_size(secret) > 0 and
+           secret != github_webhook_secret_placeholder ->
+      secret
+
+    {_secret, env} when env in [:dev, :test] ->
+      "dev-test-github-webhook-secret"
+
+    {_secret, _env} ->
+      raise """
+      environment variable GITHUB_WEBHOOK_SECRET is required in production.
+      Generate a new webhook secret, configure it in GitHub, and pass it at runtime.
+      """
+  end
+
+config :portfolio, github_webhook_secret: github_webhook_secret
+config :github_webhook, secret: github_webhook_secret
 
 config :portfolio, content_repo_url: System.get_env("CONTENT_REPO_URL")
 

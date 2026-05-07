@@ -1,0 +1,35 @@
+name: Fixture CI
+
+on:
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compile
+        run: ./run ci:run-all
+
+      - name: Lint
+        run: ./run ci:lint
+
+      - name: Workflow lint
+        run: ./run ci:workflow-lint
+
+      - name: Security check
+        run: ./run ci:security-check
+
+      - name: Run tests
+        run: ./run ci:test
+
+      - name: Static analysis
+        run: ./run ci:static-analysis
+
+      - name: Secret scan
+        run: ./run ci:secret-scan
+
+      - name: Acceptance gate bypass check
+        run: ./run ci:acceptance-gate-bypass-check
+
+      - name: Acceptance gate bypass fixture test
+        run: ./run ci:acceptance-gate-bypass-check:test

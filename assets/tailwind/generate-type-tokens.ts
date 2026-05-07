@@ -3,22 +3,15 @@ import path from "node:path";
 import {
   cjkSpaceConfig,
   cjkTypeConfig,
-  LineHeightConfig,
   latinSpaceConfig,
   latinTypeConfig,
-  TypeConfig,
 } from "./configs/type-config";
-
-// Use require for JSON import
-// import fontMetrics from "./font-metrics.json";
-const fontMetrics = require("./font-metrics.json");
 
 import {
   assignLabels,
   calculateTypeScale,
   generateSpaceCSSVariables,
   generateTypeCSSVariables,
-  type TypeStepResult,
 } from "./font-size";
 import { calculateLineHeight } from "./line-height";
 
@@ -245,12 +238,8 @@ export function writeCSS(
   outputPath: string = DEFAULT_OUTPUT_PATH,
 ): void {
   try {
-    // Pass metrics data to generateCSS
-    const actualFontMetrics = require("./font-metrics.json") as FontMetricsData;
-    const cssContent = generateCSS(); // generateCSS now uses require internally
-    // Use synchronous methods
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-    fs.writeFileSync(outputPath, cssContent); // Write the generated content
+    fs.writeFileSync(outputPath, css);
     console.log(`CSS variables generated successfully at ${outputPath}`);
   } catch (error) {
     throw new Error(

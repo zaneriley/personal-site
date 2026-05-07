@@ -5,8 +5,8 @@
 >
   <head>
     <.live_title>
-      <%= assigns[:page_title] ||
-        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience" %>
+      {assigns[:page_title] ||
+        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"}
     </.live_title>
 
     <meta charset="utf-8" />
@@ -25,7 +25,7 @@
       </style>
     </noscript>
     <!-- href langs -->
-    <%= hreflang_tags(@conn) %>
+    {hreflang_tags(@conn)}
     <!-- Favicon and touch icons -->
     <link
       rel="apple-touch-icon"
@@ -73,10 +73,10 @@
   </head>
   <body class="min-h-screen flex flex-col text-md bg-gradient">
     <a href="#main-content" class="sr-only" tabindex="0">
-      <%= gettext("Skip to main content") %>
+      {gettext("Skip to main content")}
     </a>
 
-    <%= @inner_content %>
+    {@inner_content}
     <footer
       role="contentinfo"
       class="mt-auto grid grid-cols-12 sticky top-[100vh] text-1xs"
@@ -86,7 +86,7 @@
       </div>
       <div class="col-span-3">
         <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          <%= gettext("Connect") %>
+          {gettext("Connect")}
         </.typography>
         <.typography locale={@user_locale} tag="ul" size="1xs">
           <li>
@@ -116,11 +116,11 @@
       </div>
       <div class="col-span-3">
         <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          <%= gettext("Colophon") %>
+          {gettext("Colophon")}
         </.typography>
 
         <.typography locale={@user_locale} tag="p" size="1xs">
-          <%= raw(
+          {raw(
             gettext(
               "Type set in %{font1}, %{font2}, %{font3}, & %{font4}.",
               font1:
@@ -132,27 +132,27 @@
               font4:
                 "<a href='https://fonts.google.com/noto/specimen/Noto+Sans+JP' rel='noopener' target='_blank'>Noto Sans JP</a>"
             )
-          ) %><br /><%= raw(
+          )}<br />{raw(
             gettext("Design avaiable in %{figma}.",
               figma:
                 "<a href='https://www.figma.com/design/zDOcBhnjTDCWmc6OFgeoUc/Zane-Riley's-Product-Portfolio?node-id=2209-559&t=0gZqDDkC2pYanuW3-0' target='_blank' rel='noopener'>Figma</a>"
             )
-          ) %>
+          )}
         </.typography>
       </div>
       <div class="col-span-3">
         <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          <%= gettext("Server") %>
+          {gettext("Server")}
         </.typography>
         <.typography locale={@user_locale} tag="p" size="1xs">
-          <%= gettext("Hosted on my home server in Tokyo.") %> <br />
-          <%= gettext("Written in Elixir.") %> <br />
-          <%= raw(
+          {gettext("Hosted on my home server in Tokyo.")} <br />
+          {gettext("Written in Elixir.")} <br />
+          {raw(
             gettext("Open source on %{github}.",
               github:
                 "<a href='https://github.com/zane-riley/personal-site' target='_blank' rel='noopener'>Github</a>"
             )
-          ) %>
+          )}
         </.typography>
       </div>
       <div class="col-span-12">
@@ -174,7 +174,7 @@
           center={true}
           color="suppressed"
         >
-          &copy; 2010 – <%= @current_year %>
+          &copy; 2010 – {@current_year}
         </.typography>
       </div>
     </footer>

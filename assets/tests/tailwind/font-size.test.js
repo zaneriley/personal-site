@@ -191,7 +191,6 @@ describe("calculateTypeScale", () => {
 
     const result = calculateTypeScale(config);
 
-    const mdSize = result.find((r) => r.step === 0);
     const smallerSizes = result.filter((r) => r.step < 0);
 
     smallerSizes.forEach((size, index) => {

@@ -5,7 +5,10 @@ ExUnit.start()
 # safe.directory check. Belt-and-suspenders with the docker entrypoint.
 # `env: []` keeps inherited env (incl. anything sensitive) out of the spawned
 # git process — required, even though this command doesn't read env.
-System.cmd("git", ~w(config --global --add safe.directory *), env: [], stderr_to_stdout: true)
+System.cmd("git", ~w(config --global --add safe.directory *),
+  env: [],
+  stderr_to_stdout: true
+)
 
 # Explicitly ensure the repo is configured for Sandbox *before* setting the mode.
 # Workaround for initialization issues seen with render_component tests via ./run

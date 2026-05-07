@@ -46,7 +46,7 @@ window.addEventListener("phx:page-loading-start", (info) => {
   }
 });
 
-window.addEventListener("phx:page-loading-stop", (info) => {
+window.addEventListener("phx:page-loading-stop", () => {
   document
     .querySelector("[data-main-view]")
     .classList.remove("phx-page-loading");
@@ -117,7 +117,6 @@ const baseStyle =
   'font-family: "Courier New", monospace; font-size: 14px; line-height: 1.5; text-shadow: 0 0 5px rgba(255,255,255,0.7);';
 const glitchStyle = `${baseStyle} color: #e0e0e0; text-shadow: 2px 2px #ff00de, -2px -2px #00ff9f;`;
 const normalStyle = `${baseStyle} color: #b0b0b0;`;
-const highlightStyle = `${baseStyle} color: #ffffff; font-weight: bold;`;
 const systemStyle = `${baseStyle} color: #00ff9f; font-style: italic;`;
 
 console.log("%c[SYSTEM BOOT]", systemStyle);

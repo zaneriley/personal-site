@@ -38,7 +38,9 @@ defmodule Portfolio.Content.Markdown.Parser do
     - {:ok, %{frontmatter: map(), ast: list()}} on success
     - {:error, reason} on failure
   """
-  @spec parse(String.t()) :: {:ok, map()} | {:error, String.t()}
+  @spec parse(String.t()) ::
+          {:ok, %{frontmatter: map(), ast: EarmarkParser.ast()}}
+          | {:error, String.t()}
   def parse(markdown) when is_binary(markdown) do
     {frontmatter_map, content} = split_frontmatter(markdown)
 
@@ -46,7 +48,7 @@ defmodule Portfolio.Content.Markdown.Parser do
     {processed_content, custom_components} =
       preprocess_custom_components(content)
 
-    case Earmark.Parser.as_ast(processed_content) do
+    case EarmarkParser.as_ast(processed_content) do
       {:ok, ast, _} ->
         # Insert custom components back into the AST if any were extracted
         ast_with_components = insert_custom_components(ast, custom_components)

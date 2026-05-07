@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <.live_title>
-      <%= assigns[:page_title] ||
-        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience" %>
+      {assigns[:page_title] ||
+        "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"}
     </.live_title>
 
     <meta charset="utf-8" />
@@ -63,7 +63,7 @@
   </head>
   <body class="min-h-screen text-md">
     <a href="#main-content" class="sr-only" tabindex="0">
-      <%= gettext("Skip to main content") %>
+      {gettext("Skip to main content")}
     </a>
     <div class="min-h-screen flex items-center justify-center">
       <div
@@ -72,30 +72,30 @@
       >
         /********************************************** <br />
         <a href="/" class="" aria-label={gettext("Return to homepage")}>
-          <%= dynamic_home_url() %>
+          {dynamic_home_url()}
         </a>
         <h1>
-          <%= gettext("ERROR 404") %> <br /> <%= gettext("DATA NOT FOUND") %>
+          {gettext("ERROR 404")} <br /> {gettext("DATA NOT FOUND")}
         </h1>
-        * <%= gettext("SYSTEM: Zane's Design Portfolio") %> <br />
-        * <%= gettext("STATUS: [CONFUSED BUT OPERATIONAL]") %> <br />
+        * {gettext("SYSTEM: Zane's Design Portfolio")} <br />
+        * {gettext("STATUS: [CONFUSED BUT OPERATIONAL]")} <br />
         ***********************************************/ <br />
         <br />
 
-        <%= gettext("GREETINGS,") %><br />
+        {gettext("GREETINGS,")}<br />
         <br />
 
-        <%= gettext("THE DATA YOU SEEK HAS EITHER") %> <br />
-        <%= gettext("DISAPPEARED INTO THE VOID OR") %><br />
-        <%= gettext("NEVER EXISTED IN THE FIRST PLACE") %><br />
+        {gettext("THE DATA YOU SEEK HAS EITHER")} <br />
+        {gettext("DISAPPEARED INTO THE VOID OR")}<br />
+        {gettext("NEVER EXISTED IN THE FIRST PLACE")}<br />
         <br />
 
-        <%= gettext("EVERY DEAD END IS JUST A NEW BEGINNING.") %><br />
-        <%= gettext("THIS TERMINAL WISHES YOU LUCK ON") %> <br />
-        <%= gettext("YOUR CONTINUED EXPLORATION.") %><br />
+        {gettext("EVERY DEAD END IS JUST A NEW BEGINNING.")}<br />
+        {gettext("THIS TERMINAL WISHES YOU LUCK ON")} <br />
+        {gettext("YOUR CONTINUED EXPLORATION.")}<br />
         <br /> ≺system initiating self-reflection protocol≻<br />
         <p class="">
-          <a href="/" class="pb-6 block"><%= gettext("RETURN TO HOME") %></a>
+          <a href="/" class="pb-6 block">{gettext("RETURN TO HOME")}</a>
         </p>
 
         <svg

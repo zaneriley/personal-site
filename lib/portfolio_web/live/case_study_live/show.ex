@@ -8,7 +8,6 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
   import Portfolio.Content.Markdown.Renderer, only: [render_html: 1]
 
-  @dialyzer {:nowarn_function, mount: 3}
   def on_mount(:default, params, session, socket) do
     {:cont,
      PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
@@ -35,22 +34,12 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
              page_description: introduction
            )}
 
-        {:ok, case_study, translations, {:error, reason}} ->
-          Logger.error("Failed to compile content: #{inspect(reason)}")
-
-          {:ok,
-           assign(socket,
-             case_study: case_study,
-             translations: translations,
-             ast_content: nil,
-             compiled_content: nil,
-             compile_error: reason,
-             page_title: case_study.title,
-             page_description: case_study.introduction
-           )}
-
         {:error, :not_found} ->
           Logger.error("Case study not found in database for URL: #{url}")
+          {:ok, socket, layout: false}
+
+        {:error, :compilation_failed} ->
+          Logger.error("Failed to compile case study content for URL: #{url}")
           {:ok, socket, layout: false}
       end
     else
@@ -65,8 +54,6 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     {:ok, socket}
   end
 
-  @dialyzer {:nowarn_function, handle_params: 3}
-  @dialyzer {:nowarn_function, set_page_metadata: 2}
   @impl true
   def handle_params(
         %{"locale" => user_locale, "url" => url} = params,
@@ -96,22 +83,10 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
              page_description: introduction
            )}
 
-        {:ok, case_study, translations, {:error, compile_error}} ->
-          {page_title, introduction} =
-            set_page_metadata(case_study, translations)
-
-          {:noreply,
-           assign(socket,
-             case_study: case_study,
-             translations: translations,
-             ast_content: nil,
-             compiled_content: nil,
-             compile_error: compile_error,
-             page_title: page_title,
-             page_description: introduction
-           )}
-
         {:error, :not_found} ->
+          raise PortfolioWeb.LiveError
+
+        {:error, :compilation_failed} ->
           raise PortfolioWeb.LiveError
       end
     else

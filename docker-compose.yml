@@ -35,7 +35,7 @@ x-assets: &default-assets
   stop_grace_period: "0"
   tty: true
   volumes:
-    - ".:/app"
+    - "${DOCKER_ASSETS_VOLUME:-.:/app}"
 
 services:
   postgres:

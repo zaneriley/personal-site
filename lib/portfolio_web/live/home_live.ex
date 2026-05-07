@@ -61,7 +61,7 @@ defmodule PortfolioWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <.typography locale={@user_locale} tag="h2" size="1xl" class="uppercase">
-      <%= raw(
+      {raw(
         gettext(
           "%{role} based in %{city}",
           role:
@@ -69,10 +69,10 @@ defmodule PortfolioWeb.HomeLive do
           city:
             "<span class='font-cardinal-fruit text-callout text-3xl normal-case'>#{gettext("Tokyo")}</span>"
         )
-      ) %>
+      )}
     </.typography>
     <.typography locale={@user_locale} tag="p" size="1xl" class="uppercase">
-      <%= raw(
+      {raw(
         gettext(
           "Solving problems for customers through %{tagline_methods} or %{tagline_else}",
           tagline_methods:
@@ -80,29 +80,29 @@ defmodule PortfolioWeb.HomeLive do
           tagline_else:
             "<span class='font-cardinal-fruit text-callout text-2xl normal-case'>#{gettext("tagline_else")}</span>"
         )
-      ) %>
+      )}
     </.typography>
     <.typography locale={@user_locale} tag="p" size="1xs">
-      <%= gettext("Now Senior Product Designer at") %>
+      {gettext("Now Senior Product Designer at")}
     </.typography>
     <.typography locale={@user_locale} tag="h2" size="md">
-      <%= gettext(
+      {gettext(
         "10+ years design experience. From startups to FAANG and regulated industries, I bring both breadth and depth of experience to building products people love."
-      ) %><br />
+      )}<br />
     </.typography>
     <.typography locale={@user_locale} tag="p" size="1xs">
-      <%= gettext(
+      {gettext(
         "Based in Tokyo. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
-      ) %>
+      )}
 
       <.link navigate={~p"/#{@user_locale}/self"}>
-        <%= gettext("More about me.") %>
+        {gettext("More about me.")}
       </.link>
     </.typography>
 
     <div>
       <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-        <%= ngettext("Case Study", "Case Studies", 2) %>
+        {ngettext("Case Study", "Case Studies", 2)}
       </.typography>
       <div class="space-y-md">
         <%= for case_study <- @case_studies do %>
@@ -117,12 +117,12 @@ defmodule PortfolioWeb.HomeLive do
               title={case_study.translations["title"] || case_study.title}
             >
               <.typography locale={@user_locale} tag="h3" size="2xl" font="cardinal">
-                <%= case_study.translations["title"] || case_study.title %>
+                {case_study.translations["title"] || case_study.title}
               </.typography>
             </.link>
             <.typography locale={@user_locale} tag="p" size="2xs">
-              <%= case_study.translations["introduction"] ||
-                case_study.introduction %>
+              {case_study.translations["introduction"] ||
+                case_study.introduction}
             </.typography>
             <.content_metadata
               read_time={

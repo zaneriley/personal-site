@@ -3,12 +3,14 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
 
   alias Portfolio.Content
 
+  require Logger
+
   @impl true
   def render(assigns) do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
+        {@title}
         <:subtitle>
           Use this form to manage note records in your database.
         </:subtitle>
@@ -69,6 +71,10 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
+
+      {:error, reason} ->
+        Logger.error("Failed to update note: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Note could not be updated")}
     end
   end
 
@@ -84,6 +90,10 @@ defmodule PortfolioWeb.NoteLive.FormComponent do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
+
+      {:error, reason} ->
+        Logger.error("Failed to create note: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Note could not be created")}
     end
   end
 

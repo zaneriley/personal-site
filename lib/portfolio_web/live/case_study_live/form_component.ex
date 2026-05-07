@@ -2,12 +2,14 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   use PortfolioWeb, :live_component
   alias Portfolio.Content
 
+  require Logger
+
   @impl true
   def render(assigns) do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
+        {@title}
       </.header>
 
       <.simple_form
@@ -73,8 +75,7 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   @impl true
   def handle_event("validate", %{"case_study" => case_study_params}, socket) do
     changeset =
-      socket.assigns.case_study
-      |> Content.change("case_study", case_study_params)
+      Content.change("case_study", socket.assigns.case_study, case_study_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
@@ -100,10 +101,13 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
+
+      {:error, reason} ->
+        Logger.error("Failed to update case study: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Case study could not be updated")}
     end
   end
 
-  @dialyzer {:nowarn_function, handle_event: 3}
   defp save_case_study(socket, :new, case_study_params) do
     case Content.create("case_study", case_study_params) do
       {:ok, case_study} ->
@@ -116,6 +120,10 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
+
+      {:error, reason} ->
+        Logger.error("Failed to create case study: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Case study could not be created")}
     end
   end
 

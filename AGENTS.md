@@ -10,18 +10,55 @@ This file was bootstrapped via `/grill-me` on 2026-05-06 against the deploy/ops 
 
 A change is mergeable only if all of the following hold. These are inherited expectations — running them locally or in CI catches the kinds of mistakes the gates exist for.
 
-- `mix compile --force` produces zero warnings.
-- `mix format --check-formatted` clean.
-- `mix credo` (project config) clean.
-- `mix sobelow --config --exit` clean.
-- `mix dialyzer` 0 errors.
-- `mix test` failure count ≤ baseline (currently 2: typography-slot tests, deferred per the typography rewrite plan).
-- `npx biome check .` clean (advisory warnings on intentional `!important` are OK).
-- `yarn stylelint 'css/**/*.css'` clean.
-- `npx vitest run` 0 failures.
-- The 6 canonical routes return 200: `/en`, `/ja`, `/en/notes`, `/en/case-studies`, `/en/case-study/case-study-1`, `/en/self`.
+The canonical command surface is `./run ci:*`. GitHub workflow YAML should call these canonical gate tasks, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same checks. If a gate changes, update `run` first, then call the `./run ci:*` task from CI.
+
+GitHub CI must expose the real acceptance gates as legible top-level check jobs. Do not hide compile, lint, security, test, static analysis, workflow lint, or gate-integrity work as steps inside one generic `test` job. A PR reviewer should be able to identify the failing gate from the checks list without opening logs.
+
+- `./run ci:compile` produces zero compile warnings.
+- `./run ci:workflow-lint` is clean: actionlint accepts every GitHub workflow file.
+- `./run ci:acceptance-gate-bypass-check` is clean, and `./run ci:acceptance-gate-bypass-check:test` passes its fixture matrix: canonical workflow/run samples pass, and known fake-green patterns are rejected.
+- `./run ci:lint` is clean: ShellCheck, Hadolint, Credo, `mix format --check-formatted`, Biome check, and Stylelint check. The only allowed advisory is Biome `lint/complexity/noImportantStyles` for the intentional CJK line-height rule in `assets/css/app.css`; any other warning is red.
+- `./run ci:security-check` is clean: Sobelow with project config and nonzero exit on findings.
+- `./run ci:static-analysis` is clean: Dialyzer reports `Total errors: 0, Skipped: 0, Unnecessary Skips: 0`.
+- `./run ci:test` is clean: Elixir tests and JS tests have 0 failures.
+- The secret-scan workflow runs `./run ci:secret-scan`; gitleaks current-tree scan has 0 findings.
+
+Route smoke is not an always-on acceptance gate yet. Do not add placeholder route smoke just to make CI look broader. A route or release smoke gate belongs in the production-build work after the app has a meaningful readiness/content contract.
+
+### Gate integrity: no fake green
+
+The canonical commands above are the gate contract. Use `./run <task>` unless debugging a command internals issue; if you use a raw underlying command, explain why and still re-run the canonical gate before calling it green. There is no `./psh` wrapper in this repo.
+
+A gate is green only when the real command runs, returns its real exit code, and its output satisfies the rule above. Agents must not make a gate pass by weakening the gate.
+
+Forbidden for acceptance gates:
+
+- No `|| true`, `--ignore-exit-status`, `continue-on-error`, `allow_failure`, unnamed warning baselines, broad ignore files, or tool-specific suppressions.
+- No deleting, narrowing, renaming, or skipping tests to reduce failures.
+- No changing CI from "fail on problem" to "report problem but pass."
+- No replacing a required gate with a cheaper proxy. Lint, compile, Dialyzer, unit tests, and secret scan are separate gates.
+- No claiming "green" from a command that exited nonzero, timed out, failed to start, or was not run.
+- No count-only baseline games. A baseline exception must name the exact failing tests or warning IDs; different failures are new failures. Prefer deleting the exception by fixing the underlying behavior.
+
+When a gate fails, do this instead:
+
+1. Keep the gate strict.
+2. Identify the root cause from the command output.
+3. Fix the code, test, config, or type contract causing the failure.
+4. Re-run the same canonical gate without suppressions.
+5. Report the exact command, exit status, and remaining failures or warnings.
+
+If a gate cannot be fixed in the current slice, stop and report it as red. Do not downgrade it to advisory. Do not hide it behind a baseline. Do not merge it into an unrelated change.
 
 The Elixir-side prescriptions (writing-controllers, writing-liveviews, writing-otp, etc.) live in the `elixir-phoenix-style` skill at `.agents/skills/elixir-phoenix-style/`. Load `SKILL.md` early in any Elixir-editing session.
+
+---
+
+## Decision records
+
+- ADRs live in `_PROJECT_DOCS/adrs/`.
+- `AGENTS.md` is for constant repo-level guidance, workflows, acceptance gates, and pointers to durable records. It may summarize or link to ADRs when the guidance must stay visible, but it is not the ADR body.
+- Tactical day-to-day notes stay in conversation or `.tmp/` until promoted into either an ADR or an always-on repo rule.
 
 ---
 
@@ -89,5 +126,5 @@ Not yet captured: budget ceilings, telemetry-leaving-box policy, network rules (
 
 - After the next `/grill-me` pass: append to or replace the partial sections above.
 - New scopes (typography redesign, etc.) get their own top-level sections following the same shape.
-- ADR-grade decisions land here; tactical day-to-day stays in conversation or `.tmp/`.
+- ADR-grade decisions land in `_PROJECT_DOCS/adrs/`; this file keeps only stable guidance, workflows, acceptance gates, and pointers.
 - This file is git-tracked and public-shaped per `~/.agents/AGENTS.md` §10. PII goes to the vault, not here.

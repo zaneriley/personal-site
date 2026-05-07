@@ -7,20 +7,19 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   require Logger
 
   @type csp_config :: %{
-          scheme: String.t(),
-          host: String.t(),
-          port: String.t(),
-          additional_hosts: list(String.t()),
-          report_only: boolean()
+          required(:scheme) => String.t(),
+          required(:host) => String.t(),
+          required(:port) => String.t(),
+          required(:additional_hosts) => list(String.t()),
+          optional(:report_only) => boolean()
         }
   @type report_only :: boolean()
-  @env Application.compile_env(:portfolio, :environment)
-  @env_module if @env == :dev,
-                do: PortfolioWeb.Plugs.CSPHeader.Dev,
-                else: PortfolioWeb.Plugs.CSPHeader.Prod
-  @report_only Application.compile_env(:portfolio, [:csp, :report_only], false)
   @default_scheme "https"
   @default_port "443"
+  @header_names %{
+    true => "content-security-policy-report-only",
+    false => "content-security-policy"
+  }
 
   @spec generate_csp_for_testing(map()) :: String.t()
   def generate_csp_for_testing(config) do
@@ -30,7 +29,7 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   @spec init(keyword()) :: keyword()
   def init(opts) do
     Logger.debug(
-      "CSPHeader init - Environment: #{@env}, Module: #{@env_module}"
+      "CSPHeader init - Environment: #{environment()}, Module: #{environment_module()}"
     )
 
     opts
@@ -38,20 +37,18 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
 
   @spec call(Plug.Conn.t(), keyword()) :: Plug.Conn.t()
   def call(conn, _opts) do
-    conn
-    |> get_csp_config()
+    config = get_csp_config(conn)
+
+    config
     |> build_csp()
-    |> apply_csp_header(conn)
+    |> apply_csp_header(conn, config.report_only)
   end
 
-  defp apply_csp_header(csp, conn) do
-    header_name =
-      if @report_only,
-        do: "content-security-policy-report-only",
-        else: "content-security-policy"
-
-    put_resp_header(conn, header_name, csp)
+  defp apply_csp_header(csp, conn, report_only) do
+    put_resp_header(conn, header_name(report_only), csp)
   end
+
+  defp header_name(report_only), do: Map.fetch!(@header_names, report_only)
 
   @spec get_csp_config(Plug.Conn.t()) :: csp_config()
   defp get_csp_config(conn) do
@@ -60,8 +57,26 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
       host: get_host(conn),
       port: System.get_env("URL_PORT", @default_port),
       additional_hosts: parse_additional_hosts(),
-      report_only: @report_only
+      report_only: report_only?()
     }
+  end
+
+  defp environment do
+    Application.get_env(:portfolio, :environment)
+  end
+
+  defp environment_module do
+    Map.get(
+      %{dev: PortfolioWeb.Plugs.CSPHeader.Dev},
+      environment(),
+      PortfolioWeb.Plugs.CSPHeader.Prod
+    )
+  end
+
+  defp report_only? do
+    :portfolio
+    |> Application.get_env(:csp, [])
+    |> Keyword.get(:report_only, false)
   end
 
   defp get_host(conn) do
@@ -81,6 +96,7 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
   defp build_csp(config) do
     ws_url = construct_url(config, :ws)
     all_hosts = get_all_hosts(config)
+    env_module = environment_module()
 
     [
       default_src: "'self' #{all_hosts}",
@@ -89,13 +105,13 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
       img_src: "'self' #{all_hosts} data:",
       font_src: "'self' #{all_hosts}",
       connect_src: "'self' #{all_hosts} #{ws_url}",
-      frame_src: @env_module.frame_src(),
+      frame_src: env_module.frame_src(),
       object_src: "'none'",
       base_uri: "'self'",
       form_action: "'self'",
       frame_ancestors: "'none'"
     ]
-    |> @env_module.maybe_add_upgrade_insecure_requests()
+    |> env_module.maybe_add_upgrade_insecure_requests()
     |> Enum.map_join("; ", fn {key, value} ->
       "#{key |> to_string() |> String.replace("_", "-")} #{value}"
     end)
@@ -103,14 +119,14 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
 
   @spec construct_url(csp_config, :base | :ws) :: String.t()
   defp construct_url(config, type) do
-    scheme =
-      if type == :ws and config.scheme == "https",
-        do: "wss",
-        else: config.scheme
-
-    port = if config.port in ["80", "443"], do: "", else: ":#{config.port}"
-    "#{scheme}://#{config.host}#{port}"
+    "#{url_scheme(type, config.scheme)}://#{config.host}#{port_segment(config.port)}"
   end
+
+  defp url_scheme(:ws, "https"), do: "wss"
+  defp url_scheme(_type, scheme), do: scheme
+
+  defp port_segment(port) when port in ["80", "443"], do: ""
+  defp port_segment(port), do: ":#{port}"
 
   @spec get_all_hosts(csp_config) :: String.t()
   defp get_all_hosts(config) do

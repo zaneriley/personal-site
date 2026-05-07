@@ -143,7 +143,6 @@ defmodule PortfolioWeb.Components.Typography do
     ~H"""
     <.dynamic_tag tag_name={@tag} id={@id} class={@all_classes}>
       <span class={@optical_adjustment_class} style={@optical_style_attr}>
-        
         <%= if @dropcap do %>
           <% text =
             render_slot(@inner_block)
@@ -153,19 +152,18 @@ defmodule PortfolioWeb.Components.Typography do
           <%= if starts_with_hanging_punct?(text) do %>
             <% {hanging_punct, rest} = String.split_at(text, 1) %>
             <span class="dropcap hanging-punct font-noto-sans-jp" aria-hidden="true">
-              <span class="hanging-punct"><%= hanging_punct %></span><span><%= rest %></span>
+              <span class="hanging-punct">{hanging_punct}</span><span><%= rest %></span>
             </span>
-            <span class="sr-only"><%= text %></span>
+            <span class="sr-only">{text}</span>
           <% else %>
             <% {first_char, rest} = String.split_at(text, 1) %>
             <span aria-hidden="true">
-              <span class="dropcap font-noto-serif-jp"><%= first_char %></span><span><%= rest %></span>
+              <span class="dropcap font-noto-serif-jp">{first_char}</span><span><%= rest %></span>
             </span>
-            <span class="sr-only"><%= text %></span>
+            <span class="sr-only">{text}</span>
           <% end %>
         <% else %>
-          
-          <%= render_slot(@inner_block) %>
+          {render_slot(@inner_block)}
         <% end %>
       </span>
     </.dynamic_tag>

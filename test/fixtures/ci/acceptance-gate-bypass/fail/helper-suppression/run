@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+function lint:dockerfile {
+  hadolint --ignore DL3008 Dockerfile
+}
+
+function ci:compile {
+  :
+}
+
+function ci:lint {
+  lint:dockerfile
+}
+
+function ci:workflow-lint {
+  :
+}
+
+function ci:security-check {
+  :
+}
+
+function ci:test {
+  :
+}
+
+function ci:static-analysis {
+  :
+}
+
+function ci:secret-scan {
+  :
+}
+
+function ci:acceptance-gate-bypass-check {
+  :
+}
+
+function ci:acceptance-gate-bypass-check:test {
+  :
+}

@@ -1,0 +1,13 @@
+name: "Setup CI environment"
+description: "Install CI host dependencies and prepare the Docker Compose environment."
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install CI dependencies"
+      shell: "bash"
+      run: ./run ci:install-deps
+
+    - name: "Setup environment"
+      shell: "bash"
+      run: ./run ci:setup-env

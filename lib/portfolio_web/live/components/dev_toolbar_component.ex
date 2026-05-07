@@ -22,12 +22,12 @@ defmodule PortfolioWeb.DevToolbar do
           <div>
             <strong class="text-gray-400 ">ENV:</strong>
             <span class="text-white font-semibold">
-              <%= Application.get_env(:portfolio, :environment) %>
+              {Application.get_env(:portfolio, :environment)}
             </span>
           </div>
           <div>
             <strong class="text-gray-400">LOCALE:</strong>
-            <span class="text-white font-semibold"><%= @locale %></span>
+            <span class="text-white font-semibold">{@locale}</span>
           </div>
         </div>
 
@@ -39,7 +39,7 @@ defmodule PortfolioWeb.DevToolbar do
                 do: "text-green-500 font-semibold",
                 else: "text-red-500"
             }>
-              <%= if connected?(@socket), do: "CONNECTED", else: "DISCONNECTED" %>
+              {if connected?(@socket), do: "CONNECTED", else: "DISCONNECTED"}
             </span>
           </div>
         </div>

@@ -9,38 +9,112 @@ on:
       - "main"
       - "master"
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  workflow-lint:
+    name: "Workflow lint"
     runs-on: "ubuntu-22.04"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      GITHUB_REF: ${{ github.ref }}
-      GITHUB_SHA: ${{ github.sha }}
-      GITHUB_ACTOR: ${{ github.actor }}
       CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
 
     steps:
-      - uses: "actions/checkout@v2"
+      - uses: "actions/checkout@v4"
 
-      - name: "Install CI dependencies"
-        run: ./run ci:install-deps
+      - name: "Workflow lint"
+        run: ./run ci:workflow-lint
 
-      - name: "Setup environment"
-        run: |
-          # Remove volumes in CI to avoid permission errors due to UID / GID.
-          sed -i "s|.:/app|/tmp:/tmp|g" .env*
-          sed -i "s|.:/app|/tmp:/tmp|g" docker-compose.yml
-          ./run ci:setup-env
+  gate-integrity:
+    name: "Gate integrity"
+    runs-on: "ubuntu-22.04"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Acceptance-gate bypass check"
+        run: ./run ci:acceptance-gate-bypass-check
+
+      - name: "Acceptance-gate bypass fixture test"
+        run: ./run ci:acceptance-gate-bypass-check:test
+
+  compile:
+    name: "Compile"
+    runs-on: "ubuntu-22.04"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "./.github/actions/setup-ci"
+
+      - name: "Compile"
+        run: ./run ci:compile
+
+  lint:
+    name: "Lint"
+    runs-on: "ubuntu-22.04"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "./.github/actions/setup-ci"
 
       - name: "Lint"
         run: ./run ci:lint
 
+  security:
+    name: "Security check"
+    runs-on: "ubuntu-22.04"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "./.github/actions/setup-ci"
+
       - name: "Security check"
         run: ./run ci:security-check
 
+  test:
+    name: "Test"
+    runs-on: "ubuntu-22.04"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "./.github/actions/setup-ci"
+
       - name: "Run tests"
         run: ./run ci:test
+
+  static-analysis:
+    name: "Static analysis"
+    runs-on: "ubuntu-22.04"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
+      DC: run
+
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "./.github/actions/setup-ci"
 
       - name: "Static analysis"
         run: ./run ci:static-analysis

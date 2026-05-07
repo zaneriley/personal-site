@@ -3,8 +3,8 @@
 </.header>
 <%= if Application.get_env(:portfolio, :environment) == :dev do %>
   <div>
-    Debug: Gettext Locale: <%= Gettext.get_locale(PortfolioWeb.Gettext) %>,
-    Assign Locale: <%= @user_locale %>
+    Debug: Gettext Locale: {Gettext.get_locale(PortfolioWeb.Gettext)},
+    Assign Locale: {@user_locale}
   </div>
 <% end %>
 <.table
@@ -16,8 +16,8 @@
     end
   }
 >
-  <:col :let={{_id, note}} label="Title"><%= note.title %></:col>
-  <:col :let={{_id, note}} label="Content"><%= note.content %></:col>
+  <:col :let={{_id, note}} label="Title">{note.title}</:col>
+  <:col :let={{_id, note}} label="Content">{note.content}</:col>
   <:action :let={{_id, note}}>
     <div class="sr-only">
       <.link navigate={~p"/#{@user_locale}/note/#{note.url}"}>

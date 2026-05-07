@@ -22,6 +22,8 @@ defmodule Portfolio.Content.Entry.Compiler do
 
   require Logger
 
+  @type ast :: EarmarkParser.ast()
+
   @doc """
   Parses raw markdown content into an AST representation.
 
@@ -31,32 +33,26 @@ defmodule Portfolio.Content.Entry.Compiler do
   ## Returns
     - A tuple with the result and AST: `{:ok, ast}` or `{:error, reason}`
   """
-  @spec parse_to_ast(String.t() | nil) :: {:ok, list()} | {:error, any()}
+  @spec parse_to_ast(String.t() | nil) :: {:ok, ast()} | {:error, any()}
   def parse_to_ast(nil) do
     {:error, "Cannot parse nil content"}
   end
 
   def parse_to_ast(content) when is_binary(content) do
     try do
-      result = Parser.parse(content)
+      case Parser.parse(content) do
+        {:ok, %{ast: ast}} ->
+          {:ok, ast}
 
-      # Parser.parse returns a complex structure, try to extract AST
-      ast = extract_ast_from_parser_result(result)
-
-      {:ok, ast}
+        {:error, reason} ->
+          Logger.error("Parser returned an error: #{inspect(reason)}")
+          {:error, reason}
+      end
     rescue
       e ->
         Logger.error("Error parsing content to AST: #{inspect(e)}")
         {:error, "Failed to parse content"}
     end
-  end
-
-  # Parser.parse/1 returns {:ok, %{ast: _}} | {:error, String.t()}.
-  defp extract_ast_from_parser_result({:ok, %{ast: ast}}), do: ast
-
-  defp extract_ast_from_parser_result({:error, _reason} = error_tuple) do
-    Logger.error("Parser returned an error: #{inspect(error_tuple)}")
-    error_tuple
   end
 
   @doc """
@@ -69,7 +65,7 @@ defmodule Portfolio.Content.Entry.Compiler do
   ## Returns
     - The processed AST
   """
-  @spec process_ast(list(), keyword()) :: list()
+  @spec process_ast(ast(), keyword()) :: ast()
   def process_ast(ast, _opts \\ []) when is_list(ast) do
     # Apply transforms like syntax highlighting, image processing, etc.
     # This is a simple pass-through for now as we migrate functionality
@@ -86,7 +82,7 @@ defmodule Portfolio.Content.Entry.Compiler do
   ## Returns
     - The rendered HTML as a string
   """
-  @spec render_ast(list(), keyword()) :: String.t()
+  @spec render_ast(ast(), keyword()) :: String.t()
   def render_ast(ast, _opts \\ []) when is_list(ast) do
     # We need to convert the AST to HTML for proper rendering
     Renderer.render_html(ast)
@@ -109,7 +105,7 @@ defmodule Portfolio.Content.Entry.Compiler do
     - The result contains the AST and compiled HTML content
   """
   @spec compile(String.t() | nil, keyword()) ::
-          {:ok, %{ast: list(), compiled_content: String.t()}}
+          {:ok, %{ast: ast(), compiled_content: String.t()}}
           | {:error, any()}
   def compile(content, opts \\ [])
 
@@ -147,7 +143,7 @@ defmodule Portfolio.Content.Entry.Compiler do
     - The result contains the compiled content for each language
   """
   @spec compile_translations(any(), keyword()) ::
-          {:ok, %{translations: map(), primary_ast: list()}}
+          {:ok, %{translations: map(), primary_ast: ast()}}
           | {:error, any()}
   def compile_translations(content_entry, opts \\ []) do
     content_id = content_entry.id
@@ -378,7 +374,7 @@ defmodule Portfolio.Content.Entry.Compiler do
   ## Returns
     - The deserialized and processed AST
   """
-  @spec deserialize_and_process_ast(map() | list() | nil, keyword()) :: list()
+  @spec deserialize_and_process_ast(map() | list() | nil, keyword()) :: ast()
   def deserialize_and_process_ast(stored_ast, opts \\ [])
 
   def deserialize_and_process_ast(nil, _opts) do

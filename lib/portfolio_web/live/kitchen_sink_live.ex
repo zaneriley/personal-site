@@ -127,13 +127,13 @@ defmodule PortfolioWeb.KitchenSinkLive do
             class="px-3 py-1.5 bg-dusk-800 hover:bg-dusk-700 rounded-md"
             phx-click="toggle_lang"
           >
-            <%= if @lang == "en", do: "Switch to 日本語", else: "Switch to English" %>
+            {if @lang == "en", do: "Switch to 日本語", else: "Switch to English"}
           </button>
           <button
             class="px-3 py-1.5 bg-dusk-800 hover:bg-dusk-700 rounded-md"
             phx-click="toggle_guides"
           >
-            <%= if @show_guides, do: "Hide Guides", else: "Show Guides" %>
+            {if @show_guides, do: "Hide Guides", else: "Show Guides"}
           </button>
         </div>
       </div>
@@ -164,10 +164,10 @@ defmodule PortfolioWeb.KitchenSinkLive do
 
                   <div class="flex space-x-md text-sm text-dusk-400 font-mono">
                     <.typography locale={@user_locale} tag="span" size="2xs">
-                      --fs-<%= size %>
+                      --fs-{size}
                     </.typography>
                     <.typography locale={@user_locale} tag="span" size="2xs">
-                      <%= get_space_value(size) %>
+                      {get_space_value(size)}
                     </.typography>
                   </div>
                 <% end %>
@@ -209,36 +209,36 @@ defmodule PortfolioWeb.KitchenSinkLive do
                         <%= if font == "noto" do %>
                           <%= case size do %>
                             <% size when size in ~w(4xl 2xl) -> %>
-                              <%= process_text(elem(@current_palette.headline, 1)) %>
+                              {process_text(elem(@current_palette.headline, 1))}
                             <% "1xl" -> %>
-                              <%= process_text(elem(@current_palette.large, 1)) %>
+                              {process_text(elem(@current_palette.large, 1))}
                             <% "md" -> %>
-                              <%= process_text(elem(@current_palette.medium, 1)) %>
+                              {process_text(elem(@current_palette.medium, 1))}
                             <% _ -> %>
-                              <%= process_text(elem(@current_palette.small, 1)) %>
+                              {process_text(elem(@current_palette.small, 1))}
                           <% end %>
                         <% else %>
                           <%= if @lang == "en" do %>
                             <%= case size do %>
                               <% size when size in ~w(4xl 2xl) -> %>
-                                <%= process_text(elem(@current_palette.headline, 0)) %>
+                                {process_text(elem(@current_palette.headline, 0))}
                               <% "1xl" -> %>
-                                <%= process_text(elem(@current_palette.large, 0)) %>
+                                {process_text(elem(@current_palette.large, 0))}
                               <% "md" -> %>
-                                <%= process_text(elem(@current_palette.medium, 0)) %>
+                                {process_text(elem(@current_palette.medium, 0))}
                               <% _ -> %>
-                                <%= process_text(elem(@current_palette.small, 0)) %>
+                                {process_text(elem(@current_palette.small, 0))}
                             <% end %>
                           <% else %>
                             <%= case size do %>
                               <% size when size in ~w(4xl 2xl) -> %>
-                                <%= process_text(elem(@current_palette.headline, 1)) %>
+                                {process_text(elem(@current_palette.headline, 1))}
                               <% "1xl" -> %>
-                                <%= process_text(elem(@current_palette.large, 1)) %>
+                                {process_text(elem(@current_palette.large, 1))}
                               <% "md" -> %>
-                                <%= process_text(elem(@current_palette.medium, 1)) %>
+                                {process_text(elem(@current_palette.medium, 1))}
                               <% _ -> %>
-                                <%= process_text(elem(@current_palette.small, 1)) %>
+                                {process_text(elem(@current_palette.small, 1))}
                             <% end %>
                           <% end %>
                         <% end %>
@@ -263,7 +263,7 @@ defmodule PortfolioWeb.KitchenSinkLive do
                   style={"margin-bottom: var(--space-#{size})"}
                 >
                   <code class="text-sm text-dusk-400 font-mono w-24">
-                    --space-<%= size %>
+                    --space-{size}
                   </code>
                   <div class="flex-1 border-b border-dusk-400/30"></div>
                 </div>

@@ -91,7 +91,7 @@ defmodule Portfolio.Content do
   end
 
   @type content_type :: Types.content_type()
-  @type content_id :: integer()
+  @type content_id :: Ecto.UUID.t()
   @type content_url :: String.t()
   @type content_identifier :: content_id() | content_url()
 
@@ -179,7 +179,7 @@ defmodule Portfolio.Content do
   end
 
   @spec create(content_type(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, Note.t() | CaseStudy.t()} | {:error, term()}
   def create(type, attrs) do
     Logger.debug(
       "Create called with type: #{inspect(type)}, attrs: #{inspect(attrs)}"
@@ -207,8 +207,7 @@ defmodule Portfolio.Content do
   end
 
   @spec update(content_type(), Note.t() | CaseStudy.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()}
-          | {:error, Ecto.Changeset.t() | atom()}
+          {:ok, Note.t() | CaseStudy.t()} | {:error, term()}
   def update(_type, content, attrs) do
     # Use a transaction to ensure consistency
     result =
@@ -326,10 +325,11 @@ defmodule Portfolio.Content do
 
   @spec get_with_translations(
           Types.content_type(),
-          String.t() | integer(),
+          content_identifier(),
           String.t()
         ) ::
-          {:ok, Note.t() | CaseStudy.t(), map(), String.t()} | {:error, atom()}
+          {:ok, Note.t() | CaseStudy.t(), map(), EarmarkParser.ast()}
+          | {:error, atom()}
   def get_with_translations(content_type, identifier, locale) do
     EntryAssembler.get_assembled_entry(content_type, identifier, locale)
   end

@@ -58,6 +58,7 @@ body {
     3em +
     2rem
   ); /* em is # of lines, rem is # of line-height units between lines */
+
   margin-top: 0.11em; /* magic unit, needs to be computed somehow */
   margin-right: var(--space-1xs);
   font-style: normal;

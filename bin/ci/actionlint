@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+ACTIONLINT_VERSION="${ACTIONLINT_VERSION:-1.7.12}"
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd -- "${script_dir}/../.." && pwd)"
+
+case "$(uname -s)" in
+    Linux)
+        os="linux"
+        ;;
+    Darwin)
+        os="darwin"
+        ;;
+    *)
+        echo "Unsupported OS for actionlint: $(uname -s)" >&2
+        exit 1
+        ;;
+esac
+
+case "$(uname -m)" in
+    x86_64 | amd64)
+        arch="amd64"
+        ;;
+    arm64 | aarch64)
+        arch="arm64"
+        ;;
+    *)
+        echo "Unsupported architecture for actionlint: $(uname -m)" >&2
+        exit 1
+        ;;
+esac
+
+platform="${os}_${arch}"
+archive="actionlint_${ACTIONLINT_VERSION}_${platform}.tar.gz"
+base_url="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}"
+install_dir="${repo_root}/.tmp/tools/actionlint/v${ACTIONLINT_VERSION}/${platform}"
+bin_path="${install_dir}/actionlint"
+
+sha256_file() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | awk '{print $1}'
+    else
+        shasum -a 256 "$1" | awk '{print $1}'
+    fi
+}
+
+install_actionlint() {
+    local tmp_dir
+    local checksums
+    local expected
+    local actual
+
+    tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "${tmp_dir}"' EXIT
+
+    echo "Installing actionlint v${ACTIONLINT_VERSION} for ${platform} into ${install_dir}" >&2
+
+    curl -fsSL "${base_url}/${archive}" -o "${tmp_dir}/${archive}"
+    curl -fsSL "${base_url}/actionlint_${ACTIONLINT_VERSION}_checksums.txt" -o "${tmp_dir}/checksums.txt"
+
+    checksums="${tmp_dir}/checksums.txt"
+    expected="$(awk -v archive="${archive}" '$2 == archive {print $1}' "${checksums}")"
+    if [[ -z "${expected}" ]]; then
+        echo "Could not find checksum for ${archive}" >&2
+        exit 1
+    fi
+
+    actual="$(sha256_file "${tmp_dir}/${archive}")"
+    if [[ "${actual}" != "${expected}" ]]; then
+        echo "Checksum mismatch for ${archive}" >&2
+        echo "expected: ${expected}" >&2
+        echo "actual:   ${actual}" >&2
+        exit 1
+    fi
+
+    mkdir -p "${install_dir}"
+    tar -xzf "${tmp_dir}/${archive}" -C "${install_dir}" actionlint
+    chmod +x "${bin_path}"
+
+    rm -rf "${tmp_dir}"
+    trap - EXIT
+}
+
+if [[ ! -x "${bin_path}" ]]; then
+    install_actionlint
+fi
+
+exec "${bin_path}" "$@"
