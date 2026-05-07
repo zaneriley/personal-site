@@ -47,6 +47,10 @@ defmodule PortfolioWeb.Router do
     pipe_through :api
   end
 
+  scope "/", PortfolioWeb do
+    get "/readyz", ReadinessController, :index
+  end
+
   # Documentation route - add before other routes to bypass locale redirection
   scope "/docs" do
     pipe_through :browser

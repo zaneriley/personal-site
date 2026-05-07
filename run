@@ -105,6 +105,10 @@ function lint:shell {
     scripts+=("${script}")
   done < <(find bin -type f -print0)
 
+  while IFS= read -r -d '' script; do
+    scripts+=("${script}")
+  done < <(find ci -type f -name '*.sh' -print0 2>/dev/null)
+
   if command -v shellcheck >/dev/null 2>&1; then
     shellcheck "${scripts[@]}"
   else
@@ -378,7 +382,7 @@ function clean {
 function ci:install-deps {
     if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get update
-        sudo apt-get install -y curl shellcheck
+        sudo apt-get install -y curl jq shellcheck
         return 0
     fi
 
@@ -489,6 +493,10 @@ function ci:acceptance-gate-bypass-check {
 
 function ci:acceptance-gate-bypass-check:test {
     bin/ci/acceptance-gate-bypass-check --test-fixtures
+}
+
+function ci:prod-build {
+    ci/prod-build.sh
 }
 
 function ci:run-all {

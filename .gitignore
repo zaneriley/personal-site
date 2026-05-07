@@ -185,5 +185,8 @@ flycheck_*.el
 # LLM scratch / unfinished thinking
 .tmp/
 
+# CI-generated prod-build measurements
+/ci/last-run.json
+
 # Process core dumps
 core

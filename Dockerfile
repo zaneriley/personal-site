@@ -88,6 +88,7 @@ COPY --chown=elixir:elixir . .
 RUN if [ "${MIX_ENV}" != "dev" ]; then \
   mkdir -p /app/priv/static \
   && cp -r /public/* /app/priv/static/ \
+  && mix compile --warnings-as-errors \
   && mix phx.digest && mix release; fi
 
   
