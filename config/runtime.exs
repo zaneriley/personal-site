@@ -76,13 +76,17 @@ config :github_webhook, secret: github_webhook_secret
 
 config :portfolio, content_repo_url: System.get_env("CONTENT_REPO_URL")
 
-if config_env() == :prod do
-  config :portfolio, content_base_path: "app/priv/content"
-else
-  config :portfolio, content_base_path: "priv/content"
-end
+default_content_base_path =
+  if config_env() == :prod do
+    "/app/priv/content"
+  else
+    "priv/content"
+  end
 
-content_base_path = Application.get_env(:portfolio, :content_base_path)
+content_base_path =
+  System.get_env("CONTENT_BASE_PATH", default_content_base_path)
+
+config :portfolio, content_base_path: content_base_path
 
 config :portfolio, Portfolio.Content.FileManagement.Watcher,
-  paths: [System.get_env("CONTENT_BASE_PATH", "priv/content")]
+  paths: [content_base_path]

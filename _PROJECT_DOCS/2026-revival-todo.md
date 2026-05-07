@@ -2,7 +2,7 @@
 
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
-**Updated:** 2026-05-06 (deps + dependabot done; deploy/ops scope grilled into `AGENTS.md`).
+**Updated:** 2026-05-07 (prod-build/nightly CI gate implemented on `agent/prod-build-gate`; deploy substrate still pending).
 
 ---
 
@@ -26,7 +26,7 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 | 2.7 — Triage GitHub vulnerabilities | ✅ done | All 213 historical npm alerts auto-resolved by the Group 5 upgrade (timestamps line up exactly with the push). 0 open, 0 hex/elixir-side advisories. The 48-figure on push was a stale snapshot. |
 | 3 — Deploy/ops scope | 🔄 **active** | `/grill-me` ran 2026-05-06. Vision + objectives + 6 strategies in `AGENTS.md`. Hard-constraints + taste-seeding cut short — re-run `/grill-me` next time. |
 | 3.1 — Content-pipeline sync | ⏸ next | `personal-website-content` webhook hardening. PM rank #1 — site is meaningless without content. |
-| 3.2 — CI gates | ⏸ pending | LLM-mistake catcher. Parallelizable with 3.1. |
+| 3.2 — CI gates | 🔄 in PR | Prod-build gate implemented: release build, migrations up/down/up, `/readyz`, route smoke, RPC introspection, rolling baseline seed, nightly schedule. Promote to required branch protection after the workflow is green on GitHub. |
 | 3.3 — Resource-frugality of the app | ⏸ pending | Measure cold-start, p50, memory, cache-hit rate. Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` queued. **Hardware decision falls out of this, not before.** |
 | 3.4 — Front-edge cache (CDN) | ⏸ pending | `/literature` required before tool selection. |
 | 3.5 — Origin substrate + deploy pipeline | ⏸ pending | `/literature` required. Hardware + blue/green + deploy mechanics. |

@@ -62,6 +62,8 @@ config :portfolio, Portfolio.Mailer, adapter: Swoosh.Adapters.Local
 
 config :swoosh, :api_client, false
 
+config :tzdata, :autoupdate, :disabled
+
 import_config "#{Mix.env()}.exs"
 
 config :github_webhook,

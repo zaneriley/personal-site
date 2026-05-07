@@ -1,0 +1,42 @@
+name: "Prod build"
+
+on:
+  pull_request:
+    branches:
+      - "*"
+  push:
+    branches:
+      - "main"
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "prod-build-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  prod-build:
+    name: "Prod build"
+    runs-on: "ubuntu-22.04"
+
+    steps:
+      - uses: "actions/checkout@v4"
+
+      - name: "Install CI dependencies"
+        run: ./run ci:install-deps
+
+      - name: "Prod build"
+        run: ./run ci:prod-build
+
+      - name: "Upload prod-build measurements"
+        if: always()
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "prod-build-measurements"
+          path: |
+            ci/last-run.json
+            ci/baseline.json
