@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.3](https://github.com/zaneriley/personal-site/compare/v0.4.2...v0.4.3) (2026-05-07)
+
+
+### Features
+
+* **ci:** add prod deployability gate ([1d6e5c7](https://github.com/zaneriley/personal-site/commit/1d6e5c7cdf78c31816208d83fc72d7733f90eccf))
+
 ## [0.4.2](https://github.com/zaneriley/personal-site/compare/v0.4.1-alpha.1...v0.4.2) (2026-05-07)
 
 
