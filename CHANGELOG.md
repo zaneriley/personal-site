@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.5](https://github.com/zaneriley/personal-site/compare/v0.4.4...v0.4.5) (2026-05-07)
+
+
+### CI
+
+* upgrade actions to node 24 majors ([45c7767](https://github.com/zaneriley/personal-site/commit/45c77672d27449064d18cf8a2c0b7e0a1ebc2de6))
+
 ## [0.4.4](https://github.com/zaneriley/personal-site/compare/v0.4.3...v0.4.4) (2026-05-07)
 
 
