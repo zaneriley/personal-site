@@ -12,7 +12,12 @@ defmodule PortfolioWeb.ContentWebhookController do
   alias Portfolio.Content.Types
 
   @type webhook_result ::
-          {:ok, :updated | :no_relevant_changes} | {:error, String.t()}
+          {:ok, map() | :no_relevant_changes} | {:error, String.t()}
+
+  @type relevant_changes :: %{upsert: [String.t()], delete: [String.t()]}
+
+  @main_ref "refs/heads/main"
+  @zero_sha String.duplicate("0", 40)
 
   @spec handle_webhook(Plug.Conn.t(), map(), keyword()) :: webhook_result()
   def handle_webhook(_conn, payload, opts) do
@@ -20,15 +25,19 @@ defmodule PortfolioWeb.ContentWebhookController do
 
     with {:ok, event_type} <- extract_event_type(payload),
          :ok <- validate_push_event(event_type),
+         :ok <- validate_ref(payload),
+         :ok <- validate_repository(payload, content_repo_url(opts)),
+         {:ok, target_sha} <- extract_target_sha(payload),
          {:ok, relevant_changes} <- extract_relevant_changes(payload) do
-      case relevant_changes do
-        [] ->
-          Logger.info("No relevant file changes detected")
-          {:ok, :no_relevant_changes}
+      if empty_changes?(relevant_changes) do
+        Logger.info("No relevant file changes detected")
+        {:ok, :no_relevant_changes}
+      else
+        Logger.info(
+          "Relevant file changes detected: #{inspect(relevant_changes)}"
+        )
 
-        changes ->
-          Logger.info("Relevant file changes detected: #{inspect(changes)}")
-          trigger_update(opts)
+        trigger_update(opts, relevant_changes, target_sha)
       end
     else
       {:error, reason} ->
@@ -50,23 +59,68 @@ defmodule PortfolioWeb.ContentWebhookController do
   defp validate_push_event("push"), do: :ok
   defp validate_push_event(_), do: {:error, "Only push events are supported"}
 
+  @spec validate_ref(map()) :: :ok | {:error, String.t()}
+  defp validate_ref(%{"ref" => @main_ref}), do: :ok
+  defp validate_ref(%{"ref" => ref}), do: {:error, "Unexpected ref: #{ref}"}
+  defp validate_ref(_), do: {:error, "Missing ref"}
+
+  @spec validate_repository(map(), String.t()) :: :ok | {:error, String.t()}
+  defp validate_repository(%{"repository" => repository}, expected_repo_url) do
+    clone_url = repository["clone_url"]
+    ssh_url = repository["ssh_url"]
+
+    if expected_repo_url in [clone_url, ssh_url] do
+      :ok
+    else
+      {:error, "Unexpected repository"}
+    end
+  end
+
+  defp validate_repository(_, _expected_repo_url),
+    do: {:error, "Missing repository"}
+
+  @spec extract_target_sha(map()) :: {:ok, String.t()} | {:error, String.t()}
+  defp extract_target_sha(%{"after" => @zero_sha}),
+    do: {:error, "Branch deletion is not supported"}
+
+  defp extract_target_sha(%{"after" => sha})
+       when is_binary(sha) and byte_size(sha) == 40 do
+    if String.match?(sha, ~r/\A[0-9a-f]{40}\z/i) do
+      {:ok, sha}
+    else
+      {:error, "Invalid after SHA"}
+    end
+  end
+
+  defp extract_target_sha(_), do: {:error, "Missing after SHA"}
+
   @spec extract_relevant_changes(map()) ::
-          {:ok, [String.t()]} | {:error, String.t()}
+          {:ok, relevant_changes()} | {:error, String.t()}
   defp extract_relevant_changes(%{"commits" => commits})
        when is_list(commits) do
-    relevant_changes =
+    upsert =
       commits
-      |> Stream.flat_map(fn commit ->
-        (commit["added"] || []) ++ (commit["modified"] || [])
-      end)
-      |> Stream.uniq()
-      |> Stream.filter(&relevant_file_change?/1)
-      |> Enum.to_list()
+      |> changed_paths(["added", "modified"])
+      |> Enum.filter(&relevant_file_change?/1)
 
-    {:ok, relevant_changes}
+    delete =
+      commits
+      |> changed_paths(["removed"])
+      |> Enum.filter(&relevant_file_change?/1)
+
+    {:ok, %{upsert: upsert, delete: delete}}
   end
 
   defp extract_relevant_changes(_), do: {:error, "Invalid payload structure"}
+
+  defp changed_paths(commits, keys) do
+    commits
+    |> Stream.flat_map(fn commit ->
+      Enum.flat_map(keys, &(commit[&1] || []))
+    end)
+    |> Stream.uniq()
+    |> Enum.to_list()
+  end
 
   @spec relevant_file_change?(String.t()) :: boolean()
   defp relevant_file_change?(path) do
@@ -79,14 +133,23 @@ defmodule PortfolioWeb.ContentWebhookController do
     end
   end
 
-  @spec trigger_update(keyword()) :: webhook_result()
-  defp trigger_update(opts) do
+  @spec empty_changes?(relevant_changes()) :: boolean()
+  defp empty_changes?(%{upsert: [], delete: []}), do: true
+  defp empty_changes?(_changes), do: false
+
+  @spec trigger_update(keyword(), relevant_changes(), String.t()) ::
+          webhook_result()
+  defp trigger_update(opts, changes, target_sha) do
     Logger.info("Triggering update with RemoteUpdateTrigger")
 
-    case RemoteUpdateTrigger.trigger_update(content_repo_url(opts)) do
-      {:ok, _} ->
+    case RemoteUpdateTrigger.trigger_update(content_repo_url(opts),
+           content_base_path: Keyword.get(opts, :content_base_path),
+           changes: changes,
+           target_sha: target_sha
+         ) do
+      {:ok, result} ->
         Logger.info("RemoteUpdateTrigger completed successfully")
-        {:ok, :updated}
+        {:ok, result}
 
       {:error, reason} ->
         Logger.error("RemoteUpdateTrigger failed: #{inspect(reason)}")

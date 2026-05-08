@@ -10,10 +10,12 @@ defmodule Portfolio.Content.Entry.Records do
   these basic database operations to provide more complex functionality.
   """
 
-  alias Portfolio.Repo
-  alias Portfolio.Content.Types
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
   alias Portfolio.Content.Entry.AstSerialization
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Schemas.Translation
+  alias Portfolio.Content.Types
+  alias Portfolio.Repo
   import Ecto.Query
   require Logger
 
@@ -101,14 +103,7 @@ defmodule Portfolio.Content.Entry.Records do
           {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
   def update_content_attributes(content, attrs) do
     content
-    |> Ecto.Changeset.cast(attrs, [
-      :title,
-      :url,
-      :content,
-      :is_draft,
-      :published_at
-    ])
-    |> Ecto.Changeset.validate_required([:title, :url, :content])
+    |> apply_changeset(attrs)
     |> Repo.update()
   end
 
@@ -150,7 +145,20 @@ defmodule Portfolio.Content.Entry.Records do
   @spec delete_content(Note.t() | CaseStudy.t()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
   def delete_content(content) do
-    Repo.delete(content)
+    Repo.transaction(fn ->
+      Repo.delete_all(
+        from translation in Translation,
+          where:
+            translation.translatable_id == ^content.id and
+              translation.translatable_type ==
+                ^content.__struct__.translatable_type()
+      )
+
+      case Repo.delete(content) do
+        {:ok, deleted_content} -> deleted_content
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
   end
 
   @doc """

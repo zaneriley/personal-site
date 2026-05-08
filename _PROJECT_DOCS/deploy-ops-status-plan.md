@@ -1,6 +1,6 @@
 # Deploy / ops status and plan
 
-**Updated:** 2026-05-07.
+**Updated:** 2026-05-08.
 
 This is the working plan for Phase 3 after the production-build gate landed. It is not an ADR: it records status, sequencing, and what "done" should feel like from Z's DX.
 
@@ -10,33 +10,42 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Branch protection requires `Workflow lint`, `Gate integrity`, `Compile`, `Lint`, `Security check`, `Test`, `Static analysis`, `gitleaks`, and `Prod build`.
 - `Prod build` runs on PRs, pushes to `main`, nightly schedule, and manual dispatch. It builds the prod image, runs migrations up/down/up, boots the release, waits for `/readyz`, probes canonical routes, runs release RPC introspection, compares perf data, and uploads measurements.
 - Release Please is automated enough for this pre-1.0 portfolio: conventional commits open release PRs, auto-merge waits on required gates, and release creation builds/pushes tagged images.
-- The content pipeline is still partial. Boot pulls content via `Portfolio.Release.pull_repository/0`; the webhook path triggers a git sync through `RemoteUpdateTrigger`, but content promotion is not a deterministic "sync exact commit, parse, record verdict" flow yet.
+- The content pipeline is still partial, but app-side webhook promotion now exists. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, and treats deleted Markdown as unpublish.
+- Content `main` is the intended publish boundary, once content-repo CI validates the same schema/renderability rules before merge. "Bad content" means content the app cannot parse, validate into the content schema, compile into its Markdown/component model, or render safely enough to promote.
+- Deleted Markdown should unpublish content. The SEO/user-facing behavior for previously indexed URLs is still open: the code now removes DB entries; a tombstone/redirect/410 policy still needs design.
+- Boot still pulls content via `Portfolio.Release.pull_repository/0`, but boot/startup does not yet have explicit last-good content behavior or a content-SHA ledger.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
 
-## Next slice: content-pipeline DX
+## Content-pipeline DX
 
 Desired DX: edit content, run local content checks if useful, commit, push, then read a clear verdict: accepted and live, rejected with a parse/validation error, or ignored because no publishable content changed. No SSH, no container restart, no DB poking, no "did the watcher notice?" uncertainty.
 
-Smallest implementation slice:
+Implemented app-side slice:
 
 1. Validate signed GitHub push payloads against the expected repo, branch, and `after` SHA.
-2. Dedupe deliveries by content commit SHA.
-3. Acquire one content-sync lock so concurrent webhook deliveries cannot interleave.
-4. Sync the local content clone to the exact accepted SHA, not just floating `origin/main`.
-5. Parse and ingest the relevant markdown files through an explicit service path.
-6. Record accepted/rejected content SHA and reason.
-7. Keep serving the previous known-good content if sync or parsing fails.
+2. Sync the local content clone to the exact accepted SHA, not just floating `origin/main`.
+3. Parse and ingest the relevant Markdown files through an explicit service path.
+4. Roll back the DB transaction when parsing, schema validation, Markdown compilation, or promotion fails.
+5. Treat removed Markdown as unpublish instead of leaving stale live entries behind.
+
+Remaining implementation slice:
+
+1. Dedupe deliveries by content commit SHA.
+2. Acquire one content-sync lock so concurrent webhook deliveries cannot interleave.
+3. Record accepted/rejected content SHA and reason.
+4. Keep serving the previous known-good content if boot-time sync or parsing fails.
+5. Add content-repo CI so a merge to content `main` validates schema/renderability before the production webhook ever sees it.
+6. Decide the deleted-URL SEO behavior: hard 404, 410, redirect, or tombstone page.
 
 Known risks to address in that slice:
 
-- Webhook relevance ignores deleted markdown files.
-- Webhook sync currently returns success after git sync; it does not explicitly promote content.
 - Boot-time content pull can prevent the container from starting if GitHub or auth fails.
 - Private repo auth is configured but not wired into the git clone/fetch path.
-- Tests should use local fixture git repos rather than real network URLs.
-- Production frontmatter parsing needs review before content promotion becomes authoritative.
+- Delivery dedupe and sync locking do not exist yet.
+- Accepted/rejected content SHA is not persisted yet.
+- Content-repo CI does not exist yet.
 
 ## Origin deploy philosophy
 

@@ -2,7 +2,7 @@
 
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
-**Updated:** 2026-05-07 (prod-build/nightly CI gate merged, `Prod build` required in branch protection, release/image automation exercised; content-pipeline sync is next).
+**Updated:** 2026-05-08 (app-side content webhook promotion slice implemented; content-repo CI, accepted/rejected SHA ledger, and deleted-URL SEO policy are next).
 
 ---
 
@@ -25,7 +25,7 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 | 2.6 — Push final to origin | ✅ done | All commits pushed; tag baseline `9053f70`. |
 | 2.7 — Triage GitHub vulnerabilities | ✅ done | All 213 historical npm alerts auto-resolved by the Group 5 upgrade (timestamps line up exactly with the push). 0 open, 0 hex/elixir-side advisories. The 48-figure on push was a stale snapshot. |
 | 3 — Deploy/ops scope | 🔄 **active** | `/grill-me` ran 2026-05-06. Vision + objectives + 6 strategies in `AGENTS.md`. Hard-constraints + taste-seeding cut short — re-run `/grill-me` next time. |
-| 3.1 — Content-pipeline sync | 🔄 active next | Make content push-to-main deterministic: authenticate webhook, validate repo/ref/after SHA, dedupe, sync exact commit, ingest/publish or reject, record accepted content SHA, keep last-good content on failure. See `_PROJECT_DOCS/deploy-ops-status-plan.md`. |
+| 3.1 — Content-pipeline sync | 🔄 active | App-side slice now validates repo/ref/after SHA, syncs exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, and unpublishes deleted Markdown. Remaining: delivery dedupe, accepted/rejected content-SHA ledger, content-repo CI, boot/startup last-good behavior, and deleted-URL SEO policy. |
 | 3.2 — CI gates | ✅ done | `Prod build` is required by branch protection. Gate covers release image build, migrations up/down/up, `/readyz`, route probes, release RPC introspection, rolling baseline seed, and nightly schedule. |
 | 3.3 — Resource-frugality of the app | ⏸ pending | Measure cold-start, p50, memory, cache-hit rate, and runtime footprint on the same ruler before choosing hardware. Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` queued. |
 | 3.4 — Front-edge cache (CDN) | ⏸ pending | `/literature` required before tool selection. Needs app/cacheability measurements first. |
@@ -42,7 +42,7 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 Current order of operations:
 
 1. **Lock the shipped CI guardrail.** Done: `Prod build` is required in branch protection and release automation has exercised the image build/publish path.
-2. **Make content deployment deterministic.** Replace "webhook triggers git pull and the watcher hopefully notices" with an explicit content promotion path: signed payload → expected repo/ref/after SHA → single sync lock → exact git sync → parse/ingest affected markdown → record accepted or rejected content SHA.
+2. **Make content deployment deterministic.** Partially done app-side: signed payload verification remains delegated to `GitHubWebhook`, and the controller now validates expected repo/ref/after SHA before exact git sync and transactional promotion of affected Markdown. Next: add delivery dedupe/sync locking, record accepted or rejected content SHA, and make content-repo CI run the same validation before merge to `main`.
 3. **Measure before choosing origin hardware.** Use the prod-build vocabulary for live/local runs: time-to-ready, cold-first response, warm p50/p95, memory, CPU, and power where available.
 4. **Plan origin and edge only after measurements.** The philosophical constraint is smallest honest origin, free/FLOSS where viable, but visitor speed and rollback reliability are the floor.
 5. **Plan observability around deploy evidence.** Minimum useful signals: request health, release identity, content SHA, BEAM/runtime health, DB boundary, and cache/origin split after an edge substrate exists.

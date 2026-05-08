@@ -6,7 +6,6 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
   use Portfolio.DataCase
 
   @test_file_path "test/support/fixtures/case-study/testing-case-study/en.md"
-  @malformed_file_path "test/support/fixtures/case-study/testing-case-study-malformed/en.md"
 
   describe "handle_info/2" do
     test "processes relevant file changes" do
@@ -21,6 +20,18 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
         end)
 
       assert log =~ "File event detected: #{path}"
+      assert log =~ "Processing file change for: #{path}"
+    end
+
+    test "processes deleted markdown as an unpublish event" do
+      path = Path.join(System.tmp_dir!(), "watcher-deleted-note.md")
+      state = %Watcher{watcher_pid: self()}
+
+      log =
+        capture_log(fn ->
+          Watcher.handle_info({:file_event, self(), {path, [:deleted]}}, state)
+        end)
+
       assert log =~ "Processing file change for: #{path}"
     end
 
