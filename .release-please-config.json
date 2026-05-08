@@ -14,18 +14,6 @@
     {
       "type": "perf",
       "section": "Performance"
-    },
-    {
-      "type": "docs",
-      "section": "Documentation"
-    },
-    {
-      "type": "ci",
-      "section": "CI"
-    },
-    {
-      "type": "chore",
-      "section": "Miscellaneous"
     }
   ],
   "pull-request-header": "Release PR for the portfolio app. Merge only after the canonical CI and secret-scan gates have passed.",
