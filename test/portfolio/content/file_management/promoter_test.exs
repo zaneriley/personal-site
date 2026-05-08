@@ -1,0 +1,143 @@
+defmodule Portfolio.Content.FileManagement.PromoterTest do
+  use Portfolio.DataCase, async: true
+
+  alias Portfolio.Content.FileManagement.Promoter
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Schemas.Translation
+  alias Portfolio.Repo
+
+  import Portfolio.ContentRepoHelpers
+
+  describe "promote_changes/2" do
+    test "promotes changed markdown into the database" do
+      content_path = tmp_dir!("promote-change")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/published-note/en.md")
+
+      assert {:ok, result} =
+               Promoter.promote_changes(content_path, %{
+                 upsert: ["notes/published-note/en.md"],
+                 delete: []
+               })
+
+      assert [promoted_path] = result.promoted
+
+      assert promoted_path ==
+               Path.expand("notes/published-note/en.md", content_path)
+
+      assert %Note{} = note = Repo.get_by(Note, url: "published-note")
+      assert note.title == "Published Note"
+      assert note.is_draft == false
+    end
+
+    test "rejects invalid content and keeps the previous database state" do
+      content_path = tmp_dir!("reject-invalid")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/published-note/en.md",
+        title: "Good Title"
+      )
+
+      assert {:ok, _result} =
+               Promoter.promote_changes(content_path, %{
+                 upsert: ["notes/published-note/en.md"],
+                 delete: []
+               })
+
+      write_invalid_note!(content_path, "notes/published-note/en.md")
+
+      assert {:error, result} =
+               Promoter.promote_changes(content_path, %{
+                 upsert: ["notes/published-note/en.md"],
+                 delete: []
+               })
+
+      assert [%{path: _path, reason: _reason}] = result.errors
+
+      assert %Note{title: "Good Title"} =
+               Repo.get_by(Note, url: "published-note")
+    end
+
+    test "removes content and translations for deleted markdown" do
+      content_path = tmp_dir!("delete-markdown")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/published-note/en.md")
+
+      assert {:ok, _result} =
+               Promoter.promote_changes(content_path, %{
+                 upsert: ["notes/published-note/en.md"],
+                 delete: []
+               })
+
+      note = Repo.get_by!(Note, url: "published-note")
+
+      %Translation{}
+      |> Translation.changeset(%{
+        locale: "ja",
+        field_name: "title",
+        field_value: "公開ノート",
+        translatable_id: note.id,
+        translatable_type: "note"
+      })
+      |> Repo.insert!()
+
+      assert {:ok, result} =
+               Promoter.promote_changes(content_path, %{
+                 upsert: [],
+                 delete: ["notes/published-note/en.md"]
+               })
+
+      assert result.removed == [
+               Path.expand("notes/published-note/en.md", content_path)
+             ]
+
+      refute Repo.get_by(Note, url: "published-note")
+      assert [] = Repo.all(Translation)
+    end
+
+    test "rejects webhook paths outside the content base" do
+      content_path = tmp_dir!("reject-escape")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      assert {:error, result} =
+               Promoter.promote_changes(content_path, %{
+                 upsert: ["../notes/escaped/en.md"],
+                 delete: []
+               })
+
+      assert [
+               %{
+                 path: escaped_path,
+                 reason: :path_outside_content_base
+               }
+             ] = result.errors
+
+      assert escaped_path == Path.expand("../notes/escaped/en.md", content_path)
+      refute Repo.get_by(Note, url: "escaped")
+    end
+  end
+
+  describe "promote_all/1" do
+    test "prunes database entries whose source markdown disappeared" do
+      content_path = tmp_dir!("promote-all-prune")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/published-note/en.md")
+
+      assert {:ok, _result} = Promoter.promote_all(content_path)
+      assert %Note{} = Repo.get_by(Note, url: "published-note")
+
+      File.rm!(Path.join(content_path, "notes/published-note/en.md"))
+
+      assert {:ok, result} = Promoter.promote_all(content_path)
+
+      assert result.removed == [
+               Path.expand("notes/published-note/en.md", content_path)
+             ]
+
+      refute Repo.get_by(Note, url: "published-note")
+    end
+  end
+end

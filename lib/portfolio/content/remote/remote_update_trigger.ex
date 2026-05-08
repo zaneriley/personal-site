@@ -7,10 +7,11 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   - Handling updates for changed files
   - Processing individual files and updating the local content
 
-  It uses `GitContentFetcher` to fetch remote content, `Reader` to parse markdown files,
-  and `Watcher` to process file changes.
+  It uses `GitRepoSyncer` to check out remote content at the requested commit
+  and `Promoter` to atomically publish changed files into the local database.
   """
 
+  alias Portfolio.Content.FileManagement.Promoter
   alias Portfolio.Content.Remote.GitRepoSyncer
   require Logger
 
@@ -31,16 +32,31 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
 
   ## Returns
 
-    - `{:ok, :updated}` if the sync was successful.
-    - `{:error, reason}` if the sync failed.
+    - `{:ok, result}` if the sync and promotion were successful.
+    - `{:error, reason}` if the sync or promotion failed.
   """
-  @spec trigger_update(String.t()) :: {:ok, :updated} | {:error, String.t()}
-  def trigger_update(repo_url) do
-    local_path = Application.get_env(:portfolio, :content_base_path)
+  @spec trigger_update(String.t(), keyword()) ::
+          {:ok, Promoter.promotion_result()} | {:error, String.t()}
+  def trigger_update(repo_url, opts \\ []) do
+    local_path =
+      Keyword.get(opts, :content_base_path) ||
+        Application.get_env(:portfolio, :content_base_path)
 
-    case GitRepoSyncer.sync_repo(repo_url, local_path) do
+    changes = Keyword.get(opts, :changes, %{upsert: [], delete: []})
+
+    case GitRepoSyncer.sync_repo(repo_url, local_path,
+           target_sha: Keyword.get(opts, :target_sha)
+         ) do
       {:ok, _} ->
-        {:ok, :updated}
+        case Promoter.promote_changes(local_path, changes) do
+          {:ok, result} ->
+            Logger.info("Content promotion completed: #{inspect(result)}")
+            {:ok, result}
+
+          {:error, result} ->
+            Logger.error("Content promotion failed: #{inspect(result)}")
+            {:error, "Content promotion failed"}
+        end
 
       {:error, reason} ->
         Logger.error("Failed to sync repository: #{reason}")

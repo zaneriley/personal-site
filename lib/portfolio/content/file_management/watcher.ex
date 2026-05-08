@@ -3,13 +3,12 @@ defmodule Portfolio.Content.FileManagement.Watcher do
   Monitors file system changes for markdown content files.
 
   Uses FileSystem to watch specified directories, processes relevant file events,
-  and triggers content updates through the Reader module and Content context.
+  and triggers content updates through the content promoter.
   """
 
   use GenServer
   require Logger
-  alias Portfolio.Content.FileManagement.Reader
-  alias Portfolio.Content
+  alias Portfolio.Content.FileManagement.Promoter
 
   defstruct [:watcher_pid]
 
@@ -45,7 +44,7 @@ defmodule Portfolio.Content.FileManagement.Watcher do
 
     if relevant_file_change?(path, events) do
       Logger.info("Processing file change for: #{path}")
-      process_file_change(path)
+      promote_file_change(path)
     end
 
     {:noreply, state}
@@ -55,7 +54,7 @@ defmodule Portfolio.Content.FileManagement.Watcher do
   defp relevant_file_change?(path, events) do
     not hidden_path?(path) and
       Path.extname(path) == ".md" and
-      (:modified in events or :created in events)
+      (:modified in events or :created in events or :deleted in events)
   end
 
   defp hidden_path?(path) do
@@ -64,22 +63,16 @@ defmodule Portfolio.Content.FileManagement.Watcher do
     |> Enum.any?(fn part -> String.starts_with?(part, ".") end)
   end
 
-  @spec process_file_change(String.t()) :: :ok
-  defp process_file_change(path) do
-    case Reader.read_markdown_file(path) do
-      {:ok, content_type, attrs} ->
-        case Content.upsert_from_file(content_type, attrs) do
-          {:ok, _content} ->
-            Logger.info("Successfully upserted content from file: #{path}")
+  @spec promote_file_change(String.t()) :: :ok
+  defp promote_file_change(path) do
+    case Promoter.promote_path(path) do
+      {:ok, result} ->
+        Logger.info("Promoted content file #{path}: #{inspect(result)}")
 
-          {:error, reason} ->
-            Logger.error(
-              "Error upserting content from file #{path}: #{inspect(reason)}"
-            )
-        end
-
-      {:error, reason} ->
-        Logger.error("Error processing file #{path}: #{inspect(reason)}")
+      {:error, result} ->
+        Logger.error(
+          "Failed to promote content file #{path}: #{inspect(result)}"
+        )
     end
 
     :ok

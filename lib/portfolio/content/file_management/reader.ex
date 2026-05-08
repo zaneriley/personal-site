@@ -81,20 +81,16 @@ defmodule Portfolio.Content.FileManagement.Reader do
 
   @spec parse_frontmatter(String.t()) :: {:ok, map()} | {:error, tuple()}
   defp parse_frontmatter(frontmatter) do
-    if Application.get_env(:portfolio, :environment) in [:dev, :test] do
-      case :yamerl_constr.string(frontmatter) do
-        [metadata] ->
-          {:ok, Enum.into(metadata, %{}, &transform_metadata/1)}
+    case :yamerl_constr.string(frontmatter) do
+      [metadata] ->
+        {:ok, Enum.into(metadata, %{}, &transform_metadata/1)}
 
-        error ->
-          Logger.error(
-            "YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}"
-          )
+      error ->
+        Logger.error(
+          "YAML parsing failed. Frontmatter: #{frontmatter}, Error: #{inspect(error)}"
+        )
 
-          {:error, {:yaml_parsing_failed, error}}
-      end
-    else
-      {:ok, %{}}
+        {:error, {:yaml_parsing_failed, error}}
     end
   end
 
