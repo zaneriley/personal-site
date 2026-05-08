@@ -3,6 +3,14 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.8](https://github.com/zaneriley/personal-site/compare/v0.4.7...v0.4.8) (2026-05-08)
+
+
+### Features
+
+* **content:** persist og frontmatter hints ([f010359](https://github.com/zaneriley/personal-site/commit/f010359ca8ed14e0b308f848d0e48beb1c353d79))
+* **content:** persist og frontmatter hints ([951db5c](https://github.com/zaneriley/personal-site/commit/951db5c61f2b166c68b56caf258088ebf1000d0a))
+
 ## [0.4.7](https://github.com/zaneriley/personal-site/compare/v0.4.6...v0.4.7) (2026-05-08)
 
 
