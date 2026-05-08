@@ -31,10 +31,29 @@ defmodule Portfolio.Content.TranslatableFields do
   ## Examples
 
       iex> TranslatableFields.translatable_fields(Portfolio.Content.Schemas.CaseStudy)
-      [:title, :content, :introduction, :company, :role, :timeline, :platforms]
+      [
+        :title,
+        :content,
+        :introduction,
+        :og_title,
+        :og_description,
+        :og_image_hint,
+        :og_image_alt,
+        :company,
+        :role,
+        :timeline
+      ]
 
       iex> TranslatableFields.translatable_fields(Portfolio.Content.Schemas.Note)
-      [:title, :content, :introduction]
+      [
+        :title,
+        :content,
+        :introduction,
+        :og_title,
+        :og_description,
+        :og_image_hint,
+        :og_image_alt
+      ]
   """
   @spec translatable_fields(schema()) :: [field()]
   def translatable_fields(schema) do
