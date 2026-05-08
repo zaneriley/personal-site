@@ -44,6 +44,7 @@ defmodule Portfolio.ContentRepoHelpers do
       title: "#{title}"
       url: "#{url}"
       introduction: "Intro"
+      #{og_frontmatter(opts)}
       published_at: "#{published_at}"
       is_draft: false
       ---
@@ -51,6 +52,14 @@ defmodule Portfolio.ContentRepoHelpers do
       #{body}
       """
     )
+  end
+
+  defp og_frontmatter(opts) do
+    opts
+    |> Keyword.take([:og_title, :og_description, :og_image_hint, :og_image_alt])
+    |> Enum.map_join("\n", fn {key, value} ->
+      "#{key}: #{inspect(value)}"
+    end)
   end
 
   @spec write_invalid_note!(String.t(), String.t()) :: String.t()
