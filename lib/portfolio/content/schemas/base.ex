@@ -33,10 +33,10 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         # stored AST representation
         field :stored_ast, {:array, :map}
         field :introduction, :string
-        field :og_title, :string
-        field :og_description, :string
-        field :og_image_hint, :string
-        field :og_image_alt, :string
+        field :share_title, :string
+        field :share_description, :string
+        field :share_image_direction, :string
+        field :share_image_alt, :string
         field :read_time, :integer
         field :word_count, :integer
         field :file_path, :string
@@ -55,10 +55,10 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
       @optional_fields [
         :url,
         :introduction,
-        :og_title,
-        :og_description,
-        :og_image_hint,
-        :og_image_alt,
+        :share_title,
+        :share_description,
+        :share_image_direction,
+        :share_image_alt,
         :read_time,
         :file_path,
         :published_at,

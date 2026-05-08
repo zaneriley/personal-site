@@ -1,6 +1,8 @@
 defmodule Portfolio.Content.Schemas.BaseSchemaTest do
   use Portfolio.DataCase
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
+
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
 
   defmodule TestSchemaDefault do
     use Portfolio.Content.Schemas.BaseSchema,
@@ -23,10 +25,10 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
         {:url, :string},
         {:content, :string},
         {:introduction, :string},
-        {:og_title, :string},
-        {:og_description, :string},
-        {:og_image_hint, :string},
-        {:og_image_alt, :string},
+        {:share_title, :string},
+        {:share_description, :string},
+        {:share_image_direction, :string},
+        {:share_image_alt, :string},
         {:read_time, :integer},
         {:file_path, :string},
         {:locale, :string},

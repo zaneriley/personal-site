@@ -6,19 +6,33 @@ defmodule Portfolio.Content.TranslatableFields do
   should be translated for each content type in the Portfolio application.
   """
 
-  alias Portfolio.Content.Schemas.{CaseStudy, Note}
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
 
   @type schema :: module()
   @type field :: atom()
 
   @default_translatable_types [:string, :text, :integer]
+  @note_translatable_fields [
+    :title,
+    :url,
+    :content,
+    :introduction,
+    :share_title,
+    :share_description,
+    :share_image_direction,
+    :share_image_alt
+  ]
+  @case_study_translatable_fields (@note_translatable_fields -- [:url]) ++
+                                    [:company, :role, :timeline]
 
   @doc """
   Returns a list of translatable fields for a given schema.
 
   This function determines which fields of a schema should be considered for
-  translation. It applies a default rule (all string and text fields are
-  translatable) and then applies any schema-specific rules.
+  translation. Shipped content schemas use explicit lists so editorial policy
+  is not inferred from storage type alone. Unknown schemas fall back to a
+  storage-type default.
 
   ## Parameters
 
@@ -30,41 +44,36 @@ defmodule Portfolio.Content.TranslatableFields do
 
   ## Examples
 
-      iex> TranslatableFields.translatable_fields(Portfolio.Content.Schemas.CaseStudy)
+      iex> Portfolio.Content.TranslatableFields.translatable_fields(Portfolio.Content.Schemas.CaseStudy)
       [
         :title,
         :content,
         :introduction,
-        :og_title,
-        :og_description,
-        :og_image_hint,
-        :og_image_alt,
+        :share_title,
+        :share_description,
+        :share_image_direction,
+        :share_image_alt,
         :company,
         :role,
         :timeline
       ]
 
-      iex> TranslatableFields.translatable_fields(Portfolio.Content.Schemas.Note)
+      iex> Portfolio.Content.TranslatableFields.translatable_fields(Portfolio.Content.Schemas.Note)
       [
         :title,
+        :url,
         :content,
         :introduction,
-        :og_title,
-        :og_description,
-        :og_image_hint,
-        :og_image_alt
+        :share_title,
+        :share_description,
+        :share_image_direction,
+        :share_image_alt
       ]
   """
   @spec translatable_fields(schema()) :: [field()]
-  def translatable_fields(schema) do
-    default_translatable = default_translatable_fields(schema)
-
-    case schema do
-      CaseStudy -> default_translatable -- ([:url] ++ [:platforms])
-      Note -> default_translatable
-      _ -> default_translatable
-    end
-  end
+  def translatable_fields(CaseStudy), do: @case_study_translatable_fields
+  def translatable_fields(Note), do: @note_translatable_fields
+  def translatable_fields(schema), do: default_translatable_fields(schema)
 
   @doc """
   Determines if a specific field in a schema is translatable.

@@ -31,15 +31,15 @@ defmodule Portfolio.Content.FileManagement.PromoterTest do
       assert note.is_draft == false
     end
 
-    test "promotes optional OG frontmatter into the database" do
-      content_path = tmp_dir!("promote-og-frontmatter")
+    test "promotes optional share preview frontmatter into the database" do
+      content_path = tmp_dir!("promote-share-preview-frontmatter")
       on_exit(fn -> File.rm_rf!(content_path) end)
 
       write_note!(content_path, "notes/published-note/en.md",
-        og_title: "Share Title",
-        og_description: "Share description",
-        og_image_hint: "Quiet editorial card with Tokyo context",
-        og_image_alt: "A share card for the published note"
+        share_title: "Share Title",
+        share_description: "Share description",
+        share_image_direction: "Quiet editorial card with Tokyo context",
+        share_image_alt: "A share card for the published note"
       )
 
       assert {:ok, _result} =
@@ -49,10 +49,13 @@ defmodule Portfolio.Content.FileManagement.PromoterTest do
                })
 
       assert %Note{} = note = Repo.get_by(Note, url: "published-note")
-      assert note.og_title == "Share Title"
-      assert note.og_description == "Share description"
-      assert note.og_image_hint == "Quiet editorial card with Tokyo context"
-      assert note.og_image_alt == "A share card for the published note"
+      assert note.share_title == "Share Title"
+      assert note.share_description == "Share description"
+
+      assert note.share_image_direction ==
+               "Quiet editorial card with Tokyo context"
+
+      assert note.share_image_alt == "A share card for the published note"
     end
 
     test "rejects invalid content and keeps the previous database state" do
