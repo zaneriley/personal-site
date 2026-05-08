@@ -239,6 +239,51 @@ defmodule Portfolio.Content.ContentTest do
     end
   end
 
+  describe "publication verdicts" do
+    test "record_publication_verdict/3 upserts by content SHA" do
+      content_sha = String.duplicate("a", 40)
+
+      assert {:ok, accepted} =
+               Content.record_publication_verdict(content_sha, :accepted,
+                 promoted_paths: ["/content/notes/live/en.md"]
+               )
+
+      assert accepted.content_sha == content_sha
+      assert accepted.status == "accepted"
+      assert accepted.promoted_paths == ["/content/notes/live/en.md"]
+
+      assert {:ok, rejected} =
+               Content.record_publication_verdict(content_sha, :rejected,
+                 reason: "Content promotion failed",
+                 error_details: %{
+                   "errors" => [
+                     %{"path" => "/content/notes/live/en.md", "reason" => "bad"}
+                   ]
+                 }
+               )
+
+      assert rejected.id == accepted.id
+      assert rejected.status == "rejected"
+      assert rejected.reason == "Content promotion failed"
+      assert rejected.promoted_paths == []
+
+      assert rejected.error_details == %{
+               "errors" => [
+                 %{"path" => "/content/notes/live/en.md", "reason" => "bad"}
+               ]
+             }
+
+      assert rejected == Content.get_publication_verdict(content_sha)
+    end
+
+    test "record_publication_verdict/3 rejects invalid SHAs" do
+      assert {:error, changeset} =
+               Content.record_publication_verdict("not-a-sha", :accepted)
+
+      assert %{content_sha: ["has invalid format"]} = errors_on(changeset)
+    end
+  end
+
   describe "error handling" do
     test "get!/2 raises InvalidContentTypeError for invalid content type" do
       assert_raise Content.InvalidContentTypeError, fn ->

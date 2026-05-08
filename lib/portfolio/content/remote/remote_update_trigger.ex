@@ -11,8 +11,10 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   and `Promoter` to atomically publish changed files into the local database.
   """
 
+  alias Portfolio.Content
   alias Portfolio.Content.FileManagement.Promoter
   alias Portfolio.Content.Remote.GitRepoSyncer
+
   require Logger
 
   @doc """
@@ -44,23 +46,115 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
 
     changes = Keyword.get(opts, :changes, %{upsert: [], delete: []})
 
-    case GitRepoSyncer.sync_repo(repo_url, local_path,
-           target_sha: Keyword.get(opts, :target_sha)
-         ) do
-      {:ok, _} ->
-        case Promoter.promote_changes(local_path, changes) do
-          {:ok, result} ->
-            Logger.info("Content promotion completed: #{inspect(result)}")
-            {:ok, result}
+    target_sha = Keyword.get(opts, :target_sha)
 
-          {:error, result} ->
-            Logger.error("Content promotion failed: #{inspect(result)}")
-            {:error, "Content promotion failed"}
-        end
+    case GitRepoSyncer.sync_repo(repo_url, local_path, target_sha: target_sha) do
+      {:ok, _} ->
+        promote_synced_content(local_path, changes, target_sha)
 
       {:error, reason} ->
-        Logger.error("Failed to sync repository: #{reason}")
-        {:error, "Repository sync failed"}
+        handle_sync_error(target_sha, reason)
     end
   end
+
+  defp promote_synced_content(local_path, changes, target_sha) do
+    case Promoter.promote_changes(local_path, changes) do
+      {:ok, result} ->
+        handle_promotion_success(target_sha, result)
+
+      {:error, result} ->
+        handle_promotion_error(target_sha, result)
+    end
+  end
+
+  defp handle_promotion_success(target_sha, result) do
+    case record_accepted_verdict(target_sha, result) do
+      :ok ->
+        Logger.info("Content promotion completed: #{inspect(result)}")
+        {:ok, result}
+
+      {:error, changeset} ->
+        Logger.error(
+          "Failed to record accepted content verdict: #{inspect(changeset)}"
+        )
+
+        {:error, "Publication verdict recording failed"}
+    end
+  end
+
+  defp handle_promotion_error(target_sha, result) do
+    record_rejected_verdict(
+      target_sha,
+      "Content promotion failed",
+      result
+    )
+
+    Logger.error("Content promotion failed: #{inspect(result)}")
+    {:error, "Content promotion failed"}
+  end
+
+  defp handle_sync_error(target_sha, reason) do
+    record_rejected_verdict(
+      target_sha,
+      "Repository sync failed: #{reason_to_string(reason)}"
+    )
+
+    Logger.error("Failed to sync repository: #{reason}")
+    {:error, "Repository sync failed"}
+  end
+
+  defp record_accepted_verdict(nil, _result), do: :ok
+
+  defp record_accepted_verdict(content_sha, result) do
+    record_verdict(content_sha, :accepted, result)
+  end
+
+  defp record_rejected_verdict(nil, _reason), do: :ok
+
+  defp record_rejected_verdict(content_sha, reason) do
+    record_verdict(content_sha, :rejected, empty_result(), reason)
+  end
+
+  defp record_rejected_verdict(content_sha, reason, result) do
+    record_verdict(content_sha, :rejected, result, reason)
+  end
+
+  defp record_verdict(content_sha, status, result, reason \\ nil) do
+    opts =
+      result
+      |> promotion_result_opts()
+      |> Keyword.put(:reason, reason)
+
+    case Content.record_publication_verdict(content_sha, status, opts) do
+      {:ok, _verdict} -> :ok
+      {:error, changeset} -> {:error, changeset}
+    end
+  end
+
+  defp promotion_result_opts(result) do
+    [
+      promoted_paths: Map.get(result, :promoted, []),
+      removed_paths: Map.get(result, :removed, []),
+      skipped_paths: Map.get(result, :skipped, []),
+      error_details: error_details(result)
+    ]
+  end
+
+  defp error_details(result) do
+    errors =
+      result
+      |> Map.get(:errors, [])
+      |> Enum.map(fn %{path: path, reason: reason} ->
+        %{"path" => path, "reason" => reason_to_string(reason)}
+      end)
+
+    %{"errors" => errors}
+  end
+
+  defp empty_result do
+    %{promoted: [], removed: [], skipped: [], errors: []}
+  end
+
+  defp reason_to_string(reason) when is_binary(reason), do: reason
+  defp reason_to_string(reason), do: inspect(reason)
 end

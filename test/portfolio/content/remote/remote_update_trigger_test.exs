@@ -1,6 +1,7 @@
 defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
   use Portfolio.DataCase, async: true
 
+  alias Portfolio.Content
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Repo
@@ -41,6 +42,13 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                Repo.get_by(Note, url: "published-note")
 
       assert target_sha == rev_parse!(clone_path, "HEAD")
+
+      assert %{status: "accepted", promoted_paths: promoted_paths} =
+               Content.get_publication_verdict(target_sha)
+
+      assert promoted_paths == [
+               Path.expand("notes/published-note/en.md", clone_path)
+             ]
     end
 
     test "removes content when the target SHA deletes markdown" do
@@ -78,18 +86,64 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
 
       refute Repo.get_by(Note, url: "published-note")
       assert second_sha == rev_parse!(clone_path, "HEAD")
+
+      assert %{status: "accepted", removed_paths: removed_paths} =
+               Content.get_publication_verdict(second_sha)
+
+      assert removed_paths == [
+               Path.expand("notes/published-note/en.md", clone_path)
+             ]
+    end
+
+    test "records a rejected verdict when content promotion fails" do
+      source_repo = tmp_dir!("remote-invalid-content-source")
+      clone_path = tmp_dir!("remote-invalid-content-clone")
+      on_exit(fn -> File.rm_rf!(source_repo) end)
+      on_exit(fn -> File.rm_rf!(clone_path) end)
+
+      init_repo!(source_repo)
+      write_invalid_note!(source_repo, "notes/published-note/en.md")
+      target_sha = commit!(source_repo, "publish invalid note")
+
+      assert {:error, "Content promotion failed"} =
+               RemoteUpdateTrigger.trigger_update(source_repo,
+                 content_base_path: clone_path,
+                 changes: %{upsert: ["notes/published-note/en.md"], delete: []},
+                 target_sha: target_sha
+               )
+
+      assert %{status: "rejected", reason: "Content promotion failed"} =
+               verdict = Content.get_publication_verdict(target_sha)
+
+      assert [
+               %{
+                 "path" => invalid_path,
+                 "reason" => reason
+               }
+             ] = verdict.error_details["errors"]
+
+      assert invalid_path ==
+               Path.expand("notes/published-note/en.md", clone_path)
+
+      assert is_binary(reason)
     end
 
     test "returns an error for an invalid repository URL" do
       clone_path = tmp_dir!("remote-invalid-clone")
+      target_sha = String.duplicate("a", 40)
       on_exit(fn -> File.rm_rf!(clone_path) end)
 
       assert {:error, "Repository sync failed"} =
                RemoteUpdateTrigger.trigger_update("/does/not/exist",
                  content_base_path: clone_path,
                  changes: %{upsert: ["notes/published-note/en.md"], delete: []},
-                 target_sha: String.duplicate("a", 40)
+                 target_sha: target_sha
                )
+
+      assert %{status: "rejected", reason: reason} =
+               Content.get_publication_verdict(target_sha)
+
+      assert String.starts_with?(reason, "Repository sync failed:")
     end
   end
 end

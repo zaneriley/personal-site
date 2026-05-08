@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.ContentWebhookControllerTest do
   use PortfolioWeb.ConnCase, async: true
 
+  alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Repo
 
@@ -67,6 +68,11 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                  payload,
                  content_repo_url: "https://example.test/content.git"
                )
+
+      assert %{
+               status: "ignored",
+               reason: "No relevant content changes"
+             } = Content.get_publication_verdict(String.duplicate("a", 40))
     end
 
     test "rejects non-push event", %{conn: conn} do

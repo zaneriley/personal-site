@@ -8,6 +8,7 @@ defmodule PortfolioWeb.ContentWebhookController do
   """
 
   require Logger
+  alias Portfolio.Content
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
   alias Portfolio.Content.Types
 
@@ -30,8 +31,7 @@ defmodule PortfolioWeb.ContentWebhookController do
          {:ok, target_sha} <- extract_target_sha(payload),
          {:ok, relevant_changes} <- extract_relevant_changes(payload) do
       if empty_changes?(relevant_changes) do
-        Logger.info("No relevant file changes detected")
-        {:ok, :no_relevant_changes}
+        record_ignored_update(target_sha)
       else
         Logger.info(
           "Relevant file changes detected: #{inspect(relevant_changes)}"
@@ -136,6 +136,25 @@ defmodule PortfolioWeb.ContentWebhookController do
   @spec empty_changes?(relevant_changes()) :: boolean()
   defp empty_changes?(%{upsert: [], delete: []}), do: true
   defp empty_changes?(_changes), do: false
+
+  @spec record_ignored_update(String.t()) :: webhook_result()
+  defp record_ignored_update(target_sha) do
+    Logger.info("No relevant file changes detected")
+
+    case Content.record_publication_verdict(target_sha, :ignored,
+           reason: "No relevant content changes"
+         ) do
+      {:ok, _verdict} ->
+        {:ok, :no_relevant_changes}
+
+      {:error, changeset} ->
+        Logger.error(
+          "Failed to record ignored content verdict: #{inspect(changeset)}"
+        )
+
+        {:error, "Publication verdict recording failed"}
+    end
+  end
 
   @spec trigger_update(keyword(), relevant_changes(), String.t()) ::
           webhook_result()

@@ -78,12 +78,16 @@ defmodule Portfolio.Content do
   as in `get_with_translations`) rather than pre-rendered HTML, facilitating flexible
   rendering in components.
   """
-  alias Portfolio.Content.Types
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
-  alias Portfolio.Content.EntryAssembler
-  alias Portfolio.Content.Entry.Records
   alias Portfolio.Content.Entry.Compiler
+  alias Portfolio.Content.Entry.Records
   alias Portfolio.Content.Entry.Source
+  alias Portfolio.Content.EntryAssembler
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Schemas.PublicationVerdict
+  alias Portfolio.Content.Types
+  alias Portfolio.Repo
+
   require Logger
 
   defmodule InvalidContentTypeError do
@@ -94,6 +98,59 @@ defmodule Portfolio.Content do
   @type content_id :: Ecto.UUID.t()
   @type content_url :: String.t()
   @type content_identifier :: content_id() | content_url()
+  @type publication_verdict_status ::
+          :accepted | :rejected | :ignored | String.t()
+
+  @doc """
+  Records the publishing verdict for a content repository commit.
+
+  The latest verdict for a commit SHA replaces any prior verdict for that SHA,
+  which makes webhook retries idempotent from the author-facing status view.
+  """
+  @spec record_publication_verdict(
+          String.t(),
+          publication_verdict_status(),
+          keyword()
+        ) ::
+          {:ok, PublicationVerdict.t()} | {:error, Ecto.Changeset.t()}
+  def record_publication_verdict(content_sha, status, opts \\ [])
+      when is_binary(content_sha) do
+    attrs = %{
+      content_sha: content_sha,
+      status: normalize_publication_status(status),
+      reason: Keyword.get(opts, :reason),
+      promoted_paths: Keyword.get(opts, :promoted_paths, []),
+      removed_paths: Keyword.get(opts, :removed_paths, []),
+      skipped_paths: Keyword.get(opts, :skipped_paths, []),
+      error_details: Keyword.get(opts, :error_details, %{})
+    }
+
+    %PublicationVerdict{}
+    |> PublicationVerdict.changeset(attrs)
+    |> Repo.insert(
+      on_conflict:
+        {:replace,
+         [
+           :status,
+           :reason,
+           :promoted_paths,
+           :removed_paths,
+           :skipped_paths,
+           :error_details,
+           :updated_at
+         ]},
+      conflict_target: :content_sha,
+      returning: true
+    )
+  end
+
+  @doc """
+  Fetches the publishing verdict recorded for a content repository commit.
+  """
+  @spec get_publication_verdict(String.t()) :: PublicationVerdict.t() | nil
+  def get_publication_verdict(content_sha) when is_binary(content_sha) do
+    Repo.get_by(PublicationVerdict, content_sha: content_sha)
+  end
 
   @doc """
   Lists content items of a specific type with optional sorting and locale.
@@ -400,4 +457,10 @@ defmodule Portfolio.Content do
     Logger.error("Invalid file path type: #{inspect(file_path)}")
     {:error, :invalid_file_path}
   end
+
+  defp normalize_publication_status(status) when is_atom(status) do
+    Atom.to_string(status)
+  end
+
+  defp normalize_publication_status(status) when is_binary(status), do: status
 end
