@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.9](https://github.com/zaneriley/personal-site/compare/v0.4.8...v0.4.9) (2026-05-08)
+
+
+### Features
+
+* **content:** formalize share preview fields ([1202518](https://github.com/zaneriley/personal-site/commit/1202518a49d775562fa963fe8aa35ab7ee10beba))
+
 ## [0.4.8](https://github.com/zaneriley/personal-site/compare/v0.4.7...v0.4.8) (2026-05-08)
 
 
