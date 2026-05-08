@@ -1,4 +1,6 @@
 defmodule Portfolio.Repo.Migrations.AddOgMetadataToContent do
+  @moduledoc false
+
   use Ecto.Migration
 
   def change do

@@ -10,7 +10,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Branch protection requires `Workflow lint`, `Gate integrity`, `Compile`, `Lint`, `Security check`, `Test`, `Static analysis`, `gitleaks`, and `Prod build`.
 - `Prod build` runs on PRs, pushes to `main`, nightly schedule, and manual dispatch. It builds the prod image, runs migrations up/down/up, boots the release, waits for `/readyz`, probes canonical routes, runs release RPC introspection, compares perf data, and uploads measurements.
 - Release Please is automated enough for this pre-1.0 portfolio: conventional commits open release PRs, auto-merge waits on required gates, and release creation builds/pushes tagged images.
-- The content pipeline is still partial, but app-side webhook promotion now exists. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, treats deleted Markdown as unpublish, and persists optional Open Graph frontmatter for share-preview steering.
+- The content pipeline is still partial, but app-side webhook promotion now exists. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, treats deleted Markdown as unpublish, and persists optional share-preview frontmatter.
 - Content `main` is the intended publish boundary, once content-repo CI validates the same schema/renderability rules before merge. "Bad content" means content the app cannot parse, validate into the content schema, compile into its Markdown/component model, or render safely enough to promote.
 - Deleted Markdown should unpublish content. The SEO/user-facing behavior for previously indexed URLs is still open: the code now removes DB entries; a tombstone/redirect/410 policy still needs design.
 - Boot still pulls content via `Portfolio.Release.pull_repository/0`, but boot/startup does not yet have explicit last-good content behavior or a content-SHA ledger.
@@ -29,20 +29,15 @@ Implemented app-side slice:
 3. Parse and ingest the relevant Markdown files through an explicit service path.
 4. Roll back the DB transaction when parsing, schema validation, Markdown compilation, or promotion fails.
 5. Treat removed Markdown as unpublish instead of leaving stale live entries behind.
-6. Persist optional Open Graph frontmatter on notes and case studies so authored content can steer share previews without coupling authors to the generator implementation.
+6. Persist optional share-preview frontmatter on notes and case studies. The current app stores explicit fields only; rendered metadata and share-image generation are still future work.
 
-### OG / Share-Preview Authorship
+### Share Preview Authorship
 
-Author in Obsidian against the `personal-site-content` repo. The content repo owns semantic intent; the portfolio app owns image templates, generation, routing, metadata rendering, and validation.
+Author in Obsidian against the `personal-site-content` repo. The content repo owns explicit fields. The portfolio app owns image templates, generation, routing, metadata rendering, and validation.
 
-Optional frontmatter fields:
+The field contract lives in `_PROJECT_DOCS/content-authoring-contract.md`. Use `share_*` fields in content frontmatter. Do not author Open Graph or Twitter protocol fields directly in Markdown.
 
-- `og_title`: share-card/Open Graph title override. Falls back to `title` when absent.
-- `og_description`: share-card/Open Graph description override. Falls back to `introduction` when absent.
-- `og_image_hint`: freeform steering for generated image composition, tone, or visual emphasis. It is not a rendered URL.
-- `og_image_alt`: alt text for the generated or curated social image.
-
-Plain flow: write the Markdown in Obsidian, fill these fields only when the default title/introduction/image direction is not enough, commit to the content repo, push, and let the content pipeline validate/promote the commit. The app should reject malformed content before visitors ever see it; later slices add local preview, generated image output, rendered meta tags, and content-repo CI for the same contract.
+Plain flow: write the Markdown in Obsidian, fill the share-preview fields only when the default title/introduction is not enough or when you want to leave editorial notes for a future share image, commit to the content repo, push, and let the content pipeline validate/promote the commit. The current app stores those fields; later slices add local preview, generated share-image output, rendered metadata tags, and content-repo CI for the same contract.
 
 Remaining implementation slice:
 
@@ -51,7 +46,7 @@ Remaining implementation slice:
 3. Record accepted/rejected content SHA and reason.
 4. Keep serving the previous known-good content if boot-time sync or parsing fails.
 5. Add content-repo CI so a merge to content `main` validates schema/renderability before the production webhook ever sees it.
-6. Add OG image generation, local preview, rendered metadata, and production validation for generated image URLs/dimensions.
+6. Add share-image generation, local preview, rendered Open Graph/Twitter metadata, and production validation for generated image URLs/dimensions.
 7. Decide the deleted-URL SEO behavior: hard 404, 410, redirect, or tombstone page.
 
 Known risks to address in that slice:
@@ -61,7 +56,7 @@ Known risks to address in that slice:
 - Delivery dedupe and sync locking do not exist yet.
 - Accepted/rejected content SHA is not persisted yet.
 - Content-repo CI does not exist yet.
-- OG frontmatter is persisted, but image generation, preview UI, rendered metadata, and production smoke assertions do not exist yet.
+- Share-preview frontmatter is persisted, but share-image generation, preview UI, rendered metadata, and production smoke assertions do not exist yet.
 
 ## Origin deploy philosophy
 
