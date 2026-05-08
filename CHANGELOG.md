@@ -3,6 +3,13 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.10](https://github.com/zaneriley/personal-site/compare/v0.4.9...v0.4.10) (2026-05-08)
+
+
+### Features
+
+* **content:** add content validation command ([#70](https://github.com/zaneriley/personal-site/issues/70)) ([fed890b](https://github.com/zaneriley/personal-site/commit/fed890be418e0c1553cabc7a92a648816092f1e9))
+
 ## [0.4.9](https://github.com/zaneriley/personal-site/compare/v0.4.8...v0.4.9) (2026-05-08)
 
 
