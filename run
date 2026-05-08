@@ -339,25 +339,8 @@ function shell {
 }
 
 # -----------------------------------------------------------------------------
-# Database
+# Content
 # -----------------------------------------------------------------------------
-
-function psql {
-  # Connect to PostgreSQL
-  # shellcheck disable=SC1091
-  . .env
- _dc postgres psql -U "${POSTGRES_USER}" "${@}"
-}
-
-function prod:migrate {
-  # Run database migrations in production
-  cmd bin/portfolio eval "Portfolio.Release.migrate"
-}
-
-function prod:remote {
-  # Connect an IEx session to your production system
-  cmd bin/portfolio remote
-}
 
 function content:validate {
   # Validate a checked-out personal-site-content tree through the app promoter
@@ -383,6 +366,27 @@ function content:validate {
     -e "MIX_ENV=test" \
     web bash -lc \
     "mix ecto.create --quiet && mix ecto.migrate --quiet && mix portfolio.content.validate /content"
+}
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+
+function psql {
+  # Connect to PostgreSQL
+  # shellcheck disable=SC1091
+  . .env
+ _dc postgres psql -U "${POSTGRES_USER}" "${@}"
+}
+
+function prod:migrate {
+  # Run database migrations in production
+  cmd bin/portfolio eval "Portfolio.Release.migrate"
+}
+
+function prod:remote {
+  # Connect an IEx session to your production system
+  cmd bin/portfolio remote
 }
 
 function release {
@@ -523,6 +527,10 @@ function ci:acceptance-gate-bypass-check:test {
 
 function ci:prod-build {
     ci/prod-build.sh
+}
+
+function ci:content-validate {
+    content:validate "$@"
 }
 
 function ci:run-all {
