@@ -359,6 +359,32 @@ function prod:remote {
   cmd bin/portfolio remote
 }
 
+function content:validate {
+  # Validate a checked-out personal-site-content tree through the app promoter
+  local content_path
+  local content_path_abs
+
+  content_path="${1:-}"
+
+  if [[ -z "${content_path}" ]]; then
+    echo "Usage: ./run content:validate /path/to/personal-site-content"
+    return 1
+  fi
+
+  if [[ ! -d "${content_path}" ]]; then
+    echo "Content path does not exist or is not a directory: ${content_path}"
+    return 1
+  fi
+
+  content_path_abs="$(cd "${content_path}" && pwd)"
+
+  docker compose run --rm ${TTY} \
+    -v "${content_path_abs}:/content:ro" \
+    -e "MIX_ENV=test" \
+    web bash -lc \
+    "mix ecto.create --quiet && mix ecto.migrate --quiet && mix portfolio.content.validate /content"
+}
+
 function release {
   # Build and tag the Docker image
   docker build --no-cache -t portfolio:"$(git rev-parse --short HEAD) ."

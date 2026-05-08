@@ -14,6 +14,7 @@ defmodule Portfolio.Content.FileManagement.Promoter do
   alias Portfolio.Content.FileManagement.Reader
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Types
   alias Portfolio.Repo
 
   @type change_set :: %{
@@ -144,6 +145,7 @@ defmodule Portfolio.Content.FileManagement.Promoter do
         |> Path.wildcard()
         |> Enum.map(&Path.expand/1)
         |> Enum.reject(&hidden_path?/1)
+        |> Enum.filter(&publishable_markdown_path?/1)
         |> Enum.sort()
 
       {:ok, files}
@@ -283,6 +285,17 @@ defmodule Portfolio.Content.FileManagement.Promoter do
     path
     |> Path.split()
     |> Enum.any?(&String.starts_with?(&1, "."))
+  end
+
+  defp publishable_markdown_path?(path) do
+    content_slugs =
+      Types.content_types()
+      |> Map.values()
+      |> Enum.flat_map(& &1.slugs)
+
+    path
+    |> Path.split()
+    |> Enum.any?(&(&1 in content_slugs))
   end
 
   defp skip_path(result, path), do: %{result | skipped: [path | result.skipped]}

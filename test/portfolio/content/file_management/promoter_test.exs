@@ -147,6 +147,23 @@ defmodule Portfolio.Content.FileManagement.PromoterTest do
   end
 
   describe "promote_all/1" do
+    test "ignores markdown outside publishable content paths" do
+      content_path = tmp_dir!("promote-all-ignore-docs")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_file!(content_path, "README.md", "# Content repo")
+      write_note!(content_path, "notes/published-note/en.md")
+
+      assert {:ok, result} = Promoter.promote_all(content_path)
+
+      assert result.promoted == [
+               Path.expand("notes/published-note/en.md", content_path)
+             ]
+
+      assert result.errors == []
+      assert %Note{} = Repo.get_by(Note, url: "published-note")
+    end
+
     test "prunes database entries whose source markdown disappeared" do
       content_path = tmp_dir!("promote-all-prune")
       on_exit(fn -> File.rm_rf!(content_path) end)
