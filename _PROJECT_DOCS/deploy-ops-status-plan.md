@@ -10,7 +10,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Branch protection requires `Workflow lint`, `Gate integrity`, `Compile`, `Lint`, `Security check`, `Test`, `Static analysis`, `gitleaks`, and `Prod build`.
 - `Prod build` runs on PRs, pushes to `main`, nightly schedule, and manual dispatch. It builds the prod image, runs migrations up/down/up, boots the release, waits for `/readyz`, probes canonical routes, runs release RPC introspection, compares perf data, and uploads measurements.
 - Release Please is automated enough for this pre-1.0 portfolio: `feat`, `fix`, and `perf` commits open release PRs, auto-merge waits on required gates, and release creation builds/pushes tagged images. Docs, CI, and chores do not bump versions.
-- The content pipeline is still partial, but app-side webhook promotion now exists. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, treats deleted Markdown as unpublish, and persists optional share-preview frontmatter.
+- Content deployability is still partial, but app-side webhook promotion now exists. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, treats deleted Markdown as unpublish, and persists optional share-preview frontmatter.
 - Content `main` is the intended publish boundary, once content-repo CI validates the same schema/renderability rules before merge. "Bad content" means content the app cannot parse, validate into the content schema, compile into its Markdown/component model, or render safely enough to promote.
 - Deleted Markdown should unpublish content. The SEO/user-facing behavior for previously indexed URLs is still open: the code now removes DB entries; a tombstone/redirect/410 policy still needs design.
 - Boot still pulls content via `Portfolio.Release.pull_repository/0`, but boot/startup does not yet have explicit last-good content behavior or a content-SHA ledger.
@@ -18,7 +18,9 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
 
-## Content-pipeline DX
+## Content Deployability DX
+
+Adversarial check: #1 succeeds only if it makes content publishing trustworthy. Git sync is plumbing; it does not count by itself. The publish path must preserve last-good live content, name the currently served content commit, reject bad content with a useful reason, and support content-only rollback.
 
 Desired DX: edit content, run local content checks if useful, commit, push, then read a clear verdict: accepted and live, rejected with a parse/validation error, or ignored because no publishable content changed. No SSH, no container restart, no DB poking, no "did the watcher notice?" uncertainty.
 
@@ -48,6 +50,8 @@ Remaining implementation slice:
 5. Add content-repo CI so a merge to content `main` validates schema/renderability before the production webhook ever sees it.
 6. Add share-image generation, local preview, rendered Open Graph/Twitter metadata, and production validation for generated image URLs/dimensions.
 7. Decide the deleted-URL SEO behavior: hard 404, 410, redirect, or tombstone page.
+
+Done for this sub-phase means the app can answer four questions without fresh human reasoning: what content commit is live, what content commit was last rejected and why, what commit was last known-good, and how to return to it.
 
 Known risks to address in that slice:
 
