@@ -7,9 +7,7 @@ defmodule PortfolioWeb.ReadinessController do
 
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def index(conn, _params) do
-    Ecto.Adapters.SQL.query!(Portfolio.Repo, "SELECT 1")
-
-    if Content.content_ready?() do
+    if Content.ready?() do
       conn
       |> put_resp_content_type("text/plain")
       |> send_resp(:ok, "ok")

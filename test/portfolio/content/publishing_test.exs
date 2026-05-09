@@ -50,7 +50,7 @@ defmodule Portfolio.Content.PublishingTest do
                  generation_id: generation.id
                )
 
-      assert {:duplicate, duplicate} =
+      assert {:ok, duplicate} =
                Publishing.record_publication_event(
                  "delivery-1",
                  second_sha,

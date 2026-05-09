@@ -30,14 +30,19 @@ defmodule Portfolio.Content.Publishing do
   @spec with_publication_lock((-> publication_lock_result())) ::
           publication_lock_result()
   def with_publication_lock(fun) when is_function(fun, 0) do
-    Repo.transaction(
-      fn ->
-        Repo.query!("SELECT pg_advisory_xact_lock($1)", [@publication_lock_key])
-        fun.()
-      end,
-      timeout: :infinity
-    )
-    |> case do
+    result =
+      Repo.transaction(
+        fn ->
+          Repo.query!("SELECT pg_advisory_xact_lock($1)", [
+            @publication_lock_key
+          ])
+
+          fun.()
+        end,
+        timeout: :infinity
+      )
+
+    case result do
       {:ok, result} -> result
       {:error, reason} -> {:error, reason}
     end
@@ -63,8 +68,8 @@ defmodule Portfolio.Content.Publishing do
   @doc """
   Records a publication event and updates the read model.
 
-  Duplicate `github_delivery_id` values are returned without appending a second
-  ledger row or changing publication state.
+  Duplicate `github_delivery_id` values return the existing entry without
+  appending a second ledger row or changing publication state.
   """
   @spec record_publication_event(
           String.t(),
@@ -73,7 +78,6 @@ defmodule Portfolio.Content.Publishing do
           keyword()
         ) ::
           {:ok, PublicationLedgerEntry.t()}
-          | {:duplicate, PublicationLedgerEntry.t()}
           | {:error, Ecto.Changeset.t()}
   def record_publication_event(
         github_delivery_id,
@@ -94,7 +98,7 @@ defmodule Portfolio.Content.Publishing do
         end
 
       %PublicationLedgerEntry{} = entry ->
-        {:duplicate, entry}
+        {:ok, entry}
     end
   end
 
@@ -163,6 +167,14 @@ defmodule Portfolio.Content.Publishing do
     else
       _ -> false
     end
+  end
+
+  @doc """
+  Returns true when storage responds and accepted content is live.
+  """
+  @spec ready?() :: boolean()
+  def ready? do
+    storage_ready?() and content_ready?()
   end
 
   @doc """
@@ -431,6 +443,16 @@ defmodule Portfolio.Content.Publishing do
         content.is_draft == false
     )
     |> Repo.exists?()
+  end
+
+  defp storage_ready? do
+    case Repo.query("SELECT 1", [], log: false) do
+      {:ok, _result} -> true
+      {:error, _reason} -> false
+    end
+  rescue
+    DBConnection.ConnectionError -> false
+    Postgrex.Error -> false
   end
 
   defp rejected_status(state) do

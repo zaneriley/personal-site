@@ -114,7 +114,6 @@ defmodule Portfolio.Content do
           keyword()
         ) ::
           {:ok, PublicationLedgerEntry.t()}
-          | {:duplicate, PublicationLedgerEntry.t()}
           | {:error, Ecto.Changeset.t()}
   def record_publication_verdict(content_sha, status, opts \\ [])
       when is_binary(content_sha) do
@@ -135,7 +134,6 @@ defmodule Portfolio.Content do
           keyword()
         ) ::
           {:ok, PublicationLedgerEntry.t()}
-          | {:duplicate, PublicationLedgerEntry.t()}
           | {:error, Ecto.Changeset.t()}
   def record_publication_event(
         github_delivery_id,
@@ -151,6 +149,30 @@ defmodule Portfolio.Content do
       status,
       opts
     )
+  end
+
+  @doc """
+  Records an ignored content repository delivery under the publication lock.
+  """
+  @spec record_ignored_publication_event(
+          String.t(),
+          String.t(),
+          keyword()
+        ) :: {:ok, PublicationLedgerEntry.t()} | {:error, Ecto.Changeset.t()}
+  def record_ignored_publication_event(
+        github_delivery_id,
+        content_sha,
+        opts \\ []
+      )
+      when is_binary(github_delivery_id) and is_binary(content_sha) do
+    Publishing.with_publication_lock(fn ->
+      record_publication_event(
+        github_delivery_id,
+        content_sha,
+        :ignored,
+        Keyword.put_new(opts, :reason, "No relevant content changes")
+      )
+    end)
   end
 
   @doc """
@@ -176,6 +198,14 @@ defmodule Portfolio.Content do
   @spec content_ready?() :: boolean()
   def content_ready? do
     Publishing.content_ready?()
+  end
+
+  @doc """
+  Returns true when content storage responds and accepted content is live.
+  """
+  @spec ready?() :: boolean()
+  def ready? do
+    Publishing.ready?()
   end
 
   @doc """

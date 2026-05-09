@@ -76,6 +76,9 @@ defmodule Portfolio.Content.Schemas.PublicationLedgerEntry do
     |> validate_format(:content_sha, ~r/\A[0-9a-f]{40}\z/i)
     |> validate_inclusion(:status, @statuses)
     |> validate_path_lists()
+    |> check_constraint(:content_sha, name: :content_sha_format)
+    |> check_constraint(:status, name: :content_publication_status)
+    |> foreign_key_constraint(:content_publication_generation_id)
     |> unique_constraint(:github_delivery_id)
   end
 

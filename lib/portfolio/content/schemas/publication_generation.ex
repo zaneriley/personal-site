@@ -35,5 +35,8 @@ defmodule Portfolio.Content.Schemas.PublicationGeneration do
     |> validate_format(:content_sha, ~r/\A[0-9a-f]{40}\z/i)
     |> validate_inclusion(:source, @sources)
     |> validate_inclusion(:status, @statuses)
+    |> check_constraint(:content_sha, name: :content_sha_format)
+    |> check_constraint(:source, name: :content_generation_source)
+    |> check_constraint(:status, name: :content_generation_status)
   end
 end

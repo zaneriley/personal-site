@@ -7,11 +7,11 @@ defmodule PortfolioWeb.ContentWebhookController do
   and triggers content updates when necessary.
   """
 
-  require Logger
   alias Portfolio.Content
-  alias Portfolio.Content.Publishing
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
   alias Portfolio.Content.Types
+
+  require Logger
 
   @type webhook_result ::
           {:ok, map() | :no_relevant_changes} | {:error, String.t()}
@@ -163,23 +163,13 @@ defmodule PortfolioWeb.ContentWebhookController do
   defp record_ignored_update(target_sha, github_delivery_id, opts) do
     Logger.info("No relevant file changes detected")
 
-    result =
-      Publishing.with_publication_lock(fn ->
-        Content.record_publication_event(
-          github_delivery_id,
-          target_sha,
-          :ignored,
-          reason: "No relevant content changes",
-          repository: content_repo_url(opts),
-          ref: @main_ref
-        )
-      end)
-
-    case result do
+    case Content.record_ignored_publication_event(
+           github_delivery_id,
+           target_sha,
+           repository: content_repo_url(opts),
+           ref: @main_ref
+         ) do
       {:ok, _entry} ->
-        {:ok, :no_relevant_changes}
-
-      {:duplicate, _entry} ->
         {:ok, :no_relevant_changes}
 
       {:error, changeset} ->

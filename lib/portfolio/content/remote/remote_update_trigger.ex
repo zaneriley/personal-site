@@ -11,28 +11,12 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   and `Promoter` to atomically publish changed files into the local database.
   """
 
-  use GenServer
-
   alias Portfolio.Content
   alias Portfolio.Content.FileManagement.Promoter
   alias Portfolio.Content.Publishing
   alias Portfolio.Content.Remote.GitRepoSyncer
 
   require Logger
-
-  @doc """
-  Starts the RemoteUpdateTrigger process.
-  """
-  @spec start_link(keyword()) :: GenServer.on_start()
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
-  end
-
-  @impl true
-  @spec init(keyword()) :: {:ok, map()}
-  def init(_opts) do
-    {:ok, %{}}
-  end
 
   @doc """
   Triggers an update for a given repository URL.
@@ -49,18 +33,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   @spec trigger_update(String.t(), keyword()) ::
           {:ok, Promoter.promotion_result()} | {:error, String.t()}
   def trigger_update(repo_url, opts \\ []) do
-    case Process.whereis(__MODULE__) do
-      nil ->
-        perform_update(repo_url, opts)
-
-      _pid ->
-        GenServer.call(__MODULE__, {:trigger_update, repo_url, opts}, :infinity)
-    end
-  end
-
-  @impl true
-  def handle_call({:trigger_update, repo_url, opts}, _from, state) do
-    {:reply, perform_update(repo_url, opts), state}
+    perform_update(repo_url, opts)
   end
 
   defp perform_update(repo_url, opts) do
@@ -291,7 +264,6 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
            opts
          ) do
       {:ok, _entry} -> :ok
-      {:duplicate, _entry} -> :ok
       {:error, changeset} -> {:error, changeset}
     end
   end

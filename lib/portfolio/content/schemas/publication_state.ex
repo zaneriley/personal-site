@@ -69,6 +69,23 @@ defmodule Portfolio.Content.Schemas.PublicationState do
     |> validate_required([:name, :current_sync_state])
     |> validate_inclusion(:current_sync_state, @sync_states)
     |> validate_sha_fields()
+    |> check_constraint(:name, name: :singleton_state_name)
+    |> check_constraint(:current_sync_state, name: :content_sync_state)
+    |> check_constraint(:live_content_sha, name: :live_content_sha_format)
+    |> check_constraint(:last_good_content_sha,
+      name: :last_good_content_sha_format
+    )
+    |> check_constraint(:last_accepted_content_sha,
+      name: :last_accepted_content_sha_format
+    )
+    |> check_constraint(:last_rejected_content_sha,
+      name: :last_rejected_content_sha_format
+    )
+    |> check_constraint(:last_ignored_content_sha,
+      name: :last_ignored_content_sha_format
+    )
+    |> foreign_key_constraint(:live_content_publication_generation_id)
+    |> foreign_key_constraint(:last_good_content_publication_generation_id)
     |> unique_constraint(:name)
   end
 

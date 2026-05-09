@@ -3,12 +3,15 @@ defmodule Portfolio.Release do
   This module defines functions that you can run with releases.
   """
 
-  @app :portfolio
   alias Portfolio.Content
   alias Portfolio.Content.FileManagement.Promoter
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
+
   require Logger
 
+  @app :portfolio
+
+  @spec migrate() :: [term()]
   def migrate do
     load_app()
 
@@ -21,27 +24,16 @@ defmodule Portfolio.Release do
   @doc """
   Pulls the latest changes from the configured repository.
   """
+  @spec pull_repository() :: :ok | no_return()
   def pull_repository do
     {:ok, _apps} = Application.ensure_all_started(@app)
 
-    repo_url = Application.get_env(:portfolio, :content_repo_url)
-    local_path = Application.get_env(:portfolio, :content_base_path)
-
-    cond do
-      is_nil(repo_url) ->
-        raise "Missing configuration for content_repo_url. Ensure CONTENT_REPO_URL environment variable is set."
-
-      is_nil(local_path) ->
-        raise "Missing configuration for content_base_path. Check your config files."
-
-      not is_binary(repo_url) ->
-        raise "Invalid configuration for content_repo_url: #{inspect(repo_url)}. It should be a string."
-
-      not is_binary(local_path) ->
-        raise "Invalid configuration for content_base_path: #{inspect(local_path)}. It should be a string."
-
-      true ->
-        do_pull_repository(repo_url, local_path)
+    with {:ok, repo_url} <- get_content_repo_url(),
+         {:ok, local_path} <- get_content_base_path(),
+         :ok <- do_pull_repository(repo_url, local_path) do
+      :ok
+    else
+      {:error, reason} -> handle_bootstrap_failure(reason)
     end
   end
 
@@ -60,7 +52,7 @@ defmodule Portfolio.Release do
         :ok
 
       {:error, reason} ->
-        handle_bootstrap_failure(reason)
+        {:error, reason}
     end
   end
 
@@ -104,6 +96,7 @@ defmodule Portfolio.Release do
   @doc """
   Reads all existing markdown files and updates the database.
   """
+  @spec read_existing_content() :: :ok | no_return()
   def read_existing_content do
     with :ok <- load_app(),
          {:ok, content_base_path} <- get_content_base_path(),
@@ -113,6 +106,22 @@ defmodule Portfolio.Release do
       {:error, reason} ->
         Logger.error("Failed to read existing content: #{inspect(reason)}")
         handle_bootstrap_failure(reason)
+    end
+  end
+
+  defp get_content_repo_url do
+    case Application.get_env(:portfolio, :content_repo_url) do
+      nil ->
+        {:error,
+         "Missing configuration for content_repo_url. " <>
+           "Ensure CONTENT_REPO_URL environment variable is set."}
+
+      path when is_binary(path) ->
+        {:ok, path}
+
+      invalid ->
+        {:error,
+         "Invalid configuration for content_repo_url: #{inspect(invalid)}"}
     end
   end
 
@@ -159,7 +168,6 @@ defmodule Portfolio.Release do
         :ok
       else
         {:error, reason} -> {:error, reason}
-        {:duplicate, _entry} -> :ok
       end
     end)
   end
@@ -174,6 +182,7 @@ defmodule Portfolio.Release do
     |> Base.encode16(case: :lower)
   end
 
+  @spec rollback(module(), non_neg_integer()) :: {:ok, term(), [atom()]}
   def rollback(repo, version) do
     load_app()
 
@@ -189,7 +198,7 @@ defmodule Portfolio.Release do
     case Application.load(@app) do
       :ok -> :ok
       {:error, {:already_loaded, @app}} -> :ok
-      error -> error
+      {:error, reason} -> {:error, reason}
     end
   end
 end

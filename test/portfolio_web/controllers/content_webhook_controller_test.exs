@@ -1,5 +1,5 @@
 defmodule PortfolioWeb.ContentWebhookControllerTest do
-  use PortfolioWeb.ConnCase, async: false
+  use PortfolioWeb.ConnCase, async: true
 
   alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note

@@ -1,5 +1,5 @@
 defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
-  use Portfolio.DataCase, async: false
+  use Portfolio.DataCase, async: true
 
   alias Portfolio.Content
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
@@ -7,12 +7,6 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
   alias Portfolio.Repo
 
   import Portfolio.ContentRepoHelpers
-
-  describe "start_link/1" do
-    test "starts the GenServer process when one is not already running" do
-      assert Process.whereis(RemoteUpdateTrigger)
-    end
-  end
 
   describe "trigger_update/2" do
     test "syncs the target SHA and promotes changed content" do

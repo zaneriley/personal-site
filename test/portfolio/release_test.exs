@@ -56,6 +56,28 @@ defmodule Portfolio.ReleaseTest do
                content_sha
     end
 
+    test "keeps booting when content repo config is invalid but last-good content exists" do
+      content_sha = String.duplicate("b", 40)
+      {:ok, generation} = Publishing.prepare_generation(content_sha)
+      note_fixture(%{}, publication_generation_id: generation.id)
+
+      assert {:ok, _entry} =
+               Publishing.record_publication_event(
+                 "release-last-good-invalid-config",
+                 content_sha,
+                 :accepted,
+                 generation_id: generation.id
+               )
+
+      Application.put_env(:portfolio, :content_repo_url, nil)
+
+      assert :ok = Release.pull_repository()
+      assert Content.content_ready?()
+
+      assert Content.get_publication_state().last_good_content_sha ==
+               content_sha
+    end
+
     test "dedupes boot sync by resolved content commit", %{
       content_base_path: content_base_path
     } do
