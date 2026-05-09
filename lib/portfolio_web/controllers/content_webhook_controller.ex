@@ -9,6 +9,7 @@ defmodule PortfolioWeb.ContentWebhookController do
 
   require Logger
   alias Portfolio.Content
+  alias Portfolio.Content.Publishing
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
   alias Portfolio.Content.Types
 
@@ -21,7 +22,7 @@ defmodule PortfolioWeb.ContentWebhookController do
   @zero_sha String.duplicate("0", 40)
 
   @spec handle_webhook(Plug.Conn.t(), map(), keyword()) :: webhook_result()
-  def handle_webhook(_conn, payload, opts) do
+  def handle_webhook(conn, payload, opts) do
     Logger.info("Processing webhook payload")
 
     with {:ok, event_type} <- extract_event_type(payload),
@@ -29,15 +30,16 @@ defmodule PortfolioWeb.ContentWebhookController do
          :ok <- validate_ref(payload),
          :ok <- validate_repository(payload, content_repo_url(opts)),
          {:ok, target_sha} <- extract_target_sha(payload),
+         {:ok, github_delivery_id} <- extract_delivery_id(conn, payload, opts),
          {:ok, relevant_changes} <- extract_relevant_changes(payload) do
       if empty_changes?(relevant_changes) do
-        record_ignored_update(target_sha)
+        record_ignored_update(target_sha, github_delivery_id, opts)
       else
         Logger.info(
           "Relevant file changes detected: #{inspect(relevant_changes)}"
         )
 
-        trigger_update(opts, relevant_changes, target_sha)
+        trigger_update(opts, relevant_changes, target_sha, github_delivery_id)
       end
     else
       {:error, reason} ->
@@ -94,6 +96,25 @@ defmodule PortfolioWeb.ContentWebhookController do
 
   defp extract_target_sha(_), do: {:error, "Missing after SHA"}
 
+  @spec extract_delivery_id(Plug.Conn.t(), map(), keyword()) ::
+          {:ok, String.t()} | {:error, String.t()}
+  defp extract_delivery_id(conn, payload, opts) do
+    delivery_id =
+      Keyword.get(opts, :github_delivery_id) ||
+        payload["delivery_id"] ||
+        conn
+        |> Plug.Conn.get_req_header("x-github-delivery")
+        |> List.first()
+
+    case delivery_id do
+      delivery_id when is_binary(delivery_id) and delivery_id != "" ->
+        {:ok, delivery_id}
+
+      _ ->
+        {:error, "Missing GitHub delivery ID"}
+    end
+  end
+
   @spec extract_relevant_changes(map()) ::
           {:ok, relevant_changes()} | {:error, String.t()}
   defp extract_relevant_changes(%{"commits" => commits})
@@ -137,14 +158,28 @@ defmodule PortfolioWeb.ContentWebhookController do
   defp empty_changes?(%{upsert: [], delete: []}), do: true
   defp empty_changes?(_changes), do: false
 
-  @spec record_ignored_update(String.t()) :: webhook_result()
-  defp record_ignored_update(target_sha) do
+  @spec record_ignored_update(String.t(), String.t(), keyword()) ::
+          webhook_result()
+  defp record_ignored_update(target_sha, github_delivery_id, opts) do
     Logger.info("No relevant file changes detected")
 
-    case Content.record_publication_verdict(target_sha, :ignored,
-           reason: "No relevant content changes"
-         ) do
-      {:ok, _verdict} ->
+    result =
+      Publishing.with_publication_lock(fn ->
+        Content.record_publication_event(
+          github_delivery_id,
+          target_sha,
+          :ignored,
+          reason: "No relevant content changes",
+          repository: content_repo_url(opts),
+          ref: @main_ref
+        )
+      end)
+
+    case result do
+      {:ok, _entry} ->
+        {:ok, :no_relevant_changes}
+
+      {:duplicate, _entry} ->
         {:ok, :no_relevant_changes}
 
       {:error, changeset} ->
@@ -156,15 +191,18 @@ defmodule PortfolioWeb.ContentWebhookController do
     end
   end
 
-  @spec trigger_update(keyword(), relevant_changes(), String.t()) ::
+  @spec trigger_update(keyword(), relevant_changes(), String.t(), String.t()) ::
           webhook_result()
-  defp trigger_update(opts, changes, target_sha) do
+  defp trigger_update(opts, changes, target_sha, github_delivery_id) do
     Logger.info("Triggering update with RemoteUpdateTrigger")
 
     case RemoteUpdateTrigger.trigger_update(content_repo_url(opts),
            content_base_path: Keyword.get(opts, :content_base_path),
            changes: changes,
-           target_sha: target_sha
+           target_sha: target_sha,
+           github_delivery_id: github_delivery_id,
+           repository: content_repo_url(opts),
+           ref: @main_ref
          ) do
       {:ok, result} ->
         Logger.info("RemoteUpdateTrigger completed successfully")

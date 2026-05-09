@@ -89,4 +89,5 @@ content_base_path =
 config :portfolio, content_base_path: content_base_path
 
 config :portfolio, Portfolio.Content.FileManagement.Watcher,
+  enabled: false,
   paths: [content_base_path]

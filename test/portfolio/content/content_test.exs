@@ -3,7 +3,7 @@ defmodule Portfolio.Content.ContentTest do
   alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.ContentFixtures
-  alias Portfolio.Content.TranslationManager
+  alias Portfolio.Content.TranslationRepository
   require Logger
 
   describe "content retrieval" do
@@ -107,10 +107,22 @@ defmodule Portfolio.Content.ContentTest do
   end
 
   describe "content deletion" do
-    test "delete/2 deletes the note" do
-      note = ContentFixtures.note_fixture()
+    test "delete/2 deletes an unpublished note" do
+      note = ContentFixtures.note_fixture(%{}, publication_generation_id: nil)
       assert {:ok, %Note{}} = Content.delete("note", note)
-      assert_raise Ecto.NoResultsError, fn -> Content.get!("note", note.id) end
+      refute Portfolio.Repo.get(Note, note.id)
+    end
+
+    test "delete/2 refuses to delete a published note" do
+      note = ContentFixtures.note_fixture()
+
+      assert {:error, changeset} = Content.delete("note", note)
+
+      assert %{
+               publication_generation_id: [
+                 "cannot be deleted outside the publication workflow"
+               ]
+             } = errors_on(changeset)
     end
   end
 
@@ -122,20 +134,24 @@ defmodule Portfolio.Content.ContentTest do
 
     test "get_with_translations/3 returns content with specified locale translations" do
       # Create a note in the default locale (English)
-      {:ok, note} =
-        Content.create("note", %{
-          "title" => "English Title",
-          "content" => "English Content",
-          "url" => "test-note-with-translations",
-          "locale" => "en"
-        })
+      note =
+        ContentFixtures.note_fixture(
+          %{
+            "title" => "English Title",
+            "content" => "English Content",
+            "url" => "test-note-with-translations",
+            "locale" => "en"
+          },
+          skip_translations: true
+        )
 
       # Add a French translation
       {:ok, french_translation} =
         Content.upsert_from_file("note", %{
           "title" => "Titre Français",
           "url" => "test-note-with-translations",
-          "locale" => "fr"
+          "locale" => "fr",
+          "publication_generation_id" => note.publication_generation_id
         })
 
       Logger.debug("French translation created: #{inspect(french_translation)}")
@@ -156,20 +172,24 @@ defmodule Portfolio.Content.ContentTest do
 
     test "get_with_translations handles partial translations" do
       # Create a note
-      {:ok, note} =
-        Content.create("note", %{
-          "title" => "English Title",
-          "content" => "English Content",
-          "url" => "partial-translation-note",
-          "locale" => "en"
-        })
+      note =
+        ContentFixtures.note_fixture(
+          %{
+            "title" => "English Title",
+            "content" => "English Content",
+            "url" => "partial-translation-note",
+            "locale" => "en"
+          },
+          skip_translations: true
+        )
 
       # Create partial translation
       {:ok, _} =
         Content.upsert_from_file("note", %{
           "title" => "部分的な日本語のタイトル",
           "url" => "partial-translation-note",
-          "locale" => "ja"
+          "locale" => "ja",
+          "publication_generation_id" => note.publication_generation_id
         })
 
       # Retrieve content with translations
@@ -211,7 +231,9 @@ defmodule Portfolio.Content.ContentTest do
 
     test "upsert_from_file/2 updates existing content from file data" do
       existing_note =
-        ContentFixtures.note_fixture(%{"url" => "existing-file-note"})
+        ContentFixtures.note_fixture(%{"url" => "existing-file-note"},
+          publication_generation_id: nil
+        )
 
       attrs = %{
         "url" => "existing-file-note",
@@ -240,11 +262,18 @@ defmodule Portfolio.Content.ContentTest do
   end
 
   describe "publication verdicts" do
-    test "record_publication_verdict/3 upserts by content SHA" do
+    test "record_publication_event/4 appends by delivery ID and allows repeated content SHAs" do
       content_sha = String.duplicate("a", 40)
 
+      {:ok, generation} =
+        Portfolio.Content.Publishing.prepare_generation(content_sha)
+
       assert {:ok, accepted} =
-               Content.record_publication_verdict(content_sha, :accepted,
+               Content.record_publication_event(
+                 "delivery-content-accepted",
+                 content_sha,
+                 :accepted,
+                 generation_id: generation.id,
                  promoted_paths: ["/content/notes/live/en.md"]
                )
 
@@ -253,21 +282,24 @@ defmodule Portfolio.Content.ContentTest do
       assert accepted.promoted_paths == ["/content/notes/live/en.md"]
 
       assert {:ok, rejected} =
-               Content.record_publication_verdict(content_sha, :rejected,
+               Content.record_publication_event(
+                 "delivery-content-rejected",
+                 content_sha,
+                 :rejected,
                  reason: "Content promotion failed",
-                 error_details: %{
+                 structured_errors: %{
                    "errors" => [
                      %{"path" => "/content/notes/live/en.md", "reason" => "bad"}
                    ]
                  }
                )
 
-      assert rejected.id == accepted.id
+      assert rejected.id != accepted.id
       assert rejected.status == "rejected"
       assert rejected.reason == "Content promotion failed"
       assert rejected.promoted_paths == []
 
-      assert rejected.error_details == %{
+      assert rejected.structured_errors == %{
                "errors" => [
                  %{"path" => "/content/notes/live/en.md", "reason" => "bad"}
                ]
@@ -276,9 +308,13 @@ defmodule Portfolio.Content.ContentTest do
       assert rejected == Content.get_publication_verdict(content_sha)
     end
 
-    test "record_publication_verdict/3 rejects invalid SHAs" do
+    test "record_publication_event/4 rejects invalid SHAs" do
       assert {:error, changeset} =
-               Content.record_publication_verdict("not-a-sha", :accepted)
+               Content.record_publication_event(
+                 "delivery-invalid-sha",
+                 "not-a-sha",
+                 :accepted
+               )
 
       assert %{content_sha: ["has invalid format"]} = errors_on(changeset)
     end
@@ -310,16 +346,19 @@ defmodule Portfolio.Content.ContentTest do
 
     test "get_with_translations/3 returns content with specified locale translations" do
       # Create a note manually
-      {:ok, note} =
-        Content.create("note", %{
-          "title" => "English Title",
-          "content" => "English Content",
-          "url" => "test-note",
-          "locale" => "en"
-        })
+      note =
+        ContentFixtures.note_fixture(
+          %{
+            "title" => "English Title",
+            "content" => "English Content",
+            "url" => "test-note",
+            "locale" => "en"
+          },
+          skip_translations: true
+        )
 
       # Create translations manually
-      TranslationManager.create_or_update_translations(note, "fr", %{
+      TranslationRepository.create_or_update_translations(note, "fr", %{
         "title" => "Titre Français",
         "content" => "Contenu Français"
       })
@@ -347,27 +386,29 @@ defmodule Portfolio.Content.ContentTest do
       attrs1 = %{"title" => "タイトル1"}
       attrs2 = %{"title" => "タイトル2"}
 
-      Task.async(fn ->
-        Content.TranslationManager.create_or_update_translations(
-          note,
-          "ja",
-          attrs1
-        )
-      end)
+      task1 =
+        Task.async(fn ->
+          Content.TranslationRepository.create_or_update_translations(
+            note,
+            "ja",
+            attrs1
+          )
+        end)
 
-      Task.async(fn ->
-        Content.TranslationManager.create_or_update_translations(
-          note,
-          "ja",
-          attrs2
-        )
-      end)
+      task2 =
+        Task.async(fn ->
+          Content.TranslationRepository.create_or_update_translations(
+            note,
+            "ja",
+            attrs2
+          )
+        end)
 
-      # Allow tasks to complete
-      Process.sleep(100)
+      Task.await(task1)
+      Task.await(task2)
 
       translations =
-        Content.TranslationManager.get_translations(note.id, "note", "ja")
+        Content.TranslationRepository.get_translations(note.id, "note", "ja")
 
       assert translations["title"] in ["タイトル1", "タイトル2"]
     end

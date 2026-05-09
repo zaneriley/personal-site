@@ -11,6 +11,7 @@ defmodule Portfolio.Content.Entry.Records do
   """
 
   alias Portfolio.Content.Entry.AstSerialization
+  alias Portfolio.Content.Publishing
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
@@ -144,6 +145,19 @@ defmodule Portfolio.Content.Entry.Records do
   """
   @spec delete_content(Note.t() | CaseStudy.t()) ::
           {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  def delete_content(%{publication_generation_id: generation_id} = content)
+      when is_binary(generation_id) do
+    changeset =
+      content
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.add_error(
+        :publication_generation_id,
+        "cannot be deleted outside the publication workflow"
+      )
+
+    {:error, changeset}
+  end
+
   def delete_content(content) do
     Repo.transaction(fn ->
       Repo.delete_all(
@@ -192,6 +206,8 @@ defmodule Portfolio.Content.Entry.Records do
               raise ArgumentError,
                     "Invalid id_or_url provided: #{inspect(id_or_url)}"
           end
+
+        query = filter_live_generation(query)
 
         case Repo.one(query) do
           nil ->
@@ -257,7 +273,10 @@ defmodule Portfolio.Content.Entry.Records do
           from c in schema,
             where: c.is_draft == false and not is_nil(c.published_at)
 
-        query = apply_sorting(query, schema, opts[:sort_by], opts[:sort_order])
+        query =
+          query
+          |> filter_live_generation()
+          |> apply_sorting(schema, opts[:sort_by], opts[:sort_order])
 
         Repo.all(query)
     end
@@ -269,6 +288,20 @@ defmodule Portfolio.Content.Entry.Records do
     case UUID.info(string) do
       {:ok, _} -> true
       {:error, _} -> false
+    end
+  end
+
+  defp filter_live_generation(query) do
+    case Publishing.live_generation_id() do
+      nil ->
+        where(query, [content], content.id in [])
+
+      generation_id ->
+        where(
+          query,
+          [content],
+          content.publication_generation_id == ^generation_id
+        )
     end
   end
 

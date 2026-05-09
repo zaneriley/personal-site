@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+command_name="${1:-}"
+sentinel="__portfolio_content_status__"
+
+function release_rpc {
+    local expression="$1"
+    local output_mode="${2:-all}"
+    local output
+    local filtered
+
+    if ! output="$(/app/bin/portfolio rpc "IO.puts(\"${sentinel}\"); ${expression}" 2>&1)"; then
+        printf "%s\n" "${output}" >&2
+        return 1
+    fi
+
+    filtered="$(
+        printf "%s\n" "${output}" |
+            awk -v marker="${sentinel}" -v mode="${output_mode}" '
+                found {
+                    print
+                    if (mode == "first") {
+                        exit
+                    }
+                }
+                $0 == marker { found = 1 }
+            '
+    )"
+
+    if [[ -z "${filtered}" ]]; then
+        printf "%s\n" "${output}" >&2
+        return 1
+    fi
+
+    printf "%s\n" "${filtered}"
+}
+
+case "${command_name}" in
+    status)
+        shift
+
+        if [[ -x "./run" ]]; then
+            exec ./run content:status "$@"
+        fi
+
+        if [[ "${1:-}" == "--json" ]]; then
+            release_rpc "IO.puts(Jason.encode!(Portfolio.Content.Publishing.status()))" first
+            exit $?
+        fi
+
+        release_rpc "IO.puts(Portfolio.Content.Publishing.status_text())"
+        ;;
+    *)
+        echo "Usage: bin/content status [--json]" >&2
+        exit 1
+        ;;
+esac

@@ -7,7 +7,7 @@ defmodule Portfolio.Content do
   It orchestrates operations across specialized sub-modules responsible for
   database interactions (`Records`), content compilation (`Compiler`), data assembly
   (`EntryAssembler`), file-based ingestion (`Source`), and translation management
-  (`TranslationManager`).
+  (`TranslationRepository`).
 
   ## Core Responsibilities
 
@@ -68,7 +68,7 @@ defmodule Portfolio.Content do
 
   Functions like `list/3` and `get_with_translations/3` automatically handle
   fetching and merging translated fields based on the specified locale. The underlying
-  `TranslationManager` handles storage.
+  `TranslationRepository` handles storage.
 
   ## AST vs Compiled Content
 
@@ -82,11 +82,11 @@ defmodule Portfolio.Content do
   alias Portfolio.Content.Entry.Records
   alias Portfolio.Content.Entry.Source
   alias Portfolio.Content.EntryAssembler
+  alias Portfolio.Content.Publishing
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
-  alias Portfolio.Content.Schemas.PublicationVerdict
+  alias Portfolio.Content.Schemas.PublicationLedgerEntry
   alias Portfolio.Content.Types
-  alias Portfolio.Repo
 
   require Logger
 
@@ -99,57 +99,83 @@ defmodule Portfolio.Content do
   @type content_url :: String.t()
   @type content_identifier :: content_id() | content_url()
   @type publication_verdict_status ::
-          :accepted | :rejected | :ignored | String.t()
+          :accepted | :rejected | :ignored | :duplicate | :rollback | String.t()
 
   @doc """
   Records the publishing verdict for a content repository commit.
 
-  The latest verdict for a commit SHA replaces any prior verdict for that SHA,
-  which makes webhook retries idempotent from the author-facing status view.
+  Prefer `record_publication_event/4` for new code so the GitHub delivery ID is
+  explicit. This compatibility wrapper derives a deterministic delivery ID from
+  the SHA and status.
   """
   @spec record_publication_verdict(
           String.t(),
           publication_verdict_status(),
           keyword()
         ) ::
-          {:ok, PublicationVerdict.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, PublicationLedgerEntry.t()}
+          | {:duplicate, PublicationLedgerEntry.t()}
+          | {:error, Ecto.Changeset.t()}
   def record_publication_verdict(content_sha, status, opts \\ [])
       when is_binary(content_sha) do
-    attrs = %{
-      content_sha: content_sha,
-      status: normalize_publication_status(status),
-      reason: Keyword.get(opts, :reason),
-      promoted_paths: Keyword.get(opts, :promoted_paths, []),
-      removed_paths: Keyword.get(opts, :removed_paths, []),
-      skipped_paths: Keyword.get(opts, :skipped_paths, []),
-      error_details: Keyword.get(opts, :error_details, %{})
-    }
+    delivery_id =
+      Keyword.get(opts, :github_delivery_id) ||
+        "manual:#{content_sha}:#{normalize_publication_status(status)}"
 
-    %PublicationVerdict{}
-    |> PublicationVerdict.changeset(attrs)
-    |> Repo.insert(
-      on_conflict:
-        {:replace,
-         [
-           :status,
-           :reason,
-           :promoted_paths,
-           :removed_paths,
-           :skipped_paths,
-           :error_details,
-           :updated_at
-         ]},
-      conflict_target: :content_sha,
-      returning: true
+    record_publication_event(delivery_id, content_sha, status, opts)
+  end
+
+  @doc """
+  Records an append-only publishing event keyed by GitHub delivery ID.
+  """
+  @spec record_publication_event(
+          String.t(),
+          String.t(),
+          publication_verdict_status(),
+          keyword()
+        ) ::
+          {:ok, PublicationLedgerEntry.t()}
+          | {:duplicate, PublicationLedgerEntry.t()}
+          | {:error, Ecto.Changeset.t()}
+  def record_publication_event(
+        github_delivery_id,
+        content_sha,
+        status,
+        opts \\ []
+      ) do
+    opts = Keyword.put_new(opts, :structured_errors, %{})
+
+    Publishing.record_publication_event(
+      github_delivery_id,
+      content_sha,
+      status,
+      opts
     )
   end
 
   @doc """
-  Fetches the publishing verdict recorded for a content repository commit.
+  Fetches the latest publishing event recorded for a content repository commit.
   """
-  @spec get_publication_verdict(String.t()) :: PublicationVerdict.t() | nil
+  @spec get_publication_verdict(String.t()) :: PublicationLedgerEntry.t() | nil
   def get_publication_verdict(content_sha) when is_binary(content_sha) do
-    Repo.get_by(PublicationVerdict, content_sha: content_sha)
+    Publishing.latest_publication_event(content_sha)
+  end
+
+  @doc """
+  Returns the current content publication read model.
+  """
+  @spec get_publication_state() ::
+          Portfolio.Content.Schemas.PublicationState.t() | nil
+  def get_publication_state do
+    Publishing.get_publication_state()
+  end
+
+  @doc """
+  Returns true when accepted content is selected as live.
+  """
+  @spec content_ready?() :: boolean()
+  def content_ready? do
+    Publishing.content_ready?()
   end
 
   @doc """

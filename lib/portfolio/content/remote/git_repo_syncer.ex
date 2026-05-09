@@ -20,6 +20,17 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
     do_sync_repo(repo_url, local_path, opts)
   end
 
+  @doc """
+  Returns the currently checked-out commit SHA for a local repository.
+  """
+  @spec current_sha!(String.t()) :: String.t()
+  def current_sha!(local_path) do
+    case run_git_command(local_path, ["rev-parse", "HEAD"]) do
+      {:ok, output} -> String.trim(output)
+      {:error, reason} -> raise "Failed to read current content SHA: #{reason}"
+    end
+  end
+
   @spec do_sync_repo(String.t(), String.t(), keyword()) :: sync_result()
   defp do_sync_repo(repo_url, local_path, opts) do
     if git_repo_exists?(local_path) do

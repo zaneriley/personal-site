@@ -9,6 +9,7 @@ HOST_PORT="${PROD_BUILD_HOST_PORT:-18080}"
 APP_PORT="${PORT:-8000}"
 OHA_VERSION="${OHA_VERSION:-1.4.7}"
 COMPOSE_OVERRIDE_FILE=".tmp/prod-build/compose.override.yml"
+PROD_BUILD_CONTENT_DIR=".tmp/prod-build/content"
 OHA_DOCKER_IMAGE="${OHA_DOCKER_IMAGE:-debian:bookworm-slim}"
 APP_SHA="$(git rev-parse HEAD)"
 compose=(docker compose --project-name "${PROJECT_NAME}" -f docker-compose.yml -f "${COMPOSE_OVERRIDE_FILE}")
@@ -173,7 +174,26 @@ services:
       URL_PORT: "${URL_PORT}"
       URL_SCHEME: "${URL_SCHEME}"
       URL_STATIC_HOST: "${URL_STATIC_HOST:-}"
+    volumes:
+      - "${PROD_BUILD_CONTENT_VOLUME}"
 YAML
+}
+
+function write_prod_build_content {
+    mkdir -p "${PROD_BUILD_CONTENT_DIR}/notes/prod-build"
+    cat > "${PROD_BUILD_CONTENT_DIR}/notes/prod-build/en.md" <<'MARKDOWN'
+---
+title: "Prod Build Smoke Note"
+url: "prod-build-smoke-note"
+introduction: "Prod build smoke content."
+published_at: "2026-05-09T00:00:00Z"
+is_draft: false
+---
+
+# Prod Build Smoke Note
+
+This note exists so the production build gate exercises accepted live content.
+MARKDOWN
 }
 
 function wait_for_postgres {
@@ -242,13 +262,17 @@ export URL_PORT="${URL_PORT:-${HOST_PORT}}"
 export SECRET_KEY_BASE="${SECRET_KEY_BASE:-$(openssl rand -hex 64)}"
 export GITHUB_WEBHOOK_SECRET="${GITHUB_WEBHOOK_SECRET:-ci-github-webhook-secret}"
 export CONTENT_REPO_URL="${CONTENT_REPO_URL:-https://example.invalid/personal-website-content.git}"
-export CONTENT_BASE_PATH="${CONTENT_BASE_PATH:-/app/priv/content}"
+export CONTENT_BASE_PATH="${CONTENT_BASE_PATH:-/app/prod-build-content}"
 export CI_SKIP_CONTENT_PULL=1
 export DOCKER_WEB_VOLUME="${DOCKER_WEB_VOLUME:-/tmp:/tmp}"
 export DOCKER_WEB_PORT_FORWARD="${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:${HOST_PORT}}"
 export DOCKER_RESTART_POLICY=no
 export PROD_BUILD_APP_SHA="${APP_SHA}"
 export PROD_BUILD_BASE_URL="${PROD_BUILD_BASE_URL:-http://127.0.0.1:${HOST_PORT}}"
+
+write_prod_build_content
+prod_build_content_host_path="$(pwd -P)/${PROD_BUILD_CONTENT_DIR}"
+export PROD_BUILD_CONTENT_VOLUME="${prod_build_content_host_path}:${CONTENT_BASE_PATH}:ro"
 
 ensure_oha
 write_compose_override
@@ -266,6 +290,16 @@ start_ms="$(now_ms)"
 wait_for_ready "${start_ms}"
 
 ci/probe-routes.sh ci/last-run.json
+
+if ! curl -fsS "http://127.0.0.1:${HOST_PORT}/en/note/prod-build-smoke-note" |
+    grep -F "Prod Build Smoke Note" >/dev/null; then
+    echo "fatal: prod-build smoke note did not render accepted live content" >&2
+    exit 1
+fi
+
+content_status_json="$("${compose[@]}" exec -T web bin/content status --json)"
+printf "%s\n" "${content_status_json}"
+jq -e '.live != null and .last_good == .live and .sync_state == "idle" and .last_delivery_id == ("embedded:" + .live)' <<< "${content_status_json}"
 
 "${compose[@]}" exec -T web \
     bin/portfolio rpc "IO.inspect({Application.spec(:portfolio, :vsn), length(Supervisor.which_children(Portfolio.Supervisor)), Ecto.Adapters.SQL.query!(Portfolio.Repo, \"SELECT 1\").num_rows})"

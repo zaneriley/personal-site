@@ -4,7 +4,7 @@ defmodule Portfolio.Content.Entry.CompilerTest do
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.ContentFixtures
-  alias Portfolio.Content.TranslationManager
+  alias Portfolio.Content.TranslationRepository
 
   describe "parse_to_ast/1" do
     test "successfully parses valid markdown" do
@@ -87,7 +87,7 @@ defmodule Portfolio.Content.Entry.CompilerTest do
       note = ContentFixtures.note_fixture()
 
       # Add a Japanese translation with explicit content and title
-      TranslationManager.create_or_update_translations(note, "ja", %{
+      TranslationRepository.create_or_update_translations(note, "ja", %{
         "title" => "日本語タイトル",
         "content" => "これは日本語のコンテンツです。"
       })

@@ -2,15 +2,16 @@ defmodule Portfolio.Content.EntryAssembler do
   @moduledoc """
   Handles translation-related operations for content entries.
 
-  This module is responsible for coordinating between Records, Compiler, and TranslationManager
+  This module is responsible for coordinating between Records, Compiler, and TranslationRepository
   to retrieve content with its translations and to process them for display.
   """
 
-  alias Portfolio.Content.Types
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
-  alias Portfolio.Content.TranslationManager
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.Records
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.TranslationRepository
+  alias Portfolio.Content.Types
 
   require Logger
 
@@ -45,7 +46,7 @@ defmodule Portfolio.Content.EntryAssembler do
 
       # Get translations for this content and locale
       translations =
-        TranslationManager.get_translations(content.id, content_type, locale)
+        TranslationRepository.get_translations(content.id, content_type, locale)
 
       # Determine which fields are markdown fields
       schema = content.__struct__
@@ -99,7 +100,7 @@ defmodule Portfolio.Content.EntryAssembler do
 
     # Get translations for all content items in the specified locale
     translations =
-      TranslationManager.batch_get_translations(
+      TranslationRepository.batch_get_translations(
         content_ids,
         content_type,
         locale

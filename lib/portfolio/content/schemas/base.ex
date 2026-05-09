@@ -6,6 +6,13 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
   require Logger
 
   defmacro __using__(opts) do
+    schema_name = opts[:schema_name] || raise(":schema_name option is required")
+
+    publication_generation_url_index =
+      :"#{schema_name}_url_publication_generation_index"
+
+    unpublished_url_index = :"#{schema_name}_url_unpublished_index"
+
     quote do
       use Ecto.Schema
       import Ecto.Changeset
@@ -21,9 +28,7 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
 
       @markdown_fields unquote(opts[:markdown_fields] || ["content"])
 
-      schema unquote(
-               opts[:schema_name] || raise(":schema_name option is required")
-             ) do
+      schema unquote(schema_name) do
         field :title, :string
         field :url, :string
         # raw markdown
@@ -40,6 +45,7 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         field :read_time, :integer
         field :word_count, :integer
         field :file_path, :string
+        field :publication_generation_id, :binary_id
         field :locale, :string
         field :published_at, :utc_datetime
         field :is_draft, :boolean, default: true
@@ -61,6 +67,7 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         :share_image_alt,
         :read_time,
         :file_path,
+        :publication_generation_id,
         :published_at,
         :is_draft,
         :word_count,
@@ -79,6 +86,10 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
           |> validate_length(:title, max: @max_title_length)
           |> validate_length(:url, max: @max_url_length)
           |> unique_constraint(:url)
+          |> unique_constraint(:url,
+            name: unquote(publication_generation_url_index)
+          )
+          |> unique_constraint(:url, name: unquote(unpublished_url_index))
           |> validate_content()
 
         changeset

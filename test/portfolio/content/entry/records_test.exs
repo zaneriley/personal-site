@@ -3,9 +3,10 @@ defmodule Portfolio.Content.Entry.RecordsTest do
 
   import Portfolio.ContentFixtures
 
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
-  alias Portfolio.Content.Entry.Records
   alias Portfolio.Content.Entry.AstSerialization
+  alias Portfolio.Content.Entry.Records
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Repo
 
   describe "apply_changeset/2" do
     test "applies the Note changeset correctly" do
@@ -111,13 +112,25 @@ defmodule Portfolio.Content.Entry.RecordsTest do
   end
 
   describe "delete_content/1" do
-    test "deletes a content entry" do
-      note = note_fixture()
+    test "deletes an unpublished content entry" do
+      note = note_fixture(%{}, publication_generation_id: nil)
       assert {:ok, _} = Records.delete_content(note)
 
-      assert_raise Ecto.NoResultsError, fn ->
-        Records.get_content_by_id_or_url("note", note.id)
-      end
+      refute Repo.get(Note, note.id)
+    end
+
+    test "refuses to delete published content outside the publication workflow" do
+      note = note_fixture()
+
+      assert {:error, changeset} = Records.delete_content(note)
+
+      assert %{
+               publication_generation_id: [
+                 "cannot be deleted outside the publication workflow"
+               ]
+             } = errors_on(changeset)
+
+      assert %Note{} = Repo.get(Note, note.id)
     end
   end
 

@@ -1,9 +1,12 @@
 defmodule Portfolio.Content.FileManagement.WatcherTest do
-  use ExUnit.Case
-  alias Portfolio.Content.FileManagement.Watcher
-  alias Portfolio.Content.Types
-  import ExUnit.CaptureLog
   use Portfolio.DataCase
+
+  import ExUnit.CaptureLog
+
+  alias Portfolio.Content.FileManagement.Watcher
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Types
+  alias Portfolio.Repo
 
   @test_file_path "test/support/fixtures/case-study/testing-case-study/en.md"
 
@@ -21,6 +24,8 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
 
       assert log =~ "File event detected: #{path}"
       assert log =~ "Processing file change for: #{path}"
+      assert log =~ "publication is Git/webhook driven"
+      assert Repo.aggregate(CaseStudy, :count) == 0
     end
 
     test "processes deleted markdown as an unpublish event" do

@@ -1,5 +1,5 @@
 defmodule PortfolioWeb.ContentWebhookControllerTest do
-  use PortfolioWeb.ConnCase, async: true
+  use PortfolioWeb.ConnCase, async: false
 
   alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note
@@ -36,7 +36,8 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                  conn,
                  payload,
                  content_repo_url: source_repo,
-                 content_base_path: clone_path
+                 content_base_path: clone_path,
+                 github_delivery_id: "webhook-delivery-relevant"
                )
 
       assert result.promoted == [
@@ -66,7 +67,8 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                PortfolioWeb.ContentWebhookController.handle_webhook(
                  conn,
                  payload,
-                 content_repo_url: "https://example.test/content.git"
+                 content_repo_url: "https://example.test/content.git",
+                 github_delivery_id: "webhook-delivery-ignored"
                )
 
       assert %{

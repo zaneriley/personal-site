@@ -3,10 +3,13 @@ defmodule Portfolio.ContentFixtures do
   Provides fixture functions for creating test data related to content entities.
   Includes functions for generating Note and CaseStudy fixtures with realistic default attributes.
   """
-  alias Portfolio.Repo
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
+  alias Portfolio.Content.Publishing
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.TranslatableFields
+  alias Portfolio.Repo
+
   require Logger
 
   @doc """
@@ -24,6 +27,7 @@ defmodule Portfolio.ContentFixtures do
       "introduction" => "Introduction for note #{sequence}",
       "read_time" => 5 + rem(sequence, 10),
       "file_path" => "priv/content/notes/note_#{sequence}.md",
+      "publication_generation_id" => fixture_publication_generation_id(opts),
       "published_at" => ~N[2023-01-01 00:00:00],
       "is_draft" => false
     }
@@ -64,6 +68,7 @@ defmodule Portfolio.ContentFixtures do
       "introduction" => "Introduction for case study #{sequence}",
       "read_time" => 5 + rem(sequence, 10),
       "file_path" => "priv/content/case_studies/case_study_#{sequence}.md",
+      "publication_generation_id" => fixture_publication_generation_id(opts),
       "published_at" => ~N[2023-01-01 00:00:00],
       "is_draft" => false
     }
@@ -112,5 +117,40 @@ defmodule Portfolio.ContentFixtures do
       })
       |> Repo.insert!()
     end)
+  end
+
+  defp fixture_publication_generation_id(opts) do
+    case Keyword.fetch(opts, :publication_generation_id) do
+      {:ok, generation_id} ->
+        generation_id
+
+      :error ->
+        ensure_fixture_publication_generation!()
+    end
+  end
+
+  defp ensure_fixture_publication_generation! do
+    case Publishing.get_publication_state() do
+      %{live_content_publication_generation_id: generation_id}
+      when is_binary(generation_id) ->
+        generation_id
+
+      _ ->
+        content_sha = String.duplicate("f", 40)
+
+        {:ok, generation} =
+          Publishing.prepare_generation(content_sha, source: :bootstrap)
+
+        {:ok, _entry} =
+          Publishing.record_publication_event(
+            "fixture:#{System.unique_integer([:positive])}",
+            content_sha,
+            :accepted,
+            generation_id: generation.id,
+            reason: "Fixture content"
+          )
+
+        generation.id
+    end
   end
 end

@@ -1,10 +1,10 @@
-defmodule Portfolio.Content.TranslationManager do
+defmodule Portfolio.Content.TranslationRepository do
   @moduledoc """
-  Manages translations for content items in the Portfolio application.
+  Stores and retrieves translations for content items in the Portfolio application.
 
   This module provides functionality to create, update, and retrieve translations
   for various content types such as Notes and Case Studies. It interacts with the
-  Translation schema and handles the logic for managing multilingual content.
+  Translation schema and handles multilingual content persistence.
 
   Key features:
   - Create or update translations for content items
@@ -14,10 +14,14 @@ defmodule Portfolio.Content.TranslationManager do
   The module uses Ecto for database operations and includes logging for debugging
   and error tracking.
   """
-  alias Portfolio.Repo
-  alias Portfolio.Content.TranslatableFields
-  alias Portfolio.Content.Schemas.{Translation, Note, CaseStudy}
   import Ecto.Query
+
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Schemas.Translation
+  alias Portfolio.Content.TranslatableFields
+  alias Portfolio.Repo
+
   require Logger
 
   @type content :: Note.t() | CaseStudy.t()

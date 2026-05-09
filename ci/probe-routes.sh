@@ -13,7 +13,7 @@ OHA_TIMEOUT="${OHA_TIMEOUT:-10s}"
 OHA_ATTEMPTS="${OHA_ATTEMPTS:-3}"
 READY_MS="${PROD_BUILD_READY_MS:-null}"
 APP_SHA="${PROD_BUILD_APP_SHA:-$(git rev-parse HEAD)}"
-ROUTES_RAW="${PROD_BUILD_ROUTES:-/ /en /en/case-studies /en/notes /en/self /ja}"
+ROUTES_RAW="${PROD_BUILD_ROUTES:-/ /en /en/case-studies /en/notes /en/note/prod-build-smoke-note /en/self /ja}"
 KNOWN_BROKEN_FILE="${KNOWN_BROKEN_FILE:-ci/routes-known-broken.txt}"
 IFS=" " read -r -a ROUTES <<< "${ROUTES_RAW}"
 
