@@ -184,6 +184,14 @@ defmodule Portfolio.Content do
   end
 
   @doc """
+  Fetches a publication ledger event by ID.
+  """
+  @spec get_publication_event(Ecto.UUID.t()) :: PublicationLedgerEntry.t() | nil
+  def get_publication_event(id) when is_binary(id) do
+    Publishing.get_publication_event(id)
+  end
+
+  @doc """
   Returns the current content publication read model.
   """
   @spec get_publication_state() ::

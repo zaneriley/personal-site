@@ -1,12 +1,16 @@
 defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
   use Portfolio.DataCase, async: true
 
+  import Mox
   alias Portfolio.Content
+  alias Portfolio.Content.Remote.GitHubStatusClient
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Repo
 
   import Portfolio.ContentRepoHelpers
+
+  setup :verify_on_exit!
 
   describe "trigger_update/2" do
     test "syncs the target SHA and promotes changed content" do
@@ -40,7 +44,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                Content.get_publication_verdict(target_sha)
 
       assert promoted_paths == [
-               Path.expand("notes/published-note/en.md", clone_path)
+               "notes/published-note/en.md"
              ]
 
       assert %{
@@ -90,7 +94,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                Content.get_publication_verdict(second_sha)
 
       assert removed_paths == [
-               Path.expand("notes/published-note/en.md", clone_path)
+               "notes/published-note/en.md"
              ]
 
       assert %{
@@ -166,8 +170,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                }
              ] = verdict.structured_errors["errors"]
 
-      assert invalid_path ==
-               Path.expand("notes/published-note/en.md", clone_path)
+      assert invalid_path == "notes/published-note/en.md"
 
       assert is_binary(reason)
 
@@ -216,6 +219,55 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
 
       assert %Note{title: "First Title"} =
                Repo.get_by(Note, url: "published-note")
+
+      assert first_sha == rev_parse!(clone_path, "HEAD")
+      assert Content.get_publication_state().live_content_sha == first_sha
+    end
+
+    test "replays an existing verdict status for duplicate GitHub deliveries" do
+      source_repo = tmp_dir!("remote-duplicate-status-source")
+      clone_path = tmp_dir!("remote-duplicate-status-clone")
+      on_exit(fn -> File.rm_rf!(source_repo) end)
+      on_exit(fn -> File.rm_rf!(clone_path) end)
+
+      init_repo!(source_repo)
+      write_note!(source_repo, "notes/published-note/en.md")
+      first_sha = commit!(source_repo, "publish first note")
+
+      assert {:ok, _result} =
+               RemoteUpdateTrigger.trigger_update(source_repo,
+                 content_base_path: clone_path,
+                 changes: %{upsert: ["notes/published-note/en.md"], delete: []},
+                 target_sha: first_sha,
+                 github_delivery_id: "delivery-duplicate-status"
+               )
+
+      write_note!(source_repo, "notes/published-note/en.md",
+        title: "Second Title"
+      )
+
+      second_sha = commit!(source_repo, "publish second note")
+
+      expect(GitHubStatusClient.Mock, :create_status, fn
+        "zaneriley", "personal-site-content", ^first_sha, payload, _opts ->
+          assert payload.state == "success"
+          assert payload.description == "Content accepted and live"
+          assert payload.target_url =~ "/ops/content/publications/"
+
+          :ok
+      end)
+
+      assert {:ok, %{duplicate?: true}} =
+               RemoteUpdateTrigger.trigger_update(source_repo,
+                 content_base_path: clone_path,
+                 changes: %{upsert: ["notes/published-note/en.md"], delete: []},
+                 target_sha: second_sha,
+                 github_delivery_id: "delivery-duplicate-status",
+                 github_token: "token",
+                 github_status_client: GitHubStatusClient.Mock,
+                 github_status_owner: "zaneriley",
+                 github_status_repo: "personal-site-content"
+               )
 
       assert first_sha == rev_parse!(clone_path, "HEAD")
       assert Content.get_publication_state().live_content_sha == first_sha

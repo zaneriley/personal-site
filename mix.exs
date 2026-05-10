@@ -73,6 +73,7 @@ defmodule Portfolio.MixProject do
       {:phoenix_live_view, "~> 1.1"},
       {:plug_cowboy, "~> 2.8"},
       {:postgrex, "~> 0.22"},
+      {:req, "~> 0.5.17"},
       {:sobelow, "~> 0.14", only: [:dev, :test], runtime: false},
       {:swoosh, "~> 1.25"},
       {:telemetry_metrics, "~> 1.1"},

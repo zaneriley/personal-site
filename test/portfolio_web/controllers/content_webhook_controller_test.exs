@@ -1,11 +1,16 @@
 defmodule PortfolioWeb.ContentWebhookControllerTest do
   use PortfolioWeb.ConnCase, async: true
 
+  import Mox
+
   alias Portfolio.Content
+  alias Portfolio.Content.Remote.GitHubStatusClient
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Repo
 
   import Portfolio.ContentRepoHelpers
+
+  setup :verify_on_exit!
 
   describe "handle_webhook/3" do
     test "triggers update for push event with relevant changes", %{conn: conn} do
@@ -31,13 +36,27 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
         "sender" => %{"id" => 1, "login" => "octocat"}
       }
 
+      expect(GitHubStatusClient.Mock, :create_status, fn
+        "zaneriley", "personal-site-content", ^target_sha, payload, _opts ->
+          assert payload.state == "success"
+          assert payload.description == "Content accepted and live"
+          assert payload.target_url =~ "/ops/content/publications/"
+
+          :ok
+      end)
+
+      opts =
+        [
+          content_repo_url: source_repo,
+          content_base_path: clone_path,
+          github_delivery_id: "webhook-delivery-relevant"
+        ] ++ github_status_opts()
+
       assert {:ok, result} =
                PortfolioWeb.ContentWebhookController.handle_webhook(
                  conn,
                  payload,
-                 content_repo_url: source_repo,
-                 content_base_path: clone_path,
-                 github_delivery_id: "webhook-delivery-relevant"
+                 opts
                )
 
       assert result.promoted == [
@@ -63,18 +82,84 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
         "sender" => %{"id" => 1, "login" => "octocat"}
       }
 
+      expect(GitHubStatusClient.Mock, :create_status, fn
+        "zaneriley", "personal-site-content", sha, payload, _opts ->
+          assert sha == String.duplicate("a", 40)
+          assert payload.state == "success"
+          assert payload.description == "No relevant content changes"
+          assert payload.target_url =~ "/ops/content/publications/"
+
+          :ok
+      end)
+
       assert {:ok, :no_relevant_changes} =
                PortfolioWeb.ContentWebhookController.handle_webhook(
                  conn,
                  payload,
-                 content_repo_url: "https://example.test/content.git",
-                 github_delivery_id: "webhook-delivery-ignored"
+                 [
+                   content_repo_url: "https://example.test/content.git",
+                   github_delivery_id: "webhook-delivery-ignored"
+                 ] ++ github_status_opts()
                )
 
       assert %{
                status: "ignored",
                reason: "No relevant content changes"
              } = Content.get_publication_verdict(String.duplicate("a", 40))
+    end
+
+    test "reports a failed status for rejected content pushes", %{conn: conn} do
+      source_repo = tmp_dir!("webhook-rejected-source")
+      clone_path = tmp_dir!("webhook-rejected-clone")
+      on_exit(fn -> File.rm_rf!(source_repo) end)
+      on_exit(fn -> File.rm_rf!(clone_path) end)
+
+      init_repo!(source_repo)
+      write_invalid_note!(source_repo, "notes/webhook-broken/en.md")
+      target_sha = commit!(source_repo, "publish broken webhook note")
+
+      payload = %{
+        "ref" => "refs/heads/main",
+        "after" => target_sha,
+        "repository" => %{"clone_url" => source_repo},
+        "commits" => [
+          %{
+            "added" => ["notes/webhook-broken/en.md"],
+            "modified" => []
+          }
+        ],
+        "sender" => %{"id" => 1, "login" => "octocat"}
+      }
+
+      expect(GitHubStatusClient.Mock, :create_status, fn
+        "zaneriley", "personal-site-content", ^target_sha, payload, _opts ->
+          assert payload.state == "failure"
+          assert payload.description == "Content promotion failed"
+          assert payload.target_url =~ "/ops/content/publications/"
+
+          :ok
+      end)
+
+      opts =
+        [
+          content_repo_url: source_repo,
+          content_base_path: clone_path,
+          github_delivery_id: "webhook-delivery-rejected"
+        ] ++ github_status_opts()
+
+      assert {:error, ~s(Update failed: "Content promotion failed")} =
+               PortfolioWeb.ContentWebhookController.handle_webhook(
+                 conn,
+                 payload,
+                 opts
+               )
+
+      assert %{status: "rejected"} =
+               verdict =
+               Content.get_publication_verdict(target_sha)
+
+      assert [%{"path" => "notes/webhook-broken/en.md"}] =
+               verdict.structured_errors["errors"]
     end
 
     test "rejects non-push event", %{conn: conn} do
@@ -151,5 +236,14 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                  content_repo_url: "https://example.test/content.git"
                )
     end
+  end
+
+  defp github_status_opts do
+    [
+      github_token: "token",
+      github_status_client: GitHubStatusClient.Mock,
+      github_status_owner: "zaneriley",
+      github_status_repo: "personal-site-content"
+    ]
   end
 end

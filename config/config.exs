@@ -62,6 +62,13 @@ config :portfolio, Portfolio.Mailer, adapter: Swoosh.Adapters.Local
 
 config :swoosh, :api_client, false
 
+config :portfolio,
+  github_status_client: Portfolio.Content.Remote.GitHubStatusClient.Req,
+  github_status_context: "content/publication",
+  github_status_api_url: "https://api.github.com",
+  publication_debug_link_builder: PortfolioWeb.ContentPublicationDebugLink,
+  publication_debug_token_max_age_seconds: 2_592_000
+
 config :tzdata, :autoupdate, :disabled
 
 import_config "#{Mix.env()}.exs"

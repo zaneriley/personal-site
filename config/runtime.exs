@@ -49,6 +49,14 @@ config :portfolio, Portfolio.Repo, repo_config
 
 config :portfolio, :github_token, System.get_env("GITHUB_TOKEN")
 
+config :portfolio,
+  github_status_context:
+    System.get_env("GITHUB_STATUS_CONTEXT", "content/publication"),
+  github_status_api_url:
+    System.get_env("GITHUB_API_URL", "https://api.github.com"),
+  github_status_owner: System.get_env("GITHUB_STATUS_OWNER"),
+  github_status_repo: System.get_env("GITHUB_STATUS_REPO")
+
 github_webhook_secret_placeholder =
   "generate-a-secret-token-for-your-repo-and-add-it-to-githubs-webhook-settings"
 

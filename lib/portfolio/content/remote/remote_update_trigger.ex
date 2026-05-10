@@ -15,6 +15,8 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   alias Portfolio.Content.FileManagement.Promoter
   alias Portfolio.Content.Publishing
   alias Portfolio.Content.Remote.GitRepoSyncer
+  alias Portfolio.Content.Remote.GitHubStatusReporter
+  alias Portfolio.Content.Schemas.PublicationLedgerEntry
 
   require Logger
 
@@ -44,22 +46,56 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
     target_sha = Keyword.get(opts, :target_sha)
     github_delivery_id = delivery_id_before_sync(target_sha, opts)
 
-    Publishing.with_publication_lock(fn ->
-      if duplicate_delivery?(github_delivery_id) do
-        Logger.info("Duplicate content delivery ignored: #{github_delivery_id}")
-        {:ok, duplicate_result()}
-      else
-        mark_sync_running(github_delivery_id)
+    result =
+      Publishing.with_publication_lock(fn ->
+        case duplicate_delivery_entry(github_delivery_id) do
+          %PublicationLedgerEntry{} = entry ->
+            Logger.info(
+              "Duplicate content delivery ignored: #{github_delivery_id}"
+            )
 
-        sync_and_promote(
-          repo_url,
-          local_path,
-          target_sha,
-          github_delivery_id,
-          opts
-        )
-      end
-    end)
+            {:ok, duplicate_result(), entry}
+
+          nil ->
+            mark_sync_running(github_delivery_id)
+
+            sync_and_promote(
+              repo_url,
+              local_path,
+              target_sha,
+              github_delivery_id,
+              opts
+            )
+        end
+      end)
+
+    report_publication_result(result, opts)
+  end
+
+  defp report_publication_result(
+         {:ok, result, %PublicationLedgerEntry{} = entry},
+         opts
+       ) do
+    GitHubStatusReporter.report_and_log(entry, opts)
+
+    {:ok, result}
+  end
+
+  defp report_publication_result(
+         {:error, reason, %PublicationLedgerEntry{} = entry},
+         opts
+       ) do
+    GitHubStatusReporter.report_and_log(entry, opts)
+
+    {:error, reason}
+  end
+
+  defp report_publication_result(result, _opts), do: result
+
+  defp duplicate_delivery_entry(nil), do: nil
+
+  defp duplicate_delivery_entry(github_delivery_id) do
+    Publishing.get_ledger_entry_by_delivery_id(github_delivery_id)
   end
 
   defp sync_and_promote(
@@ -76,21 +112,23 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
         github_delivery_id =
           github_delivery_id || github_delivery_id(content_sha, opts)
 
-        if duplicate_delivery?(github_delivery_id) do
-          Logger.info(
-            "Duplicate content delivery ignored: #{github_delivery_id}"
-          )
+        case duplicate_delivery_entry(github_delivery_id) do
+          %PublicationLedgerEntry{} = entry ->
+            Logger.info(
+              "Duplicate content delivery ignored: #{github_delivery_id}"
+            )
 
-          {:ok, duplicate_result()}
-        else
-          mark_sync_running(github_delivery_id)
+            {:ok, duplicate_result(), entry}
 
-          promote_synced_content(
-            local_path,
-            content_sha,
-            github_delivery_id,
-            opts
-          )
+          nil ->
+            mark_sync_running(github_delivery_id)
+
+            promote_synced_content(
+              local_path,
+              content_sha,
+              github_delivery_id,
+              opts
+            )
         end
 
       {:error, reason} ->
@@ -106,6 +144,8 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
            Publishing.prepare_generation(content_sha,
              source: Keyword.get(opts, :source, :publish)
            ) do
+      opts = Keyword.put(opts, :content_base_path, local_path)
+
       do_promote_synced_content(
         local_path,
         content_sha,
@@ -165,9 +205,9 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
            result,
            opts
          ) do
-      :ok ->
+      {:ok, entry} ->
         Logger.info("Content promotion completed: #{inspect(result)}")
-        {:ok, result}
+        {:ok, result, entry}
 
       {:error, changeset} ->
         Logger.error(
@@ -187,29 +227,55 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
        ) do
     mark_generation_failed(generation)
 
-    record_rejected_verdict(
-      content_sha,
-      github_delivery_id,
-      "Content promotion failed",
-      result,
-      Keyword.put(opts, :generation_id, generation.id)
-    )
+    record_result =
+      record_rejected_verdict(
+        content_sha,
+        github_delivery_id,
+        "Content promotion failed",
+        result,
+        Keyword.put(opts, :generation_id, generation.id)
+      )
 
-    Logger.error("Content promotion failed: #{inspect(result)}")
-    {:error, "Content promotion failed"}
+    case record_result do
+      {:ok, entry} ->
+        Logger.error("Content promotion failed: #{inspect(result)}")
+        {:error, "Content promotion failed", entry}
+
+      {:error, changeset} ->
+        Logger.error(
+          "Failed to record rejected content verdict: #{inspect(changeset)}"
+        )
+
+        {:error, "Publication verdict recording failed"}
+    end
   end
 
   defp handle_sync_error(target_sha, github_delivery_id, reason, opts) do
-    record_rejected_verdict(
-      target_sha,
-      github_delivery_id,
-      "Repository sync failed: #{reason_to_string(reason)}",
-      empty_result(),
-      opts
-    )
+    record_result =
+      record_rejected_verdict(
+        target_sha,
+        github_delivery_id,
+        "Repository sync failed: #{reason_to_string(reason)}",
+        empty_result(),
+        opts
+      )
 
-    Logger.error("Failed to sync repository: #{reason}")
-    {:error, "Repository sync failed"}
+    case record_result do
+      {:ok, entry} ->
+        Logger.error("Failed to sync repository: #{reason}")
+        {:error, "Repository sync failed", entry}
+
+      :ok ->
+        Logger.error("Failed to sync repository: #{reason}")
+        {:error, "Repository sync failed"}
+
+      {:error, changeset} ->
+        Logger.error(
+          "Failed to record rejected content verdict: #{inspect(changeset)}"
+        )
+
+        {:error, "Publication verdict recording failed"}
+    end
   end
 
   defp record_accepted_verdict(
@@ -250,43 +316,78 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
          opts,
          event_opts
        ) do
-    opts =
+    event_opts =
       result
-      |> promotion_result_opts()
+      |> promotion_result_opts(opts)
       |> Keyword.merge(event_opts)
       |> Keyword.put(:repository, Keyword.get(opts, :repository))
       |> Keyword.put(:ref, Keyword.get(opts, :ref))
 
-    case Content.record_publication_event(
-           github_delivery_id,
-           content_sha,
-           status,
-           opts
-         ) do
-      {:ok, _entry} -> :ok
-      {:error, changeset} -> {:error, changeset}
-    end
+    Content.record_publication_event(
+      github_delivery_id,
+      content_sha,
+      status,
+      event_opts
+    )
   end
 
-  defp promotion_result_opts(result) do
+  defp promotion_result_opts(result, opts) do
     [
-      promoted_paths: Map.get(result, :promoted, []),
-      removed_paths: Map.get(result, :removed, []),
-      skipped_paths: Map.get(result, :skipped, []),
-      structured_errors: structured_errors(result)
+      promoted_paths:
+        result |> Map.get(:promoted, []) |> repo_relative_paths(opts),
+      removed_paths:
+        result |> Map.get(:removed, []) |> repo_relative_paths(opts),
+      skipped_paths:
+        result |> Map.get(:skipped, []) |> repo_relative_paths(opts),
+      structured_errors: structured_errors(result, opts)
     ]
   end
 
-  defp structured_errors(result) do
+  defp structured_errors(result, opts) do
     errors =
       result
       |> Map.get(:errors, [])
       |> Enum.map(fn %{path: path, reason: reason} ->
-        %{"path" => path, "reason" => reason_to_string(reason)}
+        %{
+          "path" => repo_relative_path(path, opts),
+          "reason" => reason_to_string(reason)
+        }
       end)
 
     %{"errors" => errors}
   end
+
+  defp repo_relative_paths(paths, opts) do
+    Enum.map(paths, &repo_relative_path(&1, opts))
+  end
+
+  defp repo_relative_path(path, opts) when is_binary(path) do
+    base_path = Keyword.get(opts, :content_base_path)
+
+    cond do
+      inside_base_path?(path, base_path) ->
+        path
+        |> Path.expand()
+        |> Path.relative_to(Path.expand(base_path))
+
+      String.starts_with?(path, "priv/content/") ->
+        String.replace_prefix(path, "priv/content/", "")
+
+      true ->
+        String.trim_leading(path, "/")
+    end
+  end
+
+  defp inside_base_path?(path, base_path)
+       when is_binary(path) and is_binary(base_path) do
+    expanded_path = Path.expand(path)
+    expanded_base_path = Path.expand(base_path)
+
+    expanded_path == expanded_base_path or
+      String.starts_with?(expanded_path, expanded_base_path <> "/")
+  end
+
+  defp inside_base_path?(_path, _base_path), do: false
 
   defp empty_result do
     %{promoted: [], removed: [], skipped: [], errors: []}
@@ -341,12 +442,6 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
     end
   end
 
-  defp duplicate_delivery?(nil), do: false
-
-  defp duplicate_delivery?(github_delivery_id) do
-    not is_nil(Publishing.get_ledger_entry_by_delivery_id(github_delivery_id))
-  end
-
   defp mark_sync_running(nil), do: :ok
 
   defp mark_sync_running(github_delivery_id) do
@@ -354,11 +449,22 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   end
 
   defp mark_generation_failed(generation) do
-    generation
-    |> Portfolio.Content.Schemas.PublicationGeneration.changeset(%{
-      status: "failed"
-    })
-    |> Portfolio.Repo.update()
+    result =
+      generation
+      |> Portfolio.Content.Schemas.PublicationGeneration.changeset(%{
+        status: "failed"
+      })
+      |> Portfolio.Repo.update()
+
+    case result do
+      {:ok, _generation} ->
+        :ok
+
+      {:error, changeset} ->
+        Logger.error(
+          "Failed to mark content generation failed: #{inspect(changeset)}"
+        )
+    end
   end
 
   defp reason_to_string(reason) when is_binary(reason), do: reason

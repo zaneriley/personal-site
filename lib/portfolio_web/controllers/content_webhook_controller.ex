@@ -9,6 +9,7 @@ defmodule PortfolioWeb.ContentWebhookController do
 
   alias Portfolio.Content
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
+  alias Portfolio.Content.Remote.GitHubStatusReporter
   alias Portfolio.Content.Types
 
   require Logger
@@ -169,7 +170,8 @@ defmodule PortfolioWeb.ContentWebhookController do
            repository: content_repo_url(opts),
            ref: @main_ref
          ) do
-      {:ok, _entry} ->
+      {:ok, entry} ->
+        GitHubStatusReporter.report_and_log(entry, opts)
         {:ok, :no_relevant_changes}
 
       {:error, changeset} ->
@@ -186,14 +188,17 @@ defmodule PortfolioWeb.ContentWebhookController do
   defp trigger_update(opts, changes, target_sha, github_delivery_id) do
     Logger.info("Triggering update with RemoteUpdateTrigger")
 
-    case RemoteUpdateTrigger.trigger_update(content_repo_url(opts),
-           content_base_path: Keyword.get(opts, :content_base_path),
-           changes: changes,
-           target_sha: target_sha,
-           github_delivery_id: github_delivery_id,
-           repository: content_repo_url(opts),
-           ref: @main_ref
-         ) do
+    remote_opts =
+      [
+        content_base_path: Keyword.get(opts, :content_base_path),
+        changes: changes,
+        target_sha: target_sha,
+        github_delivery_id: github_delivery_id,
+        repository: content_repo_url(opts),
+        ref: @main_ref
+      ] ++ status_reporting_opts(opts)
+
+    case RemoteUpdateTrigger.trigger_update(content_repo_url(opts), remote_opts) do
       {:ok, result} ->
         Logger.info("RemoteUpdateTrigger completed successfully")
         {:ok, result}
@@ -208,5 +213,17 @@ defmodule PortfolioWeb.ContentWebhookController do
   defp content_repo_url(opts) do
     Keyword.get(opts, :content_repo_url) ||
       Application.fetch_env!(:portfolio, :content_repo_url)
+  end
+
+  defp status_reporting_opts(opts) do
+    Keyword.take(opts, [
+      :github_token,
+      :github_status_api_url,
+      :github_status_client,
+      :github_status_context,
+      :github_status_owner,
+      :github_status_repo,
+      :publication_debug_link_builder
+    ])
   end
 end
