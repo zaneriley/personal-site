@@ -46,7 +46,7 @@ defmodule Portfolio.Repo.Migrations.CreateContentPublicationLedger do
       add :promoted_paths, {:array, :string}, null: false, default: []
       add :removed_paths, {:array, :string}, null: false, default: []
       add :skipped_paths, {:array, :string}, null: false, default: []
-      add :structured_errors, :map, null: false, default: %{}
+      add :structured_errors, :map, null: false, default: %{"errors" => []}
       add :received_at, :utc_datetime_usec
       add :started_at, :utc_datetime_usec
       add :finished_at, :utc_datetime_usec

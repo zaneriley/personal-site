@@ -95,28 +95,32 @@ defmodule Portfolio.Content.Remote.GitHubStatusReporter do
   defp log_disabled(entry) do
     message = "GitHub status reporting disabled for #{entry.content_sha}"
 
-    case Application.get_env(:portfolio, :environment) do
-      :prod -> Logger.warning(message)
-      _environment -> Logger.info(message)
+    if Application.get_env(:portfolio, :environment, nil) == :prod do
+      Logger.warning(message)
+    else
+      Logger.info(message)
     end
   end
 
   defp github_token(opts) do
-    case Keyword.get(opts, :github_token) ||
-           Application.get_env(:portfolio, :github_token) do
-      token when is_binary(token) and token != "" -> {:ok, token}
-      _token -> :disabled
+    token =
+      Keyword.get(opts, :github_token) ||
+        Application.get_env(:portfolio, :github_token, nil)
+
+    cond do
+      is_binary(token) and token != "" -> {:ok, token}
+      is_nil(token) or token == "" -> :disabled
     end
   end
 
   defp github_repo(entry, opts) do
     owner =
       Keyword.get(opts, :github_status_owner) ||
-        Application.get_env(:portfolio, :github_status_owner)
+        Application.get_env(:portfolio, :github_status_owner, nil)
 
     repo =
       Keyword.get(opts, :github_status_repo) ||
-        Application.get_env(:portfolio, :github_status_repo)
+        Application.get_env(:portfolio, :github_status_repo, nil)
 
     if present?(owner) and present?(repo) do
       {:ok, {owner, repo}}
@@ -130,7 +134,7 @@ defmodule Portfolio.Content.Remote.GitHubStatusReporter do
   defp repository_url(entry, opts) do
     Keyword.get(opts, :repository) ||
       entry.repository ||
-      Application.get_env(:portfolio, :content_repo_url)
+      Application.get_env(:portfolio, :content_repo_url, nil)
   end
 
   defp parse_github_repo(url) when is_binary(url) do
@@ -149,7 +153,7 @@ defmodule Portfolio.Content.Remote.GitHubStatusReporter do
     )
   end
 
-  defp parse_github_repo(_url), do: {:error, :missing_github_repository}
+  defp parse_github_repo(nil), do: {:error, :missing_github_repository}
 
   defp target_url(entry, opts) do
     link_builder =
@@ -200,15 +204,18 @@ defmodule Portfolio.Content.Remote.GitHubStatusReporter do
   end
 
   defp github_state(status)
-       when status in ["accepted", "ignored", "rollback"] do
+       when status in ["accepted", "duplicate", "ignored", "rollback"] do
     "success"
   end
 
   defp github_state("rejected"), do: "failure"
-  defp github_state(_status), do: "error"
 
   defp description(%PublicationLedgerEntry{status: "accepted"}) do
     "Content accepted and live"
+  end
+
+  defp description(%PublicationLedgerEntry{status: "duplicate"}) do
+    "Duplicate content delivery ignored"
   end
 
   defp description(%PublicationLedgerEntry{status: "ignored", reason: reason})
@@ -229,8 +236,8 @@ defmodule Portfolio.Content.Remote.GitHubStatusReporter do
     "Content rejected; last-good content remains live"
   end
 
-  defp description(%PublicationLedgerEntry{status: status}) do
-    "Content publication #{status}"
+  defp description(%PublicationLedgerEntry{status: "rollback"}) do
+    "Content rolled back to last-good"
   end
 
   defp truncate_description(description)

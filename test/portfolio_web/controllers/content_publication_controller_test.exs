@@ -58,6 +58,62 @@ defmodule PortfolioWeb.ContentPublicationControllerTest do
 
       assert response(conn, 404) == "not found"
     end
+
+    test "rejects tokens signed for a different publication", %{conn: conn} do
+      first_sha = String.duplicate("f", 40)
+      second_sha = String.duplicate("1", 40)
+
+      assert {:ok, first_entry} =
+               Publishing.record_publication_event(
+                 "debug-view-first-entry",
+                 first_sha,
+                 :ignored,
+                 reason: "No relevant content changes"
+               )
+
+      assert {:ok, second_entry} =
+               Publishing.record_publication_event(
+                 "debug-view-second-entry",
+                 second_sha,
+                 :ignored,
+                 reason: "No relevant content changes"
+               )
+
+      %URI{query: query} =
+        first_entry
+        |> ContentPublicationDebugLink.signed_url()
+        |> URI.parse()
+
+      %{"token" => token} = URI.decode_query(query)
+
+      conn =
+        get(
+          conn,
+          ~p"/ops/content/publications/#{second_entry.id}?#{%{token: token}}"
+        )
+
+      assert response(conn, 404) == "not found"
+    end
+
+    test "renders ignored publications with no structured errors", %{conn: conn} do
+      content_sha = String.duplicate("2", 40)
+
+      assert {:ok, entry} =
+               Publishing.record_publication_event(
+                 "debug-view-ignored",
+                 content_sha,
+                 :ignored,
+                 reason: "No relevant content changes"
+               )
+
+      path = ContentPublicationDebugLink.signed_url(entry) |> url_path()
+      conn = get(conn, path)
+
+      response = html_response(conn, 200)
+
+      assert response =~ "No relevant content changes"
+      assert response =~ "No structured path errors recorded."
+    end
   end
 
   defp url_path(url) do

@@ -5,6 +5,7 @@ defmodule PortfolioWeb.ContentPublicationDebugLink do
 
   use PortfolioWeb, :verified_routes
 
+  alias Portfolio.Content.PublicationDebug.Scope
   alias Portfolio.Content.Schemas.PublicationLedgerEntry
 
   @salt "content-publication-debug"
@@ -22,12 +23,12 @@ defmodule PortfolioWeb.ContentPublicationDebugLink do
   @doc """
   Verifies that a token grants access to the requested publication entry.
   """
-  @spec verify(String.t(), String.t()) :: :ok | {:error, term()}
+  @spec verify(String.t(), String.t()) :: {:ok, Scope.t()} | {:error, term()}
   def verify(id, token) when is_binary(id) and is_binary(token) do
     case Phoenix.Token.verify(PortfolioWeb.Endpoint, @salt, token,
            max_age: token_max_age_seconds()
          ) do
-      {:ok, ^id} -> :ok
+      {:ok, ^id} -> {:ok, Scope.for_publication_event(id)}
       {:ok, _other_id} -> {:error, :wrong_publication}
       {:error, reason} -> {:error, reason}
     end

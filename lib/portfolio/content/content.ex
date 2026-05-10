@@ -141,7 +141,7 @@ defmodule Portfolio.Content do
         status,
         opts \\ []
       ) do
-    opts = Keyword.put_new(opts, :structured_errors, %{})
+    opts = Keyword.put_new(opts, :structured_errors, %{"errors" => []})
 
     Publishing.record_publication_event(
       github_delivery_id,
@@ -184,14 +184,6 @@ defmodule Portfolio.Content do
   end
 
   @doc """
-  Fetches a publication ledger event by ID.
-  """
-  @spec get_publication_event(Ecto.UUID.t()) :: PublicationLedgerEntry.t() | nil
-  def get_publication_event(id) when is_binary(id) do
-    Publishing.get_publication_event(id)
-  end
-
-  @doc """
   Returns the current content publication read model.
   """
   @spec get_publication_state() ::
@@ -230,7 +222,7 @@ defmodule Portfolio.Content do
   @spec list(content_type(), keyword(), String.t() | nil) ::
           [Note.t()] | [CaseStudy.t()]
   def list(type, opts \\ [], locale \\ nil) do
-    locale = locale || Application.get_env(:portfolio, :default_locale)
+    locale = locale || Application.get_env(:portfolio, :default_locale, nil)
     EntryAssembler.list_assembled_entries(type, opts, locale)
   end
 

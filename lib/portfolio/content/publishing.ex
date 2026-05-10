@@ -188,14 +188,6 @@ defmodule Portfolio.Content.Publishing do
   end
 
   @doc """
-  Fetches a publication ledger entry by ID.
-  """
-  @spec get_publication_event(Ecto.UUID.t()) :: PublicationLedgerEntry.t() | nil
-  def get_publication_event(id) when is_binary(id) do
-    Repo.get(PublicationLedgerEntry, id)
-  end
-
-  @doc """
   Fetches the latest publication ledger entry for a content SHA.
   """
   @spec latest_publication_event(String.t()) :: PublicationLedgerEntry.t() | nil
@@ -329,7 +321,8 @@ defmodule Portfolio.Content.Publishing do
       promoted_paths: Keyword.get(opts, :promoted_paths, []),
       removed_paths: Keyword.get(opts, :removed_paths, []),
       skipped_paths: Keyword.get(opts, :skipped_paths, []),
-      structured_errors: Keyword.get(opts, :structured_errors, %{}),
+      structured_errors:
+        Keyword.get(opts, :structured_errors, %{"errors" => []}),
       received_at: Keyword.get(opts, :received_at, now),
       started_at: Keyword.get(opts, :started_at, now),
       finished_at: Keyword.get(opts, :finished_at, now)

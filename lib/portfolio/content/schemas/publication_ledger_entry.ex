@@ -31,7 +31,7 @@ defmodule Portfolio.Content.Schemas.PublicationLedgerEntry do
     field :promoted_paths, {:array, :string}, default: []
     field :removed_paths, {:array, :string}, default: []
     field :skipped_paths, {:array, :string}, default: []
-    field :structured_errors, :map, default: %{}
+    field :structured_errors, :map, default: %{"errors" => []}
     field :received_at, :utc_datetime_usec
     field :started_at, :utc_datetime_usec
     field :finished_at, :utc_datetime_usec

@@ -41,7 +41,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   defp perform_update(repo_url, opts) do
     local_path =
       Keyword.get(opts, :content_base_path) ||
-        Application.get_env(:portfolio, :content_base_path)
+        Application.get_env(:portfolio, :content_base_path, nil)
 
     target_sha = Keyword.get(opts, :target_sha)
     github_delivery_id = delivery_id_before_sync(target_sha, opts)
@@ -365,7 +365,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
     base_path = Keyword.get(opts, :content_base_path)
 
     cond do
-      inside_base_path?(path, base_path) ->
+      is_binary(base_path) and inside_base_path?(path, base_path) ->
         path
         |> Path.expand()
         |> Path.relative_to(Path.expand(base_path))
@@ -386,8 +386,6 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
     expanded_path == expanded_base_path or
       String.starts_with?(expanded_path, expanded_base_path <> "/")
   end
-
-  defp inside_base_path?(_path, _base_path), do: false
 
   defp empty_result do
     %{promoted: [], removed: [], skipped: [], errors: []}
