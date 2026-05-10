@@ -19,3 +19,9 @@ The app owns the explicit mapping from these fields into runtime output:
 - Production smoke checks should validate the rendered metadata and image URL once generation exists.
 
 Do not author `og_*`, `twitter_*`, or `og:image` fields in content files. Those names belong to rendered HTML metadata, not to the content authoring contract.
+
+## Draft Safety
+
+The content repo should be safe to make public without exposing unpublished personal drafts. Any Markdown file with `is_draft: true` must be encrypted before it leaves the machine.
+
+Local hooks should block or warn before push when they find unencrypted draft Markdown. They are a convenience for the authoring flow, not the guarantee: content-repo CI must run the same draft-safety check and fail before a PR can merge or a push to content `main` can publish.

@@ -12,6 +12,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Release Please is automated enough for this pre-1.0 portfolio: `feat`, `fix`, and `perf` commits open release PRs, auto-merge waits on required gates, and release creation builds/pushes tagged images. Docs, CI, and chores do not bump versions.
 - Content deployability is still partial, but app-side webhook promotion now exists. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, treats deleted Markdown as unpublish, and persists optional share-preview frontmatter.
 - Content `main` is the intended publish boundary, once content-repo CI validates the same schema/renderability rules before merge. "Bad content" means content the app cannot parse, validate into the content schema, compile into its Markdown/component model, or render safely enough to promote.
+- Content-repo CI is the authoring front door, not a standalone YAML exercise. A content PR should check out the portfolio app at a known validator ref, print both the content commit and app validator commit, run the content repo's canonical `./run ci:validate /path/to/personal-site`, and fail with author-usable file/reason output before bad Markdown can reach production. Local hooks should block or warn on unencrypted `is_draft: true` Markdown before push, but hooks are convenience guardrails; CI is the enforceable boundary that makes the content repo safe to make public without exposing drafts.
 - Deleted Markdown should unpublish content. The SEO/user-facing behavior for previously indexed URLs is still open: the code now removes DB entries; a tombstone/redirect/410 policy still needs design.
 - Boot still pulls content via `Portfolio.Release.pull_repository/0`, but boot/startup does not yet have explicit last-good content behavior or a content-SHA ledger.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
@@ -23,6 +24,8 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 Adversarial check: #1 succeeds only if it makes content publishing trustworthy. Git sync is plumbing; it does not count by itself. The publish path must preserve last-good live content, name the currently served content commit, reject bad content with a useful reason, and support content-only rollback.
 
 Desired DX: edit content, run local content checks if useful, commit, push, then read a clear verdict: accepted and live, rejected with a parse/validation error, or ignored because no publishable content changed. No SSH, no container restart, no DB poking, no "did the watcher notice?" uncertainty.
+
+The complete authoring loop has two checks. Before merge, content-repo CI proves "this tree can publish" using the app's validator and blocks unencrypted drafts. After merge to content `main`, the production webhook proves "this commit did publish, was rejected, or was ignored" using the app's durable verdict path.
 
 Implemented app-side slice:
 
@@ -47,7 +50,7 @@ Remaining implementation slice:
 2. Acquire one content-sync lock so concurrent webhook deliveries cannot interleave.
 3. Record accepted/rejected content SHA and reason.
 4. Keep serving the previous known-good content if boot-time sync or parsing fails.
-5. Add content-repo CI so a merge to content `main` validates schema/renderability before the production webhook ever sees it.
+5. Add content-repo CI so a merge to content `main` validates draft safety, schema, compilation, and renderability before the production webhook ever sees it.
 6. Add share-image generation, local preview, rendered Open Graph/Twitter metadata, and production validation for generated image URLs/dimensions.
 7. Decide the deleted-URL SEO behavior: hard 404, 410, redirect, or tombstone page.
 
