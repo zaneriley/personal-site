@@ -35,6 +35,7 @@ defmodule Portfolio.ContentRepoHelpers do
     url = Keyword.get(opts, :url, "published-note")
     body = Keyword.get(opts, :body, "# Published Note\n\nHello.")
     published_at = Keyword.get(opts, :published_at, "2024-07-27T14:30:00Z")
+    is_draft = Keyword.get(opts, :is_draft, false)
 
     write_file!(
       repo_path,
@@ -47,7 +48,7 @@ defmodule Portfolio.ContentRepoHelpers do
       #{aliases_frontmatter(opts)}
       #{share_preview_frontmatter(opts)}
       published_at: "#{published_at}"
-      is_draft: false
+      is_draft: #{is_draft}
       ---
 
       #{body}

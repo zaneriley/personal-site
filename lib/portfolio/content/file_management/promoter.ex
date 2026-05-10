@@ -230,13 +230,38 @@ defmodule Portfolio.Content.FileManagement.Promoter do
   defp promote_existing_file(path, result, publication_generation_id) do
     case Reader.read_markdown_file(path) do
       {:ok, content_type, attrs} ->
-        attrs =
-          maybe_put_publication_generation_id(attrs, publication_generation_id)
-
-        upsert_file(content_type, attrs, path, result)
+        promote_read_file(
+          content_type,
+          attrs,
+          path,
+          result,
+          publication_generation_id
+        )
 
       {:error, reason} ->
         add_error(result, path, reason)
+    end
+  end
+
+  defp promote_read_file(
+         content_type,
+         attrs,
+         path,
+         result,
+         publication_generation_id
+       ) do
+    case plaintext_draft?(attrs) do
+      true ->
+        add_error(result, path, :unencrypted_draft)
+
+      false ->
+        attrs =
+          maybe_put_publication_generation_id(
+            attrs,
+            publication_generation_id
+          )
+
+        upsert_file(content_type, attrs, path, result)
     end
   end
 
@@ -561,6 +586,29 @@ defmodule Portfolio.Content.FileManagement.Promoter do
   defp content_error_path(%{url: url}) when is_binary(url) do
     url
   end
+
+  defp plaintext_draft?(%{"is_draft" => is_draft}) do
+    draft_true?(is_draft)
+  end
+
+  defp plaintext_draft?(%{is_draft: is_draft}) do
+    draft_true?(is_draft)
+  end
+
+  defp plaintext_draft?(_attrs) do
+    false
+  end
+
+  defp draft_true?(true), do: true
+
+  defp draft_true?(is_draft) when is_binary(is_draft) do
+    is_draft
+    |> String.trim()
+    |> String.downcase()
+    |> Kernel.==("true")
+  end
+
+  defp draft_true?(_is_draft), do: false
 
   defp maybe_put_publication_generation_id(attrs, nil) do
     scrub_publication_generation_id(attrs)

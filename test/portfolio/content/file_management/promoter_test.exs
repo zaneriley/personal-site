@@ -149,6 +149,28 @@ defmodule Portfolio.Content.FileManagement.PromoterTest do
       refute Repo.get_by(Note, url: "published-note")
     end
 
+    test "rejects plaintext drafts before they can be promoted" do
+      content_path = tmp_dir!("reject-plaintext-draft")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/plaintext-draft/en.md",
+        is_draft: true,
+        url: "plaintext-draft"
+      )
+
+      assert {:error, result} = Promoter.promote_all(content_path)
+
+      assert [
+               %{
+                 path: path,
+                 reason: :unencrypted_draft
+               }
+             ] = result.errors
+
+      assert path == Path.expand("notes/plaintext-draft/en.md", content_path)
+      refute Repo.get_by(Note, url: "plaintext-draft")
+    end
+
     test "rejects invalid content and keeps the previous database state" do
       content_path = tmp_dir!("reject-invalid")
       on_exit(fn -> File.rm_rf!(content_path) end)

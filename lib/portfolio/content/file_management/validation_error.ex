@@ -30,6 +30,10 @@ defmodule Portfolio.Content.FileManagement.ValidationError do
     ["url: is required"]
   end
 
+  def messages(:unencrypted_draft) do
+    ["unencrypted draft: is_draft true files must be encrypted before push"]
+  end
+
   def messages({:alias_conflicts_with_url, alias_url})
       when is_binary(alias_url) do
     ["aliases: #{alias_url} conflicts with a canonical URL"]
