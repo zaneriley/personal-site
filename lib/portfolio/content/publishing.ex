@@ -224,11 +224,16 @@ defmodule Portfolio.Content.Publishing do
 
   defp status_from_state(nil) do
     %{
+      current: nil,
       live: nil,
       last_good: nil,
       last_accepted: nil,
       last_rejected: nil,
+      last_rejected_sha: nil,
+      last_rejected_reason: nil,
       last_ignored: nil,
+      last_ignored_sha: nil,
+      last_ignored_reason: nil,
       last_delivery_id: nil,
       sync_state: "missing",
       last_failure_reason: nil
@@ -237,11 +242,16 @@ defmodule Portfolio.Content.Publishing do
 
   defp status_from_state(state) do
     %{
+      current: state.live_content_sha,
       live: state.live_content_sha,
       last_good: state.last_good_content_sha,
       last_accepted: state.last_accepted_content_sha,
       last_rejected: rejected_status(state),
+      last_rejected_sha: state.last_rejected_content_sha,
+      last_rejected_reason: state.last_rejected_reason,
       last_ignored: ignored_status(state),
+      last_ignored_sha: state.last_ignored_content_sha,
+      last_ignored_reason: state.last_ignored_reason,
       last_delivery_id: state.last_delivery_id,
       sync_state: state.current_sync_state,
       last_failure_reason: state.last_failure_reason
@@ -256,14 +266,16 @@ defmodule Portfolio.Content.Publishing do
     status = status()
 
     [
-      "Live content SHA: #{status.live || "none"}",
-      "Last-good content SHA: #{status.last_good || "none"}",
-      "Last accepted SHA: #{status.last_accepted || "none"}",
-      "Last rejected SHA: #{verdict_text(status.last_rejected)}",
-      "Last ignored SHA: #{verdict_text(status.last_ignored)}",
-      "Last delivery ID: #{status.last_delivery_id || "none"}",
+      "Current/live content SHA: #{value_or_none(status.current)}",
+      "Last-good content SHA: #{value_or_none(status.last_good)}",
+      "Last accepted SHA: #{value_or_none(status.last_accepted)}",
+      "Last rejected SHA: #{value_or_none(status.last_rejected_sha)}",
+      "Last rejected reason: #{value_or_none(status.last_rejected_reason)}",
+      "Last ignored SHA: #{value_or_none(status.last_ignored_sha)}",
+      "Last ignored reason: #{value_or_none(status.last_ignored_reason)}",
+      "Last delivery ID: #{value_or_none(status.last_delivery_id)}",
       "Sync state: #{status.sync_state}",
-      "Last failure reason: #{status.last_failure_reason || "none"}",
+      "Last failure reason: #{value_or_none(status.last_failure_reason)}",
       failures_text(status.recent_failures)
     ]
     |> Enum.reject(&(&1 == ""))
@@ -285,26 +297,59 @@ defmodule Portfolio.Content.Publishing do
   defp validate_publication_event_opts(content_sha, status, opts) do
     normalized_status = normalize_status(status)
 
-    if normalized_status in @accepted_statuses and
-         is_nil(Keyword.get(opts, :generation_id)) do
-      attrs = %{
-        github_delivery_id: "validation",
-        content_sha: content_sha,
-        status: normalized_status
-      }
-
-      changeset =
-        %PublicationLedgerEntry{}
-        |> PublicationLedgerEntry.changeset(attrs)
-        |> Ecto.Changeset.add_error(
-          :content_publication_generation_id,
-          "is required for accepted publication events"
-        )
-
-      {:error, changeset}
+    if normalized_status in @accepted_statuses do
+      validate_accepted_generation(content_sha, opts)
     else
       :ok
     end
+  end
+
+  defp validate_accepted_generation(content_sha, opts) do
+    generation_id = Keyword.get(opts, :generation_id)
+
+    cond do
+      is_nil(generation_id) ->
+        publication_event_error(
+          content_sha,
+          :accepted,
+          "is required for accepted publication events"
+        )
+
+      not generation_matches_content_sha?(generation_id, content_sha) ->
+        publication_event_error(
+          content_sha,
+          :accepted,
+          "must match the accepted content SHA"
+        )
+
+      not live_generation_has_published_content?(generation_id) ->
+        publication_event_error(
+          content_sha,
+          :accepted,
+          "must contain published content before acceptance"
+        )
+
+      true ->
+        :ok
+    end
+  end
+
+  defp publication_event_error(content_sha, status, message) do
+    attrs = %{
+      github_delivery_id: "validation",
+      content_sha: content_sha,
+      status: normalize_status(status)
+    }
+
+    changeset =
+      %PublicationLedgerEntry{}
+      |> PublicationLedgerEntry.changeset(attrs)
+      |> Ecto.Changeset.add_error(
+        :content_publication_generation_id,
+        message
+      )
+
+    {:error, changeset}
   end
 
   defp insert_ledger_entry(github_delivery_id, content_sha, status, opts) do
@@ -359,8 +404,10 @@ defmodule Portfolio.Content.Publishing do
 
   defp update_state_for_entry(
          %PublicationLedgerEntry{status: "rejected"} = entry,
-         _opts
+         opts
        ) do
+    fail_rejected_generation(entry, opts)
+
     update_state(%{
       last_rejected_content_sha: entry.content_sha,
       last_rejected_reason: entry.reason,
@@ -412,12 +459,38 @@ defmodule Portfolio.Content.Publishing do
     set_generation_status(generation_id, "superseded")
   end
 
+  defp fail_rejected_generation(entry, opts) do
+    case Keyword.get(opts, :generation_id) do
+      generation_id when is_binary(generation_id) ->
+        generation = Repo.get!(PublicationGeneration, generation_id)
+
+        if generation.content_sha == entry.content_sha and
+             generation.status != "live" do
+          set_generation_status(generation_id, "failed")
+        else
+          :ok
+        end
+
+      _ ->
+        :ok
+    end
+  end
+
   defp set_generation_status(generation_id, status) do
     generation = Repo.get!(PublicationGeneration, generation_id)
 
     generation
     |> PublicationGeneration.changeset(%{status: status})
     |> Repo.update!()
+  end
+
+  defp generation_matches_content_sha?(generation_id, content_sha) do
+    PublicationGeneration
+    |> where(
+      [generation],
+      generation.id == ^generation_id and generation.content_sha == ^content_sha
+    )
+    |> Repo.exists?()
   end
 
   defp live_generation_ready?(generation_id, content_sha) do
@@ -441,7 +514,7 @@ defmodule Portfolio.Content.Publishing do
     |> where(
       [content],
       content.publication_generation_id == ^generation_id and
-        content.is_draft == false
+        content.is_draft == false and not is_nil(content.published_at)
     )
     |> Repo.exists?()
   end
@@ -501,15 +574,8 @@ defmodule Portfolio.Content.Publishing do
     end)
   end
 
-  defp verdict_text(nil), do: "none"
-
-  defp verdict_text(%{content_sha: content_sha, reason: nil}) do
-    content_sha
-  end
-
-  defp verdict_text(%{content_sha: content_sha, reason: reason}) do
-    "#{content_sha} (#{reason})"
-  end
+  defp value_or_none(nil), do: "none"
+  defp value_or_none(value), do: value
 
   defp normalize_status(status) when is_atom(status), do: Atom.to_string(status)
   defp normalize_status(status) when is_binary(status), do: status

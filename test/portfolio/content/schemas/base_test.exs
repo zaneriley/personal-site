@@ -62,6 +62,26 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
       assert {"has already been taken", _} = changeset.errors[:url]
     end
 
+    test "aliases must be old lowercase URL slugs" do
+      changeset =
+        Note.changeset(%Note{}, %{
+          "title" => "Test",
+          "content" => "Content",
+          "locale" => "en",
+          "url" => "new-note",
+          "aliases" => [
+            "old-note",
+            "Old-Note",
+            "/notes/old-note",
+            "https://example.com/notes/old-note"
+          ]
+        })
+
+      assert %{aliases: messages} = errors_on(changeset)
+
+      assert "must be old slugs using lowercase letters, numbers, and hyphens" in messages
+    end
+
     test "title length is validated" do
       long_title = String.duplicate("a", 256)
       attrs = %{"title" => long_title, "content" => "Content", "locale" => "en"}

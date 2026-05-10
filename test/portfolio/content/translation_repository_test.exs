@@ -127,7 +127,9 @@ defmodule Portfolio.Content.TranslationTest do
         "title" => "新しいタイトル",
         "content" => "新しいコンテンツ",
         "introduction" => "新しい紹介",
-        "publication_generation_id" => generation.id
+        "published_at" => ~N[2023-01-01 00:00:00],
+        "is_draft" => false,
+        trusted_publication_generation_id: generation.id
       }
 
       assert {:ok, note} = Content.upsert_from_file("note", attrs)
@@ -189,7 +191,8 @@ defmodule Portfolio.Content.TranslationTest do
         "locale" => "ja",
         "title" => "更新されたタイトル",
         "content" => "更新されたコンテンツ",
-        "publication_generation_id" => existing_note.publication_generation_id
+        trusted_publication_generation_id:
+          existing_note.publication_generation_id
       }
 
       assert {:ok, updated_note} = Content.upsert_from_file("note", attrs)

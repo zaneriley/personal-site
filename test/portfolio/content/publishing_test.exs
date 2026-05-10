@@ -3,8 +3,10 @@ defmodule Portfolio.Content.PublishingTest do
 
   import Portfolio.ContentFixtures
 
+  alias Portfolio.Content
   alias Portfolio.Content.Publishing
   alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Schemas.PublicationGeneration
   alias Portfolio.Content.Schemas.PublicationLedgerEntry
   alias Portfolio.Repo
 
@@ -13,6 +15,14 @@ defmodule Portfolio.Content.PublishingTest do
       content_sha = String.duplicate("a", 40)
       {:ok, first_generation} = Publishing.prepare_generation(content_sha)
       {:ok, second_generation} = Publishing.prepare_generation(content_sha)
+
+      note_fixture(%{"url" => "first-generation-note"},
+        publication_generation_id: first_generation.id
+      )
+
+      note_fixture(%{"url" => "second-generation-note"},
+        publication_generation_id: second_generation.id
+      )
 
       assert {:ok, first} =
                Publishing.record_publication_event(
@@ -41,6 +51,10 @@ defmodule Portfolio.Content.PublishingTest do
       first_sha = String.duplicate("a", 40)
       second_sha = String.duplicate("b", 40)
       {:ok, generation} = Publishing.prepare_generation(first_sha)
+
+      note_fixture(%{"url" => "dedupe-live-note"},
+        publication_generation_id: generation.id
+      )
 
       assert {:ok, accepted} =
                Publishing.record_publication_event(
@@ -87,6 +101,10 @@ defmodule Portfolio.Content.PublishingTest do
       ignored_sha = String.duplicate("c", 40)
       {:ok, generation} = Publishing.prepare_generation(live_sha)
 
+      note_fixture(%{"url" => "preserved-live-note"},
+        publication_generation_id: generation.id
+      )
+
       assert {:ok, _accepted} =
                Publishing.record_publication_event(
                  "accepted-delivery",
@@ -121,11 +139,82 @@ defmodule Portfolio.Content.PublishingTest do
       assert state.last_ignored_reason == "No relevant content changes"
     end
 
+    test "rejected publication preserves last-good generation and hides partial rows" do
+      live_sha = String.duplicate("1", 40)
+      rejected_sha = String.duplicate("2", 40)
+      reason = "Content promotion failed"
+
+      {:ok, live_generation} = Publishing.prepare_generation(live_sha)
+
+      live_note =
+        note_fixture(%{"url" => "last-good-note"},
+          publication_generation_id: live_generation.id
+        )
+
+      assert {:ok, _accepted} =
+               Publishing.record_publication_event(
+                 "accepted-before-rejection",
+                 live_sha,
+                 :accepted,
+                 generation_id: live_generation.id
+               )
+
+      {:ok, rejected_generation} = Publishing.prepare_generation(rejected_sha)
+
+      partial_note =
+        note_fixture(%{"url" => "partial-rejected-note"},
+          publication_generation_id: rejected_generation.id
+        )
+
+      assert {:ok, _rejected} =
+               Publishing.record_publication_event(
+                 "rejected-after-accepted",
+                 rejected_sha,
+                 :rejected,
+                 reason: reason,
+                 generation_id: rejected_generation.id
+               )
+
+      state = Publishing.get_publication_state()
+
+      assert state.live_content_sha == live_sha
+      assert state.last_good_content_sha == live_sha
+
+      assert state.live_content_publication_generation_id ==
+               live_generation.id
+
+      assert state.last_good_content_publication_generation_id ==
+               live_generation.id
+
+      assert state.last_rejected_content_sha == rejected_sha
+      assert state.last_rejected_reason == reason
+
+      assert %PublicationGeneration{status: "failed"} =
+               Repo.get!(PublicationGeneration, rejected_generation.id)
+
+      assert %Note{} = Repo.get!(Note, partial_note.id)
+
+      live_urls =
+        "note"
+        |> Content.list()
+        |> Enum.map(& &1.url)
+
+      assert live_urls == [live_note.url]
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Content.get!("note", partial_note.url)
+      end
+    end
+
     test "operator status exposes rejected, ignored, and failure details" do
       live_sha = String.duplicate("a", 40)
       rejected_sha = String.duplicate("b", 40)
       ignored_sha = String.duplicate("c", 40)
       {:ok, generation} = Publishing.prepare_generation(live_sha)
+
+      note_fixture(%{"url" => "status-live-note"},
+        publication_generation_id: generation.id
+      )
 
       assert {:ok, _accepted} =
                Publishing.record_publication_event(
@@ -144,6 +233,11 @@ defmodule Portfolio.Content.PublishingTest do
                )
 
       failed_status = Publishing.status()
+
+      assert failed_status.current == live_sha
+      assert failed_status.last_good == live_sha
+      assert failed_status.last_rejected_sha == rejected_sha
+      assert failed_status.last_rejected_reason == "Content promotion failed"
 
       assert failed_status.last_rejected == %{
                content_sha: rejected_sha,
@@ -168,9 +262,14 @@ defmodule Portfolio.Content.PublishingTest do
                reason: "No relevant content changes"
              }
 
+      assert idle_status.last_ignored_sha == ignored_sha
+      assert idle_status.last_ignored_reason == "No relevant content changes"
       assert idle_status.last_failure_reason == nil
+      assert status_text =~ "Current/live content SHA: #{live_sha}"
       assert status_text =~ "Last rejected SHA: #{rejected_sha}"
+      assert status_text =~ "Last rejected reason: Content promotion failed"
       assert status_text =~ "Last ignored SHA: #{ignored_sha}"
+      assert status_text =~ "Last ignored reason: No relevant content changes"
       assert status_text =~ "Last failure reason: none"
     end
   end
@@ -180,7 +279,7 @@ defmodule Portfolio.Content.PublishingTest do
       content_sha = String.duplicate("d", 40)
       {:ok, generation} = Publishing.prepare_generation(content_sha)
 
-      assert {:ok, _entry} =
+      assert {:error, changeset} =
                Publishing.record_publication_event(
                  "ready-without-content",
                  content_sha,
@@ -188,9 +287,23 @@ defmodule Portfolio.Content.PublishingTest do
                  generation_id: generation.id
                )
 
+      assert %{
+               content_publication_generation_id: [
+                 "must contain published content before acceptance"
+               ]
+             } = errors_on(changeset)
+
       refute Publishing.content_ready?()
 
       note_fixture(%{}, publication_generation_id: generation.id)
+
+      assert {:ok, _entry} =
+               Publishing.record_publication_event(
+                 "ready-with-content",
+                 content_sha,
+                 :accepted,
+                 generation_id: generation.id
+               )
 
       assert Publishing.content_ready?()
     end

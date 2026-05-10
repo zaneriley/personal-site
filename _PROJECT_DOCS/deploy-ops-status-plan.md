@@ -10,11 +10,11 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Branch protection requires `Workflow lint`, `Gate integrity`, `Compile`, `Lint`, `Security check`, `Test`, `Static analysis`, `gitleaks`, and `Prod build`.
 - `Prod build` runs on PRs, pushes to `main`, nightly schedule, and manual dispatch. It builds the prod image, runs migrations up/down/up, boots the release, waits for `/readyz`, probes canonical routes, runs release RPC introspection, compares perf data, and uploads measurements.
 - Release Please is automated enough for this pre-1.0 portfolio: `feat`, `fix`, and `perf` commits open release PRs, auto-merge waits on required gates, and release creation builds/pushes tagged images. Docs, CI, and chores do not bump versions.
-- Content deployability is still partial, but app-side webhook promotion now exists. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without mutating live DB state, treats deleted Markdown as unpublish, and persists optional share-preview frontmatter.
-- Content `main` is the intended publish boundary, once content-repo CI validates the same schema/renderability rules before merge. "Bad content" means content the app cannot parse, validate into the content schema, compile into its Markdown/component model, or render safely enough to promote.
-- Content-repo CI is the authoring front door, not a standalone YAML exercise. A content PR should check out the portfolio app at a known validator ref, print both the content commit and app validator commit, run the content repo's canonical `./run ci:validate /path/to/personal-site`, and fail with author-usable file/reason output before bad Markdown can reach production. Local hooks should block or warn on unencrypted `is_draft: true` Markdown before push, but hooks are convenience guardrails; CI is the enforceable boundary that makes the content repo safe to make public without exposing drafts.
-- Deleted Markdown should unpublish content. The SEO/user-facing behavior for previously indexed URLs is still open: the code now removes DB entries; a tombstone/redirect/410 policy still needs design.
-- Boot still pulls content via `Portfolio.Release.pull_repository/0`, but boot/startup does not yet have explicit last-good content behavior or a content-SHA ledger.
+- Content deployability now has an app-side verdict path and a content-repo front door on the active branches. The webhook path validates the expected repo/ref/`after` SHA, syncs the local content clone to that exact commit, promotes changed Markdown transactionally, rejects bad content without moving the live generation, records accepted/rejected/ignored verdicts, and persists optional share-preview frontmatter.
+- Content `main` is the intended publish boundary. Content-repo CI runs canonical wrapper commands: `./run ci:draft-safety /path/to/personal-site`, `./run ci:validate /path/to/personal-site`, and `./run ci:lint`. "Bad content" means content the app cannot parse, validate into the content schema, compile into its Markdown/component model, or render safely enough to promote.
+- Content-repo CI is the authoring front door, not a standalone YAML exercise. It prints both the content commit and app validator commit, routes validation through the content repo's canonical `./run ci:validate /path/to/personal-site`, and fails with author-usable file/reason output before bad Markdown can reach production. Local hooks block unencrypted `is_draft: true` Markdown before push, but hooks are convenience guardrails; CI is the enforceable boundary that makes the content repo safe to make public without exposing drafts.
+- Deleted and renamed Markdown now have separate policies. A deletion-only content change keeps the explicit hard-404 behavior. A mixed delete/add update must preserve each deleted live slug as either a canonical slug or an `aliases:` value in the new generation; otherwise the webhook rejects it with file/reason output. Valid aliases 301-redirect the old note/case-study slug to the canonical slug.
+- Boot still pulls content via `Portfolio.Release.pull_repository/0`, but boot/startup now falls back to last-good content when a repository pull or embedded-content read fails and a live generation already exists.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
@@ -38,14 +38,14 @@ This sub-phase is done when the authoring loop is trustworthy enough to use with
 5. **Local/CI parity:** The exact validation suite used by content-repo CI must be runnable locally through the content repo's `./run ci:validate /path/to/personal-site` command. The app-side equivalent is `./run ci:content-validate /path/to/personal-site-content`; these two command contracts must not be conflated.
 6. **Signed debug access:** The private publication debug page must be reachable from the signed URL emitted in the GitHub status `target_url` and must render the path/reason for a rejected commit. Unsigned `/ops/content/publications/:id` requests must return 404.
 7. **Webhook fixture parity:** Production-webhook acceptance tests must use a fixture or script that supplies the full GitHub webhook shape: `X-GitHub-Event`, `X-GitHub-Delivery`, JSON content type, expected repository/ref/after payload, and HMAC over the exact request body. Hand-written partial `curl` payloads are not enough to prove the contract.
-8. **Deleted/renamed URL behavior:** Deleted and renamed Markdown need separate observable policies. A pure deletion may become 410 Gone, a tombstone page, or an explicit hard-404 policy. A rename of already-published content should not silently become a 404; it needs an alias/redirect contract or an explicit "this is deletion, not rename" authoring signal. Silent link breakage is not a fire-and-forget authoring loop.
+8. **Deleted/renamed URL behavior:** Deleted and renamed Markdown need separate observable policies. A deletion-only content change is the explicit hard-404 policy. A mixed delete/add update must preserve deleted live URLs through the new generation's canonical `url` or `aliases:` frontmatter. Silent link breakage is not a fire-and-forget authoring loop.
 
 Implemented app-side slice:
 
 1. Validate signed GitHub push payloads against the expected repo, branch, and `after` SHA.
 2. Sync the local content clone to the exact accepted SHA, not just floating `origin/main`.
 3. Parse and ingest the relevant Markdown files through an explicit service path.
-4. Roll back the DB transaction when parsing, schema validation, Markdown compilation, or promotion fails.
+4. Keep failed remote generations diagnostically visible without moving the live pointer; local validator paths still roll back failed transactions so preflight leaves no DB residue.
 5. Treat removed Markdown as unpublish instead of leaving stale live entries behind.
 6. Persist optional share-preview frontmatter on notes and case studies. The current app stores explicit fields only; rendered metadata and share-image generation are still future work.
 
@@ -55,28 +55,29 @@ Author in Obsidian against the `personal-site-content` repo. The content repo ow
 
 The field contract lives in `_PROJECT_DOCS/content-authoring-contract.md`. Use `share_*` fields in content frontmatter. Do not author Open Graph or Twitter protocol fields directly in Markdown.
 
-Plain flow: write the Markdown in Obsidian, fill the share-preview fields only when the default title/introduction is not enough or when you want to leave editorial notes for a future share image, commit to the content repo, push, and let the content pipeline validate/promote the commit. The current app stores those fields; later slices add local preview, generated share-image output, rendered metadata tags, and content-repo CI for the same contract.
+Plain flow: write the Markdown in Obsidian, fill the share-preview fields only when the default title/introduction is not enough or when you want to leave editorial notes for a future share image, commit to the content repo, push, and let the content pipeline validate/promote the commit. The current app stores those fields; later slices add local preview, generated share-image output, rendered metadata tags, and production smoke checks for the same contract.
 
-Remaining implementation slice:
+Completed in this authoring slice:
 
-1. Dedupe deliveries by content commit SHA.
+1. Dedupe deliveries by GitHub delivery ID while recording the content commit SHA.
 2. Acquire one content-sync lock so concurrent webhook deliveries cannot interleave.
 3. Record accepted/rejected content SHA and reason.
 4. Keep serving the previous known-good content if boot-time sync or parsing fails.
 5. Add content-repo CI so a merge to content `main` validates draft safety, schema, compilation, and renderability before the production webhook ever sees it.
-6. Add share-image generation, local preview, rendered Open Graph/Twitter metadata, and production validation for generated image URLs/dimensions.
-7. Decide the deleted-URL SEO behavior: hard 404, 410, redirect, or tombstone page.
+6. Define deleted/renamed URL behavior: deletion-only changes hard-404; mixed delete/add updates must preserve deleted live URLs through canonical slugs or explicit `aliases:`, and aliases redirect renamed URLs with 301.
+
+Remaining implementation slice:
+
+1. Add share-image generation, local preview, rendered Open Graph/Twitter metadata, and production validation for generated image URLs/dimensions.
+2. Add content-only rollback identity and the operator command that flips back to a known-good content generation without rolling back the app release.
 
 Done for this sub-phase means the app can answer four questions without fresh human reasoning: what content commit is live, what content commit was last rejected and why, what commit was last known-good, and how to return to it.
 
 Known risks to address in that slice:
 
-- Boot-time content pull can prevent the container from starting if GitHub or auth fails.
 - Private repo auth is configured but not wired into the git clone/fetch path.
-- Delivery dedupe and sync locking do not exist yet.
-- Accepted/rejected content SHA is not persisted yet.
-- Content-repo CI does not exist yet.
 - Share-preview frontmatter is persisted, but share-image generation, preview UI, rendered metadata, and production smoke assertions do not exist yet.
+- Content rollback is observable through status, but the one-command content-only rollback operation is not implemented yet.
 
 ## Origin deploy philosophy
 

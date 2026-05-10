@@ -4,8 +4,12 @@ defmodule Portfolio.Content.FileManagement.Promoter do
 
   Promotion is the boundary between "git has new files" and "the site can serve
   the content." It parses Markdown frontmatter, upserts renderable content, and
-  removes entries whose source Markdown disappeared. A failed promotion rolls
-  back the whole batch so the previous DB state stays live.
+  removes entries whose source Markdown disappeared.
+
+  Validator and local promotion callers use rollback-on-error so a failed
+  promotion leaves no residue. The remote publication path keeps failed
+  generation rows for diagnosis, but the publication state does not move the
+  live pointer to that generation.
   """
 
   import Ecto.Query
@@ -84,6 +88,12 @@ defmodule Portfolio.Content.FileManagement.Promoter do
       |> reduce_changed_paths(content_base_path, result, fn path, result ->
         remove_path_change(path, result, publication_generation_id)
       end)
+      |> validate_alias_integrity(publication_generation_id)
+      |> validate_deleted_aliases(
+        content_base_path,
+        changes,
+        publication_generation_id
+      )
     end)
   end
 
@@ -99,6 +109,7 @@ defmodule Portfolio.Content.FileManagement.Promoter do
       path
       |> Path.expand()
       |> promote_path_change(new_result(), publication_generation_id)
+      |> validate_alias_integrity(publication_generation_id)
     end)
   end
 
@@ -159,6 +170,12 @@ defmodule Portfolio.Content.FileManagement.Promoter do
       |> remove_missing_content(
         content_base_path,
         files,
+        publication_generation_id
+      )
+      |> validate_alias_integrity(publication_generation_id)
+      |> validate_deleted_aliases(
+        content_base_path,
+        Keyword.get(opts, :changes, %{upsert: [], delete: []}),
         publication_generation_id
       )
     end)
@@ -368,9 +385,197 @@ defmodule Portfolio.Content.FileManagement.Promoter do
     %{result | errors: [%{path: path, reason: reason} | result.errors]}
   end
 
-  defp maybe_put_publication_generation_id(attrs, nil), do: attrs
+  defp validate_alias_integrity(
+         %{errors: [_first | _rest]} = result,
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_alias_integrity(result, generation_id) do
+    alias_errors =
+      @content_schemas
+      |> Enum.flat_map(&alias_errors_for_schema(&1, generation_id))
+
+    %{result | errors: alias_errors ++ result.errors}
+  end
+
+  defp alias_errors_for_schema(schema, generation_id) do
+    contents = generation_contents(schema, generation_id)
+    canonical_urls = MapSet.new(Enum.map(contents, & &1.url))
+
+    canonical_alias_errors(contents, canonical_urls) ++
+      duplicate_alias_errors(contents)
+  end
+
+  defp generation_contents(schema, nil) do
+    schema
+    |> where([content], is_nil(content.publication_generation_id))
+    |> public_content()
+    |> Repo.all()
+  end
+
+  defp generation_contents(schema, generation_id)
+       when is_binary(generation_id) do
+    schema
+    |> where([content], content.publication_generation_id == ^generation_id)
+    |> public_content()
+    |> Repo.all()
+  end
+
+  defp public_content(query) do
+    query
+    |> where([content], not content.is_draft)
+    |> where([content], not is_nil(content.published_at))
+  end
+
+  defp canonical_alias_errors(contents, canonical_urls) do
+    Enum.flat_map(contents, fn content ->
+      content
+      |> aliases()
+      |> Enum.filter(&MapSet.member?(canonical_urls, &1))
+      |> Enum.map(&alias_error(content, {:alias_conflicts_with_url, &1}))
+    end)
+  end
+
+  defp duplicate_alias_errors(contents) do
+    contents
+    |> Enum.flat_map(fn content ->
+      Enum.map(aliases(content), &{&1, content})
+    end)
+    |> Enum.group_by(fn {alias_url, _content} -> alias_url end, fn {_alias_url,
+                                                                    content} ->
+      content
+    end)
+    |> Enum.flat_map(fn
+      {_alias_url, [_content]} ->
+        []
+
+      {alias_url, duplicate_contents} ->
+        Enum.map(
+          duplicate_contents,
+          &alias_error(&1, {:duplicate_alias, alias_url})
+        )
+    end)
+  end
+
+  defp aliases(%{aliases: aliases}) when is_list(aliases), do: aliases
+  defp aliases(%{aliases: nil}), do: []
+
+  defp alias_error(content, reason) do
+    %{path: content_error_path(content), reason: reason}
+  end
+
+  defp validate_deleted_aliases(
+         %{errors: [_first | _rest]} = result,
+         _content_base_path,
+         _changes,
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         _content_base_path,
+         %{upsert: []},
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         _content_base_path,
+         %{delete: []},
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         content_base_path,
+         changes,
+         generation_id
+       )
+       when is_binary(generation_id) do
+    errors =
+      changes
+      |> Map.get(:delete, [])
+      |> Enum.map(&content_path(content_base_path, &1))
+      |> Enum.flat_map(&live_content_from_deleted_path/1)
+      |> Enum.reject(&content_slug_preserved?(&1, generation_id))
+      |> Enum.map(&alias_error(&1, {:deleted_without_alias, &1.url}))
+
+    %{result | errors: errors ++ result.errors}
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         _content_base_path,
+         _changes,
+         _generation_id
+       ) do
+    result
+  end
+
+  defp live_content_from_deleted_path(path) do
+    case Portfolio.Content.Publishing.live_generation_id() do
+      nil ->
+        []
+
+      live_generation_id ->
+        delete_paths = path_variants(path)
+
+        Enum.flat_map(@content_schemas, fn schema ->
+          schema
+          |> where(
+            [content],
+            content.publication_generation_id == ^live_generation_id
+          )
+          |> where([content], content.file_path in ^delete_paths)
+          |> public_content()
+          |> Repo.all()
+        end)
+    end
+  end
+
+  defp content_slug_preserved?(content, generation_id) do
+    content.url in generation_slugs(content.__struct__, generation_id)
+  end
+
+  defp generation_slugs(schema, generation_id) do
+    schema
+    |> where([content], content.publication_generation_id == ^generation_id)
+    |> public_content()
+    |> Repo.all()
+    |> Enum.flat_map(fn content -> [content.url | aliases(content)] end)
+    |> MapSet.new()
+  end
+
+  defp content_error_path(%{file_path: file_path}) when is_binary(file_path) do
+    file_path
+  end
+
+  defp content_error_path(%{url: url}) when is_binary(url) do
+    url
+  end
+
+  defp maybe_put_publication_generation_id(attrs, nil) do
+    scrub_publication_generation_id(attrs)
+  end
 
   defp maybe_put_publication_generation_id(attrs, publication_generation_id) do
-    Map.put(attrs, "publication_generation_id", publication_generation_id)
+    attrs
+    |> scrub_publication_generation_id()
+    |> Map.put(:trusted_publication_generation_id, publication_generation_id)
+  end
+
+  defp scrub_publication_generation_id(attrs) do
+    attrs
+    |> Map.delete("publication_generation_id")
+    |> Map.delete(:publication_generation_id)
+    |> Map.delete(:trusted_publication_generation_id)
   end
 end

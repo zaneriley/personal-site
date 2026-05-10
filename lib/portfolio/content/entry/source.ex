@@ -11,6 +11,7 @@ defmodule Portfolio.Content.Entry.Source do
 
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.Records
+  alias Portfolio.Content.FileManagement.ValidationError
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.TranslationRepository
@@ -53,7 +54,10 @@ defmodule Portfolio.Content.Entry.Source do
       {:ok, updated_content}
     else
       {:error, reason} ->
-        Logger.error("Error in upsert_from_file: #{inspect(reason)}")
+        Logger.error(
+          "Error in upsert_from_file: #{ValidationError.message(reason)}"
+        )
+
         {:error, reason}
     end
   end
@@ -146,7 +150,10 @@ defmodule Portfolio.Content.Entry.Source do
         error
 
       {:ok, schema} ->
-        with changeset <- apply_changeset(struct(schema), attrs),
+        with changeset <-
+               attrs
+               |> trusted_struct(schema)
+               |> apply_changeset(scrub_reserved_attrs(attrs)),
              {:ok, content} <- Records.insert_content(changeset),
              # Get AST from compiler
              {:ok, %{ast: ast}} <- Compiler.compile(content.content),
@@ -164,7 +171,11 @@ defmodule Portfolio.Content.Entry.Source do
     # Start a transaction
     Repo.transaction(fn ->
       # Update basic attributes first
-      with {:ok, content} <- Records.update_content_attributes(content, attrs),
+      with {:ok, content} <-
+             Records.update_content_attributes(
+               content,
+               scrub_reserved_attrs(attrs)
+             ),
            # Then handle content compilation if content was updated
            {:ok, content} <- compile_updated_content(content, attrs) do
         content
@@ -194,7 +205,27 @@ defmodule Portfolio.Content.Entry.Source do
     do: CaseStudy.changeset(case_study, attrs)
 
   defp publication_generation_id(attrs) do
-    attrs["publication_generation_id"] || attrs[:publication_generation_id]
+    attrs[:trusted_publication_generation_id]
+  end
+
+  defp trusted_struct(attrs, schema) do
+    schema
+    |> struct()
+    |> maybe_put_publication_generation_id(publication_generation_id(attrs))
+  end
+
+  defp maybe_put_publication_generation_id(content, nil), do: content
+
+  defp maybe_put_publication_generation_id(content, generation_id)
+       when is_binary(generation_id) do
+    %{content | publication_generation_id: generation_id}
+  end
+
+  defp scrub_reserved_attrs(attrs) do
+    attrs
+    |> Map.delete("publication_generation_id")
+    |> Map.delete(:publication_generation_id)
+    |> Map.delete(:trusted_publication_generation_id)
   end
 
   defp get_by_url_and_generation(schema, url, nil) do

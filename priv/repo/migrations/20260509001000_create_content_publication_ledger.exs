@@ -201,8 +201,34 @@ defmodule Portfolio.Repo.Migrations.CreateContentPublicationLedger do
   end
 
   defp collapse_generated_content_for_rollback do
+    fail_rollback_without_live_generation!()
     collapse_generated_content_for_rollback(:notes, "note")
     collapse_generated_content_for_rollback(:case_studies, "case_study")
+  end
+
+  defp fail_rollback_without_live_generation! do
+    execute("""
+    DO $$
+    BEGIN
+      IF (
+        EXISTS (
+          SELECT 1 FROM notes
+          WHERE publication_generation_id IS NOT NULL
+        )
+        OR EXISTS (
+          SELECT 1 FROM case_studies
+          WHERE publication_generation_id IS NOT NULL
+        )
+      ) AND NOT EXISTS (
+        SELECT 1 FROM content_publication_states
+        WHERE name = 'default'
+          AND live_content_publication_generation_id IS NOT NULL
+      ) THEN
+        RAISE EXCEPTION
+          'cannot rollback generated content without a live publication state';
+      END IF;
+    END $$;
+    """)
   end
 
   defp collapse_generated_content_for_rollback(table_name, translatable_type) do

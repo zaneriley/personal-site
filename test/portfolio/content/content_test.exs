@@ -1,6 +1,7 @@
 defmodule Portfolio.Content.ContentTest do
   use Portfolio.DataCase
   alias Portfolio.Content
+  alias Portfolio.Content.PublicRead.Scope
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.ContentFixtures
   alias Portfolio.Content.TranslationRepository
@@ -31,10 +32,147 @@ defmodule Portfolio.Content.ContentTest do
       end
     end
 
+    test "get!/2 hides draft rows in the live publication generation" do
+      live_note =
+        ContentFixtures.note_fixture(%{"url" => "live-row-before-draft"},
+          skip_translations: true
+        )
+
+      note =
+        ContentFixtures.note_fixture(
+          %{
+            "url" => "draft-row-in-live-generation",
+            "is_draft" => true
+          },
+          skip_translations: true
+        )
+
+      assert note.publication_generation_id ==
+               live_note.publication_generation_id
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Content.get!("note", note.url)
+      end
+    end
+
+    test "get!/2 hides unpublished rows in the live publication generation" do
+      live_note =
+        ContentFixtures.note_fixture(%{"url" => "live-row-before-unpublished"},
+          skip_translations: true
+        )
+
+      note =
+        ContentFixtures.note_fixture(
+          %{
+            "url" => "unpublished-row-in-live-generation",
+            "published_at" => nil
+          },
+          skip_translations: true
+        )
+
+      assert note.publication_generation_id ==
+               live_note.publication_generation_id
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Content.get!("note", note.url)
+      end
+    end
+
     test "get!/2 raises ArgumentError for invalid id_or_url" do
       assert_raise ArgumentError, fn ->
         Content.get!("note", 123)
       end
+    end
+  end
+
+  describe "content aliases" do
+    test "get_alias_redirect/3 returns the live content item for a legacy URL" do
+      note =
+        ContentFixtures.note_fixture(
+          %{
+            "url" => "new-note-url",
+            "aliases" => ["old-note-url"]
+          },
+          skip_translations: true
+        )
+
+      assert {:ok, redirected_note} =
+               Content.get_alias_redirect(
+                 Scope.current(),
+                 "note",
+                 "old-note-url"
+               )
+
+      assert redirected_note.id == note.id
+      assert redirected_note.url == "new-note-url"
+    end
+
+    test "get_alias_redirect/3 does not treat canonical URLs as aliases" do
+      ContentFixtures.note_fixture(
+        %{
+          "url" => "canonical-note-url",
+          "aliases" => ["old-canonical-note-url"]
+        },
+        skip_translations: true
+      )
+
+      assert {:error, :not_found} =
+               Content.get_alias_redirect(
+                 Scope.current(),
+                 "note",
+                 "canonical-note-url"
+               )
+    end
+
+    test "get_alias_redirect/3 hides draft aliases in the live generation" do
+      live_note =
+        ContentFixtures.note_fixture(%{"url" => "live-before-draft-alias"},
+          skip_translations: true
+        )
+
+      ContentFixtures.note_fixture(
+        %{
+          "url" => "draft-note-url",
+          "aliases" => ["old-draft-note-url"],
+          "is_draft" => true
+        },
+        skip_translations: true
+      )
+
+      assert is_binary(live_note.publication_generation_id)
+
+      assert {:error, :not_found} =
+               Content.get_alias_redirect(
+                 Scope.current(),
+                 "note",
+                 "old-draft-note-url"
+               )
+    end
+
+    test "get_alias_redirect/3 hides unpublished aliases in the live generation" do
+      live_note =
+        ContentFixtures.note_fixture(
+          %{"url" => "live-before-unpublished-alias"},
+          skip_translations: true
+        )
+
+      ContentFixtures.note_fixture(
+        %{
+          "url" => "unpublished-note-url",
+          "aliases" => ["old-unpublished-note-url"],
+          "published_at" => nil
+        },
+        skip_translations: true
+      )
+
+      assert is_binary(live_note.publication_generation_id)
+
+      assert {:error, :not_found} =
+               Content.get_alias_redirect(
+                 Scope.current(),
+                 "note",
+                 "old-unpublished-note-url"
+               )
     end
   end
 
@@ -151,7 +289,7 @@ defmodule Portfolio.Content.ContentTest do
           "title" => "Titre Français",
           "url" => "test-note-with-translations",
           "locale" => "fr",
-          "publication_generation_id" => note.publication_generation_id
+          trusted_publication_generation_id: note.publication_generation_id
         })
 
       Logger.debug("French translation created: #{inspect(french_translation)}")
@@ -189,7 +327,7 @@ defmodule Portfolio.Content.ContentTest do
           "title" => "部分的な日本語のタイトル",
           "url" => "partial-translation-note",
           "locale" => "ja",
-          "publication_generation_id" => note.publication_generation_id
+          trusted_publication_generation_id: note.publication_generation_id
         })
 
       # Retrieve content with translations
@@ -267,6 +405,10 @@ defmodule Portfolio.Content.ContentTest do
 
       {:ok, generation} =
         Portfolio.Content.Publishing.prepare_generation(content_sha)
+
+      ContentFixtures.note_fixture(%{"url" => "ledger-live"},
+        publication_generation_id: generation.id
+      )
 
       assert {:ok, accepted} =
                Content.record_publication_event(

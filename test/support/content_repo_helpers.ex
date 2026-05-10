@@ -44,6 +44,7 @@ defmodule Portfolio.ContentRepoHelpers do
       title: "#{title}"
       url: "#{url}"
       introduction: "Intro"
+      #{aliases_frontmatter(opts)}
       #{share_preview_frontmatter(opts)}
       published_at: "#{published_at}"
       is_draft: false
@@ -126,5 +127,16 @@ defmodule Portfolio.ContentRepoHelpers do
     |> Enum.map_join("\n", fn {key, value} ->
       "#{key}: #{inspect(value)}"
     end)
+  end
+
+  defp aliases_frontmatter(opts) do
+    case Keyword.get(opts, :aliases, []) do
+      [] ->
+        ""
+
+      aliases ->
+        items = Enum.map_join(aliases, "\n", &"  - #{inspect(&1)}")
+        "aliases:\n#{items}"
+    end
   end
 end

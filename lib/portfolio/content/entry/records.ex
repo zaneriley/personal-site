@@ -12,6 +12,7 @@ defmodule Portfolio.Content.Entry.Records do
 
   alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.Content.Publishing
+  alias Portfolio.Content.PublicRead.Scope
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
@@ -223,6 +224,39 @@ defmodule Portfolio.Content.Entry.Records do
   end
 
   @doc """
+  Finds the live content entry that owns a legacy URL alias.
+
+  Canonical URLs take precedence over aliases so an alias can never hijack an
+  already published URL.
+  """
+  @spec get_content_by_alias(Scope.t(), content_type(), String.t()) ::
+          {:ok, Note.t() | CaseStudy.t()}
+          | {:error, :not_found | :ambiguous_alias | :invalid_content_type}
+  def get_content_by_alias(
+        %Scope{publication_generation_id: nil},
+        _content_type,
+        alias_url
+      )
+      when is_binary(alias_url) do
+    {:error, :not_found}
+  end
+
+  def get_content_by_alias(
+        %Scope{publication_generation_id: generation_id},
+        content_type,
+        alias_url
+      )
+      when is_binary(generation_id) and is_binary(alias_url) do
+    case get_schema(content_type) do
+      {:ok, schema} ->
+        find_content_by_alias(generation_id, schema, alias_url)
+
+      {:error, :invalid_content_type} = error ->
+        error
+    end
+  end
+
+  @doc """
   Fetches multiple content items by their IDs.
 
   ## Parameters
@@ -297,12 +331,49 @@ defmodule Portfolio.Content.Entry.Records do
         where(query, [content], content.id in [])
 
       generation_id ->
-        where(
-          query,
-          [content],
-          content.publication_generation_id == ^generation_id
-        )
+        query
+        |> filter_generation(generation_id)
+        |> public_content()
     end
+  end
+
+  defp find_content_by_alias(generation_id, schema, alias_url) do
+    if live_url_exists?(generation_id, schema, alias_url) do
+      {:error, :not_found}
+    else
+      schema
+      |> where([content], not content.is_draft)
+      |> where([content], not is_nil(content.published_at))
+      |> where([content], fragment("? = ANY(?)", ^alias_url, content.aliases))
+      |> filter_generation(generation_id)
+      |> limit(2)
+      |> Repo.all()
+      |> alias_lookup_result()
+    end
+  end
+
+  defp live_url_exists?(generation_id, schema, url) do
+    schema
+    |> where([content], content.url == ^url)
+    |> filter_generation(generation_id)
+    |> public_content()
+    |> Repo.exists?()
+  end
+
+  defp alias_lookup_result([content]), do: {:ok, content}
+  defp alias_lookup_result([]), do: {:error, :not_found}
+
+  defp alias_lookup_result([_first, _second | _rest]),
+    do: {:error, :ambiguous_alias}
+
+  defp filter_generation(query, generation_id) when is_binary(generation_id) do
+    where(query, [content], content.publication_generation_id == ^generation_id)
+  end
+
+  defp public_content(query) do
+    query
+    |> where([content], content.is_draft == false)
+    |> where([content], not is_nil(content.published_at))
   end
 
   defp apply_sorting(query, _schema, nil, _), do: query

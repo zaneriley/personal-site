@@ -62,12 +62,23 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
 
       init_repo!(source_repo)
       write_note!(source_repo, "notes/published-note/en.md")
+
+      write_note!(source_repo, "notes/surviving-note/en.md",
+        url: "surviving-note"
+      )
+
       first_sha = commit!(source_repo, "publish note")
 
       assert {:ok, _result} =
                RemoteUpdateTrigger.trigger_update(source_repo,
                  content_base_path: clone_path,
-                 changes: %{upsert: ["notes/published-note/en.md"], delete: []},
+                 changes: %{
+                   upsert: [
+                     "notes/published-note/en.md",
+                     "notes/surviving-note/en.md"
+                   ],
+                   delete: []
+                 },
                  target_sha: first_sha,
                  github_delivery_id: "delivery-delete-first"
                )
@@ -85,9 +96,12 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                  github_delivery_id: "delivery-delete-second"
                )
 
-      assert result.promoted == []
+      assert result.promoted == [
+               Path.expand("notes/surviving-note/en.md", clone_path)
+             ]
 
       refute Enum.any?(Content.list("note"), &(&1.url == "published-note"))
+      assert Enum.any?(Content.list("note"), &(&1.url == "surviving-note"))
       assert second_sha == rev_parse!(clone_path, "HEAD")
 
       assert %{status: "accepted", removed_paths: removed_paths} =
@@ -115,7 +129,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
       write_invalid_note!(source_repo, "notes/bad-note/en.md")
       target_sha = commit!(source_repo, "publish mixed invalid content")
 
-      assert {:error, "Content promotion failed"} =
+      assert {:error, reason} =
                RemoteUpdateTrigger.trigger_update(source_repo,
                  content_base_path: clone_path,
                  changes: %{
@@ -125,6 +139,11 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                  target_sha: target_sha,
                  github_delivery_id: "delivery-first-invalid-note"
                )
+
+      assert reason =~ "notes/bad-note/en.md:"
+
+      assert reason =~
+               "invalid markdown format: expected YAML frontmatter delimited by ---"
 
       assert %{status: "rejected"} = Content.get_publication_verdict(target_sha)
       assert Content.list("note") == []
@@ -152,7 +171,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
       write_invalid_note!(source_repo, "notes/published-note/en.md")
       target_sha = commit!(source_repo, "publish invalid note")
 
-      assert {:error, "Content promotion failed"} =
+      assert {:error, reason} =
                RemoteUpdateTrigger.trigger_update(source_repo,
                  content_base_path: clone_path,
                  changes: %{upsert: ["notes/published-note/en.md"], delete: []},
@@ -160,7 +179,12 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                  github_delivery_id: "delivery-invalid-note"
                )
 
-      assert %{status: "rejected", reason: "Content promotion failed"} =
+      assert reason =~ "notes/published-note/en.md:"
+
+      assert reason =~
+               "invalid markdown format: expected YAML frontmatter delimited by ---"
+
+      assert %{status: "rejected", reason: ^reason} =
                verdict = Content.get_publication_verdict(target_sha)
 
       assert [
@@ -179,6 +203,128 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                last_good_content_sha: ^accepted_sha
              } =
                Content.get_publication_state()
+    end
+
+    test "rejected mixed updates keep serving old live rows" do
+      source_repo = tmp_dir!("remote-partial-invalid-content-source")
+      clone_path = tmp_dir!("remote-partial-invalid-content-clone")
+      on_exit(fn -> File.rm_rf!(source_repo) end)
+      on_exit(fn -> File.rm_rf!(clone_path) end)
+
+      init_repo!(source_repo)
+
+      write_note!(source_repo, "notes/published-note/en.md",
+        title: "Old Live Title"
+      )
+
+      accepted_sha = commit!(source_repo, "publish valid note")
+
+      assert {:ok, _result} =
+               RemoteUpdateTrigger.trigger_update(source_repo,
+                 content_base_path: clone_path,
+                 changes: %{upsert: ["notes/published-note/en.md"], delete: []},
+                 target_sha: accepted_sha,
+                 github_delivery_id: "delivery-partial-valid-before-invalid"
+               )
+
+      assert %Note{id: live_note_id, title: "Old Live Title"} =
+               Content.get!("note", "published-note")
+
+      write_note!(source_repo, "notes/published-note/en.md",
+        title: "New Hidden Title"
+      )
+
+      write_file!(
+        source_repo,
+        "notes/bad-note/en.md",
+        """
+        ---
+        url: "bad-note"
+        introduction: "Intro"
+        published_at: "2024-07-27T14:30:00Z"
+        is_draft: false
+        ---
+
+        # Missing Title
+        """
+      )
+
+      rejected_sha = commit!(source_repo, "publish mixed invalid note")
+
+      assert {:error, reason} =
+               RemoteUpdateTrigger.trigger_update(source_repo,
+                 content_base_path: clone_path,
+                 changes: %{
+                   upsert: [
+                     "notes/published-note/en.md",
+                     "notes/bad-note/en.md"
+                   ],
+                   delete: []
+                 },
+                 target_sha: rejected_sha,
+                 github_delivery_id: "delivery-partial-invalid-note"
+               )
+
+      assert reason =~ "notes/bad-note/en.md: title: can't be blank"
+
+      assert %Note{id: ^live_note_id, title: "Old Live Title"} =
+               Content.get!("note", "published-note")
+
+      assert %{
+               live_content_sha: ^accepted_sha,
+               last_good_content_sha: ^accepted_sha,
+               last_rejected_content_sha: ^rejected_sha
+             } = Content.get_publication_state()
+    end
+
+    test "rejects mixed delete and add updates that do not preserve deleted URLs" do
+      source_repo = tmp_dir!("remote-rename-without-alias-source")
+      clone_path = tmp_dir!("remote-rename-without-alias-clone")
+      on_exit(fn -> File.rm_rf!(source_repo) end)
+      on_exit(fn -> File.rm_rf!(clone_path) end)
+
+      init_repo!(source_repo)
+      write_note!(source_repo, "notes/old-note/en.md", url: "old-note")
+      accepted_sha = commit!(source_repo, "publish old note")
+
+      assert {:ok, _result} =
+               RemoteUpdateTrigger.trigger_update(source_repo,
+                 content_base_path: clone_path,
+                 changes: %{upsert: ["notes/old-note/en.md"], delete: []},
+                 target_sha: accepted_sha,
+                 github_delivery_id: "delivery-rename-old-note"
+               )
+
+      delete_file!(source_repo, "notes/old-note/en.md")
+      write_note!(source_repo, "notes/new-note/en.md", url: "new-note")
+      rejected_sha = commit!(source_repo, "rename without alias")
+
+      assert {:error, reason} =
+               RemoteUpdateTrigger.trigger_update(source_repo,
+                 content_base_path: clone_path,
+                 changes: %{
+                   upsert: ["notes/new-note/en.md"],
+                   delete: ["notes/old-note/en.md"]
+                 },
+                 target_sha: rejected_sha,
+                 github_delivery_id: "delivery-rename-without-alias"
+               )
+
+      assert reason =~ "notes/old-note/en.md:"
+
+      assert reason =~
+               "deleted URL old-note needs an alias on new content or a deletion-only commit"
+
+      assert %Note{url: "old-note"} = Content.get!("note", "old-note")
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Content.get!("note", "new-note")
+      end
+
+      assert %{
+               live_content_sha: ^accepted_sha,
+               last_rejected_content_sha: ^rejected_sha
+             } = Content.get_publication_state()
     end
 
     test "does not sync or promote duplicate GitHub deliveries" do

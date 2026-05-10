@@ -13,6 +13,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
 
   alias Portfolio.Content
   alias Portfolio.Content.FileManagement.Promoter
+  alias Portfolio.Content.FileManagement.ValidationError
   alias Portfolio.Content.Publishing
   alias Portfolio.Content.Remote.GitRepoSyncer
   alias Portfolio.Content.Remote.GitHubStatusReporter
@@ -165,7 +166,8 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
        ) do
     case Promoter.promote_all(local_path,
            publication_generation_id: generation.id,
-           rollback_on_error: false
+           rollback_on_error: false,
+           changes: Keyword.get(opts, :changes, %{upsert: [], delete: []})
          ) do
       {:ok, result} ->
         result = add_removed_paths_from_changes(result, local_path, opts)
@@ -226,20 +228,24 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
          opts
        ) do
     mark_generation_failed(generation)
+    reason = rejection_reason(result, opts)
 
     record_result =
       record_rejected_verdict(
         content_sha,
         github_delivery_id,
-        "Content promotion failed",
+        reason,
         result,
         Keyword.put(opts, :generation_id, generation.id)
       )
 
     case record_result do
       {:ok, entry} ->
-        Logger.error("Content promotion failed: #{inspect(result)}")
-        {:error, "Content promotion failed", entry}
+        Logger.error(
+          "Content promotion failed: #{inspect_promotion_result(result)}"
+        )
+
+        {:error, reason, entry}
 
       {:error, changeset} ->
         Logger.error(
@@ -466,5 +472,28 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
   end
 
   defp reason_to_string(reason) when is_binary(reason), do: reason
-  defp reason_to_string(reason), do: inspect(reason)
+  defp reason_to_string(reason), do: ValidationError.message(reason)
+
+  defp rejection_reason(result, opts) do
+    result
+    |> Map.get(:errors, [])
+    |> List.first()
+    |> case do
+      %{path: path, reason: reason} ->
+        "#{repo_relative_path(path, opts)}: #{reason_to_string(reason)}"
+
+      nil ->
+        "Content promotion failed"
+    end
+  end
+
+  defp inspect_promotion_result(result) do
+    result
+    |> Map.update(:errors, [], fn errors ->
+      Enum.map(errors, fn %{path: path, reason: reason} ->
+        %{path: path, reason: reason_to_string(reason)}
+      end)
+    end)
+    |> inspect()
+  end
 end

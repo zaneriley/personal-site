@@ -68,6 +68,57 @@ defmodule Portfolio.Content.Entry.SourceTest do
       assert Repo.get!(Note, live_note.id).title == "Live File Note"
     end
 
+    test "does not trust publication generation IDs from frontmatter attrs" do
+      live_note =
+        note_fixture(%{
+          "url" => "hostile-frontmatter-note",
+          "title" => "Live File Note",
+          "content" => "Live content"
+        })
+
+      attrs = %{
+        "url" => "hostile-frontmatter-note",
+        "title" => "Hostile File Note",
+        "content" => "Hostile content from file",
+        "locale" => "en",
+        "publication_generation_id" => live_note.publication_generation_id
+      }
+
+      assert {:ok, %Note{} = unpublished_note} =
+               Source.upsert_from_file("note", attrs)
+
+      assert unpublished_note.id != live_note.id
+      assert unpublished_note.publication_generation_id == nil
+      assert Repo.get!(Note, live_note.id).title == "Live File Note"
+    end
+
+    test "uses trusted publication generation IDs from promotion code" do
+      live_note =
+        note_fixture(%{
+          "url" => "trusted-generation-note",
+          "title" => "Live File Note",
+          "content" => "Live content"
+        })
+
+      attrs = %{
+        "url" => "trusted-generation-note",
+        "title" => "Trusted File Note",
+        "content" => "Trusted content from file",
+        "locale" => "en",
+        trusted_publication_generation_id: live_note.publication_generation_id
+      }
+
+      assert {:ok, %Note{} = updated_note} =
+               Source.upsert_from_file("note", attrs)
+
+      assert updated_note.id == live_note.id
+
+      assert updated_note.publication_generation_id ==
+               live_note.publication_generation_id
+
+      assert Repo.get!(Note, live_note.id).title == "Trusted File Note"
+    end
+
     test "handles atom content type" do
       attrs = %{
         "url" => "atom-type-note",

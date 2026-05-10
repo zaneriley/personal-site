@@ -140,11 +140,7 @@ BASH
 }
 
 function ensure_oha {
-    if [[ "$(uname -s)" == "Darwin" ]]; then
-        ensure_docker_oha
-    else
-        ensure_native_oha
-    fi
+    ensure_native_oha
 }
 
 function write_compose_override {

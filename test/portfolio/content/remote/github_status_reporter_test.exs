@@ -2,6 +2,7 @@ defmodule Portfolio.Content.Remote.GitHubStatusReporterTest do
   use Portfolio.DataCase, async: true
 
   import Mox
+  import Portfolio.ContentFixtures
 
   alias Portfolio.Content.Publishing
   alias Portfolio.Content.Remote.GitHubStatusClient
@@ -13,6 +14,10 @@ defmodule Portfolio.Content.Remote.GitHubStatusReporterTest do
     test "posts accepted content as a successful GitHub status" do
       content_sha = String.duplicate("a", 40)
       {:ok, generation} = Publishing.prepare_generation(content_sha)
+
+      note_fixture(%{"url" => "github-status-note"},
+        publication_generation_id: generation.id
+      )
 
       assert {:ok, entry} =
                Publishing.record_publication_event(

@@ -83,6 +83,7 @@ defmodule Portfolio.Content do
   alias Portfolio.Content.Entry.Source
   alias Portfolio.Content.EntryAssembler
   alias Portfolio.Content.Publishing
+  alias Portfolio.Content.PublicRead.Scope
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.PublicationLedgerEntry
@@ -266,6 +267,20 @@ defmodule Portfolio.Content do
         Logger.error("Invalid content type provided: #{inspect(type)}")
         raise InvalidContentTypeError, "Invalid content type: #{inspect(type)}"
     end
+  end
+
+  @doc """
+  Resolves a legacy URL alias to the live content entry that now owns it.
+
+  Canonical URLs are intentionally not treated as aliases; callers should use
+  normal content lookup for those.
+  """
+  @spec get_alias_redirect(Scope.t(), content_type(), content_url()) ::
+          {:ok, Note.t() | CaseStudy.t()}
+          | {:error, :not_found | :ambiguous_alias | :invalid_content_type}
+  def get_alias_redirect(%Scope{} = scope, type, alias_url)
+      when is_binary(alias_url) do
+    Records.get_content_by_alias(scope, type, alias_url)
   end
 
   @spec fetch_content(content_type(), content_identifier()) ::

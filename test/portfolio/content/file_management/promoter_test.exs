@@ -58,6 +58,97 @@ defmodule Portfolio.Content.FileManagement.PromoterTest do
       assert note.share_image_alt == "A share card for the published note"
     end
 
+    test "promotes aliases frontmatter into the database" do
+      content_path = tmp_dir!("promote-aliases-frontmatter")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/published-note/en.md",
+        aliases: ["old-published-note", "older-published-note"]
+      )
+
+      assert {:ok, _result} =
+               Promoter.promote_changes(content_path, %{
+                 upsert: ["notes/published-note/en.md"],
+                 delete: []
+               })
+
+      assert %Note{} = note = Repo.get_by(Note, url: "published-note")
+      assert note.aliases == ["old-published-note", "older-published-note"]
+    end
+
+    test "rejects aliases that duplicate another content alias" do
+      content_path = tmp_dir!("reject-duplicate-aliases")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/first-note/en.md",
+        url: "first-note",
+        aliases: ["shared-note"]
+      )
+
+      write_note!(content_path, "notes/second-note/en.md",
+        url: "second-note",
+        aliases: ["shared-note"]
+      )
+
+      assert {:error, result} = Promoter.promote_all(content_path)
+
+      assert Enum.any?(
+               result.errors,
+               &match?(%{reason: {:duplicate_alias, "shared-note"}}, &1)
+             )
+
+      refute Repo.get_by(Note, url: "first-note")
+      refute Repo.get_by(Note, url: "second-note")
+    end
+
+    test "rejects aliases that conflict with a canonical URL" do
+      content_path = tmp_dir!("reject-canonical-alias")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/alpha-note/en.md", url: "alpha-note")
+
+      write_note!(content_path, "notes/beta-note/en.md",
+        url: "beta-note",
+        aliases: ["alpha-note"]
+      )
+
+      assert {:error, result} = Promoter.promote_all(content_path)
+
+      assert Enum.any?(
+               result.errors,
+               &match?(
+                 %{reason: {:alias_conflicts_with_url, "alpha-note"}},
+                 &1
+               )
+             )
+
+      refute Repo.get_by(Note, url: "alpha-note")
+      refute Repo.get_by(Note, url: "beta-note")
+    end
+
+    test "rejects aliases that are not old URL slugs" do
+      content_path = tmp_dir!("reject-invalid-alias-slug")
+      on_exit(fn -> File.rm_rf!(content_path) end)
+
+      write_note!(content_path, "notes/published-note/en.md",
+        aliases: ["https://example.com/old-note"]
+      )
+
+      assert {:error, result} = Promoter.promote_all(content_path)
+
+      assert [%{path: path, reason: changeset}] = result.errors
+
+      assert path == Path.expand("notes/published-note/en.md", content_path)
+
+      assert %{
+               aliases: [
+                 "must be old slugs using lowercase letters, numbers, and hyphens"
+               ]
+             } = errors_on(changeset)
+
+      refute Repo.get_by(Note, url: "published-note")
+    end
+
     test "rejects invalid content and keeps the previous database state" do
       content_path = tmp_dir!("reject-invalid")
       on_exit(fn -> File.rm_rf!(content_path) end)

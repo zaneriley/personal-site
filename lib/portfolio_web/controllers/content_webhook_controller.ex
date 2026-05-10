@@ -26,7 +26,7 @@ defmodule PortfolioWeb.ContentWebhookController do
   def handle_webhook(conn, payload, opts) do
     Logger.info("Processing webhook payload")
 
-    with {:ok, event_type} <- extract_event_type(payload),
+    with {:ok, event_type} <- extract_event_type(conn, payload),
          :ok <- validate_push_event(event_type),
          :ok <- validate_ref(payload),
          :ok <- validate_repository(payload, content_repo_url(opts)),
@@ -49,12 +49,17 @@ defmodule PortfolioWeb.ContentWebhookController do
     end
   end
 
-  @spec extract_event_type(map()) :: {:ok, String.t()} | {:error, String.t()}
-  defp extract_event_type(%{"commits" => _}) do
-    {:ok, "push"}
+  @spec extract_event_type(Plug.Conn.t(), map()) ::
+          {:ok, String.t()} | {:error, String.t()}
+  defp extract_event_type(conn, %{"commits" => _}) do
+    case Plug.Conn.get_req_header(conn, "x-github-event") do
+      ["push"] -> {:ok, "push"}
+      [event] -> {:error, "Unexpected GitHub event: #{event}"}
+      [] -> {:error, "Missing GitHub event"}
+    end
   end
 
-  defp extract_event_type(_) do
+  defp extract_event_type(_conn, _) do
     {:error, "Invalid or unsupported event type"}
   end
 
