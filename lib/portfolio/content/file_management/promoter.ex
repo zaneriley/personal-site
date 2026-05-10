@@ -366,17 +366,16 @@ defmodule Portfolio.Content.FileManagement.Promoter do
     expanded_path = Path.expand(path)
     relative_path = Path.relative_to_cwd(expanded_path)
 
-    [path, expanded_path, relative_path]
-    |> Enum.uniq()
+    Enum.uniq([path, expanded_path, relative_path])
   end
 
   defp content_path(content_base_path, path) do
-    path =
+    clean_path =
       path
       |> String.trim_leading("/")
       |> String.replace_prefix("priv/content/", "")
 
-    Path.expand(path, content_base_path)
+    Path.expand(clean_path, content_base_path)
   end
 
   defp under_base_path?(path, content_base_path) do

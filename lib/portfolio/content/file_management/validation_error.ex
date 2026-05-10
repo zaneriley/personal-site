@@ -10,9 +10,9 @@ defmodule Portfolio.Content.FileManagement.ValidationError do
   """
   @spec messages(term()) :: [String.t()]
   def messages(%Changeset{} = changeset) do
-    changeset
-    |> changeset_errors()
-    |> case do
+    errors = changeset_errors(changeset)
+
+    case errors do
       [] -> ["schema validation failed"]
       errors -> errors
     end
