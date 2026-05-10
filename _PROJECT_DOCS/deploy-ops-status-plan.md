@@ -1,6 +1,6 @@
 # Deploy / ops status and plan
 
-**Updated:** 2026-05-08.
+**Updated:** 2026-05-10.
 
 This is the working plan for Phase 3 after the production-build gate landed. It is not an ADR: it records status, sequencing, and what "done" should feel like from Z's DX.
 
@@ -26,6 +26,17 @@ Adversarial check: #1 succeeds only if it makes content publishing trustworthy. 
 Desired DX: edit content, run local content checks if useful, commit, push, then read a clear verdict: accepted and live, rejected with a parse/validation error, or ignored because no publishable content changed. No SSH, no container restart, no DB poking, no "did the watcher notice?" uncertainty.
 
 The complete authoring loop has two checks. Before merge, content-repo CI proves "this tree can publish" using the app's validator and blocks unencrypted drafts. After merge to content `main`, the production webhook proves "this commit did publish, was rejected, or was ignored" using the app's durable verdict path.
+
+### Content Authoring Front-Door Done Criteria
+
+This sub-phase is done when the authoring loop is trustworthy enough to use without babysitting it.
+
+1. **Actionable, in-flow failure:** CI and webhook rejections must name the file path and specific field/reason, for example `notes/foo.md: missing title`. A generic parse error, 500, or "content validation failed" without a path/reason does not count.
+2. **Draft safety guarantee:** A scripted adversarial test must prove that an unencrypted `is_draft: true` Markdown file is blocked by the local pre-push guardrail and by the content-repo CI gate.
+3. **Atomic last-good resilience:** A bad content push must leave visitors on the previous known-good generation, record the bad content SHA as rejected in the persistent ledger, and never expose a partial generation.
+4. **Observability without SSH:** The current live content SHA, last known-good SHA, last rejected SHA, and last rejected reason must be visible through the author/operator surfaces: GitHub status/debug links, `bin/content status`, a secure diagnostic endpoint, or structured deployment logs. Reading server files or poking the database by hand is not an acceptable normal path.
+5. **Local/CI parity:** The exact validation suite used by content-repo CI must be runnable locally through the content repo's `./run ci:validate /path/to/personal-site` command.
+6. **Deleted/renamed URL behavior:** Deleted or renamed Markdown must have defined, observable user-facing behavior: hard 404, 410, tombstone page, redirect, or an explicit alias/redirect contract. Silent link breakage is not a fire-and-forget authoring loop.
 
 Implemented app-side slice:
 
