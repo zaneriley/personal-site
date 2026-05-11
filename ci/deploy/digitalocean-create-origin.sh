@@ -6,6 +6,20 @@ set -o pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cloud_init_template="${script_dir}/digitalocean-origin-cloud-init.yml"
+ssh_private_key_file=""
+ssh_known_hosts_file=""
+
+function cleanup {
+    if [[ -n "${ssh_private_key_file}" ]]; then
+        rm -f "${ssh_private_key_file}"
+    fi
+
+    if [[ -n "${ssh_known_hosts_file}" ]]; then
+        rm -f "${ssh_known_hosts_file}"
+    fi
+}
+
+trap cleanup EXIT
 
 function require_env {
     local name
@@ -46,8 +60,52 @@ function droplet_public_ipv4 {
     jq -r '.droplet.networks.v4[]? | select(.type == "public") | .ip_address' | head -n 1
 }
 
+function configure_ssh_private_key {
+    if [[ -z "${DEPLOY_SSH_PRIVATE_KEY:-}" ]]; then
+        return 0
+    fi
+
+    ssh_private_key_file="$(mktemp)"
+    ssh_known_hosts_file="$(mktemp)"
+    chmod 600 "${ssh_private_key_file}"
+    printf "%s\n" "${DEPLOY_SSH_PRIVATE_KEY}" > "${ssh_private_key_file}"
+}
+
+function wait_for_origin_ready {
+    local public_ip
+
+    public_ip="${1}"
+
+    if [[ -z "${ssh_private_key_file}" ]]; then
+        echo "DEPLOY_SSH_PRIVATE_KEY is not set; skipping SSH Docker readiness check"
+        return 0
+    fi
+
+    echo "waiting for cloud-init and Docker readiness"
+
+    for _attempt in $(seq 1 120); do
+        if ssh \
+            -i "${ssh_private_key_file}" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=10 \
+            -o StrictHostKeyChecking=accept-new \
+            -o UserKnownHostsFile="${ssh_known_hosts_file}" \
+            "deploy@${public_ip}" \
+            'cloud-init status --wait >/dev/null && command -v docker >/dev/null && docker --version >/dev/null && test -d /var/lib/personal-site' >/dev/null 2>&1; then
+            echo "origin Docker readiness verified"
+            return 0
+        fi
+
+        sleep 5
+    done
+
+    echo "fatal: droplet ${droplet_id} did not finish cloud-init with Docker readiness" >&2
+    exit 1
+}
+
 require_env DIGITALOCEAN_TOKEN
 require_env DEPLOY_SSH_PUBLIC_KEY
+configure_ssh_private_key
 
 if [[ ! -f "${cloud_init_template}" ]]; then
     echo "fatal: cloud-init template missing: ${cloud_init_template}" >&2
@@ -122,6 +180,8 @@ if [[ "${status}" != "active" || -z "${public_ipv4}" ]]; then
     echo "fatal: droplet ${droplet_id} did not become active with a public IPv4" >&2
     exit 1
 fi
+
+wait_for_origin_ready "${public_ipv4}"
 
 mkdir -p "$(dirname "${output}")"
 

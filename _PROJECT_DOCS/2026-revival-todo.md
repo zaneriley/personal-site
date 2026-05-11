@@ -2,7 +2,7 @@
 
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
-**Updated:** 2026-05-11 (origin deploy is moving through a disposable DigitalOcean spike: manual GitHub Actions workflow and create/status/destroy commands exist; the GitHub `preview` environment has DigitalOcean and deploy SSH secrets; next proof is pushing the branch and running the manual create workflow).
+**Updated:** 2026-05-11 (origin deploy is moving through a disposable DigitalOcean spike: create/status/SSH/cloud-init/Docker/destroy passed locally through canonical commands; the GitHub `preview` environment has DigitalOcean and deploy SSH secrets; GitHub manual workflow proof waits until the workflow exists on the default branch).
 
 ---
 
@@ -29,7 +29,7 @@ Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). 
 | 3.2 — CI gates | ✅ done | `Prod build` is required by branch protection. Gate covers release image build, migrations up/down/up, `/readyz`, route probes, release RPC introspection, rolling baseline seed, and nightly schedule. |
 | 3.3 — Resource-frugality of the app | ⏸ pending | Measure cold-start, p50, memory, cache-hit rate, and runtime footprint on the same ruler before choosing hardware. Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` queued. |
 | 3.4 — Front-edge cache (CDN) | ⏸ pending | `/literature` required before tool selection. Needs app/cacheability measurements first. |
-| 3.5 — Origin substrate + deploy pipeline | 🔄 active | Initial `/literature` complete, but Kamal is not ratified. Current path: GitHub Actions as deploy operator, Kamal as a possible ephemeral deploy-time adapter, DigitalOcean Basic 1 GiB Droplet as the first disposable Docker origin, private preview, and same-artifact promotion. Manual DigitalOcean create/status/destroy workflow and scripts exist; the GitHub `preview` environment has the DO token and deploy SSH secrets. Next proof: push the branch and run the manual create workflow. Static export is parked as a later performance/deploy simplification option, not the active path. |
+| 3.5 — Origin substrate + deploy pipeline | 🔄 active | Initial `/literature` complete, but Kamal is not ratified. Current path: GitHub Actions as deploy operator, Kamal as a possible ephemeral deploy-time adapter, DigitalOcean Basic 1 GiB Droplet as the first disposable Docker origin, private preview, and same-artifact promotion. Manual DigitalOcean create/status/destroy workflow and scripts exist; the GitHub `preview` environment has the DO token and deploy SSH secrets. Local create/status/SSH/cloud-init/Docker/destroy passed against a real 1 GiB Droplet, then the Droplet was destroyed. GitHub manual workflow proof waits until the workflow exists on the default branch. Static export is parked as a later performance/deploy simplification option, not the active path. |
 | 3.6 — Observability + rollback loop | ⏸ planning-gated | `/literature` required before tool selection. Minimum signal set and rollback policy need planning; No Grafana (Z veto). |
 | 3.7 — GitHub Actions Node 24 readiness | ✅ done | Workflows use Node 24 action majors for checkout, artifact upload, and Release Please; no temporary runtime override remains. |
 | 4 — Tier-2/3 audit followups | ⏸ pending | ~24 inventoried, ranked. Pick what's load-bearing. |

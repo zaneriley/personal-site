@@ -19,7 +19,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Private content-repo auth is wired into clone/fetch through ephemeral Git command environment. HTTPS tokens use askpass, SSH can use `CONTENT_REPO_SSH_COMMAND`, tokenized `CONTENT_REPO_URL` values are rejected, and sync failures are redacted before they reach logs or ledger reasons.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - The first deploy-tooling literature pass is complete. Current planning bias is **GitHub Actions as deploy operator, Kamal as an ephemeral deploy-time adapter, and the origin as a Docker-only runtime**, but Kamal is not ratified. Literature artifacts: `.tmp/2026-05-11-deploy-preview-options/literature/` and `.tmp/2026-05-11-portfolio-deploy-tooling-deep-dive/literature/`.
-- The disposable-origin spike has a manual GitHub Actions workflow and canonical `./run deploy:origin:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `agent/*` and `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. The next proof is to push the branch and run the manual workflow to create the first disposable Droplet.
+- The disposable-origin spike has a manual GitHub Actions workflow and canonical `./run deploy:origin:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `agent/*` and `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet. GitHub manual workflow proof is blocked until the workflow file exists on the default branch, because GitHub does not expose new `workflow_dispatch` workflows from feature branches by filename.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
 
@@ -193,7 +193,7 @@ Required secrets:
 1. `DIGITALOCEAN_TOKEN`: DigitalOcean API token with enough scope to create, inspect, and destroy Droplets. Installed in the GitHub `preview` environment on 2026-05-11 and saved in 1Password as "DigitalOcean Personal Access Token".
 2. `DEPLOY_SSH_PUBLIC_KEY`: public SSH key installed into the Droplet's `deploy` user by cloud-init.
 
-The matching private key is not needed for the create/status/destroy slice, but it is already installed as `DEPLOY_SSH_PRIVATE_KEY` in the same `preview` environment for the later deploy/SSH proof.
+3. `DEPLOY_SSH_PRIVATE_KEY`: private SSH key used by the create workflow to prove cloud-init completed, Docker is installed, and `/var/lib/personal-site` exists before it emits the receipt.
 
 Current command surface:
 
@@ -201,6 +201,7 @@ Current command surface:
    - Creates a Basic 1 GiB / 1 vCPU Droplet by default.
    - Defaults: `DO_REGION=sfo3`, `DO_SIZE=s-1vcpu-1gb`, `DO_IMAGE=ubuntu-24-04-x64`.
    - Installs Docker through cloud-init and creates a `deploy` user in the `docker` group.
+   - Waits for SSH, cloud-init, Docker readiness, and `/var/lib/personal-site` when `DEPLOY_SSH_PRIVATE_KEY` is available.
    - Writes a local receipt to `ci/digitalocean-origin.json`.
 2. `./run deploy:origin:status`
    - Requires `DROPLET_ID` or a receipt file path.
@@ -215,6 +216,7 @@ GitHub workflow:
 - Actions: `create`, `status`, `destroy`.
 - The workflow uploads `ci/digitalocean-origin.json` as the create receipt.
 - The workflow is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
+- GitHub will not run this new manual workflow from a feature branch until the workflow definition is present on the default branch. Before merge, use the same canonical `./run deploy:origin:*` commands locally for proof; after merge, rerun the create/status/destroy proof through GitHub Actions.
 
 ## Resource-frugality feedback harness proposal
 
