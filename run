@@ -379,6 +379,25 @@ function content:rollback {
 }
 
 # -----------------------------------------------------------------------------
+# Deploy
+# -----------------------------------------------------------------------------
+
+function deploy:origin:create {
+  # Create a disposable DigitalOcean origin for the deploy spike
+  ci/deploy/digitalocean-create-origin.sh "$@"
+}
+
+function deploy:origin:status {
+  # Print status for a disposable DigitalOcean origin
+  ci/deploy/digitalocean-origin-status.sh "$@"
+}
+
+function deploy:origin:destroy {
+  # Destroy a disposable DigitalOcean origin
+  ci/deploy/digitalocean-destroy-origin.sh "$@"
+}
+
+# -----------------------------------------------------------------------------
 # Database
 # -----------------------------------------------------------------------------
 

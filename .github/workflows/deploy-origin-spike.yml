@@ -1,0 +1,87 @@
+name: "Deploy origin spike"
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Disposable origin action"
+        required: true
+        default: "create"
+        type: choice
+        options:
+          - "create"
+          - "status"
+          - "destroy"
+      droplet_id:
+        description: "DigitalOcean Droplet ID for status/destroy"
+        required: false
+        type: string
+      region:
+        description: "DigitalOcean region"
+        required: true
+        default: "sfo3"
+        type: string
+      size:
+        description: "DigitalOcean size slug"
+        required: true
+        default: "s-1vcpu-1gb"
+        type: string
+      image:
+        description: "DigitalOcean image slug"
+        required: true
+        default: "ubuntu-24-04-x64"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "deploy-origin-spike"
+  cancel-in-progress: false
+
+jobs:
+  digitalocean-origin:
+    name: "DigitalOcean origin"
+    runs-on: "ubuntu-22.04"
+    environment: "preview"
+
+    steps:
+      - uses: "actions/checkout@v6"
+
+      - name: "Install host dependencies"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+
+      - name: "Create disposable origin"
+        if: ${{ inputs.action == 'create' }}
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          DEPLOY_SSH_PUBLIC_KEY: ${{ secrets.DEPLOY_SSH_PUBLIC_KEY }}
+          DO_REGION: ${{ inputs.region }}
+          DO_SIZE: ${{ inputs.size }}
+          DO_IMAGE: ${{ inputs.image }}
+        run: ./run deploy:origin:create
+
+      - name: "Show disposable origin status"
+        if: ${{ inputs.action == 'status' }}
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          DROPLET_ID: ${{ inputs.droplet_id }}
+        run: ./run deploy:origin:status
+
+      - name: "Destroy disposable origin"
+        if: ${{ inputs.action == 'destroy' }}
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          DROPLET_ID: ${{ inputs.droplet_id }}
+          CONFIRM_DESTROY: "1"
+        run: ./run deploy:origin:destroy
+
+      - name: "Upload origin receipt"
+        if: ${{ always() && inputs.action == 'create' }}
+        uses: "actions/upload-artifact@v7"
+        with:
+          name: "digitalocean-origin"
+          path: "ci/digitalocean-origin.json"
+          if-no-files-found: "ignore"

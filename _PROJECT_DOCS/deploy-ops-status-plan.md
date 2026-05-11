@@ -18,6 +18,8 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Content-only rollback now has a generation-aware operator command. `bin/content status` exposes live and last-good generation IDs; `bin/content rollback TARGET --reason REASON` records a rollback ledger event and flips the live generation without fetching Git or rolling back the app release. Ambiguous SHA targets fail with the matching generation IDs instead of guessing.
 - Private content-repo auth is wired into clone/fetch through ephemeral Git command environment. HTTPS tokens use askpass, SSH can use `CONTENT_REPO_SSH_COMMAND`, tokenized `CONTENT_REPO_URL` values are rejected, and sync failures are redacted before they reach logs or ledger reasons.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
+- The first deploy-tooling literature pass is complete. Current planning bias is **GitHub Actions as deploy operator, Kamal as an ephemeral deploy-time adapter, and the origin as a Docker-only runtime**, but Kamal is not ratified. Literature artifacts: `.tmp/2026-05-11-deploy-preview-options/literature/` and `.tmp/2026-05-11-portfolio-deploy-tooling-deep-dive/literature/`.
+- The disposable-origin spike has a manual GitHub Actions workflow and canonical `./run deploy:origin:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `agent/*` and `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. The next proof is to push the branch and run the manual workflow to create the first disposable Droplet.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
 
@@ -102,6 +104,117 @@ Do not choose hardware or ingress first. The order is measurement-led:
 5. Run `/literature` for origin substrate only after measurements exist.
 
 Free/FLOSS and self-hostable tools are preferred when viable. They do not beat visitor speed, rollback reliability, or the "future-Z can reproduce this in a year" rule. Cloudflare Tunnel, Tailscale/tailnet paths, reverse proxy ingress, owned NUC/Mac/NAS hardware, and Pi-class hardware are candidates, not decisions.
+
+### Origin Deploy Service Design
+
+This section is planning alignment, not a ratified tool choice.
+
+The deploy target is a **portfolio origin**, not Kamal, GitHub, or a dashboard. The origin is the host/environment that runs the Phoenix release container behind the eventual edge/cache/access layer. Final hardware is still measurement-led: Pi-class hardware, a NUC, the Mac Studio, a small VPS, or another owned host remain candidates until resource-frugality data says what is honest.
+
+Service boundary:
+
+1. **GitHub Actions is the deploy operator.** It runs the deploy workflow in an ephemeral runner, installs or runs Kamal only for that job, builds or selects the release image, pushes/pulls registry artifacts, and emits deploy receipts.
+2. **Kamal is a deploy-time adapter, not a domain.** It may SSH to the origin, start the candidate container, wait for health, switch `kamal-proxy`, retain old versions, and invoke rollback. It is not installed on Z's local machines and is not a Phoenix runtime dependency.
+3. **The origin is a Docker runtime.** It needs SSH, Docker, a constrained deploy user, registry access, `kamal-proxy`, app containers, and the chosen tunnel/edge prerequisites. It should not need the Kamal CLI as its normal interface.
+4. **The app repo owns the app deploy contract.** `personal-site` owns release-image creation, `/readyz` semantics, migrations, route smoke, browser/perf checks, content status, and the wrapper commands that make deploy behavior legible.
+5. **The homelab substrate owns host readiness.** `automated-homelab-deployment` owns OS packages, Docker host setup, deploy users, SSH/firewall posture, tunnel daemon prerequisites, and secret plumbing for real machines.
+6. **The content repo remains content input.** `personal-site-content` feeds content publication; it is not deploy infrastructure.
+
+Domain language should stay tool-neutral: artifact, digest, preview, promote, live, previous, rollback, receipt, health gate, deploy lock. Kamal vocabulary belongs behind adapter/wrapper commands.
+
+Ideal service flow:
+
+1. A protected branch or manual dispatch asks for a candidate deploy.
+2. GitHub Actions runs the canonical gates and builds or selects one immutable image digest.
+3. GitHub Actions deploys that exact digest to a private preview lane.
+4. Preview checks run against the private URL: `/readyz`, canonical routes, content status, browser/performance checks, and any release RPC assertions.
+5. Z or a protected environment approval promotes that exact digest to production.
+6. The deploy adapter starts the candidate container on the origin, waits for truthful health, flips traffic, and post-smokes the live URL.
+7. The workflow emits a receipt: live digest, previous digest, app SHA/tag, content SHA/generation, DB migration version, route/perf verdict, and exact rollback command.
+8. Failures leave the old production version live and explain the blocking reason without SSH, DB poking, or reading raw server files.
+
+### Origin Deploy Ideal UX Criteria
+
+Origin deploy is not done until these are true from Z's and an LLM agent's perspective:
+
+1. **No local Kamal install required:** Z can deploy from GitHub Actions alone. Local machines may use `gh` to trigger or inspect workflows, but Kamal itself runs ephemerally in CI or an explicit deploy runner.
+2. **Private preview before production:** Every production candidate has a private, prod-like preview URL that can be tested from another machine without exposing unfinished design publicly.
+3. **Same-artifact promotion:** The previewed image digest is exactly the digest promoted to production. Branch names, floating tags, or rebuilds that merely recreate a similar image do not count.
+4. **Manual production approval until proven safe:** Automatic work can build and update preview. Production promotion should require a protected environment/manual action until rollback, smoke, and observability are boring.
+5. **Truthful health gates:** The inactive candidate must pass readiness before traffic flips, and the active production URL must pass live smoke after traffic flips. Generic container-running status is not enough.
+6. **Old version stays live on failure:** If build, migration, readiness, route smoke, browser smoke, or promotion fails, visitors stay on the previously live app/content pair.
+7. **One-command rollback:** A receipt names the previous version and an executable rollback command. Rollback targets an app image digest/content generation pair, not `latest` or "whatever was before" by memory.
+8. **Deploy receipts over dashboards:** The primary surface is GitHub checks/log summaries plus `bin/deploy status`-style output. A UI is optional and only useful if it reduces uncertainty.
+9. **No secret leakage:** Deploy credentials and app secrets must not appear in image metadata, Git remotes, command lines, logs, deploy receipts, or app diagnostic output. Preview and production secrets are scoped separately.
+10. **Deploy serialization is explicit:** Concurrent deploy attempts must be queued, rejected, or visibly blocked by a deploy lock. Silent races are a failure.
+11. **Edge/cache behavior is named:** When an edge layer exists, deploy smoke must say whether it tested preview, origin, cached production, stale cache, or first-fill origin behavior.
+12. **LLM-friendly failure output:** Failures must name the stage, artifact, route/check, observed value, expected value, artifact path, and likely next action. "Kamal failed" or "deploy failed" is too vague.
+
+### Kamal-Specific Questions Before Ratification
+
+The next implementation/design spike should answer these empirically:
+
+1. Can GitHub Actions run Kamal without requiring Kamal on Z's machines?
+2. Can preview and production destinations use the same image digest while keeping separate runtime config and access policy?
+3. What exact files can be public in `personal-site`, and what host/secret/topology values must live in private homelab/vault configuration?
+4. How does rollback behave after image/container pruning, an origin restart, and a registry outage?
+5. How clear is the failure output when `/readyz` fails, SSH fails, registry auth fails, a deploy lock is held, or `kamal-proxy` cannot bind ports?
+6. How do migrations interact with app rollback for this Phoenix app?
+7. Does Kamal still fit after the first disposable-host spike, or does the evidence justify revisiting Dokku, Coolify, Dokploy, Fly, Render, or a simpler Docker Compose rollout path?
+
+### Origin Migration Strategy
+
+The current AWS/S3/CloudFront site is messy, but it is also the live incumbent for `zaneriley.com`. Treat it as a protective fallback until the replacement origin is boring.
+
+Migration sequence:
+
+1. **Do not disturb `zaneriley.com` first.** Keep the AWS static site serving public traffic while the new deploy loop is designed and proven.
+2. **Stand up a private, non-AWS preview origin in parallel.** The first target may be a throwaway VPS or later a home host, but it must be reachable from GitHub Actions and from Z's real devices for preview.
+3. **Prove the deploy loop off-domain.** The replacement must support private preview, same-digest promotion, truthful health gates, live smoke, rollback receipts, and no-secret-leak behavior before public cutover.
+4. **Run repeated deploys until boring.** One green deploy is not enough. The loop should survive failed readiness, rollback, restart, registry/auth failure, and content publication cases without risking the live site.
+5. **Prepare SEO-safe cutover before DNS changes.** Lower TTLs, crawl the current site, preserve URLs/redirects, define cache behavior, and write the rollback path before touching production records.
+6. **Move public traffic only after rollback is ready.** The first public cutover should leave AWS available as a rollback/fallback path until the new origin has proven stable.
+7. **Retire AWS last.** Getting off AWS is the desired end state, not the first irreversible step.
+
+This framing keeps the values in order: visitor experience and SEO safety first, then deploy confidence, then AWS removal and cost/compute optimization.
+
+The throwaway VPS literature pass is complete at `.tmp/2026-05-11-throwaway-vps-origin/literature/`. Hetzner Cloud CX23 x86 is the lowest-cost clean candidate on paper, but DigitalOcean is the chosen first spike target because Z already has an account and the goal is to reduce setup friction. Use the smallest honest DigitalOcean Droplet first: Basic 1 GiB / 1 vCPU, no backups, no snapshots unless explicitly needed, no managed database, no load balancer, no extra volumes, and destroy rather than power off when done. The 512 MiB Droplet is a later squeeze target only if the 1 GiB path works and resource measurements say it is worth testing.
+
+Static public-site export remains a **performance/deploy simplification option**, not the active path. Phoenix may be able to render the visitor-facing portfolio to static HTML someday, but do not pivot there now. Keep the current dynamic Phoenix/Docker origin path until DigitalOcean/Kamal/private-preview evidence says it fails or performance/cost data makes static export the right optimization.
+
+### DigitalOcean Disposable Origin Requirements
+
+First implementation slice: create, inspect, and destroy a disposable DigitalOcean Docker host without touching `zaneriley.com`, AWS, release automation, or production DNS.
+
+GitHub environment: `preview`.
+
+Required secrets:
+
+1. `DIGITALOCEAN_TOKEN`: DigitalOcean API token with enough scope to create, inspect, and destroy Droplets. Installed in the GitHub `preview` environment on 2026-05-11 and saved in 1Password as "DigitalOcean Personal Access Token".
+2. `DEPLOY_SSH_PUBLIC_KEY`: public SSH key installed into the Droplet's `deploy` user by cloud-init.
+
+The matching private key is not needed for the create/status/destroy slice, but it is already installed as `DEPLOY_SSH_PRIVATE_KEY` in the same `preview` environment for the later deploy/SSH proof.
+
+Current command surface:
+
+1. `./run deploy:origin:create`
+   - Creates a Basic 1 GiB / 1 vCPU Droplet by default.
+   - Defaults: `DO_REGION=sfo3`, `DO_SIZE=s-1vcpu-1gb`, `DO_IMAGE=ubuntu-24-04-x64`.
+   - Installs Docker through cloud-init and creates a `deploy` user in the `docker` group.
+   - Writes a local receipt to `ci/digitalocean-origin.json`.
+2. `./run deploy:origin:status`
+   - Requires `DROPLET_ID` or a receipt file path.
+   - Prints Droplet status, region, size, image, public IPv4/IPv6, and tags.
+3. `CONFIRM_DESTROY=1 ./run deploy:origin:destroy`
+   - Requires `DROPLET_ID` or a receipt file path.
+   - Destroys the Droplet. Powering off is not the disposal path because powered-off Droplets still bill.
+
+GitHub workflow:
+
+- `Deploy origin spike` is manual-only (`workflow_dispatch`).
+- Actions: `create`, `status`, `destroy`.
+- The workflow uploads `ci/digitalocean-origin.json` as the create receipt.
+- The workflow is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
 
 ## Resource-frugality feedback harness proposal
 
