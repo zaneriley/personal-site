@@ -3,6 +3,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
 
   import Mox
   alias Portfolio.Content
+  alias Portfolio.Content.Remote.GitCommand
   alias Portfolio.Content.Remote.GitHubStatusClient
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
   alias Portfolio.Content.Schemas.Note
@@ -436,6 +437,43 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                Content.get_publication_verdict(target_sha)
 
       assert String.starts_with?(reason, "Repository sync failed:")
+    end
+
+    test "redacts private auth tokens from sync failure verdicts" do
+      token = "BOGUS_TOKEN_123"
+      repo_url = "https://github.com/zaneriley/private-repo.git"
+      clone_path = tmp_dir!("remote-private-auth-clone")
+      target_sha = String.duplicate("b", 40)
+      on_exit(fn -> File.rm_rf!(clone_path) end)
+
+      expect(GitCommand.Mock, :run, fn
+        "git", ["clone", "--verbose", ^repo_url, _temp_path], opts ->
+          env = Keyword.fetch!(opts, :env)
+
+          assert {"CONTENT_REPO_HTTPS_TOKEN", token} in env
+
+          {"fatal: authentication failed for #{token}", 128}
+      end)
+
+      assert {:error, "Repository sync failed"} =
+               RemoteUpdateTrigger.trigger_update(repo_url,
+                 auth: [
+                   askpass_path: "/tmp/content-git-askpass",
+                   https_token: token
+                 ],
+                 content_base_path: clone_path,
+                 changes: %{upsert: ["notes/published-note/en.md"], delete: []},
+                 git_command: GitCommand.Mock,
+                 github_delivery_id: "delivery-private-auth-redacted",
+                 repository: repo_url,
+                 target_sha: target_sha
+               )
+
+      assert %{status: "rejected", reason: reason, repository: ^repo_url} =
+               Content.get_publication_verdict(target_sha)
+
+      refute reason =~ token
+      refute Content.get_publication_state().last_rejected_reason =~ token
     end
   end
 end

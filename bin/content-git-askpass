@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+prompt="${1:-}"
+
+case "${prompt}" in
+    *Username*)
+        printf "%s" "${CONTENT_REPO_GIT_USERNAME:-x-access-token}"
+        ;;
+    *Password*)
+        printf "%s" "${CONTENT_REPO_HTTPS_TOKEN:-}"
+        ;;
+    *)
+        printf ""
+        ;;
+esac

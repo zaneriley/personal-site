@@ -63,6 +63,7 @@ config :portfolio, Portfolio.Mailer, adapter: Swoosh.Adapters.Local
 config :swoosh, :api_client, false
 
 config :portfolio,
+  git_command: Portfolio.Content.Remote.GitCommand.System,
   github_status_client: Portfolio.Content.Remote.GitHubStatusClient.Req,
   github_status_context: "content/publication",
   github_status_api_url: "https://api.github.com",

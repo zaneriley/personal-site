@@ -9,6 +9,7 @@ defmodule Portfolio.Content.Publishing do
 
   import Ecto.Query
 
+  alias Portfolio.Content.PublicationControl.Scope
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.PublicationGeneration
@@ -19,10 +20,27 @@ defmodule Portfolio.Content.Publishing do
   @state_name "default"
   @publication_lock_key 8_312_448_407
   @accepted_statuses ~w(accepted rollback)
+  @rollbackable_generation_statuses ~w(live superseded)
 
   @type publication_status ::
           :accepted | :rejected | :ignored | :duplicate | :rollback | String.t()
   @type publication_lock_result :: term()
+  @type rollback_result :: %{
+          status: String.t(),
+          content_sha: String.t(),
+          generation_id: Ecto.UUID.t(),
+          previous_generation_id: Ecto.UUID.t() | nil,
+          ledger_entry_id: Ecto.UUID.t(),
+          reason: String.t()
+        }
+  @type rollback_error ::
+          :no_live_generation
+          | {:already_live, Ecto.UUID.t()}
+          | {:ambiguous_content_sha, String.t(), [PublicationGeneration.t()]}
+          | {:generation_not_rollbackable, Ecto.UUID.t()}
+          | {:invalid_rollback_target, String.t()}
+          | {:rollback_target_not_found, String.t()}
+          | Ecto.Changeset.t()
 
   @doc """
   Runs a function while holding the database-backed publication lock.
@@ -100,6 +118,21 @@ defmodule Portfolio.Content.Publishing do
       %PublicationLedgerEntry{} = entry ->
         {:ok, entry}
     end
+  end
+
+  @doc """
+  Rolls live content back to a previous publication generation.
+
+  The target may be a publication generation ID or an unambiguous content SHA.
+  Rollback is content-only: it appends a rollback ledger event and flips the
+  live generation pointer without fetching from Git or changing the app release.
+  """
+  @spec rollback(Scope.t(), String.t(), keyword()) ::
+          {:ok, rollback_result()} | {:error, rollback_error()}
+  def rollback(%Scope{} = scope, target, opts \\ []) when is_binary(target) do
+    with_publication_lock(fn ->
+      rollback_with_lock(scope, target, opts)
+    end)
   end
 
   @doc """
@@ -225,8 +258,11 @@ defmodule Portfolio.Content.Publishing do
   defp status_from_state(nil) do
     %{
       current: nil,
+      current_generation_id: nil,
       live: nil,
+      live_generation_id: nil,
       last_good: nil,
+      last_good_generation_id: nil,
       last_accepted: nil,
       last_rejected: nil,
       last_rejected_sha: nil,
@@ -243,8 +279,12 @@ defmodule Portfolio.Content.Publishing do
   defp status_from_state(state) do
     %{
       current: state.live_content_sha,
+      current_generation_id: state.live_content_publication_generation_id,
       live: state.live_content_sha,
+      live_generation_id: state.live_content_publication_generation_id,
       last_good: state.last_good_content_sha,
+      last_good_generation_id:
+        state.last_good_content_publication_generation_id,
       last_accepted: state.last_accepted_content_sha,
       last_rejected: rejected_status(state),
       last_rejected_sha: state.last_rejected_content_sha,
@@ -267,7 +307,9 @@ defmodule Portfolio.Content.Publishing do
 
     [
       "Current/live content SHA: #{value_or_none(status.current)}",
+      "Current/live generation ID: #{value_or_none(status.current_generation_id)}",
       "Last-good content SHA: #{value_or_none(status.last_good)}",
+      "Last-good generation ID: #{value_or_none(status.last_good_generation_id)}",
       "Last accepted SHA: #{value_or_none(status.last_accepted)}",
       "Last rejected SHA: #{value_or_none(status.last_rejected_sha)}",
       "Last rejected reason: #{value_or_none(status.last_rejected_reason)}",
@@ -280,6 +322,117 @@ defmodule Portfolio.Content.Publishing do
     ]
     |> Enum.reject(&(&1 == ""))
     |> Enum.join("\n")
+  end
+
+  defp rollback_with_lock(%Scope{}, target, opts) do
+    with {:ok, generation} <- resolve_rollback_target(target),
+         {:ok, previous_generation_id} <-
+           previous_live_generation_id(generation),
+         {:ok, entry} <- insert_rollback_event(generation, opts) do
+      {:ok,
+       %{
+         status: entry.status,
+         content_sha: entry.content_sha,
+         generation_id: generation.id,
+         previous_generation_id: previous_generation_id,
+         ledger_entry_id: entry.id,
+         reason: entry.reason
+       }}
+    end
+  end
+
+  defp resolve_rollback_target(target) do
+    cond do
+      content_sha?(target) -> resolve_rollback_content_sha(target)
+      uuid?(target) -> resolve_rollback_generation_id(target)
+      true -> {:error, {:invalid_rollback_target, target}}
+    end
+  end
+
+  defp resolve_rollback_content_sha(content_sha) do
+    case rollbackable_generations_by_sha(content_sha) do
+      [] ->
+        {:error, {:rollback_target_not_found, content_sha}}
+
+      [generation] ->
+        {:ok, generation}
+
+      generations ->
+        {:error, {:ambiguous_content_sha, content_sha, generations}}
+    end
+  end
+
+  defp resolve_rollback_generation_id(generation_id) do
+    case Repo.get(PublicationGeneration, generation_id) do
+      nil ->
+        {:error, {:rollback_target_not_found, generation_id}}
+
+      %PublicationGeneration{} = generation ->
+        if rollbackable_generation?(generation) do
+          {:ok, generation}
+        else
+          {:error, {:generation_not_rollbackable, generation.id}}
+        end
+    end
+  end
+
+  defp rollbackable_generations_by_sha(content_sha) do
+    PublicationGeneration
+    |> join(
+      :inner,
+      [generation],
+      entry in PublicationLedgerEntry,
+      on: entry.content_publication_generation_id == generation.id
+    )
+    |> where(
+      [generation, entry],
+      generation.content_sha == ^content_sha and
+        generation.status in ^@rollbackable_generation_statuses and
+        entry.status in ^@accepted_statuses
+    )
+    |> order_by([generation], asc: generation.inserted_at)
+    |> Repo.all()
+    |> Enum.uniq_by(& &1.id)
+    |> Enum.filter(&live_generation_has_published_content?(&1.id))
+  end
+
+  defp previous_live_generation_id(%PublicationGeneration{id: generation_id}) do
+    case ensure_state!() do
+      %PublicationState{live_content_publication_generation_id: nil} ->
+        {:error, :no_live_generation}
+
+      %PublicationState{live_content_publication_generation_id: ^generation_id} ->
+        {:error, {:already_live, generation_id}}
+
+      %PublicationState{live_content_publication_generation_id: previous_id} ->
+        {:ok, previous_id}
+    end
+  end
+
+  defp insert_rollback_event(%PublicationGeneration{} = generation, opts) do
+    delivery_id =
+      Keyword.get(opts, :github_delivery_id) ||
+        "operator:rollback:#{Ecto.UUID.generate()}"
+
+    reason =
+      Keyword.get(
+        opts,
+        :reason,
+        "Operator rollback to generation #{generation.id}"
+      )
+
+    opts =
+      opts
+      |> Keyword.put(:generation_id, generation.id)
+      |> Keyword.put(:reason, reason)
+      |> Keyword.put_new(:structured_errors, %{"errors" => []})
+
+    record_publication_event(
+      delivery_id,
+      generation.content_sha,
+      :rollback,
+      opts
+    )
   end
 
   defp insert_publication_event(github_delivery_id, content_sha, status, opts) do
@@ -379,10 +532,9 @@ defmodule Portfolio.Content.Publishing do
   end
 
   defp update_state_for_entry(
-         %PublicationLedgerEntry{status: status} = entry,
+         %PublicationLedgerEntry{status: "accepted"} = entry,
          opts
-       )
-       when status in @accepted_statuses do
+       ) do
     generation_id = Keyword.fetch!(opts, :generation_id)
     state = ensure_state!()
     old_generation_id = state.live_content_publication_generation_id
@@ -394,6 +546,28 @@ defmodule Portfolio.Content.Publishing do
       live_content_sha: entry.content_sha,
       last_good_content_sha: entry.content_sha,
       last_accepted_content_sha: entry.content_sha,
+      last_delivery_id: entry.github_delivery_id,
+      current_sync_state: "idle",
+      last_failure_reason: nil,
+      live_content_publication_generation_id: generation_id,
+      last_good_content_publication_generation_id: generation_id
+    })
+  end
+
+  defp update_state_for_entry(
+         %PublicationLedgerEntry{status: "rollback"} = entry,
+         opts
+       ) do
+    generation_id = Keyword.fetch!(opts, :generation_id)
+    state = ensure_state!()
+    old_generation_id = state.live_content_publication_generation_id
+
+    supersede_generation(old_generation_id, generation_id)
+    set_generation_status(generation_id, "live")
+
+    update_state(%{
+      live_content_sha: entry.content_sha,
+      last_good_content_sha: entry.content_sha,
       last_delivery_id: entry.github_delivery_id,
       current_sync_state: "idle",
       last_failure_reason: nil,
@@ -519,6 +693,26 @@ defmodule Portfolio.Content.Publishing do
     |> Repo.exists?()
   end
 
+  defp rollbackable_generation?(%PublicationGeneration{
+         id: generation_id,
+         status: status
+       })
+       when status in @rollbackable_generation_statuses do
+    has_rollback_capable_event? =
+      PublicationLedgerEntry
+      |> where(
+        [entry],
+        entry.content_publication_generation_id == ^generation_id and
+          entry.status in ^@accepted_statuses
+      )
+      |> Repo.exists?()
+
+    has_rollback_capable_event? and
+      live_generation_has_published_content?(generation_id)
+  end
+
+  defp rollbackable_generation?(%PublicationGeneration{}), do: false
+
   defp storage_ready? do
     case Repo.query("SELECT 1", [], log: false) do
       {:ok, _result} -> true
@@ -576,6 +770,14 @@ defmodule Portfolio.Content.Publishing do
 
   defp value_or_none(nil), do: "none"
   defp value_or_none(value), do: value
+
+  defp content_sha?(target) when is_binary(target) do
+    String.match?(target, ~r/\A[0-9a-f]{40}\z/i)
+  end
+
+  defp uuid?(target) when is_binary(target) do
+    match?({:ok, _uuid}, Ecto.UUID.cast(target))
+  end
 
   defp normalize_status(status) when is_atom(status), do: Atom.to_string(status)
   defp normalize_status(status) when is_binary(status), do: status

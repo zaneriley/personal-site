@@ -106,7 +106,12 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTrigger do
          github_delivery_id,
          opts
        ) do
-    case GitRepoSyncer.sync_repo(repo_url, local_path, target_sha: target_sha) do
+    sync_opts =
+      opts
+      |> Keyword.take([:auth, :git_command])
+      |> Keyword.put(:target_sha, target_sha)
+
+    case GitRepoSyncer.sync_repo(repo_url, local_path, sync_opts) do
       {:ok, _} ->
         content_sha = target_sha || GitRepoSyncer.current_sha!(local_path)
 

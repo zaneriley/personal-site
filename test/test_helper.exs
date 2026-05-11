@@ -27,5 +27,10 @@ Mox.defmock(
   for: Portfolio.Content.Remote.GitHubStatusClient
 )
 
+Mox.defmock(
+  Portfolio.Content.Remote.GitCommand.Mock,
+  for: Portfolio.Content.Remote.GitCommand
+)
+
 # Register essential components
 Portfolio.TestComponents.ensure_essential_components_registered()

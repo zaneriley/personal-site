@@ -373,6 +373,11 @@ function content:status {
   _dc web mix portfolio.content.status "$@"
 }
 
+function content:rollback {
+  # Roll back live content to a known-good publication generation
+  _dc web mix portfolio.content.rollback "$@"
+}
+
 # -----------------------------------------------------------------------------
 # Database
 # -----------------------------------------------------------------------------

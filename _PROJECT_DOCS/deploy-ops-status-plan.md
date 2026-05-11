@@ -1,6 +1,6 @@
 # Deploy / ops status and plan
 
-**Updated:** 2026-05-10.
+**Updated:** 2026-05-11.
 
 This is the working plan for Phase 3 after the production-build gate landed. It is not an ADR: it records status, sequencing, and what "done" should feel like from Z's DX.
 
@@ -15,6 +15,8 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Content-repo CI is the authoring front door, not a standalone YAML exercise. It prints both the content commit and app validator commit, routes validation through the content repo's canonical `./run ci:validate /path/to/personal-site`, and fails with author-usable file/reason output before bad Markdown can reach production. Local hooks block unencrypted `is_draft: true` Markdown before push, but hooks are convenience guardrails; CI is the enforceable boundary that makes the content repo safe to make public without exposing drafts.
 - Deleted and renamed Markdown now have separate policies. A deletion-only content change keeps the explicit hard-404 behavior. A mixed delete/add update must preserve each deleted live slug as either a canonical slug or an `aliases:` value in the new generation; otherwise the webhook rejects it with file/reason output. Valid aliases 301-redirect the old note/case-study slug to the canonical slug.
 - Boot still pulls content via `Portfolio.Release.pull_repository/0`, but boot/startup now falls back to last-good content when a repository pull or embedded-content read fails and a live generation already exists.
+- Content-only rollback now has a generation-aware operator command. `bin/content status` exposes live and last-good generation IDs; `bin/content rollback TARGET --reason REASON` records a rollback ledger event and flips the live generation without fetching Git or rolling back the app release. Ambiguous SHA targets fail with the matching generation IDs instead of guessing.
+- Private content-repo auth is wired into clone/fetch through ephemeral Git command environment. HTTPS tokens use askpass, SSH can use `CONTENT_REPO_SSH_COMMAND`, tokenized `CONTENT_REPO_URL` values are rejected, and sync failures are redacted before they reach logs or ledger reasons.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
@@ -48,6 +50,8 @@ Implemented app-side slice:
 4. Keep failed remote generations diagnostically visible without moving the live pointer; local validator paths still roll back failed transactions so preflight leaves no DB residue.
 5. Treat removed Markdown as unpublish instead of leaving stale live entries behind.
 6. Persist optional share-preview frontmatter on notes and case studies. The current app stores explicit fields only; rendered metadata and share-image generation are still future work.
+7. Roll content back by publication generation ID, or by content SHA only when that SHA maps to one rollback-capable generation.
+8. Fetch private content repositories without embedding credentials in remotes, logs, ledger rows, or command arguments.
 
 ### Share Preview Authorship
 
@@ -69,15 +73,23 @@ Completed in this authoring slice:
 Remaining implementation slice:
 
 1. Add share-image generation, local preview, rendered Open Graph/Twitter metadata, and production validation for generated image URLs/dimensions.
-2. Add content-only rollback identity and the operator command that flips back to a known-good content generation without rolling back the app release.
 
 Done for this sub-phase means the app can answer four questions without fresh human reasoning: what content commit is live, what content commit was last rejected and why, what commit was last known-good, and how to return to it.
 
+### Content Rollback and Private Auth Acceptance Matrix
+
+This matrix applies to the #1 deployability tail only: content-only rollback and private content-repo auth. It is intentionally empirical. Passing it means the operator surfaces and durable state prove the behavior; it does not prescribe the internal implementation.
+
+Rollback must be generation-aware. A content SHA is an author-friendly hint, not always a unique rollback identity.
+
+1. **Ambiguous SHA trap:** If one content SHA maps to multiple accepted or rollback-capable publication generations, `bin/content rollback <sha> --reason "bad publish"` must exit nonzero, leave `PublicationState.live_content_sha` unchanged, create no rollback ledger row, and print enough information for the operator to choose a specific generation. The JSON form must expose a stable `ambiguous_content_sha` reason and the matching generation IDs.
+2. **Durable rollback:** If Generation B is live and Generation A is an older known-good generation, `bin/content rollback <generation-a-id> --reason "recovery"` must exit zero, append a `PublicationLedgerEntry` with `status: "rollback"`, keep `last_accepted_content_sha` pointing at Generation B's accepted SHA, and point `live_content_publication_generation_id` at Generation A. After an app restart, `/readyz` must pass and a route whose content differs between A and B must serve Generation A's content. Rollback must still work when Git credentials or network access are unavailable, proving it does not secretly fetch or checkout content.
+3. **Zero token leakage:** With `CONTENT_REPO_URL` set to a clean HTTPS or SSH URL and content-repo credentials supplied through the configured secret mechanism, failed sync logs, command output, ledger `repository` values, and failure `reason` values must not contain the raw token. A deliberately invalid token such as `BOGUS_TOKEN_123` must be absent from all captured app logs and database-backed diagnostic fields.
+4. **Clean Git state:** After a successful private-repo sync, the local clone's `.git/config` must keep the remote URL clean. The configured token must not appear in the `remote.origin.url`, any persisted Git config value, or any app-owned status output. Auth must be ephemeral at clone/fetch time.
+
 Known risks to address in that slice:
 
-- Private repo auth is configured but not wired into the git clone/fetch path.
 - Share-preview frontmatter is persisted, but share-image generation, preview UI, rendered metadata, and production smoke assertions do not exist yet.
-- Content rollback is observable through status, but the one-command content-only rollback operation is not implemented yet.
 
 ## Origin deploy philosophy
 

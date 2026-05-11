@@ -128,6 +128,7 @@ COPY --chown=elixir:elixir --from=dev /public /public
 COPY --chown=elixir:elixir --from=dev /mix/_build/prod/rel/portfolio ./
 COPY --chown=elixir:elixir bin/docker-entrypoint-web bin/
 COPY --chown=elixir:elixir bin/content bin/
+COPY --chown=elixir:elixir bin/content-git-askpass bin/
 
 COPY --chown=elixir:elixir --from=dev /app/priv /app/priv
 RUN mkdir -p /app/priv/static && chown elixir:elixir /app/priv/static

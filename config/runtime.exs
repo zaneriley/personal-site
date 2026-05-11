@@ -84,6 +84,20 @@ config :github_webhook, secret: github_webhook_secret
 
 config :portfolio, content_repo_url: System.get_env("CONTENT_REPO_URL")
 
+config :portfolio,
+  content_repo_auth: [
+    askpass_path:
+      System.get_env(
+        "CONTENT_REPO_GIT_ASKPASS",
+        "/app/bin/content-git-askpass"
+      ),
+    https_token:
+      System.get_env("CONTENT_REPO_HTTPS_TOKEN") ||
+        System.get_env("CONTENT_GITHUB_TOKEN"),
+    ssh_command: System.get_env("CONTENT_REPO_SSH_COMMAND"),
+    username: System.get_env("CONTENT_REPO_GIT_USERNAME", "x-access-token")
+  ]
+
 default_content_base_path =
   if config_env() == :prod do
     "/app/priv/content"
