@@ -103,6 +103,135 @@ Do not choose hardware or ingress first. The order is measurement-led:
 
 Free/FLOSS and self-hostable tools are preferred when viable. They do not beat visitor speed, rollback reliability, or the "future-Z can reproduce this in a year" rule. Cloudflare Tunnel, Tailscale/tailnet paths, reverse proxy ingress, owned NUC/Mac/NAS hardware, and Pi-class hardware are candidates, not decisions.
 
+## Resource-frugality feedback harness proposal
+
+Status: first CI slice implemented. Literature artifacts live at `.tmp/2026-05-11-cold-performance-ratchet/literature/`.
+
+The goal is not a one-time benchmark. The goal is a feedback ladder that gives LLMs and humans faster, earlier, harder-to-ignore performance signal while preserving `./run ci:prod-build` as the final release-shaped gate. Performance is a process constraint from the beginning of app/design work, not a cleanup phase after the portfolio is finished.
+
+Primary user model: mostly first-time visitors. Optimize and measure cold public-page experience first. Warm page-to-page navigation matters after first load. Admin routes are out of scope.
+
+Target philosophy:
+
+- 200ms wall-to-wall remains the ambition, but the repo should ratchet toward it rather than pretend one noisy CI run proves reality.
+- User-perceived mobile performance comes before compute-per-watt. Compute/watt only matters after the visitor experience is good.
+- A complete mediocre portfolio is better than an unfinished excellent one, but performance feedback must stay visible while the app is being finished so expensive choices do not become baked in.
+- Runtime/framework rewrites are low-ROI unless route/browser profiling proves Phoenix is the bottleneck.
+
+Proposed feedback ladder:
+
+1. **Fast local smoke:** `./run performance:smoke`
+   - Fastest loop for small route/template/CSS/content-rendering changes.
+   - Probes canonical public routes, status/redirect shape, rough transferred bytes, HTML size, and obvious asset explosions.
+   - Target runtime: under 30 seconds.
+   - Intended use: LLMs run habitually after user-visible edits.
+2. **Representative local browser check:** `./run performance:browser` or `./run performance:ratchet`
+   - Playwright-based mobile browser run against the public route set.
+   - Cold browser context for first-load checks; separate warm navigation flow for page-to-page behavior.
+   - Captures status, request count, transferred bytes, FCP/LCP or readable-content timing, CLS, JS/CSS/font/image bytes, console errors, and artifacts.
+   - Target runtime: 1-3 minutes for the normal route set.
+3. **CI browser preview:** `./run ci:performance-browser`
+   - First implementation: called from `./run ci:prod-build` after the release is ready and route smoke has passed.
+   - Later, after enough trusted samples prove low false-positive risk, split into a top-level PR check named `Performance browser`.
+   - Uploads `ci/browser-last-run.json` and failure artifacts.
+   - Hard-fails on broken pages, missing metrics, console/page errors, catastrophic page-weight blowups, and trusted budget violations.
+4. **Final PR authority:** `./run ci:prod-build`
+   - Keep as the final release-shaped gate: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, content status, release RPC introspection, and current `oha` route-latency comparison.
+   - Fold only stable, low-noise performance assertions into this gate.
+5. **Nightly calibration:** future `./run ci:performance-calibration`
+   - Heavier browser measurements, repeated samples, traces/screenshots/HAR, and baseline learning.
+   - Used to understand variance and decide which browser budgets are ready to move from observation to hard failure.
+6. **Live/deploy smoke:** future origin/deploy gate
+   - After origin deployability exists, measure the live URL through the real edge/origin path.
+   - Must report cache state explicitly: hit, stale hit, revalidation, miss, and first-fill.
+
+First implementation slice:
+
+1. Add `ci/browser-performance.mjs` and `ci/browser-budget.json`. Done.
+2. Add canonical command `./run ci:performance-browser`. Done.
+3. Use Playwright first because it is already in `assets/package.json`, avoids Lighthouse score theater, and can emit explicit route/page metrics.
+4. Keep `oha` for origin route latency; it already feeds `ci/last-run.json`.
+5. Write browser results to `ci/browser-last-run.json`. Done; generated artifact is gitignored and uploaded by CI.
+6. Call the browser check from `ci/prod-build.sh` after the release is ready and route smoke has passed. Done; this is the embed-first phase, not the final desired check topology.
+7. Upload `ci/browser-last-run.json` beside `ci/last-run.json` and `ci/baseline.json`. Done.
+8. After the command has accumulated enough trusted runs and false-positive behavior is understood, consider splitting it out of `Prod build` into its own top-level `Performance browser` workflow check.
+
+Hardening added after peer review:
+
+- Browser byte metrics use Playwright network-size data consistently instead of mixing `content-length` and decompressed body lengths.
+- Resource byte totals count transferred response body plus response headers, which makes the metric closer to what the browser actually downloads.
+- The browser artifact records WebSocket frames and bytes so future LiveView traffic cannot hide outside the page-weight budget.
+- `ci/prod-build.sh` derives its route-smoke list from `ci/browser-budget.json`, plus the legacy `/en/self` smoke route, so browser and HTTP route coverage do not drift apart.
+- Initial hard ceilings are intentionally close to current reality: `max_total_bytes=120000`, `max_css_bytes=50000`, `max_js_bytes=120000`, `max_request_count=12`, `max_fcp_ms=1800`, and `max_cls=0.1`.
+
+Do not add Lighthouse CI, sitespeed.io, Server-Timing, or `hyperfine` in the first slice unless implementation evidence changes the tradeoff. Lighthouse CI is useful later but easier to turn into score theater. Server-Timing should wait until `oha` plus browser timing cannot explain a server-side ambiguity. `hyperfine` should wait until release boot timing needs repeated command-level measurement outside the current Docker orchestration.
+
+Initial public route/page set:
+
+- `/`
+- `/en`
+- `/en/case-studies`
+- one representative case-study detail route backed by prod-build fixture content
+- `/en/notes`
+- one representative note detail route backed by prod-build fixture content
+- `/ja`
+
+The route set must be explicit and versioned. Removing a route from the performance matrix is a budget/integrity change, not a casual script edit. Representative detail routes must not depend on mutable `personal-site-content` state. The prod-build fixture should provide stable note and case-study content for browser performance checks, just as it already provides stable smoke content.
+
+Output contract:
+
+- Human output must name the user-visible problem, the route/page, observed value, allowed value, artifact path, and likely class of fix.
+- Machine artifacts must include at least: command, generated timestamp, app SHA, content SHA/generation when available, base URL, route/page metrics, thresholds, status, failures, warnings, and exemptions used.
+- Browser artifacts must include consistent transferred-byte measurements and WebSocket frame/byte counts.
+- Missing metrics fail. Missing FCP/LCP/readable-content timing must not be coerced to `0`.
+- A clean run should end with a stable verdict line such as `performance browser passed`.
+
+Example failure shape:
+
+```text
+performance browser failed
+
+Route/page: /en/notes
+Problem: CSS shipped to first-time visitors grew too much
+Observed: total=184KB css=73KB requests=12
+Allowed: total<=130KB or <=20% drift
+Artifact: ci/browser-last-run.json
+Next: reduce shipped CSS, split noncritical CSS, or submit an explicit budget-change proposal
+```
+
+Budget and anti-cheat rules:
+
+- Warnings are failures unless allowlisted with exact source, reason, and expiry.
+- Budgets live in a versioned file, initially `ci/browser-budget.json`.
+- Budgets cannot be silently weakened. Increasing thresholds, removing metrics, removing routes, lowering sample counts, disabling mobile emulation, or broadening exemptions requires an explicit budget-change proposal.
+- Baselines update only from trusted `main`/nightly paths, not arbitrary PR branches.
+- Missing measured values from the current run fail. Missing historical baselines do not automatically fail for newly introduced routes or metrics.
+- New routes and new metrics enter an onboarding state: they must satisfy coarse absolute ceilings immediately, emit artifacts immediately, and graduate to drift enforcement only after enough trusted `main`/nightly samples exist.
+- Performance claims must cite user-facing metric deltas: route p50/p95, ready time, cold first response, FCP, LCP/readable-content timing, CLS, transferred bytes, request count, JS bytes, CSS bytes, image bytes, font bytes, or main-thread work.
+- WebSocket bytes count as first-load/page-interaction cost once LiveView traffic exists. A page with low HTTP bytes but hidden LiveView frame weight is not frugal.
+- Lighthouse aggregate score alone never counts as progress.
+- Microbenchmarks only count when tied to a failing/protected product metric and a route/browser artifact moves in the same direction.
+- The integrity gate should eventually reject fake-green patterns for performance commands: `|| true`, `continue-on-error`, warning filtering, score-only reports, route removal, sample-count reduction, budget weakening, PR baseline updates, and artifact upload without threshold checks.
+
+Budget-change UX:
+
+- Legitimate budget increases should be possible without teaching agents to weaken gates by stealth.
+- Use an explicit versioned exception/change record, initially in `ci/browser-budget.json` unless it grows enough to split into `ci/browser-budget-exceptions.json`.
+- Each exception must name: route/page, metric, old value, new value, reason, expiry or follow-up, and whether it is a temporary exception or a deliberate new budget.
+- Expired exceptions fail.
+- Tightening budgets requires no exception record, but should still print a ratchet summary so the improvement is visible.
+- A failure caused by a legitimate heavier design choice should point to the exception mechanism rather than trapping the agent in endless optimization.
+
+Artifact naming:
+
+- Keep the current `ci/last-run.json` during the first slice to avoid a noisy rename.
+- If the browser artifact lands cleanly, consider a later compatibility-preserving rename or alias from `ci/last-run.json` to `ci/latency-last-run.json` so it sits symmetrically beside `ci/browser-last-run.json`.
+
+Cleanup completed during implementation:
+
+- Removed the production FCP console observer and `REMOVE FOR PRODUCTION` comment from `assets/js/app.js`.
+- Removed `@font-face` declarations for font files that the repo does not actually ship, because they caused real first-load 404s and hid page-weight truth.
+
 ## Observability and rollback planning
 
 Minimum useful signal set:

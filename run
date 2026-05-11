@@ -539,6 +539,35 @@ function ci:prod-build {
     ci/prod-build.sh
 }
 
+function ci:performance-browser {
+    local output
+    local tmp_output
+    local status
+
+    output="${PERF_BROWSER_OUTPUT:-ci/browser-last-run.json}"
+    tmp_output="$(mktemp)"
+
+    if docker compose build js >/dev/null &&
+        docker compose run --rm ${TTY} js node ../ci/browser-performance.mjs --output - > "${tmp_output}" &&
+        jq -e '.status == "pass"' "${tmp_output}" >/dev/null; then
+        mkdir -p "$(dirname "${output}")"
+        mv "${tmp_output}" "${output}"
+        echo "performance browser artifact written: ${output}"
+        return 0
+    else
+        status=$?
+    fi
+
+    if [[ -s "${tmp_output}" ]]; then
+        mkdir -p "$(dirname "${output}")"
+        cp "${tmp_output}" "${output}"
+        echo "performance browser artifact written: ${output}"
+    fi
+
+    rm -f "${tmp_output}"
+    return "${status}"
+}
+
 function ci:content-validate {
     content:validate "$@"
 }

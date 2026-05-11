@@ -66,14 +66,6 @@ window.addEventListener("phx:live_reload:attached", ({ detail: reloader }) => {
 
 window.liveSocket = liveSocket;
 
-// REMOVE FOR PRODUCTION
-// This logs the time to first contentful paint (FCP) to the console.
-new PerformanceObserver((entryList) => {
-  for (const entry of entryList.getEntriesByName("first-contentful-paint")) {
-    console.log("FCP candidate:", entry.startTime, entry);
-  }
-}).observe({ type: "paint", buffered: true });
-
 // Add some fun messages to the console
 console.log(
   "%c" +
