@@ -30,4 +30,4 @@ runcmd:
   - chown deploy:deploy /var/lib/personal-site
   - docker version
 
-final_message: "personal-site disposable origin is ready after $UPTIME seconds"
+final_message: "personal-site disposable Docker host is ready after $UPTIME seconds"
