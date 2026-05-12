@@ -379,21 +379,21 @@ function content:rollback {
 }
 
 # -----------------------------------------------------------------------------
-# Deploy
+# Disposable Hosts
 # -----------------------------------------------------------------------------
 
-function deploy:origin:create {
-  # Create a disposable DigitalOcean origin for the deploy spike
+function host:disposable:create {
+  # Create a disposable DigitalOcean Docker host
   ci/deploy/digitalocean-create-origin.sh "$@"
 }
 
-function deploy:origin:status {
-  # Print status for a disposable DigitalOcean origin
+function host:disposable:status {
+  # Print status for disposable DigitalOcean Docker hosts
   ci/deploy/digitalocean-origin-status.sh "$@"
 }
 
-function deploy:origin:destroy {
-  # Destroy a disposable DigitalOcean origin
+function host:disposable:destroy {
+  # Destroy a disposable DigitalOcean Docker host
   ci/deploy/digitalocean-destroy-origin.sh "$@"
 }
 

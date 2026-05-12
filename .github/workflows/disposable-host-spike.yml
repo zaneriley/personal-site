@@ -1,4 +1,4 @@
-name: "Deploy origin spike"
+name: "Disposable host spike"
 
 on:
   workflow_dispatch:
@@ -6,11 +6,11 @@ on:
       action:
         description: "Disposable origin action"
         required: true
-        default: "create"
+        default: "status"
         type: choice
         options:
-          - "create"
           - "status"
+          - "create"
           - "destroy"
       droplet_id:
         description: "DigitalOcean Droplet ID for status/destroy"
@@ -20,40 +20,49 @@ on:
         description: "DigitalOcean region"
         required: true
         default: "sfo3"
-        type: string
+        type: choice
+        options:
+          - "sfo3"
       size:
         description: "DigitalOcean size slug"
         required: true
         default: "s-1vcpu-1gb"
-        type: string
+        type: choice
+        options:
+          - "s-1vcpu-1gb"
       image:
         description: "DigitalOcean image slug"
         required: true
         default: "ubuntu-24-04-x64"
-        type: string
+        type: choice
+        options:
+          - "ubuntu-24-04-x64"
 
 permissions:
   contents: read
 
 concurrency:
-  group: "deploy-origin-spike"
+  group: "disposable-host-${{ inputs.action }}-${{ inputs.droplet_id || 'new' }}"
   cancel-in-progress: false
 
 jobs:
-  digitalocean-origin:
-    name: "DigitalOcean origin"
+  digitalocean-host:
+    name: "DigitalOcean host"
     runs-on: "ubuntu-22.04"
     environment: "preview"
+    timeout-minutes: 20
 
     steps:
       - uses: "actions/checkout@v6"
+        with:
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: "Install host dependencies"
         run: |
           sudo apt-get update
           sudo apt-get install -y curl jq
 
-      - name: "Create disposable origin"
+      - name: "Create disposable host"
         if: ${{ inputs.action == 'create' }}
         env:
           DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
@@ -62,27 +71,29 @@ jobs:
           DO_REGION: ${{ inputs.region }}
           DO_SIZE: ${{ inputs.size }}
           DO_IMAGE: ${{ inputs.image }}
-        run: ./run deploy:origin:create
+          PRESERVE_FAILED_ORIGIN: "0"
+        run: ./run host:disposable:create
 
-      - name: "Show disposable origin status"
+      - name: "Show disposable host status"
         if: ${{ inputs.action == 'status' }}
         env:
           DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
           DROPLET_ID: ${{ inputs.droplet_id }}
-        run: ./run deploy:origin:status
+        run: ./run host:disposable:status
 
-      - name: "Destroy disposable origin"
+      - name: "Destroy disposable host"
         if: ${{ inputs.action == 'destroy' }}
         env:
           DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
           DROPLET_ID: ${{ inputs.droplet_id }}
           CONFIRM_DESTROY: "1"
-        run: ./run deploy:origin:destroy
+        run: ./run host:disposable:destroy
 
-      - name: "Upload origin receipt"
+      - name: "Upload host receipt"
         if: ${{ always() && inputs.action == 'create' }}
         uses: "actions/upload-artifact@v7"
         with:
-          name: "digitalocean-origin"
-          path: "ci/digitalocean-origin.json"
-          if-no-files-found: "ignore"
+          name: "digitalocean-host"
+          path: "ci/digitalocean-host.json"
+          if-no-files-found: "error"
+          retention-days: 2
