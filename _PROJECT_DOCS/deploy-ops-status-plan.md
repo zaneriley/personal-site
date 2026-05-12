@@ -19,7 +19,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Private content-repo auth is wired into clone/fetch through ephemeral Git command environment. HTTPS tokens use askpass, SSH can use `CONTENT_REPO_SSH_COMMAND`, tokenized `CONTENT_REPO_URL` values are rejected, and sync failures are redacted before they reach logs or ledger reasons.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - The first deploy-tooling literature pass is complete. Current planning bias is **GitHub Actions as deploy operator, Kamal as an ephemeral deploy-time adapter, and the origin as a Docker-only runtime**, but Kamal is not ratified. Literature artifacts: `.tmp/2026-05-11-deploy-preview-options/literature/` and `.tmp/2026-05-11-portfolio-deploy-tooling-deep-dive/literature/`.
-- The disposable-origin spike has a manual GitHub Actions workflow and canonical `./run deploy:origin:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `agent/*` and `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet. GitHub manual workflow proof is blocked until the workflow file exists on the default branch, because GitHub does not expose new `workflow_dispatch` workflows from feature branches by filename.
+- The disposable Docker-host spike has a manual GitHub Actions workflow and canonical `./run host:disposable:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet, then peer review found the first implementation was not lifecycle-safe enough. The scripts now write receipts as soon as a Droplet ID exists, destroy failed creates by default, require SSH/Docker readiness proof, bound the remote readiness wait, refuse arbitrary cost inputs, list disposable hosts by tag, and verify expected disposable tags/name before destroy. GitHub manual workflow proof is still blocked until the workflow file exists on the default branch, because GitHub does not expose new `workflow_dispatch` workflows from feature branches by filename.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
 
@@ -190,33 +190,46 @@ GitHub environment: `preview`.
 
 Required secrets:
 
-1. `DIGITALOCEAN_TOKEN`: DigitalOcean API token with enough scope to create, inspect, and destroy Droplets. Installed in the GitHub `preview` environment on 2026-05-11 and saved in 1Password as "DigitalOcean Personal Access Token".
+1. `DIGITALOCEAN_TOKEN`: DigitalOcean API token with enough scope to create, inspect, and destroy Droplets, read images/actions, and create/use tags. Installed in the GitHub `preview` environment on 2026-05-11 and saved in 1Password as "DigitalOcean Personal Access Token". The exact DO token UI evolves; least-privilege intent is create/read/delete only for spike resources plus read-only metadata needed by the create action.
 2. `DEPLOY_SSH_PUBLIC_KEY`: public SSH key installed into the Droplet's `deploy` user by cloud-init.
 
 3. `DEPLOY_SSH_PRIVATE_KEY`: private SSH key used by the create workflow to prove cloud-init completed, Docker is installed, and `/var/lib/personal-site` exists before it emits the receipt.
 
 Current command surface:
 
-1. `./run deploy:origin:create`
+1. `./run host:disposable:create`
    - Creates a Basic 1 GiB / 1 vCPU Droplet by default.
-   - Defaults: `DO_REGION=sfo3`, `DO_SIZE=s-1vcpu-1gb`, `DO_IMAGE=ubuntu-24-04-x64`.
+   - Defaults and allowlist: `DO_REGION=sfo3`, `DO_SIZE=s-1vcpu-1gb`, `DO_IMAGE=ubuntu-24-04-x64`.
    - Installs Docker through cloud-init and creates a `deploy` user in the `docker` group.
-   - Waits for SSH, cloud-init, Docker readiness, and `/var/lib/personal-site` when `DEPLOY_SSH_PRIVATE_KEY` is available.
-   - Writes a local receipt to `ci/digitalocean-origin.json`.
-2. `./run deploy:origin:status`
-   - Requires `DROPLET_ID` or a receipt file path.
+   - Requires `DEPLOY_SSH_PRIVATE_KEY`; missing SSH readiness proof is a failure, not a skipped check.
+   - Waits for SSH, cloud-init, Docker readiness, and `/var/lib/personal-site` with a bounded remote timeout.
+   - Writes `ci/digitalocean-host.json` immediately after Droplet allocation and updates it through `allocated`, `waiting_for_network`, `ready`, `failed`, or `destroyed_after_failure`.
+   - Destroys failed creates by default. Set `PRESERVE_FAILED_ORIGIN=1` only when intentionally debugging the host.
+2. `./run host:disposable:status`
+   - With no `DROPLET_ID` or receipt, lists Droplets tagged `disposable-origin`.
+   - With `DROPLET_ID` or a receipt file path, prints one Droplet's status.
    - Prints Droplet status, region, size, image, public IPv4/IPv6, and tags.
-3. `CONFIRM_DESTROY=1 ./run deploy:origin:destroy`
+3. `CONFIRM_DESTROY=1 ./run host:disposable:destroy`
    - Requires `DROPLET_ID` or a receipt file path.
-   - Destroys the Droplet. Powering off is not the disposal path because powered-off Droplets still bill.
+   - Fetches the Droplet first and refuses to delete unless it has the expected `personal-site`, `disposable-origin`, and `preview` tags plus the expected preview name prefix.
+   - Destroys the Droplet only after ownership verification. Powering off is not the disposal path because powered-off Droplets still bill.
 
 GitHub workflow:
 
-- `Deploy origin spike` is manual-only (`workflow_dispatch`).
+- `Disposable host spike` is manual-only (`workflow_dispatch`).
 - Actions: `create`, `status`, `destroy`.
-- The workflow uploads `ci/digitalocean-origin.json` as the create receipt.
+- The default action is `status`, not `create`, so the easiest click path does not allocate money.
+- The workflow checks out the default branch before loading DO/SSH secrets; feature-branch workflow code should not receive deploy credentials.
+- The workflow uploads `ci/digitalocean-host.json` as the create receipt with 2-day retention and treats a missing receipt as an error.
 - The workflow is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
-- GitHub will not run this new manual workflow from a feature branch until the workflow definition is present on the default branch. Before merge, use the same canonical `./run deploy:origin:*` commands locally for proof; after merge, rerun the create/status/destroy proof through GitHub Actions.
+- GitHub will not run this new manual workflow from a feature branch until the workflow definition is present on the default branch. Before merge, use the same canonical `./run host:disposable:*` commands locally for proof; after merge, rerun the create/status/destroy proof through GitHub Actions.
+
+Remaining hardening before this graduates from host spike to deploy substrate:
+
+- Add a scheduled or manual age-based janitor for tagged disposable hosts.
+- Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
+- Decide whether IPv6 should stay enabled for the spike; if yes, firewall and smoke must treat it as first-class.
+- Keep the command taxonomy honest: this is Docker-host bootstrap. "Deploy" still means app image digest plus content SHA/generation, preview checks, promotion, and rollback.
 
 ## Resource-frugality feedback harness proposal
 
