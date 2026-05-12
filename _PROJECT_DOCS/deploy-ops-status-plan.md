@@ -231,6 +231,19 @@ Current command surface:
    - Writes `ci/disposable-runtime-proof.json` and `ci/disposable-runtime-proof/` artifacts with ready time, route statuses, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
    - This is a runtime viability proof, not a production deploy. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
 
+Preview image workflow:
+
+- `Preview image` builds a non-release `linux/amd64` production image in GitHub Actions and pushes only a SHA-scoped tag: `ghcr.io/zaneriley/personal-site:preview-sha-<sha>`.
+- It writes `ci/preview-image.json` as the `preview-image` artifact. The runtime-proof command should consume `.image_ref`, which is digest-pinned as `ghcr.io/zaneriley/personal-site@sha256:<digest>`.
+- This workflow is deliberately separate from Release Please. It must not create GitHub Releases, version tags, `latest`, or semver tags.
+- Local handoff after a successful workflow run:
+
+  ```bash
+  gh run download <run-id> -n preview-image -D .tmp/preview-image
+  APP_IMAGE_REF="$(jq -r .image_ref .tmp/preview-image/preview-image.json)" \
+    ./run host:disposable:runtime-proof ci/digitalocean-host.json
+  ```
+
 GitHub workflow:
 
 - `Disposable host spike` is manual-only (`workflow_dispatch`).
@@ -243,7 +256,7 @@ GitHub workflow:
 
 Remaining hardening before this graduates from host spike to deploy substrate:
 
-- Run `./run host:disposable:runtime-proof` from a prebuilt image digest and record memory/CPU/ready-route evidence before treating 1 GiB as viable. The command exists; the remaining proof is empirical execution against a real disposable host.
+- Run `./run host:disposable:runtime-proof` from a current preview image digest and record memory/CPU/ready-route evidence before treating 1 GiB as viable. The command and preview-image workflow exist; the remaining proof is empirical execution against a real disposable host using current code.
 - Add a scheduled or manual age-based janitor for tagged disposable hosts.
 - Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
 - Decide whether IPv6 should stay enabled for the spike; if yes, firewall and smoke must treat it as first-class.

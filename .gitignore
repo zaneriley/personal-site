@@ -192,6 +192,7 @@ flycheck_*.el
 /ci/digitalocean-host.json
 /ci/disposable-runtime-proof.json
 /ci/disposable-runtime-proof/
+/ci/preview-image.json
 
 # Process core dumps
 core

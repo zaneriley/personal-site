@@ -1,0 +1,89 @@
+name: "Preview image"
+
+on:
+  pull_request:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: "preview-image-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  preview-image:
+    name: "Preview image"
+    runs-on: "ubuntu-22.04"
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+
+    steps:
+      - uses: "actions/checkout@v6"
+
+      - name: "Set up Docker Buildx"
+        uses: "docker/setup-buildx-action@v4"
+
+      - name: "Login to GitHub Container Registry"
+        uses: "docker/login-action@v4"
+        with:
+          registry: "ghcr.io"
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Prepare image names"
+        id: image
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          tag="${image}:preview-sha-${GITHUB_SHA}"
+
+          echo "image=${image}" >> "${GITHUB_OUTPUT}"
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+
+      - name: "Build and push preview image"
+        id: build
+        uses: "docker/build-push-action@v7"
+        with:
+          context: .
+          push: true
+          target: "prod"
+          platforms: "linux/amd64"
+          tags: ${{ steps.image.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.description=Non-release preview image for runtime proof
+
+      - name: "Write preview image receipt"
+        run: |
+          mkdir -p ci
+
+          jq -n \
+            --arg image "${{ steps.image.outputs.image }}" \
+            --arg tag "${{ steps.image.outputs.tag }}" \
+            --arg digest "${{ steps.build.outputs.digest }}" \
+            --arg sha "${GITHUB_SHA}" \
+            --arg ref "${GITHUB_REF_NAME}" \
+            --arg run_id "${GITHUB_RUN_ID}" \
+            '{
+              image: $image,
+              tag: $tag,
+              digest: $digest,
+              image_ref: ($image + "@" + $digest),
+              sha: $sha,
+              ref: $ref,
+              run_id: $run_id,
+              purpose: "non-release preview image for disposable runtime proof"
+            }' > ci/preview-image.json
+
+          jq '.' ci/preview-image.json
+
+      - name: "Upload preview image receipt"
+        uses: "actions/upload-artifact@v7"
+        with:
+          name: "preview-image"
+          path: "ci/preview-image.json"
+          if-no-files-found: "error"
+          retention-days: 7
