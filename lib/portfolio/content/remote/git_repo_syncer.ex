@@ -26,6 +26,9 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
 
   @doc """
   Returns the currently checked-out commit SHA for a local repository.
+
+  This is a bang function because release boot and deploy receipts should fail
+  loudly if the local content repository exists but cannot identify its SHA.
   """
   @spec current_sha!(String.t()) :: String.t()
   def current_sha!(local_path) do
@@ -49,6 +52,8 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
       clone_new_repo(repo_url, local_path, auth, git_command, opts)
     end
   rescue
+    # Keep this broad until GitAuth's exception surface is narrower; every
+    # escaped message is sanitized before it can reach logs or operator output.
     e ->
       inspected = e |> inspect() |> GitAuth.sanitize(auth)
       message = e |> Exception.message() |> GitAuth.sanitize(auth)
@@ -59,9 +64,9 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
 
   @spec git_repo_exists?(String.t()) :: boolean()
   defp git_repo_exists?(path) do
-    Logger.debug("Checking if repo exists at path: #{path}")
+    Logger.debug(fn -> "Checking if repo exists at path: #{path}" end)
     git_dir_exists = File.dir?(Path.join(path, ".git"))
-    Logger.debug("Git directory exists: #{git_dir_exists}")
+    Logger.debug(fn -> "Git directory exists: #{git_dir_exists}" end)
     git_dir_exists
   end
 
@@ -74,9 +79,9 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
          {:ok, reset_output} <-
            reset_to_target(local_path, auth, git_command, opts),
          {:ok, clean_output} <- clean_repo(local_path, auth, git_command) do
-      Logger.debug("Fetch output: #{inspect(fetch_output)}")
-      Logger.debug("Reset output: #{inspect(reset_output)}")
-      Logger.debug("Clean output: #{inspect(clean_output)}")
+      Logger.debug(fn -> "Fetch output: #{inspect(fetch_output)}" end)
+      Logger.debug(fn -> "Reset output: #{inspect(reset_output)}" end)
+      Logger.debug(fn -> "Clean output: #{inspect(clean_output)}" end)
       {:ok, local_path}
     else
       {:error, reason} ->
@@ -131,7 +136,7 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
       {output, 0} ->
         output = GitAuth.sanitize(auth, output)
 
-        Logger.debug("Clone succeeded with output: #{output}")
+        Logger.debug(fn -> "Clone succeeded with output: #{output}" end)
         {:ok, target_path}
 
       {output, code} ->
@@ -185,15 +190,17 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
   end
 
   @spec clean_repo(String.t(), GitAuth.t(), module()) :: sync_result()
+  # Use -x so ignored stale Markdown cannot survive reset and be published as
+  # if it belonged to the checked-out content SHA.
   defp clean_repo(path, auth, git_command),
-    do: run_git_command(path, ["clean", "-fd"], auth, git_command)
+    do: run_git_command(path, ["clean", "-ffdx"], auth, git_command)
 
   defp run_git_command(path, args, auth, git_command) do
     full_args = ["-C", path | args]
 
-    Logger.debug(
+    Logger.debug(fn ->
       "Running git command. Path: #{inspect(path)}, Args: #{inspect(args)}, Full args: #{inspect(full_args)}"
-    )
+    end)
 
     case git_command.run("git", full_args,
            env: GitAuth.env(auth),
@@ -202,7 +209,10 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
       {output, 0} ->
         output = GitAuth.sanitize(auth, output)
 
-        Logger.debug("Git command succeeded with output: #{inspect(output)}")
+        Logger.debug(fn ->
+          "Git command succeeded with output: #{inspect(output)}"
+        end)
+
         {:ok, output}
 
       {output, code} ->
