@@ -55,8 +55,8 @@ defmodule Portfolio.Content.Remote.GitRepoSyncer do
     # Keep this broad until GitAuth's exception surface is narrower; every
     # escaped message is sanitized before it can reach logs or operator output.
     e ->
-      inspected = e |> inspect() |> GitAuth.sanitize(auth)
-      message = e |> Exception.message() |> GitAuth.sanitize(auth)
+      inspected = GitAuth.sanitize(auth, inspect(e))
+      message = GitAuth.sanitize(auth, Exception.message(e))
 
       Logger.error("Failed to sync repo: #{inspected}")
       {:error, "Failed to sync repo: #{message}"}
