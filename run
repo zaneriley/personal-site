@@ -404,6 +404,11 @@ function host:disposable:destroy {
   ci/deploy/digitalocean-destroy-origin.sh "$@"
 }
 
+function host:disposable:runtime-proof {
+  # Prove a digest-pinned app image can run on a disposable host
+  ci/deploy/disposable-runtime-proof.sh "$@"
+}
+
 # -----------------------------------------------------------------------------
 # Database
 # -----------------------------------------------------------------------------
@@ -570,6 +575,7 @@ function ci:acceptance-gate-bypass-check:test {
 
 function ci:disposable-host-check {
     ci/deploy/digitalocean-destroy-origin-test.sh
+    ci/deploy/disposable-runtime-proof-test.sh
 }
 
 function ci:prod-build {

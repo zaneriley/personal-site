@@ -190,6 +190,8 @@ flycheck_*.el
 /ci/browser-last-run.json
 /ci/digitalocean-origin.json
 /ci/digitalocean-host.json
+/ci/disposable-runtime-proof.json
+/ci/disposable-runtime-proof/
 
 # Process core dumps
 core

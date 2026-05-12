@@ -225,6 +225,11 @@ Current command surface:
    - Requires `DROPLET_ID` or a receipt file path.
    - Fetches the Droplet first and refuses to delete unless it has the expected `personal-site`, `disposable-origin`, and `preview` tags plus the expected preview name prefix.
    - Destroys the Droplet only after ownership verification. Powering off is not the disposal path because powered-off Droplets still bill.
+4. `APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<digest> ./run host:disposable:runtime-proof ci/digitalocean-host.json`
+   - Runs only against a ready disposable-host receipt; it refuses non-ready receipts and floating image tags.
+   - Copies a small runtime payload to `/var/lib/personal-site/runtime-proof`, starts Postgres plus the digest-pinned app image with fixture content, waits for `/readyz`, and probes the public route set.
+   - Writes `ci/disposable-runtime-proof.json` and `ci/disposable-runtime-proof/` artifacts with ready time, route statuses, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
+   - This is a runtime viability proof, not a production deploy. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
 
 GitHub workflow:
 
@@ -238,7 +243,7 @@ GitHub workflow:
 
 Remaining hardening before this graduates from host spike to deploy substrate:
 
-- Run a runtime-only spike from a prebuilt image digest and record memory/CPU/ready-route evidence before treating 1 GiB as viable.
+- Run `./run host:disposable:runtime-proof` from a prebuilt image digest and record memory/CPU/ready-route evidence before treating 1 GiB as viable. The command exists; the remaining proof is empirical execution against a real disposable host.
 - Add a scheduled or manual age-based janitor for tagged disposable hosts.
 - Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
 - Decide whether IPv6 should stay enabled for the spike; if yes, firewall and smoke must treat it as first-class.
