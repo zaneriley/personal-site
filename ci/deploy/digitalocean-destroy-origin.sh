@@ -5,6 +5,7 @@ set -o nounset
 set -o pipefail
 
 response_file=""
+api_status_code=""
 
 function cleanup {
     if [[ -n "${response_file}" ]]; then
@@ -55,20 +56,22 @@ function resolve_droplet_id {
 function do_api_to_file {
     local method
     local path
-    local status_code
 
     method="${1}"
     path="${2}"
+
+    if [[ -n "${response_file}" ]]; then
+        rm -f "${response_file}"
+    fi
+
     response_file="$(mktemp)"
 
-    status_code="$(curl -sS \
+    api_status_code="$(curl -sS \
         -o "${response_file}" \
         -w "%{http_code}" \
         -X "${method}" \
         -H "Authorization: Bearer ${DIGITALOCEAN_TOKEN}" \
         "https://api.digitalocean.com/v2/${path}" || true)"
-
-    printf "%s" "${status_code}"
 }
 
 function print_api_error {
@@ -127,9 +130,9 @@ if [[ -z "${droplet_id}" ]]; then
     exit 1
 fi
 
-status_code="$(do_api_to_file GET "droplets/${droplet_id}")"
+do_api_to_file GET "droplets/${droplet_id}"
 
-case "${status_code}" in
+case "${api_status_code}" in
     200)
         verify_disposable_origin
         ;;
@@ -139,14 +142,14 @@ case "${status_code}" in
         exit 0
         ;;
     *)
-        print_api_error "fatal: DigitalOcean lookup failed with HTTP ${status_code}"
+        print_api_error "fatal: DigitalOcean lookup failed with HTTP ${api_status_code}"
         exit 1
         ;;
 esac
 
-status_code="$(do_api_to_file DELETE "droplets/${droplet_id}")"
+do_api_to_file DELETE "droplets/${droplet_id}"
 
-case "${status_code}" in
+case "${api_status_code}" in
     204)
         echo "DigitalOcean droplet destroyed"
         echo "droplet_id=${droplet_id}"
@@ -156,7 +159,7 @@ case "${status_code}" in
         echo "droplet_id=${droplet_id}"
         ;;
     *)
-        print_api_error "fatal: DigitalOcean destroy failed with HTTP ${status_code}"
+        print_api_error "fatal: DigitalOcean destroy failed with HTTP ${api_status_code}"
         exit 1
         ;;
 esac
