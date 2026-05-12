@@ -189,7 +189,7 @@ These are durable findings from the 2026-05-12 simple preview bug bash, not scra
 
 1. **Do not build the deploy artifact locally on the Mac Studio with plain `docker build --platform linux/amd64`.** The local Docker CLI lacks Buildx, falls back to the legacy builder, and proceeded down an ARM64 build path while accepting the `linux/amd64` flag. Final deploy tooling must consume a CI-built image digest or use an explicitly provisioned multi-arch builder.
 2. **Do not build the app on the 1 GiB origin.** A real 1 GiB `sfo3` Droplet reached Docker readiness, accepted the source tree, and then OOM-killed BEAM during `mix deps.compile` after about 20 minutes. This only rules out origin-side builds; it does not rule out the 1 GiB shape as a runtime host.
-3. **The smallest DO host must be measured as runtime-only.** The next spike should start Postgres plus the prebuilt app image, hit `/readyz` and public routes, then capture `docker stats`, `free -m`, cgroup memory peak, app logs, and content status. Only that measurement decides whether 1 GiB is enough or whether 2 GiB is the honest floor.
+3. **The smallest DO host passed the first runtime-only proof.** On 2026-05-13, a Basic 1 GiB / 1 vCPU `sfo3` Droplet ran Postgres plus the current PR preview image, hit `/readyz`, served all seven public smoke routes, and reported content status without OOM. Snapshot: web `191.8MiB`, Postgres `97.14MiB`, `337MiB` available; cgroup peaks were web `256.6MiB`, Postgres `148.4MiB`; `/readyz` passed in `12662ms` after `docker compose up -d`. Evidence lives at `.tmp/2026-05-13-current-preview-runtime-proof/`. This keeps 1 GiB viable for preview-origin work, but production safety still needs repeated-request and deploy/rollback measurement.
 4. **The disposable host needs Docker Compose before runtime spikes.** Ubuntu's `docker.io` package did not provide `docker compose`; cloud-init now installs `docker-compose-v2` and readiness must prove `docker compose version`.
 5. **Production image builds should not download browser-test payloads.** Playwright is for browser tests and performance checks, not for serving the Phoenix runtime. Browser tooling belongs in an opt-in browser/test image target; production asset builds should stay lean.
 6. **1Password CLI authorization remains an operator nuisance.** `op read ... | DIGITALOCEAN_TOKEN_STDIN=1` avoids clipboard leakage, but local runs still surface GUI authorization prompts. Treat this as an operator-flow decision, not a new discovery, if it appears in future observation packets.
@@ -256,7 +256,8 @@ GitHub workflow:
 
 Remaining hardening before this graduates from host spike to deploy substrate:
 
-- Run `./run host:disposable:runtime-proof` from a current preview image digest and record memory/CPU/ready-route evidence before treating 1 GiB as viable. The command and preview-image workflow exist; the remaining proof is empirical execution against a real disposable host using current code.
+- Add a deploy receipt that records host id, image digest, content SHA/generation, smoke result, and rollback/destroy commands.
+- Add repeated-request/runtime-load observation before treating 1 GiB as production-safe.
 - Add a scheduled or manual age-based janitor for tagged disposable hosts.
 - Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
 - Decide whether IPv6 should stay enabled for the spike; if yes, firewall and smoke must treat it as first-class.
