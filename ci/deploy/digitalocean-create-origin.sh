@@ -284,6 +284,7 @@ set -o pipefail
 cloud-init status --wait >/dev/null
 command -v docker >/dev/null
 docker --version >/dev/null
+docker compose version >/dev/null
 test -d /var/lib/personal-site
 REMOTE_READINESS
         then

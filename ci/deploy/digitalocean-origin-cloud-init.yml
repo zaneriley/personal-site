@@ -21,6 +21,7 @@ packages:
   - ca-certificates
   - curl
   - docker.io
+  - docker-compose-v2
   - git
   - jq
 
@@ -29,5 +30,6 @@ runcmd:
   - mkdir -p /var/lib/personal-site
   - chown deploy:deploy /var/lib/personal-site
   - docker version
+  - docker compose version
 
 final_message: "personal-site disposable Docker host is ready after $UPTIME seconds"

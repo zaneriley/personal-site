@@ -1,6 +1,6 @@
 # Deploy / ops status and plan
 
-**Updated:** 2026-05-11.
+**Updated:** 2026-05-13.
 
 This is the working plan for Phase 3 after the production-build gate landed. It is not an ADR: it records status, sequencing, and what "done" should feel like from Z's DX.
 
@@ -19,7 +19,8 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Private content-repo auth is wired into clone/fetch through ephemeral Git command environment. HTTPS tokens use askpass, SSH can use `CONTENT_REPO_SSH_COMMAND`, tokenized `CONTENT_REPO_URL` values are rejected, and sync failures are redacted before they reach logs or ledger reasons.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - The first deploy-tooling literature pass is complete. Current planning bias is **GitHub Actions as deploy operator, Kamal as an ephemeral deploy-time adapter, and the origin as a Docker-only runtime**, but Kamal is not ratified. Literature artifacts: `.tmp/2026-05-11-deploy-preview-options/literature/` and `.tmp/2026-05-11-portfolio-deploy-tooling-deep-dive/literature/`.
-- The disposable Docker-host spike has a manual GitHub Actions workflow and canonical `./run host:disposable:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet, then peer review found the first implementation was not lifecycle-safe enough. The scripts now write receipts as soon as a Droplet ID exists, destroy failed creates by default, require SSH/Docker readiness proof, bound the remote readiness wait, refuse arbitrary cost inputs, list disposable hosts by tag, and verify expected disposable tags/name before destroy. GitHub manual workflow proof is still blocked until the workflow file exists on the default branch, because GitHub does not expose new `workflow_dispatch` workflows from feature branches by filename.
+- The disposable Docker-host spike has a manual GitHub Actions workflow and canonical `./run host:disposable:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet, then peer review found the first implementation was not lifecycle-safe enough. The scripts now write receipts as soon as a Droplet ID exists, destroy failed creates by default, require SSH/Docker/Compose readiness proof, bound the remote readiness wait, refuse arbitrary cost inputs, list disposable hosts by tag, and verify expected disposable tags/name before destroy. GitHub manual workflow proof is still blocked until the workflow file exists on the default branch, because GitHub does not expose new `workflow_dispatch` workflows from feature branches by filename.
+- A simple preview deploy bug bash ran on 2026-05-12 and is recorded in `.tmp/2026-05-12-simple-preview-deploy-bugbash/report.md`. It proved the 1 GiB DO host is safe to create and destroy, but it also proved the host must be treated as a runtime, not a builder: an origin-side production image build OOM-killed BEAM while compiling `cowlib` after about 20 minutes. The next runtime spike must use a prebuilt image digest and measure app+Postgres runtime memory instead of rebuilding source on the origin.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
 
@@ -182,6 +183,17 @@ The throwaway VPS literature pass is complete at `.tmp/2026-05-11-throwaway-vps-
 
 Static public-site export remains a **performance/deploy simplification option**, not the active path. Phoenix may be able to render the visitor-facing portfolio to static HTML someday, but do not pivot there now. Keep the current dynamic Phoenix/Docker origin path until DigitalOcean/Kamal/private-preview evidence says it fails or performance/cost data makes static export the right optimization.
 
+### Known Origin / Build Gotchas
+
+These are durable findings from the 2026-05-12 simple preview bug bash, not scratch speculation:
+
+1. **Do not build the deploy artifact locally on the Mac Studio with plain `docker build --platform linux/amd64`.** The local Docker CLI lacks Buildx, falls back to the legacy builder, and proceeded down an ARM64 build path while accepting the `linux/amd64` flag. Final deploy tooling must consume a CI-built image digest or use an explicitly provisioned multi-arch builder.
+2. **Do not build the app on the 1 GiB origin.** A real 1 GiB `sfo3` Droplet reached Docker readiness, accepted the source tree, and then OOM-killed BEAM during `mix deps.compile` after about 20 minutes. This only rules out origin-side builds; it does not rule out the 1 GiB shape as a runtime host.
+3. **The smallest DO host must be measured as runtime-only.** The next spike should start Postgres plus the prebuilt app image, hit `/readyz` and public routes, then capture `docker stats`, `free -m`, cgroup memory peak, app logs, and content status. Only that measurement decides whether 1 GiB is enough or whether 2 GiB is the honest floor.
+4. **The disposable host needs Docker Compose before runtime spikes.** Ubuntu's `docker.io` package did not provide `docker compose`; cloud-init now installs `docker-compose-v2` and readiness must prove `docker compose version`.
+5. **Production image builds should not download browser-test payloads.** Playwright is for browser tests and performance checks, not for serving the Phoenix runtime. Browser tooling belongs in an opt-in browser/test image target; production asset builds should stay lean.
+6. **1Password CLI authorization remains an operator nuisance.** `op read ... | DIGITALOCEAN_TOKEN_STDIN=1` avoids clipboard leakage, but local runs still surface GUI authorization prompts. Treat this as an operator-flow decision, not a new discovery, if it appears in future observation packets.
+
 ### DigitalOcean Disposable Origin Requirements
 
 First implementation slice: create, inspect, and destroy a disposable DigitalOcean Docker host without touching `zaneriley.com`, AWS, release automation, or production DNS.
@@ -200,9 +212,9 @@ Current command surface:
 1. `./run host:disposable:create`
    - Creates a Basic 1 GiB / 1 vCPU Droplet by default.
    - Defaults and allowlist: `DO_REGION=sfo3`, `DO_SIZE=s-1vcpu-1gb`, `DO_IMAGE=ubuntu-24-04-x64`.
-   - Installs Docker through cloud-init and creates a `deploy` user in the `docker` group.
+   - Installs Docker and Docker Compose v2 through cloud-init and creates a `deploy` user in the `docker` group.
    - Requires `DEPLOY_SSH_PRIVATE_KEY`; missing SSH readiness proof is a failure, not a skipped check.
-   - Waits for SSH, cloud-init, Docker readiness, and `/var/lib/personal-site` with a bounded remote timeout.
+   - Waits for SSH, cloud-init, Docker readiness, Docker Compose readiness, and `/var/lib/personal-site` with a bounded remote timeout.
    - Writes `ci/digitalocean-host.json` immediately after Droplet allocation and updates it through `allocated`, `waiting_for_network`, `ready`, `failed`, or `destroyed_after_failure`.
    - Destroys failed creates by default. Set `PRESERVE_FAILED_ORIGIN=1` only when intentionally debugging the host.
 2. `./run host:disposable:status`
@@ -226,6 +238,7 @@ GitHub workflow:
 
 Remaining hardening before this graduates from host spike to deploy substrate:
 
+- Run a runtime-only spike from a prebuilt image digest and record memory/CPU/ready-route evidence before treating 1 GiB as viable.
 - Add a scheduled or manual age-based janitor for tagged disposable hosts.
 - Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
 - Decide whether IPv6 should stay enabled for the spike; if yes, firewall and smoke must treat it as first-class.
