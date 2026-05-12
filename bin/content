@@ -12,14 +12,13 @@ function usage {
     echo "       bin/content rollback [--json] [--reason REASON] TARGET" >&2
 }
 
-function elixir_string_literal {
+function elixir_base64_decode {
     local value="$1"
+    local encoded
 
-    value="${value//\\/\\\\}"
-    value="${value//\"/\\\"}"
-    value="${value//$'\n'/\\n}"
+    encoded="$(printf "%s" "${value}" | base64 | tr -d '\n')"
 
-    printf '"%s"' "${value}"
+    printf 'Base.decode64!("%s")' "${encoded}"
 }
 
 function release_rpc {
@@ -116,8 +115,8 @@ case "${command_name}" in
             exit 1
         fi
 
-        target_literal="$(elixir_string_literal "${target}")"
-        reason_literal="$(elixir_string_literal "${reason}")"
+        target_literal="$(elixir_base64_decode "${target}")"
+        reason_literal="$(elixir_base64_decode "${reason}")"
         rollback_output=""
         rollback_exit="1"
 
