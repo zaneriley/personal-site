@@ -4,12 +4,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=ci/deploy/digitalocean-env.sh
+. "${script_dir}/digitalocean-env.sh"
+
 function usage {
     cat <<'USAGE'
 Usage:
   DROPLET_ID=<id> ./run host:disposable:status
   ./run host:disposable:status ci/digitalocean-host.json
   ./run host:disposable:status
+  DIGITALOCEAN_TOKEN_STDIN=1 ./run host:disposable:status < token-file
 USAGE
 }
 
@@ -97,6 +102,7 @@ function list_disposable_origins {
     }'
 }
 
+load_digitalocean_token
 require_env DIGITALOCEAN_TOKEN
 
 droplet_id="$(resolve_droplet_id "${1:-}")"

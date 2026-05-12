@@ -4,6 +4,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=ci/deploy/digitalocean-env.sh
+. "${script_dir}/digitalocean-env.sh"
+
 response_file=""
 api_status_code=""
 
@@ -20,6 +24,7 @@ function usage {
 Usage:
   DROPLET_ID=<id> CONFIRM_DESTROY=1 ./run host:disposable:destroy
   CONFIRM_DESTROY=1 ./run host:disposable:destroy ci/digitalocean-host.json
+  DIGITALOCEAN_TOKEN_STDIN=1 CONFIRM_DESTROY=1 ./run host:disposable:destroy ci/digitalocean-host.json < token-file
 
 Destroying a DigitalOcean Droplet is irreversible. This command requires
 CONFIRM_DESTROY=1 and either DROPLET_ID or a JSON artifact with droplet_id.
@@ -97,7 +102,11 @@ function verify_disposable_origin {
 
     missing_tags="$(
         jq -r --argjson expected "${expected_tags_json}" '
-            [ $expected[] as $tag | select((.droplet.tags // []) | index($tag) | not) ] | join(",")
+            [
+                $expected[] as $tag
+                | select(((.droplet.tags // []) | index($tag)) | not)
+                | $tag
+            ] | join(",")
         ' "${response_file}"
     )"
 
@@ -116,6 +125,7 @@ function verify_disposable_origin {
     fi
 }
 
+load_digitalocean_token
 require_env DIGITALOCEAN_TOKEN
 
 if [[ "${CONFIRM_DESTROY:-}" != "1" ]]; then

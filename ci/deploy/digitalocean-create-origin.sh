@@ -5,6 +5,9 @@ set -o nounset
 set -o pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=ci/deploy/digitalocean-env.sh
+. "${script_dir}/digitalocean-env.sh"
+
 cloud_init_template="${script_dir}/digitalocean-origin-cloud-init.yml"
 ssh_private_key_file=""
 ssh_known_hosts_file=""
@@ -250,14 +253,20 @@ function wait_for_action {
 
 function wait_for_origin_ready {
     local public_ip
-    local remote_command
+    local attempt
+    local attempts
+    local elapsed_seconds
+    local progress_every
+    local remote_timeout
 
     public_ip="${1}"
-    remote_command="timeout ${SSH_READINESS_REMOTE_TIMEOUT_SECONDS:-300}s bash -lc 'cloud-init status --wait >/dev/null && command -v docker >/dev/null && docker --version >/dev/null && test -d /var/lib/personal-site'"
+    attempts="${SSH_READINESS_ATTEMPTS:-60}"
+    progress_every="${SSH_READINESS_PROGRESS_EVERY:-6}"
+    remote_timeout="${SSH_READINESS_REMOTE_TIMEOUT_SECONDS:-300}"
 
     echo "waiting for cloud-init and Docker readiness"
 
-    for _attempt in $(seq 1 "${SSH_READINESS_ATTEMPTS:-60}"); do
+    for attempt in $(seq 1 "${attempts}"); do
         if ssh \
             -i "${ssh_private_key_file}" \
             -o BatchMode=yes \
@@ -267,10 +276,25 @@ function wait_for_origin_ready {
             -o StrictHostKeyChecking=accept-new \
             -o UserKnownHostsFile="${ssh_known_hosts_file}" \
             "deploy@${public_ip}" \
-            "${remote_command}" >/dev/null 2>&1; then
+            "timeout ${remote_timeout}s bash -s" >/dev/null 2>&1 <<'REMOTE_READINESS'
+set -o errexit
+set -o nounset
+set -o pipefail
+
+cloud-init status --wait >/dev/null
+command -v docker >/dev/null
+docker --version >/dev/null
+test -d /var/lib/personal-site
+REMOTE_READINESS
+        then
             echo "origin Docker readiness verified"
             origin_ready="true"
             return 0
+        fi
+
+        if (( attempt == 1 || attempt % progress_every == 0 )); then
+            elapsed_seconds=$((attempt * 5))
+            echo "still waiting for cloud-init and Docker readiness (attempt ${attempt}/${attempts}, about ${elapsed_seconds}s)"
         fi
 
         sleep 5
@@ -280,6 +304,7 @@ function wait_for_origin_ready {
     exit 1
 }
 
+load_digitalocean_token
 require_env DIGITALOCEAN_TOKEN
 require_env DEPLOY_SSH_PUBLIC_KEY
 require_env DEPLOY_SSH_PRIVATE_KEY

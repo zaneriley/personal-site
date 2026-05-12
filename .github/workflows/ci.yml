@@ -44,6 +44,16 @@ jobs:
       - name: "Acceptance-gate bypass fixture test"
         run: ./run ci:acceptance-gate-bypass-check:test
 
+  disposable-host-check:
+    name: "Disposable host check"
+    runs-on: "ubuntu-22.04"
+
+    steps:
+      - uses: "actions/checkout@v6"
+
+      - name: "Disposable host check"
+        run: ./run ci:disposable-host-check
+
   compile:
     name: "Compile"
     runs-on: "ubuntu-22.04"

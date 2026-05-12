@@ -568,6 +568,10 @@ function ci:acceptance-gate-bypass-check:test {
     bin/ci/acceptance-gate-bypass-check --test-fixtures
 }
 
+function ci:disposable-host-check {
+    ci/deploy/digitalocean-destroy-origin-test.sh
+}
+
 function ci:prod-build {
     ci/prod-build.sh
 }
@@ -612,6 +616,7 @@ function ci:run-all {
     ci:workflow-lint
     ci:acceptance-gate-bypass-check
     ci:acceptance-gate-bypass-check:test
+    ci:disposable-host-check
     ci:secret-scan
     ci:setup-env
     ci:compile
