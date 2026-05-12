@@ -27,16 +27,24 @@ while IFS= read -r route; do
     status="$(jq -r --arg route "${route}" '.routes[$route].status' "${LAST_RUN_FILE}")"
     p50="$(jq -r --arg route "${route}" '.routes[$route].warm_p50_ms // 0' "${LAST_RUN_FILE}")"
 
-    if [[ "${status}" == "fail" ]]; then
-        echo "prod-build route failed: ${route}" >&2
-        failures=$((failures + 1))
-        continue
-    fi
-
-    if [[ "${status}" == "known_broken" ]]; then
-        echo "prod-build route known-broken exemption used: ${route}" >&2
-        continue
-    fi
+    case "${status}" in
+        pass)
+            ;;
+        fail)
+            echo "prod-build route failed: ${route}" >&2
+            failures=$((failures + 1))
+            continue
+            ;;
+        known_broken)
+            echo "prod-build route known-broken exemption used: ${route}" >&2
+            continue
+            ;;
+        *)
+            echo "prod-build route has unexpected status: ${route} status=${status}" >&2
+            failures=$((failures + 1))
+            continue
+            ;;
+    esac
 
     if (( p50 > ABSOLUTE_P50_FLOOR_MS )); then
         echo "prod-build route exceeded absolute p50 floor: ${route} p50=${p50}ms floor=${ABSOLUTE_P50_FLOOR_MS}ms" >&2

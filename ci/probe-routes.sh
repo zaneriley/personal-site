@@ -115,14 +115,17 @@ function route_result {
 
     if [[ "${route_status}" == "pass" ]]; then
         route_status="$(
-            jq -r '
+            jq -n -r --argjson cold "${cold_json}" --argjson warm "${warm_json}" '
               def ok_status: test("^[23]");
-              if ((.statusCodeDistribution // {}) | to_entries | map(select(.key | ok_status | not)) | length) == 0
-                 and ((.summary.successRate // 0) == 1)
+              def successful($run):
+                (($run.statusCodeDistribution // {}) | to_entries | map(select(.key | ok_status | not)) | length) == 0
+                and (($run.summary.successRate // 0) == 1);
+
+              if successful($cold) and successful($warm)
               then "pass"
               else "fail"
               end
-            ' <<< "${warm_json}"
+            '
         )"
     fi
 

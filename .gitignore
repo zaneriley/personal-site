@@ -189,6 +189,7 @@ flycheck_*.el
 /ci/last-run.json
 /ci/browser-last-run.json
 /ci/digitalocean-origin.json
+/ci/digitalocean-host.json
 
 # Process core dumps
 core

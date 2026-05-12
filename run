@@ -40,9 +40,16 @@ function _dc {
 }
 
 function _build_run_down {
-  docker compose build
-  docker compose run ${TTY} "${@}"
-  docker compose down
+  local status=0
+
+  docker compose build || status=$?
+
+  if [[ "${status}" == "0" ]]; then
+    docker compose run ${TTY} "${@}" || status=$?
+  fi
+
+  docker compose down || true
+  return "${status}"
 }
 
 # -----------------------------------------------------------------------------
@@ -532,9 +539,9 @@ function ci:static-analysis {
 
 function ci:secret-scan {
     local scan_dir
+    local status
 
     scan_dir="$(mktemp -d)"
-    trap 'rm -rf "${scan_dir}"' EXIT
 
     git ls-files -z --cached --others --exclude-standard | while IFS= read -r -d '' path; do
         if [[ -f "${path}" ]]; then
@@ -543,7 +550,14 @@ function ci:secret-scan {
         fi
     done
 
-    gitleaks dir "${scan_dir}" --redact --exit-code 1
+    if gitleaks dir "${scan_dir}" --redact --exit-code 1; then
+        status=0
+    else
+        status=$?
+    fi
+
+    rm -rf "${scan_dir}"
+    return "${status}"
 }
 
 function ci:acceptance-gate-bypass-check {
