@@ -61,6 +61,10 @@ The Elixir-side prescriptions (writing-controllers, writing-liveviews, writing-o
 - `AGENTS.md` is for constant repo-level guidance, workflows, acceptance gates, and pointers to durable records. It may summarize or link to ADRs when the guidance must stay visible, but it is not the ADR body.
 - Tactical day-to-day notes stay in conversation or `.tmp/` until promoted into either an ADR or an always-on repo rule.
 
+## Commit and PR language
+
+Keep Conventional Commits for tooling, but make the subject after the prefix readable to someone who has not read this repo's planning docs. Use `feat:` only when the world changes in a user-observable way; plumbing, renames, and guardrail tightening are usually `chore:`, `build:`, or `ci:`. Avoid internal nouns in subjects such as verdicts, generations, ledgers, spikes, acceptance surfaces, or publishability; put mechanism in the body.
+
 ---
 
 ## Deploy / ops scope
