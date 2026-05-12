@@ -3,12 +3,15 @@ defmodule Portfolio.Release do
   This module defines functions that you can run with releases.
   """
 
-  @app :portfolio
   alias Portfolio.Content
-  alias Portfolio.Content.FileManagement.Reader
-  alias Portfolio.Content.Remote.GitRepoSyncer
+  alias Portfolio.Content.FileManagement.Promoter
+  alias Portfolio.Content.Remote.RemoteUpdateTrigger
+
   require Logger
 
+  @app :portfolio
+
+  @spec migrate() :: [term()]
   def migrate do
     load_app()
 
@@ -21,55 +24,104 @@ defmodule Portfolio.Release do
   @doc """
   Pulls the latest changes from the configured repository.
   """
+  @spec pull_repository() :: :ok | no_return()
   def pull_repository do
-    repo_url = Application.get_env(:portfolio, :content_repo_url)
-    local_path = Application.get_env(:portfolio, :content_base_path)
+    {:ok, _apps} = Application.ensure_all_started(@app)
 
-    IO.puts("Debug: repo_url = #{inspect(repo_url)}")
-    IO.puts("Debug: local_path = #{inspect(local_path)}")
-
-    cond do
-      is_nil(repo_url) ->
-        raise "Missing configuration for content_repo_url. Ensure CONTENT_REPO_URL environment variable is set."
-
-      is_nil(local_path) ->
-        raise "Missing configuration for content_base_path. Check your config files."
-
-      not is_binary(repo_url) ->
-        raise "Invalid configuration for content_repo_url: #{inspect(repo_url)}. It should be a string."
-
-      not is_binary(local_path) ->
-        raise "Invalid configuration for content_base_path: #{inspect(local_path)}. It should be a string."
-
-      true ->
-        do_pull_repository(repo_url, local_path)
+    with {:ok, repo_url} <- get_content_repo_url(),
+         {:ok, local_path} <- get_content_base_path(),
+         :ok <- do_pull_repository(repo_url, local_path) do
+      :ok
+    else
+      {:error, reason} -> handle_bootstrap_failure(reason)
     end
   end
 
   defp do_pull_repository(repo_url, local_path) do
-    case GitRepoSyncer.sync_repo(repo_url, local_path) do
-      {:ok, _} ->
-        Logger.info("Successfully pulled latest changes from the repository.")
+    case RemoteUpdateTrigger.trigger_update(repo_url,
+           content_base_path: local_path,
+           repository: repo_url,
+           ref: "refs/heads/main",
+           source: :bootstrap
+         ) do
+      {:ok, _result} ->
+        Logger.info(
+          "Successfully published latest content from the repository."
+        )
+
+        :ok
 
       {:error, reason} ->
-        Logger.error("Failed to pull repository: #{reason}")
-        raise "Failed to pull repository: #{reason}"
+        {:error, reason}
     end
+  end
+
+  defp handle_bootstrap_failure(reason) do
+    if content_ready_for_bootstrap?() do
+      Logger.error(
+        "Failed to publish repository at boot, serving last-good content: #{reason}"
+      )
+
+      :ok
+    else
+      Logger.error(
+        "Failed to publish repository at boot and no last-good content exists: #{reason}"
+      )
+
+      raise "Failed to publish repository at boot and no last-good content exists: #{reason}"
+    end
+  end
+
+  defp content_ready_for_bootstrap? do
+    case Application.ensure_all_started(@app) do
+      {:ok, _apps} ->
+        Content.content_ready?()
+
+      {:error, reason} ->
+        Logger.error(
+          "Could not check last-good content during boot failure: #{inspect(reason)}"
+        )
+
+        false
+    end
+  rescue
+    error ->
+      Logger.error(
+        "Could not check last-good content during boot failure: #{Exception.message(error)}"
+      )
+
+      false
   end
 
   @doc """
   Reads all existing markdown files and updates the database.
   """
+  @spec read_existing_content() :: :ok | no_return()
   def read_existing_content do
     with :ok <- load_app(),
          {:ok, content_base_path} <- get_content_base_path(),
-         {:ok, files} <- list_files(content_base_path) do
-      files
-      |> Enum.filter(&markdown?/1)
-      |> Enum.each(&process_file(Path.join(content_base_path, &1)))
+         :ok <- publish_embedded_content(content_base_path) do
+      :ok
     else
       {:error, reason} ->
         Logger.error("Failed to read existing content: #{inspect(reason)}")
+        handle_bootstrap_failure(reason)
+    end
+  end
+
+  defp get_content_repo_url do
+    case Application.get_env(:portfolio, :content_repo_url) do
+      nil ->
+        {:error,
+         "Missing configuration for content_repo_url. " <>
+           "Ensure CONTENT_REPO_URL environment variable is set."}
+
+      path when is_binary(path) ->
+        {:ok, path}
+
+      invalid ->
+        {:error,
+         "Invalid configuration for content_repo_url: #{inspect(invalid)}"}
     end
   end
 
@@ -88,38 +140,49 @@ defmodule Portfolio.Release do
     end
   end
 
-  defp list_files(path) do
-    case File.ls(path) do
-      {:ok, files} ->
-        {:ok, files}
+  defp publish_embedded_content(content_base_path) do
+    {:ok, _apps} = Application.ensure_all_started(@app)
+    content_sha = embedded_content_sha(content_base_path)
 
-      {:error, reason} ->
-        {:error, "Failed to list files in #{path}: #{inspect(reason)}"}
-    end
+    Portfolio.Content.Publishing.with_publication_lock(fn ->
+      with {:ok, generation} <-
+             Portfolio.Content.Publishing.prepare_generation(content_sha,
+               source: :bootstrap
+             ),
+           {:ok, result} <-
+             Promoter.promote_all(content_base_path,
+               publication_generation_id: generation.id
+             ),
+           {:ok, _entry} <-
+             Content.record_publication_event(
+               "embedded:#{content_sha}",
+               content_sha,
+               :accepted,
+               generation_id: generation.id,
+               promoted_paths: result.promoted,
+               removed_paths: result.removed,
+               skipped_paths: result.skipped,
+               structured_errors: %{"errors" => []},
+               reason: "Embedded content bootstrap"
+             ) do
+        :ok
+      else
+        {:error, reason} -> {:error, reason}
+      end
+    end)
   end
 
-  defp markdown?(file_name) do
-    String.ends_with?(file_name, ".md")
+  defp embedded_content_sha(content_base_path) do
+    content_base_path
+    |> Path.join("**/*.md")
+    |> Path.wildcard()
+    |> Enum.sort()
+    |> Enum.map(fn path -> [path, "\0", File.read!(path), "\0"] end)
+    |> then(&:crypto.hash(:sha, &1))
+    |> Base.encode16(case: :lower)
   end
 
-  defp process_file(file_path) do
-    case Reader.read_markdown_file(file_path) do
-      {:ok, content_type, attrs} ->
-        case Content.upsert_from_file(content_type, attrs) do
-          {:ok, _content} ->
-            Logger.info("Successfully upserted content from file: #{file_path}")
-
-          {:error, reason} ->
-            Logger.error(
-              "Error upserting content from file #{file_path}: #{inspect(reason)}"
-            )
-        end
-
-      {:error, reason} ->
-        Logger.error("Error processing file #{file_path}: #{inspect(reason)}")
-    end
-  end
-
+  @spec rollback(module(), non_neg_integer()) :: {:ok, term(), [atom()]}
   def rollback(repo, version) do
     load_app()
 
@@ -132,6 +195,10 @@ defmodule Portfolio.Release do
   end
 
   defp load_app do
-    Application.load(@app)
+    case Application.load(@app) do
+      :ok -> :ok
+      {:error, {:already_loaded, @app}} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
   end
 end

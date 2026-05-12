@@ -2,8 +2,10 @@ defmodule Portfolio.Content.Entry.SourceTest do
   use Portfolio.DataCase
 
   import Portfolio.ContentFixtures
+
   alias Portfolio.Content.Entry.Source
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Repo
 
   describe "upsert_from_file/2" do
     test "creates new content from file data" do
@@ -23,7 +25,9 @@ defmodule Portfolio.Content.Entry.SourceTest do
 
     test "updates existing content from file data" do
       existing_note =
-        note_fixture(%{"url" => "existing-file-note"})
+        note_fixture(%{"url" => "existing-file-note"},
+          publication_generation_id: nil
+        )
 
       attrs = %{
         "url" => "existing-file-note",
@@ -39,6 +43,80 @@ defmodule Portfolio.Content.Entry.SourceTest do
       assert updated_note.title == "Updated File Note"
       assert updated_note.content == "Updated content from file"
       assert updated_note.stored_ast != nil
+    end
+
+    test "does not mutate live-generation content without an explicit generation" do
+      live_note =
+        note_fixture(%{
+          "url" => "live-file-note",
+          "title" => "Live File Note",
+          "content" => "Live content"
+        })
+
+      attrs = %{
+        "url" => "live-file-note",
+        "title" => "Draft File Note",
+        "content" => "Draft content from file",
+        "locale" => "en"
+      }
+
+      assert {:ok, %Note{} = unpublished_note} =
+               Source.upsert_from_file("note", attrs)
+
+      assert unpublished_note.id != live_note.id
+      assert unpublished_note.publication_generation_id == nil
+      assert Repo.get!(Note, live_note.id).title == "Live File Note"
+    end
+
+    test "does not trust publication generation IDs from frontmatter attrs" do
+      live_note =
+        note_fixture(%{
+          "url" => "hostile-frontmatter-note",
+          "title" => "Live File Note",
+          "content" => "Live content"
+        })
+
+      attrs = %{
+        "url" => "hostile-frontmatter-note",
+        "title" => "Hostile File Note",
+        "content" => "Hostile content from file",
+        "locale" => "en",
+        "publication_generation_id" => live_note.publication_generation_id
+      }
+
+      assert {:ok, %Note{} = unpublished_note} =
+               Source.upsert_from_file("note", attrs)
+
+      assert unpublished_note.id != live_note.id
+      assert unpublished_note.publication_generation_id == nil
+      assert Repo.get!(Note, live_note.id).title == "Live File Note"
+    end
+
+    test "uses trusted publication generation IDs from promotion code" do
+      live_note =
+        note_fixture(%{
+          "url" => "trusted-generation-note",
+          "title" => "Live File Note",
+          "content" => "Live content"
+        })
+
+      attrs = %{
+        "url" => "trusted-generation-note",
+        "title" => "Trusted File Note",
+        "content" => "Trusted content from file",
+        "locale" => "en",
+        trusted_publication_generation_id: live_note.publication_generation_id
+      }
+
+      assert {:ok, %Note{} = updated_note} =
+               Source.upsert_from_file("note", attrs)
+
+      assert updated_note.id == live_note.id
+
+      assert updated_note.publication_generation_id ==
+               live_note.publication_generation_id
+
+      assert Repo.get!(Note, live_note.id).title == "Trusted File Note"
     end
 
     test "handles atom content type" do
@@ -88,7 +166,7 @@ defmodule Portfolio.Content.Entry.SourceTest do
         })
 
       # Now add a Japanese translation
-      {:ok, ^note} =
+      {:ok, %Note{} = translated_note} =
         Source.upsert_from_file("note", %{
           "url" => "translatable-note",
           "title" => "Japanese Title",
@@ -96,9 +174,11 @@ defmodule Portfolio.Content.Entry.SourceTest do
           "locale" => "ja"
         })
 
+      assert translated_note.id == note.id
+
       # Get the translations from the database to verify
       translations =
-        Portfolio.Content.TranslationManager.get_translations(
+        Portfolio.Content.TranslationRepository.get_translations(
           note.id,
           "note",
           "ja"

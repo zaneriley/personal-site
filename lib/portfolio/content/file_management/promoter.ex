@@ -4,8 +4,12 @@ defmodule Portfolio.Content.FileManagement.Promoter do
 
   Promotion is the boundary between "git has new files" and "the site can serve
   the content." It parses Markdown frontmatter, upserts renderable content, and
-  removes entries whose source Markdown disappeared. A failed promotion rolls
-  back the whole batch so the previous DB state stays live.
+  removes entries whose source Markdown disappeared.
+
+  Validator and local promotion callers use rollback-on-error so a failed
+  promotion leaves no residue. The remote publication path keeps failed
+  generation rows for diagnosis, but the publication state does not move the
+  live pointer to that generation.
   """
 
   import Ecto.Query
@@ -37,17 +41,20 @@ defmodule Portfolio.Content.FileManagement.Promoter do
   Promotes every Markdown file under the content base path and prunes missing
   content entries that previously came from that tree.
   """
-  @spec promote_all(String.t()) ::
+  @spec promote_all(String.t(), keyword()) ::
           {:ok, promotion_result()} | {:error, promotion_result()}
-  def promote_all(content_base_path) when is_binary(content_base_path) do
+  def promote_all(content_base_path, opts \\ [])
+      when is_binary(content_base_path) do
     content_base_path = Path.expand(content_base_path)
+    publication_generation_id = Keyword.get(opts, :publication_generation_id)
 
     with {:ok, files} <- list_markdown_files(content_base_path) do
-      promote_in_transaction(fn ->
-        files
-        |> Enum.reduce(new_result(), &promote_existing_file/2)
-        |> remove_missing_content(content_base_path, files)
-      end)
+      promote_all_files(
+        content_base_path,
+        files,
+        publication_generation_id,
+        opts
+      )
     end
   end
 
@@ -57,59 +64,83 @@ defmodule Portfolio.Content.FileManagement.Promoter do
   Added/modified files are parsed and upserted. Removed files are unpublished
   from the DB by source path. The whole set is transactional.
   """
-  @spec promote_changes(String.t(), change_set()) ::
+  @spec promote_changes(String.t(), change_set(), keyword()) ::
           {:ok, promotion_result()} | {:error, promotion_result()}
-  def promote_changes(content_base_path, changes)
+  def promote_changes(content_base_path, changes, opts \\ [])
       when is_binary(content_base_path) do
     content_base_path = Path.expand(content_base_path)
+    publication_generation_id = Keyword.get(opts, :publication_generation_id)
 
-    promote_in_transaction(fn ->
+    promote_in_transaction(opts, fn ->
       result =
         changes
         |> Map.get(:upsert, [])
         |> reduce_changed_paths(
           content_base_path,
           new_result(),
-          &promote_path_change/2
+          fn path, result ->
+            promote_path_change(path, result, publication_generation_id)
+          end
         )
 
       changes
       |> Map.get(:delete, [])
-      |> reduce_changed_paths(content_base_path, result, &remove_path_change/2)
+      |> reduce_changed_paths(content_base_path, result, fn path, result ->
+        remove_path_change(path, result, publication_generation_id)
+      end)
+      |> validate_alias_integrity(publication_generation_id)
+      |> validate_deleted_aliases(
+        content_base_path,
+        changes,
+        publication_generation_id
+      )
     end)
   end
 
   @doc """
   Promotes or removes a single file path, used by the filesystem watcher.
   """
-  @spec promote_path(String.t()) ::
+  @spec promote_path(String.t(), keyword()) ::
           {:ok, promotion_result()} | {:error, promotion_result()}
-  def promote_path(path) when is_binary(path) do
-    promote_in_transaction(fn ->
+  def promote_path(path, opts \\ []) when is_binary(path) do
+    publication_generation_id = Keyword.get(opts, :publication_generation_id)
+
+    promote_in_transaction(opts, fn ->
       path
       |> Path.expand()
-      |> promote_path_change(new_result())
+      |> promote_path_change(new_result(), publication_generation_id)
+      |> validate_alias_integrity(publication_generation_id)
     end)
   end
 
-  defp promote_in_transaction(fun) do
+  defp promote_in_transaction(opts, fun) do
+    rollback_on_error? = Keyword.get(opts, :rollback_on_error, true)
+
     fun
-    |> transaction()
-    |> normalize_transaction_result()
+    |> transaction(rollback_on_error?)
+    |> normalize_transaction_result(rollback_on_error?)
   end
 
-  defp transaction(fun) do
+  defp transaction(fun, rollback_on_error?) do
     Repo.transaction(fn ->
-      fun.()
-      |> rollback_on_errors()
+      result = fun.()
+
+      if rollback_on_error? do
+        rollback_on_errors(result)
+      else
+        result
+      end
     end)
   end
 
   defp rollback_on_errors(%{errors: []} = result), do: result
   defp rollback_on_errors(result), do: Repo.rollback(result)
 
-  defp normalize_transaction_result(transaction_result) do
+  defp normalize_transaction_result(transaction_result, rollback_on_error?) do
     case transaction_result do
+      {:ok, %{errors: [_ | _]} = result} when not rollback_on_error? ->
+        {:error, result}
+
       {:ok, result} ->
         {:ok, result}
 
@@ -123,6 +154,31 @@ defmodule Portfolio.Content.FileManagement.Promoter do
 
   defp new_result do
     %{promoted: [], removed: [], skipped: [], errors: []}
+  end
+
+  defp promote_all_files(
+         content_base_path,
+         files,
+         publication_generation_id,
+         opts
+       ) do
+    promote_in_transaction(opts, fn ->
+      files
+      |> Enum.reduce(new_result(), fn path, result ->
+        promote_existing_file(path, result, publication_generation_id)
+      end)
+      |> remove_missing_content(
+        content_base_path,
+        files,
+        publication_generation_id
+      )
+      |> validate_alias_integrity(publication_generation_id)
+      |> validate_deleted_aliases(
+        content_base_path,
+        Keyword.get(opts, :changes, %{upsert: [], delete: []}),
+        publication_generation_id
+      )
+    end)
   end
 
   defp reduce_changed_paths(paths, content_base_path, result, reducer) do
@@ -155,7 +211,7 @@ defmodule Portfolio.Content.FileManagement.Promoter do
     end
   end
 
-  defp promote_path_change(path, result) do
+  defp promote_path_change(path, result, publication_generation_id) do
     cond do
       hidden_path?(path) ->
         skip_path(result, path)
@@ -164,20 +220,48 @@ defmodule Portfolio.Content.FileManagement.Promoter do
         skip_path(result, path)
 
       File.exists?(path) ->
-        promote_existing_file(path, result)
+        promote_existing_file(path, result, publication_generation_id)
 
       true ->
         remove_path_change(path, result)
     end
   end
 
-  defp promote_existing_file(path, result) do
+  defp promote_existing_file(path, result, publication_generation_id) do
     case Reader.read_markdown_file(path) do
       {:ok, content_type, attrs} ->
-        upsert_file(content_type, attrs, path, result)
+        promote_read_file(
+          content_type,
+          attrs,
+          path,
+          result,
+          publication_generation_id
+        )
 
       {:error, reason} ->
         add_error(result, path, reason)
+    end
+  end
+
+  defp promote_read_file(
+         content_type,
+         attrs,
+         path,
+         result,
+         publication_generation_id
+       ) do
+    case plaintext_draft?(attrs) do
+      true ->
+        add_error(result, path, :unencrypted_draft)
+
+      false ->
+        attrs =
+          maybe_put_publication_generation_id(
+            attrs,
+            publication_generation_id
+          )
+
+        upsert_file(content_type, attrs, path, result)
     end
   end
 
@@ -191,7 +275,14 @@ defmodule Portfolio.Content.FileManagement.Promoter do
     end
   end
 
-  defp remove_path_change(path, result) do
+  defp remove_path_change(path, result, publication_generation_id \\ nil)
+
+  defp remove_path_change(path, result, publication_generation_id)
+       when is_binary(publication_generation_id) do
+    %{result | removed: [path | result.removed]}
+  end
+
+  defp remove_path_change(path, result, _publication_generation_id) do
     case delete_by_file_path(path) do
       {:ok, 0} ->
         %{result | skipped: [path | result.skipped]}
@@ -204,7 +295,22 @@ defmodule Portfolio.Content.FileManagement.Promoter do
     end
   end
 
-  defp remove_missing_content(result, content_base_path, current_files) do
+  defp remove_missing_content(
+         result,
+         _content_base_path,
+         _current_files,
+         generation_id
+       )
+       when is_binary(generation_id) do
+    result
+  end
+
+  defp remove_missing_content(
+         result,
+         content_base_path,
+         current_files,
+         _generation_id
+       ) do
     current_paths = MapSet.new(Enum.map(current_files, &Path.expand/1))
 
     @content_schemas
@@ -260,17 +366,16 @@ defmodule Portfolio.Content.FileManagement.Promoter do
     expanded_path = Path.expand(path)
     relative_path = Path.relative_to_cwd(expanded_path)
 
-    [path, expanded_path, relative_path]
-    |> Enum.uniq()
+    Enum.uniq([path, expanded_path, relative_path])
   end
 
   defp content_path(content_base_path, path) do
-    path =
+    clean_path =
       path
       |> String.trim_leading("/")
       |> String.replace_prefix("priv/content/", "")
 
-    Path.expand(path, content_base_path)
+    Path.expand(clean_path, content_base_path)
   end
 
   defp under_base_path?(path, content_base_path) do
@@ -302,5 +407,222 @@ defmodule Portfolio.Content.FileManagement.Promoter do
 
   defp add_error(result, path, reason) do
     %{result | errors: [%{path: path, reason: reason} | result.errors]}
+  end
+
+  defp validate_alias_integrity(
+         %{errors: [_first | _rest]} = result,
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_alias_integrity(result, generation_id) do
+    alias_errors =
+      @content_schemas
+      |> Enum.flat_map(&alias_errors_for_schema(&1, generation_id))
+
+    %{result | errors: alias_errors ++ result.errors}
+  end
+
+  defp alias_errors_for_schema(schema, generation_id) do
+    contents = generation_contents(schema, generation_id)
+    canonical_urls = MapSet.new(Enum.map(contents, & &1.url))
+
+    canonical_alias_errors(contents, canonical_urls) ++
+      duplicate_alias_errors(contents)
+  end
+
+  defp generation_contents(schema, nil) do
+    schema
+    |> where([content], is_nil(content.publication_generation_id))
+    |> public_content()
+    |> Repo.all()
+  end
+
+  defp generation_contents(schema, generation_id)
+       when is_binary(generation_id) do
+    schema
+    |> where([content], content.publication_generation_id == ^generation_id)
+    |> public_content()
+    |> Repo.all()
+  end
+
+  defp public_content(query) do
+    query
+    |> where([content], not content.is_draft)
+    |> where([content], not is_nil(content.published_at))
+  end
+
+  defp canonical_alias_errors(contents, canonical_urls) do
+    Enum.flat_map(contents, fn content ->
+      content
+      |> aliases()
+      |> Enum.filter(&MapSet.member?(canonical_urls, &1))
+      |> Enum.map(&alias_error(content, {:alias_conflicts_with_url, &1}))
+    end)
+  end
+
+  defp duplicate_alias_errors(contents) do
+    contents
+    |> Enum.flat_map(fn content ->
+      Enum.map(aliases(content), &{&1, content})
+    end)
+    |> Enum.group_by(fn {alias_url, _content} -> alias_url end, fn {_alias_url,
+                                                                    content} ->
+      content
+    end)
+    |> Enum.flat_map(fn
+      {_alias_url, [_content]} ->
+        []
+
+      {alias_url, duplicate_contents} ->
+        Enum.map(
+          duplicate_contents,
+          &alias_error(&1, {:duplicate_alias, alias_url})
+        )
+    end)
+  end
+
+  defp aliases(%{aliases: aliases}) when is_list(aliases), do: aliases
+  defp aliases(%{aliases: nil}), do: []
+
+  defp alias_error(content, reason) do
+    %{path: content_error_path(content), reason: reason}
+  end
+
+  defp validate_deleted_aliases(
+         %{errors: [_first | _rest]} = result,
+         _content_base_path,
+         _changes,
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         _content_base_path,
+         %{upsert: []},
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         _content_base_path,
+         %{delete: []},
+         _generation_id
+       ) do
+    result
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         content_base_path,
+         changes,
+         generation_id
+       )
+       when is_binary(generation_id) do
+    errors =
+      changes
+      |> Map.get(:delete, [])
+      |> Enum.map(&content_path(content_base_path, &1))
+      |> Enum.flat_map(&live_content_from_deleted_path/1)
+      |> Enum.reject(&content_slug_preserved?(&1, generation_id))
+      |> Enum.map(&alias_error(&1, {:deleted_without_alias, &1.url}))
+
+    %{result | errors: errors ++ result.errors}
+  end
+
+  defp validate_deleted_aliases(
+         result,
+         _content_base_path,
+         _changes,
+         _generation_id
+       ) do
+    result
+  end
+
+  defp live_content_from_deleted_path(path) do
+    case Portfolio.Content.Publishing.live_generation_id() do
+      nil ->
+        []
+
+      live_generation_id ->
+        delete_paths = path_variants(path)
+
+        Enum.flat_map(@content_schemas, fn schema ->
+          schema
+          |> where(
+            [content],
+            content.publication_generation_id == ^live_generation_id
+          )
+          |> where([content], content.file_path in ^delete_paths)
+          |> public_content()
+          |> Repo.all()
+        end)
+    end
+  end
+
+  defp content_slug_preserved?(content, generation_id) do
+    content.url in generation_slugs(content.__struct__, generation_id)
+  end
+
+  defp generation_slugs(schema, generation_id) do
+    schema
+    |> where([content], content.publication_generation_id == ^generation_id)
+    |> public_content()
+    |> Repo.all()
+    |> Enum.flat_map(fn content -> [content.url | aliases(content)] end)
+    |> MapSet.new()
+  end
+
+  defp content_error_path(%{file_path: file_path}) when is_binary(file_path) do
+    file_path
+  end
+
+  defp content_error_path(%{url: url}) when is_binary(url) do
+    url
+  end
+
+  defp plaintext_draft?(%{"is_draft" => is_draft}) do
+    draft_true?(is_draft)
+  end
+
+  defp plaintext_draft?(%{is_draft: is_draft}) do
+    draft_true?(is_draft)
+  end
+
+  defp plaintext_draft?(_attrs) do
+    false
+  end
+
+  defp draft_true?(true), do: true
+
+  defp draft_true?(is_draft) when is_binary(is_draft) do
+    is_draft
+    |> String.trim()
+    |> String.downcase()
+    |> Kernel.==("true")
+  end
+
+  defp draft_true?(_is_draft), do: false
+
+  defp maybe_put_publication_generation_id(attrs, nil) do
+    scrub_publication_generation_id(attrs)
+  end
+
+  defp maybe_put_publication_generation_id(attrs, publication_generation_id) do
+    attrs
+    |> scrub_publication_generation_id()
+    |> Map.put(:trusted_publication_generation_id, publication_generation_id)
+  end
+
+  defp scrub_publication_generation_id(attrs) do
+    attrs
+    |> Map.delete("publication_generation_id")
+    |> Map.delete(:publication_generation_id)
+    |> Map.delete(:trusted_publication_generation_id)
   end
 end

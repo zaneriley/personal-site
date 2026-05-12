@@ -11,7 +11,10 @@ defmodule Portfolio.Content.Markdown.Renderer do
   """
 
   alias Portfolio.Cache
-  alias Portfolio.Content.Markdown.{Parser, Pipeline, Transforms}
+  alias Portfolio.Content.Markdown.Parser
+  alias Portfolio.Content.Markdown.Pipeline
+  alias Portfolio.Content.Markdown.Transforms
+
   require Logger
 
   @doc """

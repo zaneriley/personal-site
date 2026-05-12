@@ -2,7 +2,8 @@ defmodule Portfolio.Content.TranslationTest do
   use ExUnit.Case
   use Portfolio.DataCase, async: false
   alias Portfolio.Content
-  alias Portfolio.Content.TranslationManager
+  alias Portfolio.Content.Publishing
+  alias Portfolio.Content.TranslationRepository
   alias Portfolio.ContentFixtures
   alias Portfolio.AstTestHelpers
 
@@ -17,7 +18,7 @@ defmodule Portfolio.Content.TranslationTest do
       }
 
       assert {:ok, translations} =
-               TranslationManager.create_or_update_translations(
+               TranslationRepository.create_or_update_translations(
                  note,
                  "ja",
                  attrs
@@ -32,7 +33,7 @@ defmodule Portfolio.Content.TranslationTest do
       initial_attrs = %{"title" => "初期タイトル", "content" => "初期コンテンツ"}
 
       {:ok, _} =
-        TranslationManager.create_or_update_translations(
+        TranslationRepository.create_or_update_translations(
           note,
           "ja",
           initial_attrs
@@ -41,15 +42,11 @@ defmodule Portfolio.Content.TranslationTest do
       updated_attrs = %{"title" => "更新されたタイトル", "content" => "更新されたコンテンツ"}
 
       {:ok, translations} =
-        TranslationManager.create_or_update_translations(
+        TranslationRepository.create_or_update_translations(
           note,
           "ja",
           updated_attrs
         )
-
-      # Debug what's stored in the database
-      db_translations =
-        TranslationManager.get_translations(note.id, "note", "ja")
 
       assert length(translations) == 2
 
@@ -69,10 +66,18 @@ defmodule Portfolio.Content.TranslationTest do
         "company" => "日本語の会社名"
       }
 
-      TranslationManager.create_or_update_translations(case_study, "ja", attrs)
+      TranslationRepository.create_or_update_translations(
+        case_study,
+        "ja",
+        attrs
+      )
 
       translations =
-        TranslationManager.get_translations(case_study.id, "case_study", "ja")
+        TranslationRepository.get_translations(
+          case_study.id,
+          "case_study",
+          "ja"
+        )
 
       # We now expect to handle both string and AST values
       title_text = AstTestHelpers.extract_text(translations["title"])
@@ -87,7 +92,12 @@ defmodule Portfolio.Content.TranslationTest do
     test "get_content_with_translations returns content with Japanese translations" do
       case_study = ContentFixtures.case_study_fixture()
       attrs = %{"title" => "翻訳されたタイトル", "content" => "翻訳されたコンテンツ"}
-      TranslationManager.create_or_update_translations(case_study, "ja", attrs)
+
+      TranslationRepository.create_or_update_translations(
+        case_study,
+        "ja",
+        attrs
+      )
 
       {:ok, content, translations, ast_result} =
         Content.get_with_translations("case_study", case_study.url, "ja")
@@ -108,16 +118,30 @@ defmodule Portfolio.Content.TranslationTest do
     end
 
     test "upsert_from_file creates new content and Japanese translations" do
+      content_sha = String.duplicate("1", 40)
+      {:ok, generation} = Publishing.prepare_generation(content_sha)
+
       attrs = %{
         "url" => "new-note",
         "locale" => "ja",
         "title" => "新しいタイトル",
         "content" => "新しいコンテンツ",
-        "introduction" => "新しい紹介"
+        "introduction" => "新しい紹介",
+        "published_at" => ~N[2023-01-01 00:00:00],
+        "is_draft" => false,
+        trusted_publication_generation_id: generation.id
       }
 
       assert {:ok, note} = Content.upsert_from_file("note", attrs)
       assert note.url == "new-note"
+
+      assert {:ok, _accepted} =
+               Publishing.record_publication_event(
+                 "translation-upsert:#{System.unique_integer([:positive])}",
+                 content_sha,
+                 :accepted,
+                 generation_id: generation.id
+               )
 
       # Check original content
       assert note.title == "新しいタイトル"
@@ -126,10 +150,6 @@ defmodule Portfolio.Content.TranslationTest do
 
       # Fetch the note directly from the database to ensure we're not working with cached data
       fresh_note = Portfolio.Repo.get!(Portfolio.Content.Schemas.Note, note.id)
-
-      # Debug raw translations in database
-      raw_translations =
-        TranslationManager.get_translations(fresh_note.id, "note", "ja")
 
       # Check Japanese translations
       {:ok, retrieved_note, translations, ast_result} =
@@ -170,17 +190,15 @@ defmodule Portfolio.Content.TranslationTest do
         "url" => "existing-note",
         "locale" => "ja",
         "title" => "更新されたタイトル",
-        "content" => "更新されたコンテンツ"
+        "content" => "更新されたコンテンツ",
+        trusted_publication_generation_id:
+          existing_note.publication_generation_id
       }
 
       assert {:ok, updated_note} = Content.upsert_from_file("note", attrs)
       assert updated_note.id == existing_note.id
 
-      # Debug raw translations in database
-      raw_translations =
-        TranslationManager.get_translations(updated_note.id, "note", "ja")
-
-      assert {:ok, content, translations, ast_result} =
+      assert {:ok, _content, translations, ast_result} =
                Content.get_with_translations("note", "existing-note", "ja")
 
       # Extract text for comparison

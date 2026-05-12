@@ -1,9 +1,10 @@
 defmodule PortfolioWeb.Router do
   use PortfolioWeb, :router
-  alias PortfolioWeb.Plugs.SetLocale
-  alias PortfolioWeb.Plugs.LocaleRedirection
   alias PortfolioWeb.Plugs.CommonMetadata
+  alias PortfolioWeb.Plugs.ContentAliasRedirect
   alias PortfolioWeb.Plugs.CSPHeader
+  alias PortfolioWeb.Plugs.LocaleRedirection
+  alias PortfolioWeb.Plugs.SetLocale
   import Phoenix.LiveView.Router
   import Phoenix.LiveDashboard.Router
   require Logger
@@ -11,6 +12,7 @@ defmodule PortfolioWeb.Router do
   pipeline :locale do
     plug SetLocale
     plug LocaleRedirection
+    plug ContentAliasRedirect
   end
 
   pipeline :browser do
@@ -49,6 +51,12 @@ defmodule PortfolioWeb.Router do
 
   scope "/", PortfolioWeb do
     get "/readyz", ReadinessController, :index
+  end
+
+  scope "/ops", PortfolioWeb do
+    pipe_through :browser
+
+    get "/content/publications/:id", ContentPublicationController, :show
   end
 
   # Documentation route - add before other routes to bypass locale redirection

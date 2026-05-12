@@ -4,15 +4,19 @@ defmodule Portfolio.Content.Entry.Source do
 
   This module is responsible for upserting content entries from file attributes,
   considering both URL and locale. It coordinates with Records for database operations,
-  Compiler for AST generation, and TranslationManager for translations.
+  Compiler for AST generation, and TranslationRepository for translations.
   """
 
-  alias Portfolio.Repo
-  alias Portfolio.Content.Types
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
-  alias Portfolio.Content.TranslationManager
+  import Ecto.Query
+
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.Records
+  alias Portfolio.Content.FileManagement.ValidationError
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.TranslationRepository
+  alias Portfolio.Content.Types
+  alias Portfolio.Repo
 
   require Logger
 
@@ -50,7 +54,10 @@ defmodule Portfolio.Content.Entry.Source do
       {:ok, updated_content}
     else
       {:error, reason} ->
-        Logger.error("Error in upsert_from_file: #{inspect(reason)}")
+        Logger.error(
+          "Error in upsert_from_file: #{ValidationError.message(reason)}"
+        )
+
         {:error, reason}
     end
   end
@@ -82,7 +89,11 @@ defmodule Portfolio.Content.Entry.Source do
       Logger.error("URL is nil in attrs: #{inspect(attrs)}")
       {:error, :nil_url}
     else
-      case Repo.get_by(schema, url: attrs["url"]) do
+      case get_by_url_and_generation(
+             schema,
+             attrs["url"],
+             publication_generation_id(attrs)
+           ) do
         nil ->
           Logger.info("Creating new content for URL: #{attrs["url"]}")
           create_content(Map.put(attrs, "content_type", content_type))
@@ -96,7 +107,11 @@ defmodule Portfolio.Content.Entry.Source do
 
   # Handle content for non-default locales
   defp upsert_non_default_locale_content(schema, attrs, content_type) do
-    case Repo.get_by(schema, url: attrs["url"]) do
+    case get_by_url_and_generation(
+           schema,
+           attrs["url"],
+           publication_generation_id(attrs)
+         ) do
       nil -> create_entry_with_translations(attrs, content_type)
       entry -> update_entry_translations(entry, attrs)
     end
@@ -121,7 +136,7 @@ defmodule Portfolio.Content.Entry.Source do
 
   # Create or update translations for an entry
   defp create_or_update_translations(entry, attrs) do
-    TranslationManager.create_or_update_translations(
+    TranslationRepository.create_or_update_translations(
       entry,
       attrs["locale"],
       attrs
@@ -135,7 +150,10 @@ defmodule Portfolio.Content.Entry.Source do
         error
 
       {:ok, schema} ->
-        with changeset <- apply_changeset(struct(schema), attrs),
+        with changeset <-
+               attrs
+               |> trusted_struct(schema)
+               |> apply_changeset(scrub_reserved_attrs(attrs)),
              {:ok, content} <- Records.insert_content(changeset),
              # Get AST from compiler
              {:ok, %{ast: ast}} <- Compiler.compile(content.content),
@@ -153,7 +171,11 @@ defmodule Portfolio.Content.Entry.Source do
     # Start a transaction
     Repo.transaction(fn ->
       # Update basic attributes first
-      with {:ok, content} <- Records.update_content_attributes(content, attrs),
+      with {:ok, content} <-
+             Records.update_content_attributes(
+               content,
+               scrub_reserved_attrs(attrs)
+             ),
            # Then handle content compilation if content was updated
            {:ok, content} <- compile_updated_content(content, attrs) do
         content
@@ -181,4 +203,48 @@ defmodule Portfolio.Content.Entry.Source do
 
   defp apply_changeset(%CaseStudy{} = case_study, attrs),
     do: CaseStudy.changeset(case_study, attrs)
+
+  defp publication_generation_id(attrs) do
+    attrs[:trusted_publication_generation_id]
+  end
+
+  defp trusted_struct(attrs, schema) do
+    schema
+    |> struct()
+    |> maybe_put_publication_generation_id(publication_generation_id(attrs))
+  end
+
+  defp maybe_put_publication_generation_id(content, nil), do: content
+
+  defp maybe_put_publication_generation_id(content, generation_id)
+       when is_binary(generation_id) do
+    %{content | publication_generation_id: generation_id}
+  end
+
+  defp scrub_reserved_attrs(attrs) do
+    attrs
+    |> Map.delete("publication_generation_id")
+    |> Map.delete(:publication_generation_id)
+    |> Map.delete(:trusted_publication_generation_id)
+  end
+
+  defp get_by_url_and_generation(schema, url, nil) do
+    get_by_unpublished_url(schema, url)
+  end
+
+  defp get_by_url_and_generation(schema, url, publication_generation_id) do
+    Repo.get_by(schema,
+      url: url,
+      publication_generation_id: publication_generation_id
+    )
+  end
+
+  defp get_by_unpublished_url(schema, url) do
+    schema
+    |> where(
+      [entry],
+      entry.url == ^url and is_nil(entry.publication_generation_id)
+    )
+    |> Repo.one()
+  end
 end

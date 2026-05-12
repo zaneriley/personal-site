@@ -1,0 +1,94 @@
+<section id="main-content" class="mx-auto max-w-5xl px-6 py-12">
+  <p class="mb-2 text-sm uppercase tracking-wide text-color-suppressed">
+    Content publication
+  </p>
+  <h1 class="mb-8 text-3xl font-semibold text-color-main">
+    {@entry.status}
+  </h1>
+
+  <dl class="grid gap-4 text-sm md:grid-cols-2">
+    <div>
+      <dt class="text-color-suppressed">Content SHA</dt>
+      <dd class="break-all font-mono">{@entry.content_sha}</dd>
+    </div>
+    <div>
+      <dt class="text-color-suppressed">GitHub delivery</dt>
+      <dd class="break-all font-mono">{@entry.github_delivery_id}</dd>
+    </div>
+    <div>
+      <dt class="text-color-suppressed">Repository</dt>
+      <dd class="break-all font-mono">
+        {@entry.repository || "none recorded"}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-color-suppressed">Ref</dt>
+      <dd class="break-all font-mono">{@entry.ref || "none recorded"}</dd>
+    </div>
+    <div class="md:col-span-2">
+      <dt class="text-color-suppressed">Reason</dt>
+      <dd>{@entry.reason || "none recorded"}</dd>
+    </div>
+  </dl>
+
+  <section class="mt-10">
+    <h2 class="mb-4 text-xl font-semibold text-color-main">
+      Structured path errors
+    </h2>
+    <%= if path_errors(@entry) == [] do %>
+      <p class="text-color-suppressed">No structured path errors recorded.</p>
+    <% else %>
+      <ul class="space-y-4">
+        <li :for={error <- path_errors(@entry)}>
+          <code class="block break-all text-sm">{error_path(error)}</code>
+          <p>{error_reason(error)}</p>
+        </li>
+      </ul>
+    <% end %>
+  </section>
+
+  <section class="mt-10 grid gap-6 md:grid-cols-3">
+    <div>
+      <h2 class="mb-3 text-lg font-semibold text-color-main">Promoted</h2>
+      <ul class="space-y-2 text-sm">
+        <li :for={path <- path_list(@entry, :promoted_paths)}>
+          <code class="break-all">{path}</code>
+        </li>
+        <li
+          :if={path_list(@entry, :promoted_paths) == []}
+          class="text-color-suppressed"
+        >
+          none
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="mb-3 text-lg font-semibold text-color-main">Removed</h2>
+      <ul class="space-y-2 text-sm">
+        <li :for={path <- path_list(@entry, :removed_paths)}>
+          <code class="break-all">{path}</code>
+        </li>
+        <li
+          :if={path_list(@entry, :removed_paths) == []}
+          class="text-color-suppressed"
+        >
+          none
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="mb-3 text-lg font-semibold text-color-main">Skipped</h2>
+      <ul class="space-y-2 text-sm">
+        <li :for={path <- path_list(@entry, :skipped_paths)}>
+          <code class="break-all">{path}</code>
+        </li>
+        <li
+          :if={path_list(@entry, :skipped_paths) == []}
+          class="text-color-suppressed"
+        >
+          none
+        </li>
+      </ul>
+    </div>
+  </section>
+</section>

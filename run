@@ -40,9 +40,16 @@ function _dc {
 }
 
 function _build_run_down {
-  docker compose build
-  docker compose run ${TTY} "${@}"
-  docker compose down
+  local status=0
+
+  docker compose build || status=$?
+
+  if [[ "${status}" == "0" ]]; then
+    docker compose run ${TTY} "${@}" || status=$?
+  fi
+
+  docker compose down || true
+  return "${status}"
 }
 
 # -----------------------------------------------------------------------------
@@ -368,6 +375,35 @@ function content:validate {
     "mix ecto.create --quiet && mix ecto.migrate --quiet && mix portfolio.content.validate /content"
 }
 
+function content:status {
+  # Print the app-owned content publication status
+  _dc web mix portfolio.content.status "$@"
+}
+
+function content:rollback {
+  # Roll back live content to a known-good publication generation
+  _dc web mix portfolio.content.rollback "$@"
+}
+
+# -----------------------------------------------------------------------------
+# Disposable Hosts
+# -----------------------------------------------------------------------------
+
+function host:disposable:create {
+  # Create a disposable DigitalOcean Docker host
+  ci/deploy/digitalocean-create-origin.sh "$@"
+}
+
+function host:disposable:status {
+  # Print status for disposable DigitalOcean Docker hosts
+  ci/deploy/digitalocean-origin-status.sh "$@"
+}
+
+function host:disposable:destroy {
+  # Destroy a disposable DigitalOcean Docker host
+  ci/deploy/digitalocean-destroy-origin.sh "$@"
+}
+
 # -----------------------------------------------------------------------------
 # Database
 # -----------------------------------------------------------------------------
@@ -503,9 +539,9 @@ function ci:static-analysis {
 
 function ci:secret-scan {
     local scan_dir
+    local status
 
     scan_dir="$(mktemp -d)"
-    trap 'rm -rf "${scan_dir}"' EXIT
 
     git ls-files -z --cached --others --exclude-standard | while IFS= read -r -d '' path; do
         if [[ -f "${path}" ]]; then
@@ -514,7 +550,14 @@ function ci:secret-scan {
         fi
     done
 
-    gitleaks dir "${scan_dir}" --redact --exit-code 1
+    if gitleaks dir "${scan_dir}" --redact --exit-code 1; then
+        status=0
+    else
+        status=$?
+    fi
+
+    rm -rf "${scan_dir}"
+    return "${status}"
 }
 
 function ci:acceptance-gate-bypass-check {
@@ -525,8 +568,41 @@ function ci:acceptance-gate-bypass-check:test {
     bin/ci/acceptance-gate-bypass-check --test-fixtures
 }
 
+function ci:disposable-host-check {
+    ci/deploy/digitalocean-destroy-origin-test.sh
+}
+
 function ci:prod-build {
     ci/prod-build.sh
+}
+
+function ci:performance-browser {
+    local output
+    local tmp_output
+    local status
+
+    output="${PERF_BROWSER_OUTPUT:-ci/browser-last-run.json}"
+    tmp_output="$(mktemp)"
+
+    if docker compose build js >/dev/null &&
+        docker compose run --rm ${TTY} js node ../ci/browser-performance.mjs --output - > "${tmp_output}" &&
+        jq -e '.status == "pass"' "${tmp_output}" >/dev/null; then
+        mkdir -p "$(dirname "${output}")"
+        mv "${tmp_output}" "${output}"
+        echo "performance browser artifact written: ${output}"
+        return 0
+    else
+        status=$?
+    fi
+
+    if [[ -s "${tmp_output}" ]]; then
+        mkdir -p "$(dirname "${output}")"
+        cp "${tmp_output}" "${output}"
+        echo "performance browser artifact written: ${output}"
+    fi
+
+    rm -f "${tmp_output}"
+    return "${status}"
 }
 
 function ci:content-validate {
@@ -540,6 +616,7 @@ function ci:run-all {
     ci:workflow-lint
     ci:acceptance-gate-bypass-check
     ci:acceptance-gate-bypass-check:test
+    ci:disposable-host-check
     ci:secret-scan
     ci:setup-env
     ci:compile

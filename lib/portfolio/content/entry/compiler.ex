@@ -17,7 +17,7 @@ defmodule Portfolio.Content.Entry.Compiler do
   alias Portfolio.Content.Markdown.Renderer
   alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.Content.Schemas.Translation
-  alias Portfolio.Content.TranslationManager
+  alias Portfolio.Content.TranslationRepository
   alias Portfolio.Content.Utils.LanguageUtils
 
   require Logger
@@ -214,7 +214,7 @@ defmodule Portfolio.Content.Entry.Compiler do
        ) do
     # Fetch the raw translation map for the given locale
     trans_map =
-      TranslationManager.get_translations(content_id, content_type, locale)
+      TranslationRepository.get_translations(content_id, content_type, locale)
 
     # Check if the map is not empty
     if map_size(trans_map) > 0 do

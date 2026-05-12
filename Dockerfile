@@ -17,17 +17,11 @@ RUN apt-get update \
   && groupmod -g "${GID}" node && usermod -u "${UID}" -g "${GID}" node \
   && mkdir -p /node_modules && chown node:node -R /node_modules /app
 
-# Install Playwright
-RUN npx playwright install --with-deps
-
-
 USER node
 
 # Copy package.json and yarn files and install dependencies
 COPY --chown=node:node assets/package.json assets/*yarn* ./
 RUN yarn install && yarn cache clean
-
-RUN npx playwright install
 
 ARG NODE_ENV="production"
 ENV NODE_ENV="${NODE_ENV}" \
@@ -40,8 +34,6 @@ COPY --chown=node:node . ..
 # Conditionally build assets based on NODE_ENV
 RUN if [ "${NODE_ENV}" != "development" ]; then \
   ../run yarn:build:js && ../run yarn:build:css; else mkdir -p /app/priv/static; fi
-
-###############################################################################
 
 # Stage 2: Development environment
 FROM elixir:1.17.2-slim AS dev
@@ -127,6 +119,8 @@ ENV USER=elixir
 COPY --chown=elixir:elixir --from=dev /public /public
 COPY --chown=elixir:elixir --from=dev /mix/_build/prod/rel/portfolio ./
 COPY --chown=elixir:elixir bin/docker-entrypoint-web bin/
+COPY --chown=elixir:elixir bin/content bin/
+COPY --chown=elixir:elixir bin/content-git-askpass bin/
 
 COPY --chown=elixir:elixir --from=dev /app/priv /app/priv
 RUN mkdir -p /app/priv/static && chown elixir:elixir /app/priv/static
@@ -136,3 +130,14 @@ ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
 EXPOSE 8000
 
 CMD ["bin/portfolio", "start"]
+
+###############################################################################
+
+# Stage 4: Browser test/performance environment
+FROM assets AS browser
+
+USER root
+RUN npx playwright install-deps chromium
+
+USER node
+RUN npx playwright install chromium

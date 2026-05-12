@@ -22,10 +22,29 @@ const fontsAvailable = fs.existsSync(
 const describeWithFonts = fontsAvailable ? describe : describe.skip;
 
 describe("getFontPathsFromCSS", () => {
-  const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
+  const fixtureCssPath = path.resolve(
+    __dirname,
+    "../../css/fontface-extraction.test.css",
+  );
+  const fixtureCss = `
+    @font-face {
+      font-family: "Fixture Font";
+      src:
+        url("/fonts/cheee-small.woff2") format("woff2"),
+        url("/fonts/cheee-small.woff") format("woff");
+    }
+  `;
+
+  afterEach(() => {
+    if (fs.existsSync(fixtureCssPath)) {
+      fs.unlinkSync(fixtureCssPath);
+    }
+  });
 
   it("should extract font paths from a valid CSS file", () => {
-    const fontPaths = getFontPathsFromCSS(cssFilePath);
+    fs.writeFileSync(fixtureCssPath, fixtureCss);
+
+    const fontPaths = getFontPathsFromCSS(fixtureCssPath);
 
     expect(Array.isArray(fontPaths)).toBe(true);
     expect(fontPaths.length).toBeGreaterThan(0);
@@ -59,7 +78,9 @@ describe("getFontPathsFromCSS", () => {
   });
 
   it("should extract paths with different formats and multiple URLs", () => {
-    const fontPaths = getFontPathsFromCSS(cssFilePath);
+    fs.writeFileSync(fixtureCssPath, fixtureCss);
+
+    const fontPaths = getFontPathsFromCSS(fixtureCssPath);
     expect(fontPaths).toContain("/fonts/cheee-small.woff2");
     expect(fontPaths).toContain("/fonts/cheee-small.woff");
   });

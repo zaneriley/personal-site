@@ -7,7 +7,7 @@ defmodule Portfolio.Content do
   It orchestrates operations across specialized sub-modules responsible for
   database interactions (`Records`), content compilation (`Compiler`), data assembly
   (`EntryAssembler`), file-based ingestion (`Source`), and translation management
-  (`TranslationManager`).
+  (`TranslationRepository`).
 
   ## Core Responsibilities
 
@@ -68,7 +68,7 @@ defmodule Portfolio.Content do
 
   Functions like `list/3` and `get_with_translations/3` automatically handle
   fetching and merging translated fields based on the specified locale. The underlying
-  `TranslationManager` handles storage.
+  `TranslationRepository` handles storage.
 
   ## AST vs Compiled Content
 
@@ -78,12 +78,17 @@ defmodule Portfolio.Content do
   as in `get_with_translations`) rather than pre-rendered HTML, facilitating flexible
   rendering in components.
   """
-  alias Portfolio.Content.Types
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
-  alias Portfolio.Content.EntryAssembler
-  alias Portfolio.Content.Entry.Records
   alias Portfolio.Content.Entry.Compiler
+  alias Portfolio.Content.Entry.Records
   alias Portfolio.Content.Entry.Source
+  alias Portfolio.Content.EntryAssembler
+  alias Portfolio.Content.Publishing
+  alias Portfolio.Content.PublicRead.Scope
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
+  alias Portfolio.Content.Schemas.PublicationLedgerEntry
+  alias Portfolio.Content.Types
+
   require Logger
 
   defmodule InvalidContentTypeError do
@@ -94,6 +99,115 @@ defmodule Portfolio.Content do
   @type content_id :: Ecto.UUID.t()
   @type content_url :: String.t()
   @type content_identifier :: content_id() | content_url()
+  @type publication_verdict_status ::
+          :accepted | :rejected | :ignored | :duplicate | :rollback | String.t()
+
+  @doc """
+  Records the publishing verdict for a content repository commit.
+
+  Prefer `record_publication_event/4` for new code so the GitHub delivery ID is
+  explicit. This compatibility wrapper derives a deterministic delivery ID from
+  the SHA and status.
+  """
+  @spec record_publication_verdict(
+          String.t(),
+          publication_verdict_status(),
+          keyword()
+        ) ::
+          {:ok, PublicationLedgerEntry.t()}
+          | {:error, Ecto.Changeset.t()}
+  def record_publication_verdict(content_sha, status, opts \\ [])
+      when is_binary(content_sha) do
+    delivery_id =
+      Keyword.get(opts, :github_delivery_id) ||
+        "manual:#{content_sha}:#{normalize_publication_status(status)}"
+
+    record_publication_event(delivery_id, content_sha, status, opts)
+  end
+
+  @doc """
+  Records an append-only publishing event keyed by GitHub delivery ID.
+  """
+  @spec record_publication_event(
+          String.t(),
+          String.t(),
+          publication_verdict_status(),
+          keyword()
+        ) ::
+          {:ok, PublicationLedgerEntry.t()}
+          | {:error, Ecto.Changeset.t()}
+  def record_publication_event(
+        github_delivery_id,
+        content_sha,
+        status,
+        opts \\ []
+      ) do
+    opts = Keyword.put_new(opts, :structured_errors, %{"errors" => []})
+
+    Publishing.record_publication_event(
+      github_delivery_id,
+      content_sha,
+      status,
+      opts
+    )
+  end
+
+  @doc """
+  Records an ignored content repository delivery under the publication lock.
+  """
+  @spec record_ignored_publication_event(
+          String.t(),
+          String.t(),
+          keyword()
+        ) :: {:ok, PublicationLedgerEntry.t()} | {:error, Ecto.Changeset.t()}
+  def record_ignored_publication_event(
+        github_delivery_id,
+        content_sha,
+        opts \\ []
+      )
+      when is_binary(github_delivery_id) and is_binary(content_sha) do
+    Publishing.with_publication_lock(fn ->
+      record_publication_event(
+        github_delivery_id,
+        content_sha,
+        :ignored,
+        Keyword.put_new(opts, :reason, "No relevant content changes")
+      )
+    end)
+  end
+
+  @doc """
+  Fetches the latest publishing event recorded for a content repository commit.
+  """
+  @spec get_publication_verdict(String.t()) :: PublicationLedgerEntry.t() | nil
+  def get_publication_verdict(content_sha) when is_binary(content_sha) do
+    Publishing.latest_publication_event(content_sha)
+  end
+
+  @doc """
+  Returns the current content publication read model.
+  """
+  @spec get_publication_state() ::
+          Portfolio.Content.Schemas.PublicationState.t() | nil
+  def get_publication_state do
+    Publishing.get_publication_state()
+  end
+
+  @doc """
+  Returns true when accepted content is selected as live.
+  """
+  @spec content_ready?() :: boolean()
+  def content_ready? do
+    Publishing.content_ready?()
+  end
+
+  @doc """
+  Returns true when content storage responds and accepted content is live.
+  """
+  @spec ready?() :: boolean()
+  def ready? do
+    Publishing.ready?()
+  end
 
   @doc """
   Lists content items of a specific type with optional sorting and locale.
@@ -109,7 +223,7 @@ defmodule Portfolio.Content do
   @spec list(content_type(), keyword(), String.t() | nil) ::
           [Note.t()] | [CaseStudy.t()]
   def list(type, opts \\ [], locale \\ nil) do
-    locale = locale || Application.get_env(:portfolio, :default_locale)
+    locale = locale || Application.get_env(:portfolio, :default_locale, nil)
     EntryAssembler.list_assembled_entries(type, opts, locale)
   end
 
@@ -153,6 +267,20 @@ defmodule Portfolio.Content do
         Logger.error("Invalid content type provided: #{inspect(type)}")
         raise InvalidContentTypeError, "Invalid content type: #{inspect(type)}"
     end
+  end
+
+  @doc """
+  Resolves a legacy URL alias to the live content entry that now owns it.
+
+  Canonical URLs are intentionally not treated as aliases; callers should use
+  normal content lookup for those.
+  """
+  @spec get_alias_redirect(Scope.t(), content_type(), content_url()) ::
+          {:ok, Note.t() | CaseStudy.t()}
+          | {:error, :not_found | :ambiguous_alias | :invalid_content_type}
+  def get_alias_redirect(%Scope{} = scope, type, alias_url)
+      when is_binary(alias_url) do
+    Records.get_content_by_alias(scope, type, alias_url)
   end
 
   @spec fetch_content(content_type(), content_identifier()) ::
@@ -400,4 +528,10 @@ defmodule Portfolio.Content do
     Logger.error("Invalid file path type: #{inspect(file_path)}")
     {:error, :invalid_file_path}
   end
+
+  defp normalize_publication_status(status) when is_atom(status) do
+    Atom.to_string(status)
+  end
+
+  defp normalize_publication_status(status) when is_binary(status), do: status
 end

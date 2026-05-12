@@ -9,7 +9,10 @@ defmodule Mix.Tasks.Portfolio.Content.Validate do
 
   use Mix.Task
 
+  alias Portfolio.Content.FileManagement.ValidationError
   alias Portfolio.Content.FileManagement.Validator
+
+  require Logger
 
   @shortdoc "Validate publishable portfolio content"
 
@@ -20,7 +23,7 @@ defmodule Mix.Tasks.Portfolio.Content.Validate do
 
     content_path = Path.expand(content_path)
 
-    case Validator.validate_all(content_path) do
+    case validate_all(content_path) do
       {:ok, result} ->
         Mix.shell().info(success_message(content_path, result))
 
@@ -47,7 +50,8 @@ defmodule Mix.Tasks.Portfolio.Content.Validate do
     errors =
       result.errors
       |> Enum.reverse()
-      |> Enum.map_join("\n", &format_error(content_path, &1))
+      |> Enum.flat_map(&format_error(content_path, &1))
+      |> Enum.join("\n")
 
     """
     Content validation failed for #{content_path}
@@ -56,8 +60,22 @@ defmodule Mix.Tasks.Portfolio.Content.Validate do
     """
   end
 
+  defp validate_all(content_path) do
+    previous_level = Logger.level()
+
+    try do
+      Logger.configure(level: :emergency)
+      Validator.validate_all(content_path)
+    after
+      Logger.configure(level: previous_level)
+    end
+  end
+
   defp format_error(content_path, %{path: path, reason: reason}) do
     display_path = Path.relative_to(path, content_path)
-    "- #{display_path}: #{inspect(reason)}"
+
+    reason
+    |> ValidationError.messages()
+    |> Enum.map(&"- #{display_path}: #{&1}")
   end
 end

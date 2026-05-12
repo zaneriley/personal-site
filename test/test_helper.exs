@@ -22,5 +22,15 @@ Application.put_env(
 
 Ecto.Adapters.SQL.Sandbox.mode(Portfolio.Repo, :manual)
 
+Mox.defmock(
+  Portfolio.Content.Remote.GitHubStatusClient.Mock,
+  for: Portfolio.Content.Remote.GitHubStatusClient
+)
+
+Mox.defmock(
+  Portfolio.Content.Remote.GitCommand.Mock,
+  for: Portfolio.Content.Remote.GitCommand
+)
+
 # Register essential components
 Portfolio.TestComponents.ensure_essential_components_registered()

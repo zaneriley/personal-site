@@ -20,7 +20,8 @@ config :portfolio, environment: :test
 config :portfolio,
   content_base_path: "test/support/fixtures"
 
-config :portfolio, Portfolio.Content.FileSystemWatcher,
+config :portfolio, Portfolio.Content.FileManagement.Watcher,
+  enabled: false,
   paths: [
     Application.get_env(:portfolio, :content_base_path)
   ]

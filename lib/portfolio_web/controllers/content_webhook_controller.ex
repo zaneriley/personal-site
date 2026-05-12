@@ -7,9 +7,12 @@ defmodule PortfolioWeb.ContentWebhookController do
   and triggers content updates when necessary.
   """
 
-  require Logger
+  alias Portfolio.Content
   alias Portfolio.Content.Remote.RemoteUpdateTrigger
+  alias Portfolio.Content.Remote.GitHubStatusReporter
   alias Portfolio.Content.Types
+
+  require Logger
 
   @type webhook_result ::
           {:ok, map() | :no_relevant_changes} | {:error, String.t()}
@@ -20,24 +23,24 @@ defmodule PortfolioWeb.ContentWebhookController do
   @zero_sha String.duplicate("0", 40)
 
   @spec handle_webhook(Plug.Conn.t(), map(), keyword()) :: webhook_result()
-  def handle_webhook(_conn, payload, opts) do
+  def handle_webhook(conn, payload, opts) do
     Logger.info("Processing webhook payload")
 
-    with {:ok, event_type} <- extract_event_type(payload),
+    with {:ok, event_type} <- extract_event_type(conn, payload),
          :ok <- validate_push_event(event_type),
          :ok <- validate_ref(payload),
          :ok <- validate_repository(payload, content_repo_url(opts)),
          {:ok, target_sha} <- extract_target_sha(payload),
+         {:ok, github_delivery_id} <- extract_delivery_id(conn, payload, opts),
          {:ok, relevant_changes} <- extract_relevant_changes(payload) do
       if empty_changes?(relevant_changes) do
-        Logger.info("No relevant file changes detected")
-        {:ok, :no_relevant_changes}
+        record_ignored_update(target_sha, github_delivery_id, opts)
       else
         Logger.info(
           "Relevant file changes detected: #{inspect(relevant_changes)}"
         )
 
-        trigger_update(opts, relevant_changes, target_sha)
+        trigger_update(opts, relevant_changes, target_sha, github_delivery_id)
       end
     else
       {:error, reason} ->
@@ -46,12 +49,17 @@ defmodule PortfolioWeb.ContentWebhookController do
     end
   end
 
-  @spec extract_event_type(map()) :: {:ok, String.t()} | {:error, String.t()}
-  defp extract_event_type(%{"commits" => _}) do
-    {:ok, "push"}
+  @spec extract_event_type(Plug.Conn.t(), map()) ::
+          {:ok, String.t()} | {:error, String.t()}
+  defp extract_event_type(conn, %{"commits" => _}) do
+    case Plug.Conn.get_req_header(conn, "x-github-event") do
+      ["push"] -> {:ok, "push"}
+      [event] -> {:error, "Unexpected GitHub event: #{event}"}
+      [] -> {:error, "Missing GitHub event"}
+    end
   end
 
-  defp extract_event_type(_) do
+  defp extract_event_type(_conn, _) do
     {:error, "Invalid or unsupported event type"}
   end
 
@@ -93,6 +101,25 @@ defmodule PortfolioWeb.ContentWebhookController do
   end
 
   defp extract_target_sha(_), do: {:error, "Missing after SHA"}
+
+  @spec extract_delivery_id(Plug.Conn.t(), map(), keyword()) ::
+          {:ok, String.t()} | {:error, String.t()}
+  defp extract_delivery_id(conn, payload, opts) do
+    delivery_id =
+      Keyword.get(opts, :github_delivery_id) ||
+        payload["delivery_id"] ||
+        conn
+        |> Plug.Conn.get_req_header("x-github-delivery")
+        |> List.first()
+
+    case delivery_id do
+      delivery_id when is_binary(delivery_id) and delivery_id != "" ->
+        {:ok, delivery_id}
+
+      _ ->
+        {:error, "Missing GitHub delivery ID"}
+    end
+  end
 
   @spec extract_relevant_changes(map()) ::
           {:ok, relevant_changes()} | {:error, String.t()}
@@ -137,16 +164,46 @@ defmodule PortfolioWeb.ContentWebhookController do
   defp empty_changes?(%{upsert: [], delete: []}), do: true
   defp empty_changes?(_changes), do: false
 
-  @spec trigger_update(keyword(), relevant_changes(), String.t()) ::
+  @spec record_ignored_update(String.t(), String.t(), keyword()) ::
           webhook_result()
-  defp trigger_update(opts, changes, target_sha) do
+  defp record_ignored_update(target_sha, github_delivery_id, opts) do
+    Logger.info("No relevant file changes detected")
+
+    case Content.record_ignored_publication_event(
+           github_delivery_id,
+           target_sha,
+           repository: content_repo_url(opts),
+           ref: @main_ref
+         ) do
+      {:ok, entry} ->
+        GitHubStatusReporter.report_and_log(entry, opts)
+        {:ok, :no_relevant_changes}
+
+      {:error, changeset} ->
+        Logger.error(
+          "Failed to record ignored content verdict: #{inspect(changeset)}"
+        )
+
+        {:error, "Publication verdict recording failed"}
+    end
+  end
+
+  @spec trigger_update(keyword(), relevant_changes(), String.t(), String.t()) ::
+          webhook_result()
+  defp trigger_update(opts, changes, target_sha, github_delivery_id) do
     Logger.info("Triggering update with RemoteUpdateTrigger")
 
-    case RemoteUpdateTrigger.trigger_update(content_repo_url(opts),
-           content_base_path: Keyword.get(opts, :content_base_path),
-           changes: changes,
-           target_sha: target_sha
-         ) do
+    remote_opts =
+      [
+        content_base_path: Keyword.get(opts, :content_base_path),
+        changes: changes,
+        target_sha: target_sha,
+        github_delivery_id: github_delivery_id,
+        repository: content_repo_url(opts),
+        ref: @main_ref
+      ] ++ status_reporting_opts(opts)
+
+    case RemoteUpdateTrigger.trigger_update(content_repo_url(opts), remote_opts) do
       {:ok, result} ->
         Logger.info("RemoteUpdateTrigger completed successfully")
         {:ok, result}
@@ -161,5 +218,17 @@ defmodule PortfolioWeb.ContentWebhookController do
   defp content_repo_url(opts) do
     Keyword.get(opts, :content_repo_url) ||
       Application.fetch_env!(:portfolio, :content_repo_url)
+  end
+
+  defp status_reporting_opts(opts) do
+    Keyword.take(opts, [
+      :github_token,
+      :github_status_api_url,
+      :github_status_client,
+      :github_status_context,
+      :github_status_owner,
+      :github_status_repo,
+      :publication_debug_link_builder
+    ])
   end
 end

@@ -1,9 +1,13 @@
 defmodule Portfolio.Application do
-  require Logger
   @moduledoc false
+
   use Application
 
+  require Logger
+
   @impl true
+  @spec start(Application.start_type(), term()) ::
+          {:ok, pid()} | {:ok, pid(), term()} | {:error, term()}
   def start(_type, _args) do
     Logger.info("Starting Portfolio Application...")
 
@@ -24,7 +28,6 @@ defmodule Portfolio.Application do
       PortfolioWeb.Endpoint
     ]
 
-    # Add file watcher for all environments
     watcher_config =
       Application.get_env(
         :portfolio,
@@ -32,8 +35,7 @@ defmodule Portfolio.Application do
         []
       )
 
-    children =
-      children ++ [{Portfolio.Content.FileManagement.Watcher, watcher_config}]
+    children = children ++ watcher_children(watcher_config)
 
     opts = [strategy: :one_for_one, name: Portfolio.Supervisor]
 
@@ -45,8 +47,19 @@ defmodule Portfolio.Application do
   end
 
   @impl true
+  @spec config_change(keyword(), keyword(), keyword()) :: :ok
   def config_change(changed, _new, removed) do
     PortfolioWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp watcher_children(watcher_config) do
+    paths = Keyword.get(watcher_config, :paths, [])
+
+    if Keyword.get(watcher_config, :enabled, false) and paths != [] do
+      [{Portfolio.Content.FileManagement.Watcher, watcher_config}]
+    else
+      []
+    end
   end
 end

@@ -49,6 +49,14 @@ config :portfolio, Portfolio.Repo, repo_config
 
 config :portfolio, :github_token, System.get_env("GITHUB_TOKEN")
 
+config :portfolio,
+  github_status_context:
+    System.get_env("GITHUB_STATUS_CONTEXT", "content/publication"),
+  github_status_api_url:
+    System.get_env("GITHUB_API_URL", "https://api.github.com"),
+  github_status_owner: System.get_env("GITHUB_STATUS_OWNER"),
+  github_status_repo: System.get_env("GITHUB_STATUS_REPO")
+
 github_webhook_secret_placeholder =
   "generate-a-secret-token-for-your-repo-and-add-it-to-githubs-webhook-settings"
 
@@ -76,6 +84,20 @@ config :github_webhook, secret: github_webhook_secret
 
 config :portfolio, content_repo_url: System.get_env("CONTENT_REPO_URL")
 
+config :portfolio,
+  content_repo_auth: [
+    askpass_path:
+      System.get_env(
+        "CONTENT_REPO_GIT_ASKPASS",
+        "/app/bin/content-git-askpass"
+      ),
+    https_token:
+      System.get_env("CONTENT_REPO_HTTPS_TOKEN") ||
+        System.get_env("CONTENT_GITHUB_TOKEN"),
+    ssh_command: System.get_env("CONTENT_REPO_SSH_COMMAND"),
+    username: System.get_env("CONTENT_REPO_GIT_USERNAME", "x-access-token")
+  ]
+
 default_content_base_path =
   if config_env() == :prod do
     "/app/priv/content"
@@ -89,4 +111,5 @@ content_base_path =
 config :portfolio, content_base_path: content_base_path
 
 config :portfolio, Portfolio.Content.FileManagement.Watcher,
+  enabled: false,
   paths: [content_base_path]

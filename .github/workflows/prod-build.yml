@@ -39,4 +39,5 @@ jobs:
           name: "prod-build-measurements"
           path: |
             ci/last-run.json
+            ci/browser-last-run.json
             ci/baseline.json

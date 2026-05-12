@@ -3,10 +3,13 @@ defmodule Portfolio.ContentFixtures do
   Provides fixture functions for creating test data related to content entities.
   Includes functions for generating Note and CaseStudy fixtures with realistic default attributes.
   """
-  alias Portfolio.Repo
-  alias Portfolio.Content.Schemas.{Note, CaseStudy}
+  alias Portfolio.Content.Publishing
+  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.TranslatableFields
+  alias Portfolio.Repo
+
   require Logger
 
   @doc """
@@ -14,6 +17,9 @@ defmodule Portfolio.ContentFixtures do
   """
   def note_fixture(attrs \\ %{}, opts \\ []) do
     sequence = System.unique_integer([:positive])
+
+    {publication_generation_id, content_sha, accept_generation?} =
+      fixture_publication_generation(opts)
 
     default_attrs = %{
       "title" => "Insightful Note #{sequence}",
@@ -31,9 +37,16 @@ defmodule Portfolio.ContentFixtures do
     string_attrs = for {key, val} <- attrs, into: %{}, do: {to_string(key), val}
 
     note =
-      %Note{}
+      %Note{publication_generation_id: publication_generation_id}
       |> Note.changeset(Map.merge(default_attrs, string_attrs))
       |> Repo.insert!()
+
+    maybe_accept_fixture_generation(
+      note,
+      publication_generation_id,
+      content_sha,
+      accept_generation?
+    )
 
     unless opts[:skip_translations] do
       translation_fixture(note, "ja")
@@ -49,6 +62,9 @@ defmodule Portfolio.ContentFixtures do
     Logger.debug("Creating case study fixture")
 
     sequence = System.unique_integer([:positive])
+
+    {publication_generation_id, content_sha, accept_generation?} =
+      fixture_publication_generation(opts)
 
     default_attrs = %{
       "title" => "Case Study #{sequence}",
@@ -71,9 +87,16 @@ defmodule Portfolio.ContentFixtures do
     string_attrs = for {key, val} <- attrs, into: %{}, do: {to_string(key), val}
 
     case_study =
-      %CaseStudy{}
+      %CaseStudy{publication_generation_id: publication_generation_id}
       |> CaseStudy.changeset(Map.merge(default_attrs, string_attrs))
       |> Repo.insert!()
+
+    maybe_accept_fixture_generation(
+      case_study,
+      publication_generation_id,
+      content_sha,
+      accept_generation?
+    )
 
     if opts[:translations] do
       Enum.each(opts[:translations], fn {locale, trans_attrs} ->
@@ -112,5 +135,68 @@ defmodule Portfolio.ContentFixtures do
       })
       |> Repo.insert!()
     end)
+  end
+
+  defp fixture_publication_generation(opts) do
+    case Keyword.fetch(opts, :publication_generation_id) do
+      {:ok, generation_id} ->
+        {generation_id, nil, false}
+
+      :error ->
+        existing_or_new_fixture_publication_generation()
+    end
+  end
+
+  defp existing_or_new_fixture_publication_generation do
+    case Publishing.get_publication_state() do
+      %{live_content_publication_generation_id: generation_id}
+      when is_binary(generation_id) ->
+        {generation_id, nil, false}
+
+      _ ->
+        content_sha = String.duplicate("f", 40)
+
+        {:ok, generation} =
+          Publishing.prepare_generation(content_sha, source: :bootstrap)
+
+        {generation.id, content_sha, true}
+    end
+  end
+
+  defp maybe_accept_fixture_generation(
+         _content,
+         _generation_id,
+         _content_sha,
+         false
+       ) do
+    :ok
+  end
+
+  defp maybe_accept_fixture_generation(
+         %{is_draft: false, published_at: published_at},
+         generation_id,
+         content_sha,
+         true
+       )
+       when not is_nil(published_at) do
+    {:ok, _entry} =
+      Publishing.record_publication_event(
+        "fixture:#{System.unique_integer([:positive])}",
+        content_sha,
+        :accepted,
+        generation_id: generation_id,
+        reason: "Fixture content"
+      )
+
+    :ok
+  end
+
+  defp maybe_accept_fixture_generation(
+         _content,
+         _generation_id,
+         _content_sha,
+         true
+       ) do
+    :ok
   end
 end

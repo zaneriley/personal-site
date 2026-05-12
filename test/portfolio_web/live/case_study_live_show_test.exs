@@ -38,7 +38,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
       case_study = case_study_fixture()
 
       # Add specific Japanese translations
-      Portfolio.Content.TranslationManager.create_or_update_translations(
+      Portfolio.Content.TranslationRepository.create_or_update_translations(
         case_study,
         "ja",
         %{
@@ -54,7 +54,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
       Logger.debug("Case study: #{inspect(case_study)}")
       Logger.debug("Translations: #{inspect(case_study.translations)}")
 
-      {:ok, show_live, html} =
+      {:ok, _show_live, html} =
         live(
           conn,
           Routes.case_study_show_path(conn, :show, user_locale, case_study.url)

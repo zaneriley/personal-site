@@ -35,6 +35,7 @@ defmodule Portfolio.ContentRepoHelpers do
     url = Keyword.get(opts, :url, "published-note")
     body = Keyword.get(opts, :body, "# Published Note\n\nHello.")
     published_at = Keyword.get(opts, :published_at, "2024-07-27T14:30:00Z")
+    is_draft = Keyword.get(opts, :is_draft, false)
 
     write_file!(
       repo_path,
@@ -44,9 +45,10 @@ defmodule Portfolio.ContentRepoHelpers do
       title: "#{title}"
       url: "#{url}"
       introduction: "Intro"
+      #{aliases_frontmatter(opts)}
       #{share_preview_frontmatter(opts)}
       published_at: "#{published_at}"
-      is_draft: false
+      is_draft: #{is_draft}
       ---
 
       #{body}
@@ -126,5 +128,16 @@ defmodule Portfolio.ContentRepoHelpers do
     |> Enum.map_join("\n", fn {key, value} ->
       "#{key}: #{inspect(value)}"
     end)
+  end
+
+  defp aliases_frontmatter(opts) do
+    case Keyword.get(opts, :aliases, []) do
+      [] ->
+        ""
+
+      aliases ->
+        items = Enum.map_join(aliases, "\n", &"  - #{inspect(&1)}")
+        "aliases:\n#{items}"
+    end
   end
 end

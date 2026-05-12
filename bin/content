@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+command_name="${1:-}"
+sentinel="__portfolio_content_status__"
+
+function usage {
+    echo "Usage: bin/content status [--json]" >&2
+    echo "       bin/content rollback [--json] [--reason REASON] TARGET" >&2
+}
+
+function elixir_base64_decode {
+    local value="$1"
+    local encoded
+
+    encoded="$(printf "%s" "${value}" | base64 | tr -d '\n')"
+
+    printf 'Base.decode64!("%s")' "${encoded}"
+}
+
+function release_rpc {
+    local expression="$1"
+    local output_mode="${2:-all}"
+    local output
+    local filtered
+
+    if ! output="$(/app/bin/portfolio rpc "IO.puts(\"${sentinel}\"); ${expression}" 2>&1)"; then
+        printf "%s\n" "${output}" >&2
+        return 1
+    fi
+
+    filtered="$(
+        printf "%s\n" "${output}" |
+            awk -v marker="${sentinel}" -v mode="${output_mode}" '
+                found {
+                    print
+                    if (mode == "first") {
+                        exit
+                    }
+                }
+                $0 == marker { found = 1 }
+            '
+    )"
+
+    if [[ -z "${filtered}" ]]; then
+        printf "%s\n" "${output}" >&2
+        return 1
+    fi
+
+    printf "%s\n" "${filtered}"
+}
+
+case "${command_name}" in
+    status)
+        shift
+
+        if [[ -x "./run" ]]; then
+            exec ./run content:status "$@"
+        fi
+
+        if [[ "${1:-}" == "--json" ]]; then
+            release_rpc "IO.puts(Jason.encode!(Portfolio.Content.Publishing.status()))" first
+            exit $?
+        fi
+
+        release_rpc "IO.puts(Portfolio.Content.Publishing.status_text())"
+        ;;
+    rollback)
+        shift
+
+        if [[ -x "./run" ]]; then
+            exec ./run content:rollback "$@"
+        fi
+
+        json="false"
+        reason="Operator requested content rollback"
+        target=""
+
+        while [[ "$#" -gt 0 ]]; do
+            case "$1" in
+                --json)
+                    json="true"
+                    shift
+                    ;;
+                --reason)
+                    if [[ -z "${2:-}" ]]; then
+                        usage
+                        exit 1
+                    fi
+
+                    reason="$2"
+                    shift 2
+                    ;;
+                -*)
+                    usage
+                    exit 1
+                    ;;
+                *)
+                    if [[ -n "${target}" ]]; then
+                        usage
+                        exit 1
+                    fi
+
+                    target="$1"
+                    shift
+                    ;;
+            esac
+        done
+
+        if [[ -z "${target}" ]]; then
+            usage
+            exit 1
+        fi
+
+        target_literal="$(elixir_base64_decode "${target}")"
+        reason_literal="$(elixir_base64_decode "${reason}")"
+        rollback_output=""
+        rollback_exit="1"
+
+        if ! rollback_output="$(release_rpc "
+        alias Portfolio.Content.Publishing
+        alias Portfolio.Content.PublicationControl.Output
+        alias Portfolio.Content.PublicationControl.Scope
+
+        target = ${target_literal}
+        reason = ${reason_literal}
+        json? = ${json}
+
+        case Publishing.rollback(Scope.system(), target, reason: reason) do
+          {:ok, result} ->
+            if json? do
+              IO.puts(Jason.encode!(Output.success_json(result)))
+            else
+              IO.puts(Output.success_text(result))
+            end
+
+            IO.puts(\"__portfolio_content_exit__:0\")
+
+          {:error, rollback_error} ->
+            if json? do
+              IO.puts(Jason.encode!(Output.error_json(rollback_error)))
+            else
+              IO.puts(Output.error_text(rollback_error))
+            end
+
+            IO.puts(\"__portfolio_content_exit__:1\")
+        end
+        ")"; then
+            exit 1
+        fi
+
+        rollback_exit="$(
+            printf "%s\n" "${rollback_output}" |
+                awk -F: '/^__portfolio_content_exit__:/ { value = $2 } END { print value }'
+        )"
+
+        printf "%s\n" "${rollback_output}" |
+            awk '!/^__portfolio_content_exit__:/'
+
+        exit "${rollback_exit:-1}"
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac

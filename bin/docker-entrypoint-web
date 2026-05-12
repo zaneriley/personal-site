@@ -46,7 +46,11 @@ if [ -d "/app/releases" ] && [ -f "/app/bin/portfolio" ]; then
     fi
     
     if [ "${CI_SKIP_CONTENT_PULL:-}" = "1" ]; then
-        log "Skipping content repository pull for CI"
+        log "Skipping content repository pull for CI; publishing configured content path"
+        if ! /app/bin/portfolio eval "Portfolio.Release.read_existing_content()"; then
+            log "Error: Failed to publish configured content path"
+            exit 1
+        fi
     else
         log "Pulling latest changes from the content repository..."
         if ! /app/bin/portfolio eval "Portfolio.Release.pull_repository()"; then

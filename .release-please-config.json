@@ -16,7 +16,8 @@
       "section": "Performance"
     }
   ],
-  "pull-request-header": "Release PR for the portfolio app. Merge only after the canonical CI and secret-scan gates have passed.",
+  "draft-pull-request": true,
+  "pull-request-header": "Draft release PR for the portfolio app. Convert to ready and merge only when Z chooses a real visitor-facing release.",
   "packages": {
     ".": {
       "changelog-path": "CHANGELOG.md",

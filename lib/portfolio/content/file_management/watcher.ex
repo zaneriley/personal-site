@@ -7,8 +7,8 @@ defmodule Portfolio.Content.FileManagement.Watcher do
   """
 
   use GenServer
+
   require Logger
-  alias Portfolio.Content.FileManagement.Promoter
 
   defstruct [:watcher_pid]
 
@@ -65,15 +65,9 @@ defmodule Portfolio.Content.FileManagement.Watcher do
 
   @spec promote_file_change(String.t()) :: :ok
   defp promote_file_change(path) do
-    case Promoter.promote_path(path) do
-      {:ok, result} ->
-        Logger.info("Promoted content file #{path}: #{inspect(result)}")
-
-      {:error, result} ->
-        Logger.error(
-          "Failed to promote content file #{path}: #{inspect(result)}"
-        )
-    end
+    Logger.info(
+      "Ignoring direct content file change for #{path}; publication is Git/webhook driven"
+    )
 
     :ok
   end

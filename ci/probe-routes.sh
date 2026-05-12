@@ -11,9 +11,10 @@ OHA_REQUESTS="${OHA_REQUESTS:-30}"
 OHA_CONNECTIONS="${OHA_CONNECTIONS:-1}"
 OHA_TIMEOUT="${OHA_TIMEOUT:-10s}"
 OHA_ATTEMPTS="${OHA_ATTEMPTS:-3}"
+OHA_PROCESS_TIMEOUT_SECONDS="${OHA_PROCESS_TIMEOUT_SECONDS:-30}"
 READY_MS="${PROD_BUILD_READY_MS:-null}"
 APP_SHA="${PROD_BUILD_APP_SHA:-$(git rev-parse HEAD)}"
-ROUTES_RAW="${PROD_BUILD_ROUTES:-/ /en /en/case-studies /en/notes /en/self /ja}"
+ROUTES_RAW="${PROD_BUILD_ROUTES:-/ /en /en/case-studies /en/notes /en/note/prod-build-smoke-note /en/self /ja}"
 KNOWN_BROKEN_FILE="${KNOWN_BROKEN_FILE:-ci/routes-known-broken.txt}"
 IFS=" " read -r -a ROUTES <<< "${ROUTES_RAW}"
 
@@ -35,13 +36,55 @@ function is_known_broken {
     return 1
 }
 
+function run_with_timeout {
+    local timeout_seconds="$1"
+    local stdout_file
+    local stderr_file
+    local command_pid
+    local timer_pid
+    local status
+
+    shift
+    stdout_file="$(mktemp)"
+    stderr_file="$(mktemp)"
+
+    "$@" > "${stdout_file}" 2> "${stderr_file}" &
+    command_pid="$!"
+
+    (
+        sleep "${timeout_seconds}"
+
+        if kill -0 "${command_pid}" 2>/dev/null; then
+            kill "${command_pid}" 2>/dev/null || true
+            sleep 1
+            kill -9 "${command_pid}" 2>/dev/null || true
+        fi
+    ) >/dev/null 2>&1 &
+    timer_pid="$!"
+
+    if wait "${command_pid}"; then
+        status=0
+    else
+        status="$?"
+    fi
+
+    kill "${timer_pid}" 2>/dev/null || true
+    wait "${timer_pid}" 2>/dev/null || true
+
+    cat "${stdout_file}"
+    cat "${stderr_file}" >&2
+    rm -f "${stdout_file}" "${stderr_file}"
+
+    return "${status}"
+}
+
 function oha_json {
     local attempts="${OHA_ATTEMPTS}"
     local attempt=1
     local output
 
     while (( attempt <= attempts )); do
-        if output="$("${OHA_BIN}" "$@")"; then
+        if output="$(run_with_timeout "${OHA_PROCESS_TIMEOUT_SECONDS}" "${OHA_BIN}" "$@")"; then
             printf "%s" "${output}"
             return 0
         fi
@@ -72,14 +115,17 @@ function route_result {
 
     if [[ "${route_status}" == "pass" ]]; then
         route_status="$(
-            jq -r '
+            jq -n -r --argjson cold "${cold_json}" --argjson warm "${warm_json}" '
               def ok_status: test("^[23]");
-              if ((.statusCodeDistribution // {}) | to_entries | map(select(.key | ok_status | not)) | length) == 0
-                 and ((.summary.successRate // 0) == 1)
+              def successful($run):
+                (($run.statusCodeDistribution // {}) | to_entries | map(select(.key | ok_status | not)) | length) == 0
+                and (($run.summary.successRate // 0) == 1);
+
+              if successful($cold) and successful($warm)
               then "pass"
               else "fail"
               end
-            ' <<< "${warm_json}"
+            '
         )"
     fi
 
