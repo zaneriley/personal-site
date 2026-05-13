@@ -17,6 +17,43 @@ defmodule Portfolio.Content.Markdown.Renderer do
 
   require Logger
 
+  # Allowlists used by `render_to_safe/1`. Applied uniformly to bare HTML tag
+  # nodes (raw HTML from Earmark) AND `:typography` nodes — the typography
+  # transform preserves user-authored attrs on `<p>` / `<h*>` tags while
+  # injecting its own `size`/`font`/`dropcap`, so user-injected `onclick`,
+  # `style`, etc. would otherwise reach the rendered output via the typography
+  # path. `:component` nodes still bypass this layer; their attrs are dispatched
+  # to function components that own their own assigns contract.
+  @allowed_tags MapSet.new(~w(
+    p h1 h2 h3 h4 h5 h6 blockquote pre hr div
+    section article aside header footer nav main
+    figure figcaption
+    a strong b em i u s code span small mark kbd abbr cite q sub sup time del ins br
+    ul ol li dl dt dd
+    table thead tbody tfoot tr td th caption colgroup col
+    img picture source
+  ))
+
+  # `srcset` is deliberately excluded: it's URL-valued but contains a
+  # comma-separated list of candidate URLs with descriptors, which would need
+  # per-candidate parsing and scheme-checking. Until that lands, omit it.
+  @allowed_attrs MapSet.new(~w(
+    id class title lang dir role tabindex
+    href target rel
+    src sizes alt width height loading decoding
+    datetime cite
+    colspan rowspan scope headers
+    start type
+    size font dropcap locale
+  ))
+
+  @url_attrs MapSet.new(~w(href src))
+
+  # Real allowlist of safe URL schemes (not a denylist). Anything outside this
+  # set — `data:`, `file:`, `ftp:`, `javascript:`, `vbscript:`, `gopher:`,
+  # `chrome:`, etc. — is rejected when it appears as an `href`/`src` value.
+  @safe_url_schemes MapSet.new(~w(http https mailto tel))
+
   @doc """
   Renders markdown content into an AST for LiveView.
 
@@ -242,4 +279,183 @@ defmodule Portfolio.Content.Markdown.Renderer do
   for passing to components that can handle AST nodes directly.
   """
   def preserve_ast(ast), do: ast
+
+  @doc """
+  Renders an AST (or a binary body) to a `Phoenix.HTML.safe/0` value suitable for
+  direct HEEx interpolation via `{render_to_safe(@assign)}`.
+
+  Distinct from `render_html/1`, which returns `String.t()` and is consumed as
+  `compiled_content` by the `Compiler.compile/2` path. This sibling returns
+  `{:safe, iodata}` so templates can render the result without `raw/1` and
+  without HEEx auto-escaping the tag markup we just built.
+
+  Attribute values are escaped through `Phoenix.HTML.attributes_escape/1`.
+  Text leaves are escaped through `Phoenix.HTML.html_escape/1`.
+  """
+  @spec render_to_safe(any()) :: Phoenix.HTML.safe()
+  def render_to_safe(ast), do: {:safe, build_safe_iodata(ast)}
+
+  defp build_safe_iodata(ast) when is_binary(ast) do
+    {:safe, iodata} = Phoenix.HTML.html_escape(ast)
+    iodata
+  end
+
+  defp build_safe_iodata(ast) when is_list(ast) do
+    Enum.map(ast, &build_safe_iodata/1)
+  end
+
+  defp build_safe_iodata({:typography, tag, attrs, children, _meta}) do
+    # Typography nodes are produced by the Typography transform, which
+    # preserves user-authored attrs from raw `<p>` / `<h*>` markdown. Route
+    # them through the same allowlist so `<p onclick="alert(1)">` from
+    # markdown cannot reach the rendered output via the typography path.
+    build_safe_tag(to_string(tag), safe_user_attrs(attrs), children)
+  end
+
+  defp build_safe_iodata({:component, type, attrs, children, _meta}) do
+    case Portfolio.Content.Markdown.Component.Registry.lookup(type) do
+      {:ok, {module, function}} ->
+        # Sanitize URL-valued attrs (e.g. `src` from a markdown image with
+        # `javascript:`). Then flatten attrs as top-level assigns so
+        # `Phoenix.Component` functions can pattern-match expected names
+        # (`:src`, `:alt`, …) directly, instead of crashing on `assigns.src`
+        # when we'd passed them as `assigns.attrs[:src]`. Keep the wrapper
+        # keys `:component`, `:attrs`, `:content` for any caller that still
+        # destructures them.
+        safe_attrs = safe_component_attrs(attrs)
+        flat_attrs = Enum.into(safe_attrs, %{}, &flatten_attr_key/1)
+
+        component_assigns =
+          flat_attrs
+          |> Map.put(:component, type)
+          |> Map.put(:attrs, flat_attrs)
+          |> Map.put(:content, render_html(children))
+
+        module
+        |> apply(function, [component_assigns])
+        |> Phoenix.HTML.Safe.to_iodata()
+
+      {:error, _reason} ->
+        {:safe, type_iodata} = Phoenix.HTML.html_escape(to_string(type))
+
+        [
+          ~s(<div class="component-error">Component '),
+          type_iodata,
+          ~s(' not found</div>)
+        ]
+    end
+  end
+
+  defp build_safe_iodata({tag, attrs, children, _meta}) when is_binary(tag) do
+    if MapSet.member?(@allowed_tags, tag) do
+      build_safe_tag(tag, safe_user_attrs(attrs), children)
+    else
+      # Disallowed raw-HTML tag (script, iframe, style, object, …): drop the
+      # wrapper and recurse so any nested text content is still escaped and
+      # rendered. Prevents `<script>alert(1)</script>` markdown from emitting
+      # an executable script tag inside a `{:safe, _}` payload.
+      build_safe_iodata(children)
+    end
+  end
+
+  defp build_safe_iodata(other) do
+    {:safe, iodata} = Phoenix.HTML.html_escape(to_string(other))
+    iodata
+  end
+
+  defp build_safe_tag(tag, attrs, children) do
+    {:safe, attrs_iodata} = Phoenix.HTML.attributes_escape(attrs)
+    ["<", tag, attrs_iodata, ">", build_safe_iodata(children), "</", tag, ">"]
+  end
+
+  defp safe_user_attrs(attrs) do
+    attrs
+    |> Enum.filter(&allowed_attr?/1)
+    |> Enum.reject(&unsafe_url_attr?/1)
+  end
+
+  # Component attrs are not name-filtered (each component declares its own
+  # `attr :foo` schema; Phoenix.Component validates per-call). We only
+  # *neuter unsafe URL values* by replacing them with an empty string so the
+  # component still receives every required key but cannot emit a working
+  # `javascript:` link. Keeps the assigns shape the component expects.
+  defp safe_component_attrs(attrs) do
+    Enum.map(attrs, &sanitize_component_attr/1)
+  end
+
+  defp sanitize_component_attr({name, value}) when is_binary(value) do
+    if MapSet.member?(@url_attrs, to_attr_name(name)) and not safe_url?(value) do
+      {name, ""}
+    else
+      {name, value}
+    end
+  end
+
+  defp sanitize_component_attr(pair), do: pair
+
+  # Convert attr-list keys to atom-keyed map entries so that Phoenix.Component
+  # `@src` style access works. String keys from Earmark (`"src"`, `"alt"`) get
+  # converted to `:src` / `:alt` (via `String.to_existing_atom/1` to avoid the
+  # atom-leak vector that applies to arbitrary author input — markdown
+  # attribute names are bounded by the parser, so any name we'd see at this
+  # point already exists). Unknown names fall back to the string key, which
+  # Phoenix.Component will still accept as an assign though not as a typed
+  # attr.
+  defp flatten_attr_key({name, value}) when is_atom(name), do: {name, value}
+
+  defp flatten_attr_key({name, value}) when is_binary(name) do
+    {String.to_existing_atom(name), value}
+  rescue
+    ArgumentError -> {name, value}
+  end
+
+  defp allowed_attr?({name, _value}) do
+    name = to_attr_name(name)
+
+    MapSet.member?(@allowed_attrs, name) or
+      String.starts_with?(name, "aria-") or
+      String.starts_with?(name, "data-")
+  end
+
+  defp allowed_attr?(_), do: false
+
+  defp unsafe_url_attr?({name, value}) when is_binary(value) do
+    MapSet.member?(@url_attrs, to_attr_name(name)) and not safe_url?(value)
+  end
+
+  defp unsafe_url_attr?(_), do: false
+
+  defp to_attr_name(name) when is_binary(name), do: name
+  defp to_attr_name(name) when is_atom(name), do: Atom.to_string(name)
+
+  # Allowlist of URL shapes accepted in `href`/`src`:
+  #   - empty (preserves "no link" / refresh semantics)
+  #   - relative path: starts with `/` (but not `//`, which is protocol-relative)
+  #   - same-document fragment (`#…`) or query (`?…`)
+  #   - any URL with one of @safe_url_schemes
+  #   - bare relative path with no scheme (e.g. `foo`, `./foo`, `../foo`)
+  defp safe_url?(value) when is_binary(value) do
+    trimmed = String.trim(value)
+
+    cond do
+      trimmed == "" -> true
+      String.starts_with?(trimmed, "//") -> false
+      String.starts_with?(trimmed, "/") -> true
+      String.starts_with?(trimmed, "#") -> true
+      String.starts_with?(trimmed, "?") -> true
+      has_scheme?(trimmed) -> MapSet.member?(@safe_url_schemes, scheme_of(trimmed))
+      true -> true
+    end
+  end
+
+  defp safe_url?(_), do: false
+
+  defp has_scheme?(value), do: Regex.match?(~r/^[a-z][a-z0-9+\-.]*:/i, value)
+
+  defp scheme_of(value) do
+    case String.split(value, ":", parts: 2) do
+      [scheme, _rest] -> String.downcase(scheme)
+      _ -> ""
+    end
+  end
 end

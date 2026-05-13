@@ -4,6 +4,7 @@ defmodule PortfolioWeb.NoteLive.Show do
   alias Portfolio.Content
   require Logger
   import PortfolioWeb.Components.Typography
+  import Portfolio.Content.Markdown.Renderer, only: [render_to_safe: 1]
 
   @impl true
   def mount(%{"locale" => user_locale}, _session, socket) do
@@ -14,7 +15,7 @@ defmodule PortfolioWeb.NoteLive.Show do
   @impl true
   def handle_params(%{"url" => url}, _, socket) do
     case Content.get_with_translations("note", url, socket.assigns.user_locale) do
-      {:ok, note, translations, compiled_content} ->
+      {:ok, note, translations, body_ast} ->
         {page_title, introduction} = set_page_metadata(note, translations)
         Logger.debug("Note translations: #{inspect(translations)}")
 
@@ -22,13 +23,16 @@ defmodule PortfolioWeb.NoteLive.Show do
          assign(socket,
            note: note,
            translations: translations,
-           compiled_content: compiled_content,
+           body_ast: body_ast,
            page_title: page_title,
            page_description: introduction
          )}
 
       {:error, :not_found} ->
         raise PortfolioWeb.LiveError
+
+      {:error, :compilation_failed} ->
+        raise "note content compilation failed for slug=#{url}, locale=#{socket.assigns.user_locale}"
     end
   end
 
