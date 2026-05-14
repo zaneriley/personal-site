@@ -1,6 +1,12 @@
-console.log(
-  "%c" +
-    `
+/**
+ * Console Easter Egg
+ *
+ * Lazy-loaded side-effect script triggered by `window.portfolioEasterEgg()`
+ * in `app.js`. Prints an ASCII banner and a sequence of styled messages to
+ * the devtools console. Not bundled into the first-load payload.
+ */
+
+const BANNER = `
                                                                                  _     _g
         ggmmmmmmmmgg                                           =qg~~~~__        9@)  'T@
        ,P        @@                                             [@'    @@             @F
@@ -23,11 +29,12 @@ console.log(
     [@@@@gggggg!     [@@@@]   @@@@@@@@@@@@@        gggggg@@@@@@      @@@@@    @@@@@@@@@@@|
      @@@@@@@@@@|     [@@@@]   [@@@@@@@@@BP         [@@@@@@@@@P       @@@@@    @@@@@@@@@B"
         """""""'              '"""'
-`,
-  "color: #fff; font-size: 8px; font-family: monospace; font-weight: bold; line-height: 0.5;",
-);
+`;
 
-const messageContent = [
+const BANNER_STYLE =
+  "color: #fff; font-size: 8px; font-family: monospace; font-weight: bold; line-height: 0.5;";
+
+const MESSAGES = [
   "Hello there! Nice to meet you!",
   "YOUR CURIOSITY IS DELIGHTFUL AND WELCOME.",
   "THE CODE IS ON GITHUB https://github.com/zaneriley/personal-site",
@@ -35,26 +42,34 @@ const messageContent = [
   "MAY YOUR JOURNEY BE FILLED WITH WONDER AND DISCOVERY.",
   "THIS TERMINAL WISHES YOU WELL, FELLOW SEEKER OF KNOWLEDGE.",
   "<systempily happily humming>",
-];
+] as const;
 
-const baseStyle =
+const MESSAGE_INTERVAL_MS = 1000;
+
+const BASE_STYLE =
   'font-family: "Courier New", monospace; font-size: 14px; line-height: 1.5; text-shadow: 0 0 5px rgba(255,255,255,0.7);';
-const glitchStyle = `${baseStyle} color: #e0e0e0; text-shadow: 2px 2px #ff00de, -2px -2px #00ff9f;`;
-const normalStyle = `${baseStyle} color: #b0b0b0;`;
-const systemStyle = `${baseStyle} color: #00ff9f; font-style: italic;`;
+const GLITCH_STYLE = `${BASE_STYLE} color: #e0e0e0; text-shadow: 2px 2px #ff00de, -2px -2px #00ff9f;`;
+const NORMAL_STYLE = `${BASE_STYLE} color: #b0b0b0;`;
+const SYSTEM_STYLE = `${BASE_STYLE} color: #00ff9f; font-style: italic;`;
 
-console.log("%c[SYSTEM BOOT]", systemStyle);
+function styleFor(index: number, total: number): string {
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+  return isFirst || isLast ? GLITCH_STYLE : NORMAL_STYLE;
+}
 
-messageContent.forEach((line, index) => {
-  setTimeout(() => {
-    if (index === 0 || index === messageContent.length - 1) {
-      console.log(`%c${line}`, glitchStyle);
-    } else {
-      console.log(`%c${line}`, normalStyle);
-    }
+function run(): void {
+  console.log(`%c${BANNER}`, BANNER_STYLE);
+  console.log("%c[SYSTEM BOOT]", SYSTEM_STYLE);
 
-    if (index === messageContent.length - 1) {
-      console.log("%c[SYSTEM SHUTDOWN]", systemStyle);
-    }
-  }, index * 1000);
-});
+  MESSAGES.forEach((line, index) => {
+    setTimeout(() => {
+      console.log(`%c${line}`, styleFor(index, MESSAGES.length));
+      if (index === MESSAGES.length - 1) {
+        console.log("%c[SYSTEM SHUTDOWN]", SYSTEM_STYLE);
+      }
+    }, index * MESSAGE_INTERVAL_MS);
+  });
+}
+
+run();
