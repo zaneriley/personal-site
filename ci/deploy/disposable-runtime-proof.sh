@@ -200,9 +200,11 @@ services:
       POSTGRES_PORT: "5432"
       POSTGRES_USER: "${POSTGRES_USER}"
       SECRET_KEY_BASE: "${SECRET_KEY_BASE}"
-      URL_HOST: "${URL_HOST}"
-      URL_PORT: "${URL_PORT}"
-      URL_SCHEME: "${URL_SCHEME}"
+      PHX_FORCE_SSL: "${PHX_FORCE_SSL}"
+      PHX_HOST: "${PHX_HOST}"
+      PHX_NOINDEX: "${PHX_NOINDEX}"
+      PHX_URL_PORT: "${PHX_URL_PORT}"
+      PHX_URL_SCHEME: "${PHX_URL_SCHEME}"
     ports:
       - "127.0.0.1:${RUNTIME_PROOF_HOST_PORT}:${PORT}"
     volumes:
@@ -223,9 +225,11 @@ POSTGRES_PASSWORD=$(random_hex 32)
 POSTGRES_USER=portfolio
 RUNTIME_PROOF_HOST_PORT=${host_port}
 SECRET_KEY_BASE=$(random_hex 64)
-URL_HOST=${RUNTIME_PROOF_URL_HOST:-preview.local}
-URL_PORT=${host_port}
-URL_SCHEME=http
+PHX_FORCE_SSL=false
+PHX_HOST=${RUNTIME_PROOF_PHX_HOST:-${public_ipv4}}
+PHX_NOINDEX=true
+PHX_URL_PORT=${host_port}
+PHX_URL_SCHEME=http
 ENV
 
     cat > "${payload_dir}/run-runtime-proof.sh" <<'REMOTE_SCRIPT'

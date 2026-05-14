@@ -508,7 +508,21 @@ function ci:workflow-lint {
     bin/ci/actionlint "${workflows[@]}"
 }
 
+function ci:url-discipline {
+    local matches
+
+    matches="$(rg --line-number '\burl\(~p' lib/portfolio_web/ || true)"
+
+    if [[ -n "${matches}" ]]; then
+        echo "Do not wrap verified routes with url(~p...) in web code." >&2
+        echo "Use ~p for root-relative in-app paths, or absolute_url(~p...) when an absolute site URL is required." >&2
+        printf "%s\n" "${matches}" >&2
+        return 1
+    fi
+}
+
 function ci:lint {
+    ci:url-discipline
     lint:shell
     lint:dockerfile "${@}"
     elixir:lint

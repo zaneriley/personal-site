@@ -91,6 +91,7 @@ defmodule PortfolioWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import PortfolioWeb.CoreComponents
+      import PortfolioWeb.SiteOrigin, only: [absolute_url: 1]
       use Gettext, backend: PortfolioWeb.Gettext
       import PortfolioWeb.Components.Typography
 
