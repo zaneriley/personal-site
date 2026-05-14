@@ -155,7 +155,7 @@ defmodule PortfolioWeb.CSPHeaderTest do
       assert csp =~ "upgrade-insecure-requests"
     end
 
-    test "is absent on https when dev env_module is active" do
+    test "is absent on http when dev env_module is active" do
       # Dev env module still doesn't change the scheme-based decision.
       Application.put_env(:portfolio, :environment, :dev)
       conn = build_conn(:http, "localhost", 4000)
