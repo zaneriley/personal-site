@@ -509,14 +509,23 @@ function ci:workflow-lint {
 }
 
 function ci:url-discipline {
-    local matches
+    local url_wrap_matches
+    local csp_env_matches
 
-    matches="$(rg --line-number '\burl\(~p' lib/portfolio_web/ || true)"
+    url_wrap_matches="$(rg --line-number '\burl\(~p' lib/portfolio_web/ || true)"
 
-    if [[ -n "${matches}" ]]; then
+    if [[ -n "${url_wrap_matches}" ]]; then
         echo "Do not wrap verified routes with url(~p...) in web code." >&2
         echo "Use ~p for root-relative in-app paths, or absolute_url(~p...) when an absolute site URL is required." >&2
-        printf "%s\n" "${matches}" >&2
+        printf "%s\n" "${url_wrap_matches}" >&2
+        return 1
+    fi
+
+    csp_env_matches="$(rg --line-number 'URL_SCHEME|URL_PORT' lib/portfolio_web/plugs/ || true)"
+
+    if [[ -n "${csp_env_matches}" ]]; then
+        echo "CSP must derive scheme/port from conn, not URL_SCHEME / URL_PORT env vars." >&2
+        printf "%s\n" "${csp_env_matches}" >&2
         return 1
     fi
 }

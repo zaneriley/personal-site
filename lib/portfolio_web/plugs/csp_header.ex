@@ -1,76 +1,98 @@
 defmodule PortfolioWeb.Plugs.CSPHeader do
   @moduledoc """
-  Handles the construction and application of Content Security Policy headers.
-  Provides dynamic CSP generation based on runtime configuration and environment.
-  """
-  import Plug.Conn
-  require Logger
+  Emits a Content-Security-Policy (or -Report-Only) header derived from
+  the current request. `'self'`-class directives use `conn.scheme`,
+  `conn.host`, `conn.port` — never env vars — so previews on any reachable
+  origin Just Work.
 
-  @type csp_config :: %{
+  Cross-origin allowlist is sourced from `CSP_ADDITIONAL_HOSTS` (comma list,
+  default empty). `'unsafe-inline'` in `script-src` / `style-src` is retained
+  pending a separate hardening slice.
+  """
+  @behaviour Plug
+
+  import Plug.Conn
+
+  @type origin :: %{
           required(:scheme) => String.t(),
           required(:host) => String.t(),
-          required(:port) => String.t(),
-          required(:additional_hosts) => list(String.t()),
-          optional(:report_only) => boolean()
+          required(:port) => pos_integer()
         }
-  @type report_only :: boolean()
-  @default_scheme "https"
-  @default_port "443"
-  @header_names %{
+
+  @header_name %{
     true => "content-security-policy-report-only",
     false => "content-security-policy"
   }
 
-  @spec generate_csp_for_testing(map()) :: String.t()
-  def generate_csp_for_testing(config) do
-    build_csp(config)
-  end
-
+  @impl true
   @spec init(keyword()) :: keyword()
-  def init(opts) do
-    Logger.debug(
-      "CSPHeader init - Environment: #{environment()}, Module: #{environment_module()}"
-    )
+  def init(opts), do: opts
 
-    opts
-  end
-
+  @impl true
   @spec call(Plug.Conn.t(), keyword()) :: Plug.Conn.t()
   def call(conn, _opts) do
-    config = get_csp_config(conn)
-
-    config
-    |> build_csp()
-    |> apply_csp_header(conn, config.report_only)
+    csp = build_csp(origin_from_conn(conn), additional_hosts(), env_module())
+    put_resp_header(conn, Map.fetch!(@header_name, report_only?()), csp)
   end
 
-  defp apply_csp_header(csp, conn, report_only) do
-    put_resp_header(conn, header_name(report_only), csp)
+  @spec generate_csp_for_testing(origin(), [String.t()], module()) :: String.t()
+  def generate_csp_for_testing(
+        origin,
+        additional \\ [],
+        env_mod \\ __MODULE__.Prod
+      ) do
+    build_csp(origin, additional, env_mod)
   end
 
-  defp header_name(report_only), do: Map.fetch!(@header_names, report_only)
-
-  @spec get_csp_config(Plug.Conn.t()) :: csp_config()
-  defp get_csp_config(conn) do
-    %{
-      scheme: System.get_env("URL_SCHEME", @default_scheme),
-      host: get_host(conn),
-      port: System.get_env("URL_PORT", @default_port),
-      additional_hosts: parse_additional_hosts(),
-      report_only: report_only?()
-    }
+  @spec origin_from_conn(Plug.Conn.t()) :: origin()
+  defp origin_from_conn(%Plug.Conn{scheme: scheme, host: host, port: port}) do
+    %{scheme: Atom.to_string(scheme), host: host, port: port}
   end
 
-  defp environment do
-    Application.get_env(:portfolio, :environment)
+  @spec build_csp(origin(), [String.t()], module()) :: String.t()
+  defp build_csp(origin, additional, env_mod) do
+    self_origin = format_origin(origin)
+    ws_origin = format_origin(%{origin | scheme: ws_scheme(origin.scheme)})
+    extras = Enum.map_join(additional, " ", &"#{origin.scheme}://#{&1}")
+    hosts = String.trim("#{self_origin} #{extras}")
+
+    [
+      default_src: "'self' #{hosts}",
+      script_src: "'self' #{hosts} 'unsafe-inline'",
+      style_src: "'self' #{hosts} 'unsafe-inline'",
+      img_src: "'self' #{hosts} data:",
+      font_src: "'self' #{hosts}",
+      connect_src: "'self' #{hosts} #{ws_origin}",
+      frame_src: env_mod.frame_src(),
+      object_src: "'none'",
+      base_uri: "'self'",
+      form_action: "'self'",
+      frame_ancestors: "'none'"
+    ]
+    |> env_mod.maybe_add_upgrade_insecure_requests()
+    |> Enum.map_join("; ", fn {key, value} ->
+      "#{key |> to_string() |> String.replace("_", "-")} #{value}"
+    end)
   end
 
-  defp environment_module do
-    Map.get(
-      %{dev: PortfolioWeb.Plugs.CSPHeader.Dev},
-      environment(),
-      PortfolioWeb.Plugs.CSPHeader.Prod
-    )
+  @spec format_origin(origin()) :: String.t()
+  defp format_origin(%{scheme: scheme, host: host, port: port}) do
+    "#{scheme}://#{host}#{port_segment(port)}"
+  end
+
+  defp port_segment(port) when port in [80, 443], do: ""
+  defp port_segment(port), do: ":#{port}"
+
+  defp ws_scheme("https"), do: "wss"
+  defp ws_scheme("http"), do: "ws"
+
+  @spec additional_hosts() :: [String.t()]
+  defp additional_hosts do
+    "CSP_ADDITIONAL_HOSTS"
+    |> System.get_env("")
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
   end
 
   defp report_only? do
@@ -79,58 +101,10 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
     |> Keyword.get(:report_only, false)
   end
 
-  defp get_host(conn) do
-    conn.host ||
-      Application.get_env(:portfolio, PortfolioWeb.Endpoint)[:url][:host]
-  end
-
-  @spec parse_additional_hosts() :: list(String.t())
-  defp parse_additional_hosts do
-    (System.get_env("CSP_ADDITIONAL_HOSTS", "") <> ",localhost,0.0.0.0")
-    |> String.split(",", trim: true)
-    |> Enum.map(&String.trim/1)
-    |> Enum.uniq()
-  end
-
-  @spec build_csp(csp_config) :: String.t()
-  defp build_csp(config) do
-    ws_url = construct_url(config, :ws)
-    all_hosts = get_all_hosts(config)
-    env_module = environment_module()
-
-    [
-      default_src: "'self' #{all_hosts}",
-      script_src: "'self' #{all_hosts} 'unsafe-inline'",
-      style_src: "'self' #{all_hosts} 'unsafe-inline'",
-      img_src: "'self' #{all_hosts} data:",
-      font_src: "'self' #{all_hosts}",
-      connect_src: "'self' #{all_hosts} #{ws_url}",
-      frame_src: env_module.frame_src(),
-      object_src: "'none'",
-      base_uri: "'self'",
-      form_action: "'self'",
-      frame_ancestors: "'none'"
-    ]
-    |> env_module.maybe_add_upgrade_insecure_requests()
-    |> Enum.map_join("; ", fn {key, value} ->
-      "#{key |> to_string() |> String.replace("_", "-")} #{value}"
-    end)
-  end
-
-  @spec construct_url(csp_config, :base | :ws) :: String.t()
-  defp construct_url(config, type) do
-    "#{url_scheme(type, config.scheme)}://#{config.host}#{port_segment(config.port)}"
-  end
-
-  defp url_scheme(:ws, "https"), do: "wss"
-  defp url_scheme(_type, scheme), do: scheme
-
-  defp port_segment(port) when port in ["80", "443"], do: ""
-  defp port_segment(port), do: ":#{port}"
-
-  @spec get_all_hosts(csp_config) :: String.t()
-  defp get_all_hosts(config) do
-    [config.host, "localhost", "0.0.0.0" | config.additional_hosts]
-    |> Enum.map_join(" ", &"#{config.scheme}://#{&1}:#{config.port}")
+  defp env_module do
+    case Application.get_env(:portfolio, :environment) do
+      :dev -> __MODULE__.Dev
+      _ -> __MODULE__.Prod
+    end
   end
 end
