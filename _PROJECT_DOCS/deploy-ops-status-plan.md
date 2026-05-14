@@ -1,6 +1,6 @@
 # Deploy / ops status and plan
 
-**Updated:** 2026-05-13.
+**Updated:** 2026-05-14.
 
 This is the working plan for Phase 3 after the production-build gate landed. It is not an ADR: it records status, sequencing, and what "done" should feel like from Z's DX.
 
@@ -280,6 +280,12 @@ Target philosophy:
 - User-perceived mobile performance comes before compute-per-watt. Compute/watt only matters after the visitor experience is good.
 - A complete mediocre portfolio is better than an unfinished excellent one, but performance feedback must stay visible while the app is being finished so expensive choices do not become baked in.
 - Runtime/framework rewrites are low-ROI unless route/browser profiling proves Phoenix is the bottleneck.
+
+### Public Navigation and App-Like Motion
+
+The app-like navigation decision is parked, not forgotten. ADR 0002 proposes keeping LiveView as the public navigation substrate and later proving same-document View Transitions through LiveView 1.1.18+'s `onDocumentPatch` hook. Do not turn the current JS-byte concern into a framework rewrite while the active slice is still preview correctness, gzip/compression verification, budget calibration, and nonessential-JS cleanup.
+
+The near-term performance question is: what bytes ship to a cold first-time mobile visitor, are they compressed, and which payloads can be removed or lazy-loaded without changing the product? Easter egg/debug JavaScript should be split out of the first-load path before LiveView itself is judged. A later motion slice can then measure LiveView's actual tradeoff: first-load JS/WebSocket cost versus warm page-to-page continuity.
 
 Proposed feedback ladder:
 
