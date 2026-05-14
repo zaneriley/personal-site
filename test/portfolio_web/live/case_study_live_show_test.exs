@@ -14,7 +14,8 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
 
       case_study =
         case_study_fixture(%{
-          "content" => "## Case study heading\n\nA paragraph with **bold** text."
+          "content" =>
+            "## Case study heading\n\nA paragraph with **bold** text."
         })
 
       case_study = Repo.preload(case_study, :translations)

@@ -438,13 +438,26 @@ defmodule Portfolio.Content.Markdown.Renderer do
     trimmed = String.trim(value)
 
     cond do
-      trimmed == "" -> true
-      String.starts_with?(trimmed, "//") -> false
-      String.starts_with?(trimmed, "/") -> true
-      String.starts_with?(trimmed, "#") -> true
-      String.starts_with?(trimmed, "?") -> true
-      has_scheme?(trimmed) -> MapSet.member?(@safe_url_schemes, scheme_of(trimmed))
-      true -> true
+      trimmed == "" ->
+        true
+
+      String.starts_with?(trimmed, "//") ->
+        false
+
+      String.starts_with?(trimmed, "/") ->
+        true
+
+      String.starts_with?(trimmed, "#") ->
+        true
+
+      String.starts_with?(trimmed, "?") ->
+        true
+
+      has_scheme?(trimmed) ->
+        MapSet.member?(@safe_url_schemes, scheme_of(trimmed))
+
+      true ->
+        true
     end
   end
 

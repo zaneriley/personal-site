@@ -289,7 +289,9 @@ defmodule Portfolio.Content.Markdown.RendererTest do
         ast = [{tag, [], ["payload"], %{}}]
         {:safe, iodata} = Renderer.render_to_safe(ast)
         html = IO.iodata_to_binary(iodata)
-        refute html =~ "<#{tag}", "expected <#{tag}> to be dropped but got: #{html}"
+
+        refute html =~ "<#{tag}",
+               "expected <#{tag}> to be dropped but got: #{html}"
       end
     end
 
@@ -311,16 +313,28 @@ defmodule Portfolio.Content.Markdown.RendererTest do
     end
 
     test "rejects javascript: scheme regardless of leading whitespace or case" do
-      for href <- ["  JavaScript:alert(1)", "VBSCRIPT:alert", "\tjavascript:foo"] do
+      for href <- [
+            "  JavaScript:alert(1)",
+            "VBSCRIPT:alert",
+            "\tjavascript:foo"
+          ] do
         ast = [{"a", [{"href", href}], ["link"], %{}}]
         {:safe, iodata} = Renderer.render_to_safe(ast)
         html = IO.iodata_to_binary(iodata)
-        refute html =~ ~r/javascript:|vbscript:/i, "expected #{href} to be rejected"
+
+        refute html =~ ~r/javascript:|vbscript:/i,
+               "expected #{href} to be rejected"
       end
     end
 
     test "preserves safe href schemes (http, https, mailto, relative)" do
-      for href <- ["https://example.com", "http://example.com", "mailto:a@b", "/path", "#anchor"] do
+      for href <- [
+            "https://example.com",
+            "http://example.com",
+            "mailto:a@b",
+            "/path",
+            "#anchor"
+          ] do
         ast = [{"a", [{"href", href}], ["link"], %{}}]
         {:safe, iodata} = Renderer.render_to_safe(ast)
         html = IO.iodata_to_binary(iodata)
@@ -348,8 +362,7 @@ defmodule Portfolio.Content.Markdown.RendererTest do
 
     test "rejects data: URLs in href" do
       ast = [
-        {"a",
-         [{"href", "data:text/html,<script>alert(1)</script>"}], ["link"],
+        {"a", [{"href", "data:text/html,<script>alert(1)</script>"}], ["link"],
          %{}}
       ]
 
