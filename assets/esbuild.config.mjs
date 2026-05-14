@@ -14,8 +14,8 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const config = {
-  entryPoints: ["./js/app.js"],
-  outfile: `${copyDest}/js/app.js`,
+  entryPoints: ["./js/app.js", "./js/console-easter-egg.js"],
+  outdir: `${copyDest}/js`,
   bundle: true,
   minify: minify,
   sourcemap: sourcemap,
