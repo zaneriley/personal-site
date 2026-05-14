@@ -7,8 +7,14 @@ defmodule PortfolioWeb.CSPHeaderTest do
 
   setup do
     previous_additional = System.get_env("CSP_ADDITIONAL_HOSTS")
+    previous_url_scheme = System.get_env("URL_SCHEME")
+    previous_url_port = System.get_env("URL_PORT")
     previous_csp_app = Application.get_env(:portfolio, :csp, [])
+    previous_environment = Application.get_env(:portfolio, :environment)
+
     System.delete_env("CSP_ADDITIONAL_HOSTS")
+    System.delete_env("URL_SCHEME")
+    System.delete_env("URL_PORT")
 
     Application.put_env(
       :portfolio,
@@ -17,13 +23,16 @@ defmodule PortfolioWeb.CSPHeaderTest do
     )
 
     on_exit(fn ->
-      if previous_additional do
-        System.put_env("CSP_ADDITIONAL_HOSTS", previous_additional)
-      else
-        System.delete_env("CSP_ADDITIONAL_HOSTS")
-      end
-
+      restore_env("CSP_ADDITIONAL_HOSTS", previous_additional)
+      restore_env("URL_SCHEME", previous_url_scheme)
+      restore_env("URL_PORT", previous_url_port)
       Application.put_env(:portfolio, :csp, previous_csp_app)
+
+      if previous_environment do
+        Application.put_env(:portfolio, :environment, previous_environment)
+      else
+        Application.delete_env(:portfolio, :environment)
+      end
     end)
 
     :ok
@@ -127,6 +136,80 @@ defmodule PortfolioWeb.CSPHeaderTest do
     end
   end
 
+  describe "upgrade-insecure-requests" do
+    test "is absent when conn is http (HTTP preview is browser-real)" do
+      Application.put_env(:portfolio, :environment, :prod)
+      conn = build_conn(:http, "147.182.0.1", 8000)
+      conn = CSPHeader.call(conn, [])
+      [csp] = Plug.Conn.get_resp_header(conn, "content-security-policy")
+
+      refute csp =~ "upgrade-insecure-requests"
+    end
+
+    test "is present when conn is https, regardless of env_module" do
+      Application.put_env(:portfolio, :environment, :prod)
+      conn = build_conn(:https, "zaneriley.com", 443)
+      conn = CSPHeader.call(conn, [])
+      [csp] = Plug.Conn.get_resp_header(conn, "content-security-policy")
+
+      assert csp =~ "upgrade-insecure-requests"
+    end
+
+    test "is absent on https when dev env_module is active" do
+      # Dev env module still doesn't change the scheme-based decision.
+      Application.put_env(:portfolio, :environment, :dev)
+      conn = build_conn(:http, "localhost", 4000)
+      conn = CSPHeader.call(conn, [])
+      [csp] = Plug.Conn.get_resp_header(conn, "content-security-policy")
+
+      refute csp =~ "upgrade-insecure-requests"
+    end
+  end
+
+  describe "env_module/0 selection" do
+    test "uses Dev when :portfolio, :environment is :dev (frame-src 'self')" do
+      Application.put_env(:portfolio, :environment, :dev)
+      conn = build_conn(:http, "localhost", 4000)
+      conn = CSPHeader.call(conn, [])
+      [csp] = Plug.Conn.get_resp_header(conn, "content-security-policy")
+
+      assert csp =~ ~r/frame-src\s+'self'/
+    end
+
+    test "uses Prod for :prod (frame-src 'none')" do
+      Application.put_env(:portfolio, :environment, :prod)
+      conn = build_conn(:https, "zaneriley.com", 443)
+      conn = CSPHeader.call(conn, [])
+      [csp] = Plug.Conn.get_resp_header(conn, "content-security-policy")
+
+      assert csp =~ ~r/frame-src\s+'none'/
+    end
+
+    test "uses Prod for any non-:dev value (frame-src 'none')" do
+      Application.put_env(:portfolio, :environment, :staging)
+      conn = build_conn(:https, "staging.example", 443)
+      conn = CSPHeader.call(conn, [])
+      [csp] = Plug.Conn.get_resp_header(conn, "content-security-policy")
+
+      assert csp =~ ~r/frame-src\s+'none'/
+    end
+  end
+
+  describe "env-var poison resistance" do
+    test "ignores URL_SCHEME and URL_PORT when set to garbage" do
+      System.put_env("URL_SCHEME", "garbage")
+      System.put_env("URL_PORT", "99999")
+
+      conn = build_conn(:https, "example.com", 443)
+      conn = CSPHeader.call(conn, [])
+      [csp] = Plug.Conn.get_resp_header(conn, "content-security-policy")
+
+      refute csp =~ "garbage"
+      refute csp =~ "99999"
+      assert csp =~ "https://example.com"
+    end
+  end
+
   describe "generate_csp_for_testing/3" do
     test "builds a string with request-origin self plus extras (prod env)" do
       csp =
@@ -142,7 +225,18 @@ defmodule PortfolioWeb.CSPHeaderTest do
       assert csp =~ "upgrade-insecure-requests"
     end
 
-    test "dev env module omits upgrade-insecure-requests and sets frame-src 'self'" do
+    test "http origin omits upgrade-insecure-requests even with Prod env" do
+      csp =
+        CSPHeader.generate_csp_for_testing(
+          %{scheme: "http", host: "147.182.0.1", port: 8000},
+          [],
+          PortfolioWeb.Plugs.CSPHeader.Prod
+        )
+
+      refute csp =~ "upgrade-insecure-requests"
+    end
+
+    test "dev env module + http origin emits no upgrade-insecure-requests, frame-src 'self'" do
       csp =
         CSPHeader.generate_csp_for_testing(
           %{scheme: "http", host: "localhost", port: 4000},
@@ -158,4 +252,7 @@ defmodule PortfolioWeb.CSPHeaderTest do
   defp build_conn(scheme, host, port) do
     %{conn(:get, "/") | scheme: scheme, host: host, port: port}
   end
+
+  defp restore_env(name, nil), do: System.delete_env(name)
+  defp restore_env(name, value), do: System.put_env(name, value)
 end

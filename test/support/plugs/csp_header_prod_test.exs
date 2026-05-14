@@ -9,15 +9,6 @@ defmodule PortfolioWeb.CSPHeaderProdTest do
     end
   end
 
-  describe "maybe_add_upgrade_insecure_requests/1" do
-    test "prepends upgrade-insecure-requests" do
-      directives = [{"default-src", "'self'"}]
-
-      assert Prod.maybe_add_upgrade_insecure_requests(directives) ==
-               [{"upgrade-insecure-requests", ""}, {"default-src", "'self'"}]
-    end
-  end
-
   describe "generate_csp_for_testing/3 with Prod env module" do
     test "frame-src is 'none' in the rendered policy" do
       csp =
@@ -28,17 +19,6 @@ defmodule PortfolioWeb.CSPHeaderProdTest do
         )
 
       assert csp =~ ~r/frame-src\s+'none'/
-    end
-
-    test "upgrade-insecure-requests is present" do
-      csp =
-        CSPHeader.generate_csp_for_testing(
-          %{scheme: "https", host: "example.com", port: 443},
-          [],
-          Prod
-        )
-
-      assert csp =~ "upgrade-insecure-requests"
     end
   end
 end

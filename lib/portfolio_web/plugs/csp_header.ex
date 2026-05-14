@@ -69,11 +69,17 @@ defmodule PortfolioWeb.Plugs.CSPHeader do
       form_action: "'self'",
       frame_ancestors: "'none'"
     ]
-    |> env_mod.maybe_add_upgrade_insecure_requests()
+    |> maybe_add_upgrade_insecure_requests(origin.scheme)
     |> Enum.map_join("; ", fn {key, value} ->
       "#{key |> to_string() |> String.replace("_", "-")} #{value}"
     end)
   end
+
+  defp maybe_add_upgrade_insecure_requests(directives, "https") do
+    [{"upgrade-insecure-requests", ""} | directives]
+  end
+
+  defp maybe_add_upgrade_insecure_requests(directives, _scheme), do: directives
 
   @spec format_origin(origin()) :: String.t()
   defp format_origin(%{scheme: scheme, host: host, port: port}) do
