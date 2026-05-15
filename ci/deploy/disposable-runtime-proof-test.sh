@@ -43,6 +43,20 @@ function assert_contains {
     fi
 }
 
+function assert_json {
+    local file
+    local filter
+
+    file="${1}"
+    filter="${2}"
+
+    if ! jq -e "${filter}" "${file}" >/dev/null; then
+        echo "expected ${file} to satisfy jq filter: ${filter}" >&2
+        cat "${file}" >&2
+        exit 1
+    fi
+}
+
 ready_receipt="${tmpdir}/ready.json"
 waiting_receipt="${tmpdir}/waiting.json"
 write_receipt "ready" "${ready_receipt}"
@@ -71,5 +85,13 @@ RUNTIME_PROOF_VALIDATE_ONLY=1 \
     "${script_dir}/disposable-runtime-proof.sh" "${ready_receipt}" > "${tmpdir}/ready.out" 2>&1
 
 assert_contains "${tmpdir}/ready.out" "runtime proof inputs valid"
+
+routes_file="${script_dir}/preview-browser-routes.json"
+assert_json "${routes_file}" '.schema_version == 1'
+assert_json "${routes_file}" '.routes | any(.path == "/en/note/prod-build-smoke-note" and (.required_text | index("Prod Build Smoke Note")))'
+assert_json "${routes_file}" '.routes | any(.path == "/en/case-study/prod-build-smoke-case-study" and (.required_text | index("Prod Build Smoke Case Study")))'
+assert_json "${routes_file}" '.routes | any(.path == "/en/note/this-route-cannot-exist-xyzzy" and (.allowed_statuses | index(404)))'
+assert_json "${routes_file}" '.forbidden_text | index("We ran into an issue loading this note")'
+assert_json "${routes_file}" '.wrong_host_text | index("web:8000")'
 
 echo "disposable runtime proof input test passed"

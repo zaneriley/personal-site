@@ -8,6 +8,7 @@ host_receipt="${1:-${DO_HOST_RECEIPT:-ci/digitalocean-host.json}}"
 app_image_ref="${APP_IMAGE_REF:-${APP_IMAGE:-}}"
 output="${RUNTIME_PROOF_OUTPUT:-ci/disposable-runtime-proof.json}"
 artifact_dir="${RUNTIME_PROOF_ARTIFACT_DIR:-ci/disposable-runtime-proof}"
+preview_routes_file="${PREVIEW_BROWSER_ROUTES_FILE:-ci/deploy/preview-browser-routes.json}"
 remote_dir="${RUNTIME_PROOF_REMOTE_DIR:-/var/lib/personal-site/runtime-proof}"
 project="${RUNTIME_PROOF_PROJECT:-personal-site-runtime-proof}"
 host_port="${RUNTIME_PROOF_HOST_PORT:-18080}"
@@ -77,6 +78,21 @@ function require_digest_image {
         echo "fatal: APP_IMAGE_REF must be digest-pinned with @sha256:<64 hex chars>" >&2
         exit 1
     fi
+}
+
+function validate_preview_routes {
+    jq -e '
+        .schema_version == 1
+        and (.forbidden_text | type == "array")
+        and (.wrong_host_text | type == "array")
+        and (.routes | type == "array" and length > 0)
+        and all(.routes[];
+            (.label | type == "string" and length > 0)
+            and (.path | type == "string" and startswith("/"))
+            and (.allowed_statuses | type == "array" and length > 0)
+            and (.required_text | type == "array")
+        )
+    ' "${preview_routes_file}" >/dev/null
 }
 
 function assert_safe_shell_value {
@@ -214,6 +230,8 @@ volumes:
   postgres: {}
 YAML
 
+    cp "${preview_routes_file}" "${payload_dir}/preview-browser-routes.json"
+
     cat > "${payload_dir}/.env" <<ENV
 APP_IMAGE_REF=${app_image_ref}
 CONTENT_BASE_PATH=/app/prod-build-content
@@ -244,6 +262,7 @@ status="fail"
 failure_reason="not_started"
 ready_ms=""
 routes_json="${artifact_dir}/routes.json"
+preview_routes_file="preview-browser-routes.json"
 memory_peaks_json="${artifact_dir}/memory-peaks.json"
 docker_stats_json="${artifact_dir}/docker-stats.json"
 compose_ps_json="${artifact_dir}/compose-ps.json"
@@ -403,42 +422,155 @@ function wait_for_ready {
     return 1
 }
 
+function expected_site_origin_uses_loopback {
+    case "${PHX_HOST}" in
+        "localhost" | "0.0.0.0" | "web" | "web:8000" | 127.*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+function literal_hits {
+    local body_file
+    local strings_json
+
+    body_file="${1}"
+    strings_json="${2}"
+
+    jq -r '.[]' <<< "${strings_json}" |
+        while IFS= read -r needle; do
+            if [[ -n "${needle}" ]] && grep -F -- "${needle}" "${body_file}" >/dev/null; then
+                printf "%s\n" "${needle}"
+            fi
+        done |
+        jq -R -s 'split("\n") | map(select(length > 0))'
+}
+
+function literal_misses {
+    local body_file
+    local strings_json
+
+    body_file="${1}"
+    strings_json="${2}"
+
+    jq -r '.[]' <<< "${strings_json}" |
+        while IFS= read -r needle; do
+            if [[ -n "${needle}" ]] && ! grep -F -- "${needle}" "${body_file}" >/dev/null; then
+                printf "%s\n" "${needle}"
+            fi
+        done |
+        jq -R -s 'split("\n") | map(select(length > 0))'
+}
+
+function status_allowed {
+    local allowed_statuses_json
+    local status_code
+
+    allowed_statuses_json="${1}"
+    status_code="${2}"
+
+    jq -e --argjson status_code "${status_code}" 'index($status_code) != null' <<< "${allowed_statuses_json}" >/dev/null
+}
+
 function probe_routes {
+    local allowed_statuses_json
     local body_file
     local byte_count
+    local forbidden_hits_json
+    local forbidden_text_json
     local failures
+    local label
     local route
+    local required_text_json
+    local required_text_missing_json
+    local required_text_present_json
     local status_code
+    local status_number
+    local status_ok
     local tmp_jsonl
+    local wrong_host_hits_json
+    local wrong_host_text_json
 
     failures=0
     tmp_jsonl="${artifact_dir}/routes.jsonl"
     : > "${tmp_jsonl}"
+    forbidden_text_json="$(jq -c '.forbidden_text // []' "${preview_routes_file}")"
+    wrong_host_text_json="$(jq -c '.wrong_host_text // []' "${preview_routes_file}")"
 
-    for route in / /en /en/case-studies /en/case-study/prod-build-smoke-case-study /en/notes /en/note/prod-build-smoke-note /ja; do
+    while IFS= read -r route_json; do
+        label="$(jq -r '.label' <<< "${route_json}")"
+        route="$(jq -r '.path' <<< "${route_json}")"
+        allowed_statuses_json="$(jq -c '.allowed_statuses' <<< "${route_json}")"
+        required_text_json="$(jq -c '.required_text // []' <<< "${route_json}")"
         body_file="$(mktemp)"
         status_code="$(curl -sS -o "${body_file}" -w "%{http_code}" "http://127.0.0.1:${RUNTIME_PROOF_HOST_PORT}${route}" || true)"
+        status_number="null"
         byte_count="$(wc -c < "${body_file}" | tr -d ' ')"
-        rm -f "${body_file}"
+        required_text_present_json="$(literal_hits "${body_file}" "${required_text_json}")"
+        required_text_missing_json="$(literal_misses "${body_file}" "${required_text_json}")"
+        forbidden_hits_json="$(literal_hits "${body_file}" "${forbidden_text_json}")"
 
-        case "${status_code}" in
-            200 | 301 | 302 | 308)
-                ;;
-            *)
-                failures=$((failures + 1))
-                ;;
-        esac
+        if expected_site_origin_uses_loopback; then
+            wrong_host_hits_json="[]"
+        else
+            wrong_host_hits_json="$(literal_hits "${body_file}" "${wrong_host_text_json}")"
+        fi
+
+        status_ok="false"
+
+        if [[ "${status_code}" =~ ^[0-9]+$ ]]; then
+            status_number="$((10#${status_code}))"
+        fi
+
+        if [[ "${status_number}" != "null" ]] && status_allowed "${allowed_statuses_json}" "${status_number}"; then
+            status_ok="true"
+        fi
+
+        if [[ "${status_ok}" != "true" ]] ||
+            [[ "$(jq 'length' <<< "${required_text_missing_json}")" -gt 0 ]] ||
+            [[ "$(jq 'length' <<< "${forbidden_hits_json}")" -gt 0 ]] ||
+            [[ "$(jq 'length' <<< "${wrong_host_hits_json}")" -gt 0 ]]; then
+            failures=$((failures + 1))
+        fi
 
         jq -n \
+            --arg label "${label}" \
             --arg route "${route}" \
-            --arg status_code "${status_code}" \
             --arg byte_count "${byte_count}" \
+            --argjson status_code "${status_number}" \
+            --argjson allowed_statuses "${allowed_statuses_json}" \
+            --argjson required_text_present "${required_text_present_json}" \
+            --argjson required_text_missing "${required_text_missing_json}" \
+            --argjson forbidden_hits "${forbidden_hits_json}" \
+            --argjson wrong_host_hits "${wrong_host_hits_json}" \
+            --argjson status_ok "${status_ok}" \
             '{
+                label: $label,
                 route: $route,
-                status: ($status_code | tonumber?),
-                bytes: ($byte_count | tonumber)
+                status: $status_code,
+                allowed_statuses: $allowed_statuses,
+                status_ok: $status_ok,
+                bytes: ($byte_count | tonumber),
+                required_text_present: $required_text_present,
+                required_text_missing: $required_text_missing,
+                forbidden_hits: $forbidden_hits,
+                wrong_host_hits: $wrong_host_hits,
+                result: (
+                    if $status_ok
+                        and ($required_text_missing | length) == 0
+                        and ($forbidden_hits | length) == 0
+                        and ($wrong_host_hits | length) == 0
+                    then "pass"
+                    else "fail"
+                    end
+                )
             }' >> "${tmp_jsonl}"
-    done
+
+        rm -f "${body_file}"
+    done < <(jq -c '.routes[]' "${preview_routes_file}")
 
     json_array_from_jsonl "${tmp_jsonl}" "${routes_json}"
 
@@ -504,7 +636,9 @@ require_command openssl
 require_command ssh
 require_command tar
 require_file "${host_receipt}"
+require_file "${preview_routes_file}"
 require_digest_image
+validate_preview_routes
 assert_safe_shell_value RUNTIME_PROOF_REMOTE_DIR "${remote_dir}"
 assert_safe_shell_value RUNTIME_PROOF_PROJECT "${project}"
 
