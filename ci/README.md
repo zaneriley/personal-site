@@ -1,21 +1,30 @@
-# CI Layout
+# CI
 
-This directory is organized by job, not provider.
+This folder holds the checks that keep a broken branch from reaching visitors.
+Start with `./run`; it is the command surface. Files under `ci/` are either
+checked-in inputs or scripts that run those inputs. Generated proof belongs in
+`.tmp/ci-artifacts/`.
 
-- `contracts/` holds durable verification inputs shared by gates.
-- `fixtures/` holds committed content used by CI.
-- `gates/` holds merge-gate checks run by `./run ci:*`.
-- `preview/` holds runtime viability and page acceptance checks for candidate previews.
-- `providers/` holds provider-specific host lifecycle adapters such as DigitalOcean.
+## Where Things Go
 
-Generated evidence belongs under `.tmp/ci-artifacts/`, never beside the scripts.
+- `contracts/` says what the site must prove: routes, page text, browser checks, and performance budgets.
+- `fixtures/` holds small posts and case studies used to prove real detail pages render.
+- `gates/` holds checks that can block a merge.
+- `preview/` checks whether a candidate image can boot and whether its pages look real in a browser.
+- `providers/` holds paid host plumbing. DigitalOcean lives there because it is one provider, not the deploy model.
 
-Start from `./run` for commands. Current entrypoints:
+## Commands
 
-- `./run ci:prod-build` runs the release-shaped production build gate.
-- `./run ci:performance-browser` runs the public page budget check against a live local app.
-- `./run ci:preview-page-acceptance:test` runs the browser assertion fixture suite.
-- `./run ci:disposable-host-check` runs provider/runtime input tests without creating a cloud host.
-- `./run host:disposable:*` creates, inspects, destroys, or checks a short-lived host.
+- `./run ci:prod-build` asks, "would this release boot and serve the pages visitors need?"
+- `./run ci:performance-browser` asks, "are public pages still small and quick in a real browser?"
+- `./run ci:preview-page-acceptance:test` checks the browser assertions without deploying anything.
+- `./run ci:disposable-host-check` checks host scripts and runtime inputs without creating a cloud server.
+- `./run host:disposable:*` creates, inspects, destroys, or tests a short-lived host.
 
-Add new route, text, browser, or performance expectations to `contracts/routes.json` first. Add generated receipts, screenshots, or last-run JSON under `.tmp/ci-artifacts/`.
+## Adding Work
+
+Add new route, text, browser, or performance expectations to
+`contracts/routes.json` first. Do not make a second route list in a script.
+
+Add receipts, screenshots, and last-run JSON under `.tmp/ci-artifacts/`. Do not
+put generated files beside the scripts that produced them.
