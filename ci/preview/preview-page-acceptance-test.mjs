@@ -5,13 +5,13 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { startPreviewFixtureServer } from "./preview-browser-check/fixture-server.mjs";
+import { startPreviewFixtureServer } from "./preview-page-acceptance/fixture-server.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const scriptDir = path.dirname(scriptPath);
 const repoRoot = path.resolve(scriptDir, "../..");
-const runnerPath = path.join(scriptDir, "preview-browser-check.mjs");
-const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "preview-browser-check-"));
+const runnerPath = path.join(scriptDir, "preview-page-acceptance.mjs");
+const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "preview-page-acceptance-"));
 const runnerTimeoutMs = 30_000;
 const cases = [
   {
@@ -217,7 +217,7 @@ try {
     await assertCase(testCase, fixtureServer.origin);
   }
 
-  console.error("preview browser check fixture tests passed");
+  console.error("preview page acceptance fixture tests passed");
 } finally {
   await fixtureServer.close();
   await fs.rm(tmpDir, { force: true, recursive: true });
@@ -275,7 +275,7 @@ async function runFixture(testCase, fixtureOrigin) {
     fixtureOrigin,
     "--expected-site-origin",
     fixtureOrigin,
-    "--routes-json",
+    "--routes-contract",
     routesPath,
     "--screenshots-dir",
     screenshotsDir,
@@ -293,7 +293,7 @@ function spawnRunner(command, commandArgs) {
     const child = spawn(command, commandArgs, { cwd: repoRoot });
     const timeout = setTimeout(() => {
       child.kill("SIGKILL");
-      reject(new Error(`preview browser check timed out after ${runnerTimeoutMs}ms`));
+      reject(new Error(`preview page acceptance timed out after ${runnerTimeoutMs}ms`));
     }, runnerTimeoutMs);
 
     child.stdout.on("data", (chunk) => {
@@ -323,10 +323,12 @@ function routeConfig(testCase) {
 
   return {
     schema_version: 1,
-    viewports: testCase.config?.viewports ?? [
-      { label: "desktop", width: 800, height: 600 },
-    ],
-    browser_defaults: browserDefaults,
+    browser: {
+      viewports: testCase.config?.viewports ?? [
+        { label: "desktop", width: 800, height: 600 },
+      ],
+      defaults: browserDefaults,
+    },
     text_policy: {
       forbidden_visible_text: ["Visible Error"],
       forbidden_html_text: ["preview.local", "web:8000"],
@@ -358,7 +360,7 @@ function failureMatches(expectedFailure, observedFailure) {
 
 function formatCaseDebug(testCase, result, output) {
   return [
-    `${testCase.name}: preview browser fixture assertion failed`,
+    `${testCase.name}: preview page acceptance fixture assertion failed`,
     `exit_status: ${result.status}`,
     `expected: ${JSON.stringify(testCase.expect, null, 2)}`,
     `observed_status: ${output.status}`,

@@ -4,9 +4,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { observeRouteViewport } from "./preview-browser-check/browser-observer.mjs";
-import { buildPreviewCheckPlan } from "./preview-browser-check/check-plan.mjs";
-import { assertViewport } from "./preview-browser-check/preview-assertions.mjs";
+import { observeRouteViewport } from "./preview-page-acceptance/browser-observer.mjs";
+import { buildPreviewCheckPlan } from "./preview-page-acceptance/check-plan.mjs";
+import { assertViewport } from "./preview-page-acceptance/preview-assertions.mjs";
 import {
   buildResult,
   printFailureSummary,
@@ -14,11 +14,11 @@ import {
   printStatusLine,
   writeFailureSummary,
   writeResult,
-} from "./preview-browser-check/reporting.mjs";
+} from "./preview-page-acceptance/reporting.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const repoRoot =
-  process.env.PREVIEW_BROWSER_CHECK_ROOT ??
+  process.env.PREVIEW_PAGE_ACCEPTANCE_ROOT ??
   path.resolve(path.dirname(scriptPath), "../..");
 
 const exitStatus = await main(process.argv.slice(2));
@@ -26,11 +26,11 @@ process.exit(exitStatus);
 
 async function main(args) {
   const options = parseOptions(args);
-  const rawConfig = await readJson(options.routesJsonPath);
+  const rawConfig = await readJson(options.routesContractPath);
   const { plan, failures: planFailures } = buildPreviewCheckPlan(rawConfig, {
     browserConnectUrl: options.browserConnectUrl,
     expectedSiteOrigin: options.expectedSiteOrigin,
-    routeConfigFile: path.relative(repoRoot, options.routesJsonPath),
+    routeConfigFile: path.relative(repoRoot, options.routesContractPath),
   });
 
   await fs.mkdir(options.screenshotsDir, { recursive: true });
@@ -51,7 +51,7 @@ async function main(args) {
     return 1;
   }
 
-  printStatusLine("preview browser check passed");
+  printStatusLine("preview page acceptance passed");
   return 0;
 }
 
@@ -136,12 +136,20 @@ function parseOptions(args) {
     expectedSiteOrigin: normalizeOrigin(
       requiredOption(args, "--expected-site-origin"),
     ),
-    routesJsonPath: resolveRepoPath(requiredOption(args, "--routes-json")),
+    routesContractPath: resolveRepoPath(requiredOption(args, "--routes-contract")),
     screenshotsDir: resolveRepoPath(
-      optionValue(args, "--screenshots-dir", ".tmp/preview-browser-screenshots"),
+      optionValue(
+        args,
+        "--screenshots-dir",
+        ".tmp/ci-artifacts/preview-page-acceptance/screenshots",
+      ),
     ),
     outputPath: resolveRepoPath(
-      optionValue(args, "--output", ".tmp/preview-browser-check.json"),
+      optionValue(
+        args,
+        "--output",
+        ".tmp/ci-artifacts/preview-page-acceptance/preview-page-acceptance.json",
+      ),
     ),
     failureSummaryPath: resolveOptionalPath(
       optionValue(args, "--failure-summary", null),

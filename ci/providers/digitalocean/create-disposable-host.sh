@@ -5,10 +5,8 @@ set -o nounset
 set -o pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=ci/deploy/digitalocean-env.sh
-. "${script_dir}/digitalocean-env.sh"
 
-cloud_init_template="${script_dir}/digitalocean-origin-cloud-init.yml"
+cloud_init_template="${script_dir}/cloud-init.yml"
 ssh_private_key_file=""
 ssh_known_hosts_file=""
 droplet_id=""
@@ -16,7 +14,7 @@ action_id=""
 public_ipv4=""
 public_ipv6=""
 status="requested"
-origin_ready="false"
+host_ready="false"
 created_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 function cleanup_files {
@@ -32,13 +30,13 @@ function cleanup_files {
 function cleanup {
     local exit_status="$?"
 
-    if [[ "${exit_status}" != "0" && -n "${droplet_id}" && "${origin_ready}" != "true" ]]; then
+    if [[ "${exit_status}" != "0" && -n "${droplet_id}" && "${host_ready}" != "true" ]]; then
         set +e
         status="failed"
         write_receipt "failed"
 
-        if [[ "${PRESERVE_FAILED_ORIGIN:-0}" == "1" ]]; then
-            echo "failed origin preserved by PRESERVE_FAILED_ORIGIN=1" >&2
+        if [[ "${PRESERVE_FAILED_HOST:-0}" == "1" ]]; then
+            echo "failed host preserved by PRESERVE_FAILED_HOST=1" >&2
             echo "destroy=DROPLET_ID=${droplet_id} CONFIRM_DESTROY=1 ./run host:disposable:destroy" >&2
         else
             echo "create failed after Droplet allocation; destroying ${droplet_id}" >&2
@@ -66,6 +64,24 @@ function require_env {
     if [[ -z "${!name:-}" ]]; then
         echo "fatal: ${name} is required" >&2
         return 1
+    fi
+}
+
+function load_digitalocean_token {
+    if [[ -n "${DIGITALOCEAN_TOKEN:-}" ]]; then
+        return 0
+    fi
+
+    if [[ -n "${DIGITALOCEAN_TOKEN_FILE:-}" ]]; then
+        DIGITALOCEAN_TOKEN="$(< "${DIGITALOCEAN_TOKEN_FILE}")"
+        export DIGITALOCEAN_TOKEN
+        return 0
+    fi
+
+    if [[ "${DIGITALOCEAN_TOKEN_STDIN:-0}" == "1" ]]; then
+        IFS= read -r DIGITALOCEAN_TOKEN
+        export DIGITALOCEAN_TOKEN
+        return 0
     fi
 }
 
@@ -205,7 +221,7 @@ function write_receipt {
             notes: [
                 "Use this host only for the disposable Docker-host spike.",
                 "Destroy the droplet, do not power it off, when finished.",
-                "Destroy must verify the expected disposable-origin tags before deleting."
+                "Destroy must verify the expected disposable-host tags before deleting."
             ]
         }' > "${output}"
 }
@@ -251,7 +267,7 @@ function wait_for_action {
     exit 1
 }
 
-function wait_for_origin_ready {
+function wait_for_host_ready {
     local public_ip
     local attempt
     local attempts
@@ -288,8 +304,8 @@ docker compose version >/dev/null
 test -d /var/lib/personal-site
 REMOTE_READINESS
         then
-            echo "origin Docker readiness verified"
-            origin_ready="true"
+            echo "host Docker readiness verified"
+            host_ready="true"
             return 0
         fi
 
@@ -323,8 +339,8 @@ droplet_name="${DO_DROPLET_NAME:-${default_name}}"
 region="${DO_REGION:-sfo3}"
 size="${DO_SIZE:-s-1vcpu-1gb}"
 image="${DO_IMAGE:-ubuntu-24-04-x64}"
-output="${DO_HOST_OUTPUT:-${DO_ORIGIN_OUTPUT:-ci/digitalocean-host.json}}"
-tags_csv="${DO_TAGS:-personal-site,disposable-origin,preview}"
+output="${DO_HOST_OUTPUT:-.tmp/ci-artifacts/disposable-host/digitalocean-host.json}"
+tags_csv="${DO_TAGS:-personal-site,disposable-host,preview}"
 
 assert_allowed DO_REGION "${region}" "${DO_ALLOWED_REGIONS:-sfo3}"
 assert_allowed DO_SIZE "${size}" "${DO_ALLOWED_SIZES:-s-1vcpu-1gb}"
@@ -393,7 +409,7 @@ if [[ "${status}" != "active" || -z "${public_ipv4}" ]]; then
     exit 1
 fi
 
-wait_for_origin_ready "${public_ipv4}"
+wait_for_host_ready "${public_ipv4}"
 write_receipt "ready"
 
 echo "DigitalOcean disposable host created"

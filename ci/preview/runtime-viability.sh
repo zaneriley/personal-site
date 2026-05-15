@@ -4,15 +4,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-host_receipt="${1:-${DO_HOST_RECEIPT:-ci/digitalocean-host.json}}"
+host_receipt="${1:-${DO_HOST_RECEIPT:-.tmp/ci-artifacts/disposable-host/digitalocean-host.json}}"
 app_image_ref="${APP_IMAGE_REF:-${APP_IMAGE:-}}"
-output="${RUNTIME_PROOF_OUTPUT:-ci/disposable-runtime-proof.json}"
-artifact_dir="${RUNTIME_PROOF_ARTIFACT_DIR:-ci/disposable-runtime-proof}"
-route_assertions_file="${PREVIEW_ROUTE_ASSERTIONS_FILE:-ci/deploy/preview-route-assertions.json}"
-remote_dir="${RUNTIME_PROOF_REMOTE_DIR:-/var/lib/personal-site/runtime-proof}"
-project="${RUNTIME_PROOF_PROJECT:-personal-site-runtime-proof}"
-bind_host="${RUNTIME_PROOF_BIND_HOST:-0.0.0.0}"
-host_port="${RUNTIME_PROOF_HOST_PORT:-18080}"
+output="${RUNTIME_VIABILITY_OUTPUT:-.tmp/ci-artifacts/runtime-viability/runtime-viability.json}"
+artifact_dir="${RUNTIME_VIABILITY_ARTIFACT_DIR:-.tmp/ci-artifacts/runtime-viability}"
+route_contract_file="${ROUTE_CONTRACT_FILE:-ci/contracts/routes.json}"
+remote_dir="${RUNTIME_VIABILITY_REMOTE_DIR:-/var/lib/personal-site/runtime-viability}"
+project="${RUNTIME_VIABILITY_PROJECT:-personal-site-runtime-viability}"
+bind_host="${RUNTIME_VIABILITY_BIND_HOST:-0.0.0.0}"
+host_port="${RUNTIME_VIABILITY_HOST_PORT:-18080}"
 ssh_private_key_file=""
 ssh_known_hosts_file=""
 tmpdir=""
@@ -38,11 +38,11 @@ trap 'cleanup' EXIT
 function usage {
     cat <<'USAGE'
 Usage:
-  APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-proof ci/digitalocean-host.json
+  APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-viability .tmp/ci-artifacts/disposable-host/digitalocean-host.json
 
 Runs a digest-pinned application image on a ready disposable host, starts
 Postgres beside the app, checks /readyz, probes public routes, and records
-runtime resource evidence. Run the browser-real preview check from an external
+runtime resource evidence. Run preview page acceptance from an external
 runner against the public_base_url emitted in the artifact.
 USAGE
 }
@@ -88,7 +88,7 @@ function require_digest_image {
     fi
 }
 
-function validate_route_assertions {
+function validate_route_contract {
     jq -e '
         .schema_version == 1
         and (.text_policy.forbidden_visible_text | type == "array")
@@ -101,7 +101,7 @@ function validate_route_assertions {
             and (.allowed_statuses | type == "array" and length > 0)
             and (.required_body_text | type == "array" and length > 0)
         )
-    ' "${route_assertions_file}" >/dev/null
+    ' "${route_contract_file}" >/dev/null
 }
 
 function assert_safe_shell_value {
@@ -154,41 +154,8 @@ function write_payload {
     local payload_dir
 
     payload_dir="${tmpdir}/payload"
-    mkdir -p "${payload_dir}/content/notes/prod-build"
-    mkdir -p "${payload_dir}/content/case-studies/prod-build"
-
-    cat > "${payload_dir}/content/notes/prod-build/en.md" <<'MARKDOWN'
----
-title: "Prod Build Smoke Note"
-url: "prod-build-smoke-note"
-introduction: "Prod build smoke content."
-published_at: "2026-05-09T00:00:00Z"
-is_draft: false
----
-
-# Prod Build Smoke Note
-
-This note exists so the production build gate exercises accepted live content.
-MARKDOWN
-
-    cat > "${payload_dir}/content/case-studies/prod-build/en.md" <<'MARKDOWN'
----
-title: "Prod Build Smoke Case Study"
-url: "prod-build-smoke-case-study"
-company: "Portfolio CI"
-role: "Performance fixture"
-timeline: "2026"
-platforms: ["Web"]
-sort_order: 999
-introduction: "Fixture content for production browser performance checks."
-published_at: "2026-05-09T00:00:00Z"
-is_draft: false
----
-
-# Prod Build Smoke Case Study
-
-This case study exists so the production build gate exercises a stable detail page.
-MARKDOWN
+    mkdir -p "${payload_dir}"
+    cp -R ci/fixtures/published-content "${payload_dir}/content"
 
     cat > "${payload_dir}/compose.yml" <<'YAML'
 services:
@@ -231,7 +198,7 @@ services:
       PHX_URL_PORT: "${PHX_URL_PORT}"
       PHX_URL_SCHEME: "${PHX_URL_SCHEME}"
     ports:
-      - "${RUNTIME_PROOF_BIND_HOST}:${RUNTIME_PROOF_HOST_PORT}:${PORT}"
+      - "${RUNTIME_VIABILITY_BIND_HOST}:${RUNTIME_VIABILITY_HOST_PORT}:${PORT}"
     volumes:
       - "./content:${CONTENT_BASE_PATH}:ro"
 
@@ -239,7 +206,7 @@ volumes:
   postgres: {}
 YAML
 
-    cp "${route_assertions_file}" "${payload_dir}/preview-route-assertions.json"
+    cp "${route_contract_file}" "${payload_dir}/routes.json"
 
     cat > "${payload_dir}/.env" <<ENV
 APP_IMAGE_REF=${app_image_ref}
@@ -250,17 +217,17 @@ PORT=8000
 POSTGRES_DB=portfolio
 POSTGRES_PASSWORD=$(random_hex 32)
 POSTGRES_USER=portfolio
-RUNTIME_PROOF_HOST_PORT=${host_port}
-RUNTIME_PROOF_BIND_HOST=${bind_host}
+RUNTIME_VIABILITY_HOST_PORT=${host_port}
+RUNTIME_VIABILITY_BIND_HOST=${bind_host}
 SECRET_KEY_BASE=$(random_hex 64)
 PHX_FORCE_SSL=false
-PHX_HOST=${RUNTIME_PROOF_PHX_HOST:-${public_ipv4}}
+PHX_HOST=${RUNTIME_VIABILITY_PHX_HOST:-${public_ipv4}}
 PHX_NOINDEX=true
 PHX_URL_PORT=${host_port}
 PHX_URL_SCHEME=http
 ENV
 
-    cat > "${payload_dir}/run-runtime-proof.sh" <<'REMOTE_SCRIPT'
+    cat > "${payload_dir}/run-runtime-viability.sh" <<'REMOTE_SCRIPT'
 #!/usr/bin/env bash
 
 set -o errexit
@@ -272,7 +239,7 @@ status="fail"
 failure_reason="not_started"
 ready_ms=""
 routes_json="${artifact_dir}/routes.json"
-route_assertions_file="preview-route-assertions.json"
+route_contract_file="routes.json"
 memory_peaks_json="${artifact_dir}/memory-peaks.json"
 docker_stats_json="${artifact_dir}/docker-stats.json"
 compose_ps_json="${artifact_dir}/compose-ps.json"
@@ -283,7 +250,7 @@ function now_ms {
 }
 
 function compose {
-    docker compose --project-name "${RUNTIME_PROOF_PROJECT}" --env-file .env -f compose.yml "$@"
+    docker compose --project-name "${RUNTIME_VIABILITY_PROJECT}" --env-file .env -f compose.yml "$@"
 }
 
 function json_array_from_jsonl {
@@ -373,8 +340,8 @@ function collect_artifacts {
         --arg status "${status}" \
         --arg failure_reason "${failure_reason}" \
         --arg app_image_ref "${APP_IMAGE_REF}" \
-        --arg project "${RUNTIME_PROOF_PROJECT}" \
-        --arg port "${RUNTIME_PROOF_HOST_PORT}" \
+        --arg project "${RUNTIME_VIABILITY_PROJECT}" \
+        --arg port "${RUNTIME_VIABILITY_HOST_PORT}" \
         --arg public_base_url "$(expected_site_origin)" \
         --argjson ready_ms "${ready_ms_json}" \
         --slurpfile routes "${routes_json}" \
@@ -390,11 +357,11 @@ function collect_artifacts {
             loopback_base_url: ("http://127.0.0.1:" + $port),
             public_base_url: $public_base_url,
             routes: $routes[0],
-            preview_browser_check: {
+            preview_page_acceptance: {
                 status: "external_required",
                 browser_connect_url: $public_base_url,
                 expected_site_origin: $public_base_url,
-                route_assertions_file: "ci/deploy/preview-route-assertions.json"
+                route_contract_file: "ci/contracts/routes.json"
             },
             memory_peaks: $memory_peaks[0],
             docker_stats: $docker_stats[0],
@@ -420,7 +387,7 @@ function wait_for_ready {
 
     attempts=90
     start_ms="$(now_ms)"
-    ready_url="http://127.0.0.1:${RUNTIME_PROOF_HOST_PORT}/readyz"
+    ready_url="http://127.0.0.1:${RUNTIME_VIABILITY_HOST_PORT}/readyz"
 
     for attempt in $(seq 1 "${attempts}"); do
         if curl -fsS "${ready_url}" >/dev/null 2>&1; then
@@ -515,8 +482,8 @@ function probe_routes {
     failures=0
     tmp_jsonl="${artifact_dir}/routes.jsonl"
     : > "${tmp_jsonl}"
-    forbidden_visible_text_json="$(jq -c '.text_policy.forbidden_visible_text // []' "${route_assertions_file}")"
-    forbidden_html_text_json="$(jq -c '.text_policy.forbidden_html_text // []' "${route_assertions_file}")"
+    forbidden_visible_text_json="$(jq -c '.text_policy.forbidden_visible_text // []' "${route_contract_file}")"
+    forbidden_html_text_json="$(jq -c '.text_policy.forbidden_html_text // []' "${route_contract_file}")"
 
     while IFS= read -r route_json; do
         label="$(jq -r '.label' <<< "${route_json}")"
@@ -524,7 +491,7 @@ function probe_routes {
         allowed_statuses_json="$(jq -c '.allowed_statuses' <<< "${route_json}")"
         required_body_text_json="$(jq -c '.required_body_text // []' <<< "${route_json}")"
         body_file="$(mktemp)"
-        status_code="$(curl -sS -o "${body_file}" -w "%{http_code}" "http://127.0.0.1:${RUNTIME_PROOF_HOST_PORT}${route}" || true)"
+        status_code="$(curl -sS -o "${body_file}" -w "%{http_code}" "http://127.0.0.1:${RUNTIME_VIABILITY_HOST_PORT}${route}" || true)"
         status_number="null"
         byte_count="$(wc -c < "${body_file}" | tr -d ' ')"
         required_body_text_present_json="$(literal_hits "${body_file}" "${required_body_text_json}")"
@@ -588,7 +555,7 @@ function probe_routes {
             }' >> "${tmp_jsonl}"
 
         rm -f "${body_file}"
-    done < <(jq -c '.routes[]' "${route_assertions_file}")
+    done < <(jq -c '.routes[]' "${route_contract_file}")
 
     json_array_from_jsonl "${tmp_jsonl}" "${routes_json}"
 
@@ -616,8 +583,8 @@ set -o allexport
 . ./.env
 set +o allexport
 
-RUNTIME_PROOF_PROJECT="${RUNTIME_PROOF_PROJECT:-personal-site-runtime-proof}"
-export RUNTIME_PROOF_PROJECT
+RUNTIME_VIABILITY_PROJECT="${RUNTIME_VIABILITY_PROJECT:-personal-site-runtime-viability}"
+export RUNTIME_VIABILITY_PROJECT
 
 failure_reason="pull_failed"
 compose down --volumes --remove-orphans >/dev/null 2>&1 || true
@@ -634,10 +601,10 @@ probe_routes
 
 status="pass"
 failure_reason=""
-echo "runtime proof passed"
+echo "runtime viability passed"
 REMOTE_SCRIPT
 
-    chmod +x "${payload_dir}/run-runtime-proof.sh"
+    chmod +x "${payload_dir}/run-runtime-viability.sh"
 }
 
 function copy_payload {
@@ -666,13 +633,13 @@ require_command openssl
 require_command ssh
 require_command tar
 require_file "${host_receipt}"
-require_file "${route_assertions_file}"
+require_file "${route_contract_file}"
 require_digest_image APP_IMAGE_REF "${app_image_ref}"
 
-validate_route_assertions
-assert_safe_shell_value RUNTIME_PROOF_REMOTE_DIR "${remote_dir}"
-assert_safe_shell_value RUNTIME_PROOF_PROJECT "${project}"
-assert_safe_shell_value RUNTIME_PROOF_BIND_HOST "${bind_host}"
+validate_route_contract
+assert_safe_shell_value RUNTIME_VIABILITY_REMOTE_DIR "${remote_dir}"
+assert_safe_shell_value RUNTIME_VIABILITY_PROJECT "${project}"
+assert_safe_shell_value RUNTIME_VIABILITY_BIND_HOST "${bind_host}"
 
 droplet_id="$(read_receipt_value '.droplet_id')"
 public_ipv4="$(read_receipt_value '.public_ipv4')"
@@ -688,8 +655,8 @@ if [[ "${lifecycle_status}" != "ready" ]]; then
     exit 1
 fi
 
-if [[ "${RUNTIME_PROOF_VALIDATE_ONLY:-0}" == "1" ]]; then
-    echo "runtime proof inputs valid"
+if [[ "${RUNTIME_VIABILITY_VALIDATE_ONLY:-0}" == "1" ]]; then
+    echo "runtime viability inputs valid"
     exit 0
 fi
 
@@ -711,17 +678,17 @@ ssh_base=(
 write_payload
 copy_payload
 
-echo "running disposable-host runtime proof"
+echo "running disposable-host runtime viability"
 echo "droplet_id=${droplet_id}"
 echo "app_image_ref=${app_image_ref}"
 
 remote_status=0
-"${ssh_base[@]}" "cd '${remote_dir}' && RUNTIME_PROOF_PROJECT='${project}' bash ./run-runtime-proof.sh" ||
+"${ssh_base[@]}" "cd '${remote_dir}' && RUNTIME_VIABILITY_PROJECT='${project}' bash ./run-runtime-viability.sh" ||
     remote_status="$?"
 
 fetch_artifacts
 
-echo "runtime proof artifact written: ${output}"
+echo "runtime viability artifact written: ${output}"
 jq -r '"status=\(.status)\nready_ms=\(.ready_ms)\nroutes=\(.routes | length)\ncontainers=\(.docker_stats | length)"' "${output}"
 
 exit "${remote_status}"

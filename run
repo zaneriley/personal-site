@@ -391,22 +391,22 @@ function content:rollback {
 
 function host:disposable:create {
   # Create a disposable DigitalOcean Docker host
-  ci/deploy/digitalocean-create-origin.sh "$@"
+  ci/providers/digitalocean/create-disposable-host.sh "$@"
 }
 
 function host:disposable:status {
   # Print status for disposable DigitalOcean Docker hosts
-  ci/deploy/digitalocean-origin-status.sh "$@"
+  ci/providers/digitalocean/status-disposable-host.sh "$@"
 }
 
 function host:disposable:destroy {
   # Destroy a disposable DigitalOcean Docker host
-  ci/deploy/digitalocean-destroy-origin.sh "$@"
+  ci/providers/digitalocean/destroy-disposable-host.sh "$@"
 }
 
-function host:disposable:runtime-proof {
-  # Prove a digest-pinned app image can run on a disposable host
-  ci/deploy/disposable-runtime-proof.sh "$@"
+function host:disposable:runtime-viability {
+  # Check a digest-pinned app image on a disposable host
+  ci/preview/runtime-viability.sh "$@"
 }
 
 # -----------------------------------------------------------------------------
@@ -597,13 +597,13 @@ function ci:acceptance-gate-bypass-check:test {
 }
 
 function ci:disposable-host-check {
-    ci/deploy/digitalocean-destroy-origin-test.sh
-    ci/deploy/disposable-runtime-proof-test.sh
-    ci:preview-browser-check:test
+    ci/providers/digitalocean/destroy-disposable-host-test.sh
+    ci/preview/runtime-viability-test.sh
+    ci:preview-page-acceptance:test
 }
 
 function ci:prod-build {
-    ci/prod-build.sh
+    ci/gates/prod-build.sh
 }
 
 function ci:performance-browser {
@@ -611,11 +611,11 @@ function ci:performance-browser {
     local tmp_output
     local status
 
-    output="${PERF_BROWSER_OUTPUT:-ci/browser-last-run.json}"
+    output="${PERF_BROWSER_OUTPUT:-.tmp/ci-artifacts/prod-build/browser-performance-last-run.json}"
     tmp_output="$(mktemp)"
 
     if docker compose build js >/dev/null &&
-        docker compose run --rm ${TTY} js node ../ci/browser-performance.mjs --output - > "${tmp_output}" &&
+        docker compose run --rm ${TTY} js node ../ci/gates/browser-performance.mjs --output - > "${tmp_output}" &&
         jq -e '.status == "pass"' "${tmp_output}" >/dev/null; then
         mkdir -p "$(dirname "${output}")"
         mv "${tmp_output}" "${output}"
@@ -635,35 +635,35 @@ function ci:performance-browser {
     return "${status}"
 }
 
-function ci:preview-browser-check:test {
+function ci:preview-page-acceptance:test {
     local check_image
     local image
 
-    check_image="${PREVIEW_BROWSER_CHECK_IMAGE:-personal-site-preview-browser-check}"
-    image="${PREVIEW_BROWSER_CHECK_TEST_IMAGE:-personal-site-preview-browser-check-test}"
-    docker build --target preview-browser-check -t "${check_image}" . >/dev/null
+    check_image="${PREVIEW_PAGE_ACCEPTANCE_IMAGE:-personal-site-preview-page-acceptance}"
+    image="${PREVIEW_PAGE_ACCEPTANCE_TEST_IMAGE:-personal-site-preview-page-acceptance-test}"
+    docker build --target preview-page-acceptance -t "${check_image}" . >/dev/null
     docker build --target browser -t "${image}" . >/dev/null
-    docker run --rm --tmpfs /tmp:rw,size=256m "${image}" node /app/ci/deploy/preview-browser-check-test.mjs
+    docker run --rm --tmpfs /tmp:rw,size=256m "${image}" node /app/ci/preview/preview-page-acceptance-test.mjs
 }
 
-function ci:preview-browser-check {
+function ci:preview-page-acceptance {
     local browser_connect_url
     local expected_site_origin
     local image
     local output_dir
 
-    image="${PREVIEW_BROWSER_CHECK_IMAGE_REF:-${PREVIEW_BROWSER_CHECK_IMAGE:-personal-site-preview-browser-check}}"
+    image="${PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF:-${PREVIEW_PAGE_ACCEPTANCE_IMAGE:-personal-site-preview-page-acceptance}}"
     browser_connect_url="${PREVIEW_BROWSER_CONNECT_URL:-${1:-}}"
     expected_site_origin="${PREVIEW_EXPECTED_SITE_ORIGIN:-${2:-${browser_connect_url}}}"
-    output_dir="${PREVIEW_BROWSER_CHECK_OUTPUT_DIR:-ci/preview-browser-check}"
+    output_dir="${PREVIEW_PAGE_ACCEPTANCE_OUTPUT_DIR:-.tmp/ci-artifacts/preview-page-acceptance}"
 
     if [[ -z "${browser_connect_url}" ]]; then
-        echo "Usage: PREVIEW_BROWSER_CHECK_IMAGE_REF=ghcr.io/owner/repo@sha256:<digest> ./run ci:preview-browser-check http://<preview-host>:<port> [expected-site-origin]" >&2
+        echo "Usage: PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=ghcr.io/owner/repo@sha256:<digest> ./run ci:preview-page-acceptance http://<preview-host>:<port> [expected-site-origin]" >&2
         return 1
     fi
 
-    if [[ -n "${PREVIEW_BROWSER_CHECK_IMAGE_REF:-}" && ! "${PREVIEW_BROWSER_CHECK_IMAGE_REF}" =~ @sha256:[0-9a-fA-F]{64}$ ]]; then
-        echo "fatal: PREVIEW_BROWSER_CHECK_IMAGE_REF must be digest-pinned with @sha256:<64 hex chars>" >&2
+    if [[ -n "${PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF:-}" && ! "${PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF}" =~ @sha256:[0-9a-fA-F]{64}$ ]]; then
+        echo "fatal: PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF must be digest-pinned with @sha256:<64 hex chars>" >&2
         return 1
     fi
 
@@ -677,10 +677,10 @@ function ci:preview-browser-check {
         "${image}" \
         --browser-connect-url "${browser_connect_url}" \
         --expected-site-origin "${expected_site_origin}" \
-        --routes-json /opt/preview-browser-check/preview-route-assertions.json \
+        --routes-contract /opt/preview-page-acceptance/routes.json \
         --screenshots-dir /artifacts/screenshots \
-        --output /artifacts/preview-browser-check.json \
-        --failure-summary /artifacts/preview-browser-check.md
+        --output /artifacts/preview-page-acceptance.json \
+        --failure-summary /artifacts/preview-page-acceptance.md
 }
 
 function ci:content-validate {

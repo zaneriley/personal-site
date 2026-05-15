@@ -4,8 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-LAST_RUN_FILE="${1:-ci/last-run.json}"
-BASELINE_FILE="${2:-ci/baseline.json}"
+LAST_RUN_FILE="${1:-.tmp/ci-artifacts/prod-build/route-latency-last-run.json}"
+BASELINE_FILE="${2:-ci/contracts/prod-build-baseline.json}"
 ABSOLUTE_P50_FLOOR_MS="${ABSOLUTE_P50_FLOOR_MS:-1000}"
 DRIFT_PERCENT="${DRIFT_PERCENT:-20}"
 MIN_BASELINE_RUNS="${MIN_BASELINE_RUNS:-30}"

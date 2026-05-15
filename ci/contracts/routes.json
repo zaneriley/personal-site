@@ -1,22 +1,5 @@
 {
   "schema_version": 1,
-  "viewports": [
-    {
-      "label": "desktop",
-      "width": 1280,
-      "height": 720
-    },
-    {
-      "label": "mobile",
-      "device": "iPhone SE"
-    }
-  ],
-  "browser_defaults": {
-    "required_dom": ["main"],
-    "require_live_view": true,
-    "require_share_metadata": true,
-    "screenshot": true
-  },
   "text_policy": {
     "forbidden_visible_text": [
       "We ran into an issue loading this note",
@@ -32,6 +15,56 @@
       "0.0.0.0",
       "web:8000"
     ]
+  },
+  "browser": {
+    "viewports": [
+      {
+        "label": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "label": "mobile",
+        "device": "iPhone SE"
+      }
+    ],
+    "defaults": {
+      "required_dom": ["main"],
+      "require_live_view": true,
+      "require_share_metadata": true,
+      "screenshot": true
+    }
+  },
+  "performance": {
+    "profile": {
+      "name": "mobile-cold",
+      "device": "Pixel 5"
+    },
+    "required_metrics": [
+      "readable_content_ms",
+      "dom_content_loaded_ms",
+      "load_ms"
+    ],
+    "defaults": {
+      "main_selector": "main",
+      "timeout_ms": 15000,
+      "settle_ms": 500,
+      "allowed_statuses": [200],
+      "max_total_bytes": 120000,
+      "max_html_bytes": 60000,
+      "max_css_bytes": 50000,
+      "max_js_bytes": 120000,
+      "max_font_bytes": 100000,
+      "max_image_bytes": 150000,
+      "max_websocket_bytes": 25000,
+      "max_request_count": 12,
+      "max_readable_content_ms": 1000,
+      "max_dom_content_loaded_ms": 1000,
+      "max_load_ms": 1800,
+      "max_fcp_ms": 1800,
+      "max_cls": 0.1
+    },
+    "exceptions": []
   },
   "routes": [
     {
@@ -80,7 +113,7 @@
       }
     },
     {
-      "label": "prod-build-note",
+      "label": "published-fixture-note",
       "path": "/en/note/prod-build-smoke-note",
       "allowed_statuses": [200],
       "required_body_text": ["Prod Build Smoke Note"],
@@ -89,7 +122,7 @@
       }
     },
     {
-      "label": "prod-build-case-study",
+      "label": "published-fixture-case-study",
       "path": "/en/case-study/prod-build-smoke-case-study",
       "allowed_statuses": [200],
       "required_body_text": ["Prod Build Smoke Case Study"],
@@ -98,11 +131,29 @@
       }
     },
     {
+      "label": "about",
+      "path": "/en/self",
+      "allowed_statuses": [200],
+      "required_body_text": ["About"],
+      "browser": {
+        "enabled": false
+      },
+      "performance": {
+        "enabled": false
+      }
+    },
+    {
       "label": "readyz",
       "path": "/readyz",
       "allowed_statuses": [200],
       "required_body_text": ["ok"],
+      "load_probe": {
+        "enabled": false
+      },
       "browser": {
+        "enabled": false
+      },
+      "performance": {
         "enabled": false
       }
     },
@@ -111,7 +162,13 @@
       "path": "/en/note/this-route-cannot-exist-xyzzy",
       "allowed_statuses": [404],
       "required_body_text": ["Not Found"],
+      "load_probe": {
+        "enabled": false
+      },
       "browser": {
+        "enabled": false
+      },
+      "performance": {
         "enabled": false
       }
     }

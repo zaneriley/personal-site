@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "${script_dir}/../.." && pwd)"
+repo_root="$(cd "${script_dir}/../../.." && pwd)"
 tmpdir="$(mktemp -d)"
 
 function cleanup {
@@ -74,7 +74,7 @@ case "${method}:${path}" in
                     droplet: {
                         id: 123,
                         name: "personal-site-preview-test",
-                        tags: ["personal-site", "disposable-origin", "preview"],
+                        tags: ["personal-site", "disposable-host", "preview"],
                         status: "active"
                     }
                 }' > "${output_file}"
@@ -94,7 +94,7 @@ case "${method}:${path}" in
                     droplet: {
                         id: 123,
                         name: "production-do-not-delete",
-                        tags: ["personal-site", "disposable-origin", "preview"],
+                        tags: ["personal-site", "disposable-host", "preview"],
                         status: "active"
                     }
                 }' > "${output_file}"
@@ -149,7 +149,7 @@ function run_destroy {
         MOCK_DO_DELETE_LOG="${tmpdir}/delete.log" \
         DIGITALOCEAN_TOKEN_STDIN=1 \
         CONFIRM_DESTROY=1 \
-        "${repo_root}/ci/deploy/digitalocean-destroy-origin.sh" "${receipt}" \
+        "${repo_root}/ci/providers/digitalocean/destroy-disposable-host.sh" "${receipt}" \
         <<< "mock-token" > "${output}" 2>&1
 }
 

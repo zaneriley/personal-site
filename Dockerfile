@@ -144,18 +144,18 @@ RUN npx playwright install chromium
 
 ###############################################################################
 
-# Stage 5: One-shot preview browser check runner
-FROM browser AS preview-browser-check
+# Stage 5: One-shot preview page acceptance runner
+FROM browser AS preview-page-acceptance
 
 USER root
-RUN mkdir -p /opt/preview-browser-check && chown node:node /opt/preview-browser-check
+RUN mkdir -p /opt/preview-page-acceptance && chown node:node /opt/preview-page-acceptance
 
 USER node
-WORKDIR /opt/preview-browser-check
-ENV PREVIEW_BROWSER_CHECK_ROOT=/opt/preview-browser-check
+WORKDIR /opt/preview-page-acceptance
+ENV PREVIEW_PAGE_ACCEPTANCE_ROOT=/opt/preview-page-acceptance
 
-COPY --chown=node:node ci/deploy/preview-browser-check.mjs ./preview-browser-check.mjs
-COPY --chown=node:node ci/deploy/preview-browser-check ./preview-browser-check
-COPY --chown=node:node ci/deploy/preview-route-assertions.json ./preview-route-assertions.json
+COPY --chown=node:node ci/preview/preview-page-acceptance.mjs ./preview-page-acceptance.mjs
+COPY --chown=node:node ci/preview/preview-page-acceptance ./preview-page-acceptance
+COPY --chown=node:node ci/contracts/routes.json ./routes.json
 
-ENTRYPOINT ["node", "/opt/preview-browser-check/preview-browser-check.mjs"]
+ENTRYPOINT ["node", "/opt/preview-page-acceptance/preview-page-acceptance.mjs"]

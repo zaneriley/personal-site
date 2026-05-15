@@ -62,31 +62,31 @@ waiting_receipt="${tmpdir}/waiting.json"
 write_receipt "ready" "${ready_receipt}"
 write_receipt "waiting_for_network" "${waiting_receipt}"
 
-if RUNTIME_PROOF_VALIDATE_ONLY=1 \
+if RUNTIME_VIABILITY_VALIDATE_ONLY=1 \
     APP_IMAGE_REF="ghcr.io/zaneriley/personal-site:latest" \
-    "${script_dir}/disposable-runtime-proof.sh" "${ready_receipt}" > "${tmpdir}/floating.out" 2>&1; then
+    "${script_dir}/runtime-viability.sh" "${ready_receipt}" > "${tmpdir}/floating.out" 2>&1; then
     echo "expected floating image ref to fail" >&2
     exit 1
 fi
 
 assert_contains "${tmpdir}/floating.out" "APP_IMAGE_REF must be digest-pinned"
 
-if RUNTIME_PROOF_VALIDATE_ONLY=1 \
+if RUNTIME_VIABILITY_VALIDATE_ONLY=1 \
     APP_IMAGE_REF="ghcr.io/zaneriley/personal-site@sha256:2da620d6fe3a64aef7d23927835722be08d56c6449f3c557f14c6993b59ee467" \
-    "${script_dir}/disposable-runtime-proof.sh" "${waiting_receipt}" > "${tmpdir}/waiting.out" 2>&1; then
+    "${script_dir}/runtime-viability.sh" "${waiting_receipt}" > "${tmpdir}/waiting.out" 2>&1; then
     echo "expected non-ready receipt to fail" >&2
     exit 1
 fi
 
 assert_contains "${tmpdir}/waiting.out" "lifecycle_status must be ready"
 
-RUNTIME_PROOF_VALIDATE_ONLY=1 \
+RUNTIME_VIABILITY_VALIDATE_ONLY=1 \
     APP_IMAGE_REF="ghcr.io/zaneriley/personal-site@sha256:2da620d6fe3a64aef7d23927835722be08d56c6449f3c557f14c6993b59ee467" \
-    "${script_dir}/disposable-runtime-proof.sh" "${ready_receipt}" > "${tmpdir}/ready.out" 2>&1
+    "${script_dir}/runtime-viability.sh" "${ready_receipt}" > "${tmpdir}/ready.out" 2>&1
 
-assert_contains "${tmpdir}/ready.out" "runtime proof inputs valid"
+assert_contains "${tmpdir}/ready.out" "runtime viability inputs valid"
 
-routes_file="${script_dir}/preview-route-assertions.json"
+routes_file="${script_dir}/../contracts/routes.json"
 assert_json "${routes_file}" '.schema_version == 1'
 assert_json "${routes_file}" '.routes | any(.path == "/en/note/prod-build-smoke-note" and (.required_body_text | index("Prod Build Smoke Note")))'
 assert_json "${routes_file}" '.routes | any(.path == "/en/case-study/prod-build-smoke-case-study" and (.required_body_text | index("Prod Build Smoke Case Study")))'
@@ -95,4 +95,4 @@ assert_json "${routes_file}" '.text_policy.forbidden_visible_text | index("We ra
 assert_json "${routes_file}" '.text_policy.forbidden_html_text | index("web:8000")'
 assert_json "${routes_file}" '[.routes[] | select((.browser.enabled // true) != false)] | length > 0'
 
-echo "disposable runtime proof input test passed"
+echo "runtime viability input test passed"

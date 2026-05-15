@@ -9,7 +9,7 @@ HOST_PORT="${PROD_BUILD_HOST_PORT:-18080}"
 APP_PORT="${PORT:-8000}"
 OHA_VERSION="${OHA_VERSION:-1.4.7}"
 COMPOSE_OVERRIDE_FILE=".tmp/prod-build/compose.override.yml"
-PROD_BUILD_CONTENT_DIR=".tmp/prod-build/content"
+PROD_BUILD_CONTENT_DIR="ci/fixtures/published-content"
 OHA_DOCKER_IMAGE="${OHA_DOCKER_IMAGE:-debian:bookworm-slim}"
 APP_SHA="$(git rev-parse HEAD)"
 compose=(docker compose --project-name "${PROJECT_NAME}" -f docker-compose.yml -f "${COMPOSE_OVERRIDE_FILE}")
@@ -176,44 +176,6 @@ services:
 YAML
 }
 
-function write_prod_build_content {
-    mkdir -p "${PROD_BUILD_CONTENT_DIR}/notes/prod-build"
-    mkdir -p "${PROD_BUILD_CONTENT_DIR}/case-studies/prod-build"
-
-    cat > "${PROD_BUILD_CONTENT_DIR}/notes/prod-build/en.md" <<'MARKDOWN'
----
-title: "Prod Build Smoke Note"
-url: "prod-build-smoke-note"
-introduction: "Prod build smoke content."
-published_at: "2026-05-09T00:00:00Z"
-is_draft: false
----
-
-# Prod Build Smoke Note
-
-This note exists so the production build gate exercises accepted live content.
-MARKDOWN
-
-    cat > "${PROD_BUILD_CONTENT_DIR}/case-studies/prod-build/en.md" <<'MARKDOWN'
----
-title: "Prod Build Smoke Case Study"
-url: "prod-build-smoke-case-study"
-company: "Portfolio CI"
-role: "Performance fixture"
-timeline: "2026"
-platforms: ["Web"]
-sort_order: 999
-introduction: "Fixture content for production browser performance checks."
-published_at: "2026-05-09T00:00:00Z"
-is_draft: false
----
-
-# Prod Build Smoke Case Study
-
-This case study exists so the production build gate exercises a stable detail page.
-MARKDOWN
-}
-
 function wait_for_postgres {
     local attempts=60
 
@@ -254,7 +216,7 @@ function wait_for_ready {
 }
 
 function run_browser_performance {
-    local output="ci/browser-last-run.json"
+    local output=".tmp/ci-artifacts/prod-build/browser-performance-last-run.json"
     local tmp_output
     local status
 
@@ -265,8 +227,9 @@ function run_browser_performance {
     if "${compose[@]}" run --rm --no-deps \
         -e "PERF_BROWSER_BASE_URL=http://web:${APP_PORT}" \
         -e "PROD_BUILD_APP_SHA=${APP_SHA}" \
-        js node ../ci/browser-performance.mjs --output - > "${tmp_output}" &&
+        js node ../ci/gates/browser-performance.mjs --output - > "${tmp_output}" &&
         jq -e '.status == "pass"' "${tmp_output}" >/dev/null; then
+        mkdir -p "$(dirname "${output}")"
         mv "${tmp_output}" "${output}"
         echo "performance browser artifact written: ${output}"
         return 0
@@ -275,20 +238,13 @@ function run_browser_performance {
     fi
 
     if [[ -s "${tmp_output}" ]]; then
+        mkdir -p "$(dirname "${output}")"
         cp "${tmp_output}" "${output}"
         echo "performance browser artifact written: ${output}"
     fi
 
     rm -f "${tmp_output}"
     return "${status}"
-}
-
-function browser_budget_routes {
-    local routes
-
-    routes="$(jq -r '.routes[].path' ci/browser-budget.json | tr '\n' ' ')"
-
-    printf "%s/en/self" "${routes}"
 }
 
 trap cleanup EXIT
@@ -328,7 +284,6 @@ export DOCKER_RESTART_POLICY=no
 export PROD_BUILD_APP_SHA="${APP_SHA}"
 export PROD_BUILD_BASE_URL="${PROD_BUILD_BASE_URL:-http://127.0.0.1:${HOST_PORT}}"
 
-write_prod_build_content
 prod_build_content_host_path="$(pwd -P)/${PROD_BUILD_CONTENT_DIR}"
 export PROD_BUILD_CONTENT_VOLUME="${prod_build_content_host_path}:${CONTENT_BASE_PATH}:ro"
 
@@ -347,10 +302,7 @@ start_ms="$(now_ms)"
 "${compose[@]}" up -d web
 wait_for_ready "${start_ms}"
 
-PROD_BUILD_ROUTES="${PROD_BUILD_ROUTES:-$(browser_budget_routes)}"
-export PROD_BUILD_ROUTES
-
-ci/probe-routes.sh ci/last-run.json
+ci/gates/probe-routes.sh .tmp/ci-artifacts/prod-build/route-latency-last-run.json
 
 if ! curl -fsS "http://127.0.0.1:${HOST_PORT}/en/note/prod-build-smoke-note" |
     grep -F "Prod Build Smoke Note" >/dev/null; then
@@ -373,5 +325,5 @@ jq -e '.live != null and .last_good == .live and .sync_state == "idle" and .last
 
 run_browser_performance
 
-ci/compare.sh ci/last-run.json ci/baseline.json
-ci/update-baseline.sh ci/last-run.json ci/baseline.json
+ci/gates/compare.sh .tmp/ci-artifacts/prod-build/route-latency-last-run.json ci/contracts/prod-build-baseline.json
+ci/gates/update-baseline.sh .tmp/ci-artifacts/prod-build/route-latency-last-run.json ci/contracts/prod-build-baseline.json

@@ -4,12 +4,12 @@ import { FailureCode, makeFailure } from "./failure-catalog.mjs";
 export function buildPreviewCheckPlan(rawConfig, options) {
   const browserConnectUrl = options.browserConnectUrl.replace(/\/+$/, "");
   const previewFetchOrigin = new URL(browserConnectUrl).origin;
-  const browserDefaults = rawConfig.browser_defaults ?? {};
+  const browserDefaults = rawConfig.browser?.defaults ?? {};
   const textPolicy = {
     forbiddenVisibleText: arrayOrEmpty(rawConfig.text_policy?.forbidden_visible_text),
     forbiddenHtmlText: arrayOrEmpty(rawConfig.text_policy?.forbidden_html_text),
   };
-  const viewports = arrayOrEmpty(rawConfig.viewports).map(normalizeViewport);
+  const viewports = arrayOrEmpty(rawConfig.browser?.viewports).map(normalizeViewport);
   const routes = arrayOrEmpty(rawConfig.routes).map((route) =>
     normalizeRoute(route, {
       browserConnectUrl,
@@ -18,7 +18,7 @@ export function buildPreviewCheckPlan(rawConfig, options) {
   );
   const plan = {
     schemaVersion: 1,
-    command: "preview_browser_check",
+    command: "preview_page_acceptance",
     browserConnectUrl,
     expectedSiteOrigin: new URL(options.expectedSiteOrigin).origin,
     previewFetchOrigin,

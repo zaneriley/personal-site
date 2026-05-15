@@ -4,15 +4,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=ci/deploy/digitalocean-env.sh
-. "${script_dir}/digitalocean-env.sh"
-
 function usage {
     cat <<'USAGE'
 Usage:
   DROPLET_ID=<id> ./run host:disposable:status
-  ./run host:disposable:status ci/digitalocean-host.json
+  ./run host:disposable:status .tmp/ci-artifacts/disposable-host/digitalocean-host.json
   ./run host:disposable:status
   DIGITALOCEAN_TOKEN_STDIN=1 ./run host:disposable:status < token-file
 USAGE
@@ -26,6 +22,24 @@ function require_env {
     if [[ -z "${!name:-}" ]]; then
         echo "fatal: ${name} is required" >&2
         return 1
+    fi
+}
+
+function load_digitalocean_token {
+    if [[ -n "${DIGITALOCEAN_TOKEN:-}" ]]; then
+        return 0
+    fi
+
+    if [[ -n "${DIGITALOCEAN_TOKEN_FILE:-}" ]]; then
+        DIGITALOCEAN_TOKEN="$(< "${DIGITALOCEAN_TOKEN_FILE}")"
+        export DIGITALOCEAN_TOKEN
+        return 0
+    fi
+
+    if [[ "${DIGITALOCEAN_TOKEN_STDIN:-0}" == "1" ]]; then
+        IFS= read -r DIGITALOCEAN_TOKEN
+        export DIGITALOCEAN_TOKEN
+        return 0
     fi
 }
 
@@ -74,11 +88,11 @@ function do_api {
     rm -f "${body_file}"
 }
 
-function list_disposable_origins {
+function list_disposable_hosts {
     local tag_name
     local response
 
-    tag_name="${DO_LIST_TAG:-disposable-origin}"
+    tag_name="${DO_LIST_TAG:-disposable-host}"
     response="$(do_api "droplets?tag_name=${tag_name}")"
 
     printf "%s" "${response}" | jq --arg tag "${tag_name}" '{
@@ -108,7 +122,7 @@ require_env DIGITALOCEAN_TOKEN
 droplet_id="$(resolve_droplet_id "${1:-}")"
 
 if [[ -z "${droplet_id}" ]]; then
-    list_disposable_origins
+    list_disposable_hosts
     exit 0
 fi
 

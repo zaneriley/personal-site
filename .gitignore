@@ -186,13 +186,6 @@ flycheck_*.el
 .tmp/
 
 # CI-generated prod-build measurements
-/ci/last-run.json
-/ci/browser-last-run.json
-/ci/digitalocean-origin.json
-/ci/digitalocean-host.json
-/ci/disposable-runtime-proof.json
-/ci/disposable-runtime-proof/
-/ci/preview-image.json
 
 # Process core dumps
 core

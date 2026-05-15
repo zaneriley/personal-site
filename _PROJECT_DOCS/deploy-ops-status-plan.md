@@ -214,7 +214,7 @@ Canonical vocabulary:
 | Term | Meaning |
 |---|---|
 | `candidate image` | Digest-pinned app image built from a branch/SHA for verification before promotion. Not a deployed preview. |
-| `browser check image` | One-shot tool image that runs browser assertions. Tooling, not the app candidate. |
+| `preview page acceptance image` | One-shot tool image that runs browser assertions. Tooling, not the app candidate. |
 | `disposable host` | Short-lived Docker-capable machine used for host lifecycle and runtime learning. Not the durable origin. |
 | `origin` | Future durable runtime environment behind the edge/cache layer. Do not use for throwaway Droplets. |
 | `preview` / `preview lane` | Private prod-like deployed candidate URL/lane before production promotion. Do not use for image builds. |
@@ -278,11 +278,11 @@ Minimum reset scope:
 
 Next decisions after the reset:
 
-1. Make preview verification one verdict instead of manual runtime-proof plus external browser-proof handoff.
+1. Make preview verification one verdict instead of manual runtime viability plus external preview page acceptance handoff.
 2. Resolve baseline authority: either add a real trusted refresh path, or stop mutating a pretend rolling baseline in normal PR/prod-build runs.
 3. Decide the DigitalOcean spike exit before adding janitors, IPv6, deploy receipts, or provider-neutral abstractions.
 
-### DigitalOcean Disposable Origin Requirements
+### DigitalOcean Disposable Host Requirements
 
 First implementation slice: create, inspect, and destroy a disposable DigitalOcean Docker host without touching `zaneriley.com`, AWS, release automation, or production DNS.
 
@@ -303,39 +303,39 @@ Current command surface:
    - Installs Docker and Docker Compose v2 through cloud-init and creates a `deploy` user in the `docker` group.
    - Requires `DEPLOY_SSH_PRIVATE_KEY`; missing SSH readiness proof is a failure, not a skipped check.
    - Waits for SSH, cloud-init, Docker readiness, Docker Compose readiness, and `/var/lib/personal-site` with a bounded remote timeout.
-   - Writes `ci/digitalocean-host.json` immediately after Droplet allocation and updates it through `allocated`, `waiting_for_network`, `ready`, `failed`, or `destroyed_after_failure`.
-   - Destroys failed creates by default. Set `PRESERVE_FAILED_ORIGIN=1` only when intentionally debugging the host.
+   - Writes `.tmp/ci-artifacts/disposable-host/digitalocean-host.json` immediately after Droplet allocation and updates it through `allocated`, `waiting_for_network`, `ready`, `failed`, or `destroyed_after_failure`.
+   - Destroys failed creates by default. Set `PRESERVE_FAILED_HOST=1` only when intentionally debugging the host.
 2. `./run host:disposable:status`
-   - With no `DROPLET_ID` or receipt, lists Droplets tagged `disposable-origin`.
+   - With no `DROPLET_ID` or receipt, lists Droplets tagged `disposable-host`.
    - With `DROPLET_ID` or a receipt file path, prints one Droplet's status.
    - Prints Droplet status, region, size, image, public IPv4/IPv6, and tags.
 3. `CONFIRM_DESTROY=1 ./run host:disposable:destroy`
    - Requires `DROPLET_ID` or a receipt file path.
-   - Fetches the Droplet first and refuses to delete unless it has the expected `personal-site`, `disposable-origin`, and `preview` tags plus the expected preview name prefix.
+   - Fetches the Droplet first and refuses to delete unless it has the expected `personal-site`, `disposable-host`, and `preview` tags plus the expected preview name prefix.
    - Destroys the Droplet only after ownership verification. Powering off is not the disposal path because powered-off Droplets still bill.
-4. `APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-proof ci/digitalocean-host.json`
+4. `APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-viability .tmp/ci-artifacts/disposable-host/digitalocean-host.json`
    - Runs only against a ready disposable-host receipt; it refuses non-ready receipts and floating image tags.
-   - Copies a small runtime payload to `/var/lib/personal-site/runtime-proof`, starts Postgres plus the digest-pinned app image with fixture content, waits for `/readyz`, and probes the public route set.
-   - Writes `ci/disposable-runtime-proof.json` and `ci/disposable-runtime-proof/` artifacts with ready time, route statuses, the public browser-check URL, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
+   - Copies a small runtime payload to `/var/lib/personal-site/runtime-viability`, starts Postgres plus the digest-pinned app image with fixture content, waits for `/readyz`, and probes the public route set.
+   - Writes `.tmp/ci-artifacts/runtime-viability/runtime-viability.json` and sibling artifacts with ready time, route statuses, the public browser-check URL, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
    - This is a runtime viability proof, not a production deploy and not a browser proof. It keeps the 1 GiB host measurement focused on `web` plus Postgres. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
-5. `PREVIEW_BROWSER_CHECK_IMAGE_REF=ghcr.io/owner/repo@sha256:<browser-check-digest> ./run ci:preview-browser-check "$(jq -r .public_base_url ci/disposable-runtime-proof.json)"`
-   - Runs the digest-pinned one-shot browser-check image from the operator machine or CI runner, outside the Droplet, against the public preview URL emitted by the runtime proof.
-   - Writes `ci/preview-browser-check/preview-browser-check.json`, `ci/preview-browser-check/preview-browser-check.md`, and screenshots. This is the browser-real proof: assets, CSP, LiveView connection, share metadata, mobile/desktop layout, screenshots, and wrong-origin DOM/network checks.
+5. `PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=ghcr.io/owner/repo@sha256:<browser-check-digest> ./run ci:preview-page-acceptance "$(jq -r .public_base_url .tmp/ci-artifacts/runtime-viability/runtime-viability.json)"`
+   - Runs the digest-pinned one-shot preview page acceptance image from the operator machine or CI runner, outside the Droplet, against the public preview URL emitted by runtime viability.
+   - Writes `.tmp/ci-artifacts/preview-page-acceptance/preview-page-acceptance.json`, `.tmp/ci-artifacts/preview-page-acceptance/preview-page-acceptance.md`, and screenshots. This is the browser-real proof: assets, CSP, LiveView connection, share metadata, mobile/desktop layout, screenshots, and wrong-origin DOM/network checks.
 
-Preview image workflow:
+Candidate image workflow:
 
-- `Preview image` builds a non-release `linux/amd64` production image in GitHub Actions and pushes only a SHA-scoped tag: `ghcr.io/zaneriley/personal-site:preview-sha-<sha>`.
-- It writes `ci/preview-image.json` as the `preview-image` artifact. The runtime-proof command consumes `.image_ref` for the app image. The external browser proof consumes `.preview_browser_check_image_ref` for the one-shot browser-check image. Both are digest-pinned as `ghcr.io/zaneriley/personal-site@sha256:<digest>`.
+- `Candidate image` builds a non-release `linux/amd64` production image in GitHub Actions and pushes only a SHA-scoped tag: `ghcr.io/zaneriley/personal-site:candidate-sha-<sha>`.
+- It writes `.tmp/ci-artifacts/candidate-image/candidate-image.json` as the `candidate-image` artifact. The runtime viability command consumes `.image_ref` for the app image. Preview page acceptance consumes `.preview_page_acceptance_image_ref` for the one-shot browser-check image. Both are digest-pinned as `ghcr.io/zaneriley/personal-site@sha256:<digest>`.
 - This workflow is deliberately separate from Release Please. It must not create GitHub Releases, version tags, `latest`, or semver tags.
 - Local handoff after a successful workflow run:
 
   ```bash
-  gh run download <run-id> -n preview-image -D .tmp/preview-image
-  APP_IMAGE_REF="$(jq -r .image_ref .tmp/preview-image/preview-image.json)" \
-    ./run host:disposable:runtime-proof ci/digitalocean-host.json
+  gh run download <run-id> -n candidate-image -D .tmp/candidate-image
+  APP_IMAGE_REF="$(jq -r .image_ref .tmp/candidate-image/candidate-image.json)" \
+    ./run host:disposable:runtime-viability .tmp/ci-artifacts/disposable-host/digitalocean-host.json
 
-  PREVIEW_BROWSER_CHECK_IMAGE_REF="$(jq -r .preview_browser_check_image_ref .tmp/preview-image/preview-image.json)" \
-    ./run ci:preview-browser-check "$(jq -r .public_base_url ci/disposable-runtime-proof.json)"
+  PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF="$(jq -r .preview_page_acceptance_image_ref .tmp/candidate-image/candidate-image.json)" \
+    ./run ci:preview-page-acceptance "$(jq -r .public_base_url .tmp/ci-artifacts/runtime-viability/runtime-viability.json)"
   ```
 
 GitHub workflow:
@@ -344,7 +344,7 @@ GitHub workflow:
 - Actions: `create`, `status`, `destroy`.
 - The default action is `status`, not `create`, so the easiest click path does not allocate money.
 - The workflow checks out the default branch before loading DO/SSH secrets; feature-branch workflow code should not receive deploy credentials.
-- The workflow uploads `ci/digitalocean-host.json` as the create receipt with 2-day retention and treats a missing receipt as an error.
+- The workflow uploads `.tmp/ci-artifacts/disposable-host/digitalocean-host.json` as the create receipt with 2-day retention and treats a missing receipt as an error.
 - The workflow is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
 - GitHub will not run this new manual workflow from a feature branch until the workflow definition is present on the default branch. Before merge, use the same canonical `./run host:disposable:*` commands locally for proof; after merge, rerun the create/status/destroy proof through GitHub Actions.
 
@@ -394,7 +394,7 @@ Proposed feedback ladder:
 3. **CI browser preview:** `./run ci:performance-browser`
    - First implementation: called from `./run ci:prod-build` after the release is ready and route smoke has passed.
    - Later, after enough trusted samples prove low false-positive risk, split into a top-level PR check named `Performance browser`.
-   - Uploads `ci/browser-last-run.json` and failure artifacts.
+   - Uploads `.tmp/ci-artifacts/prod-build/browser-performance-last-run.json` and failure artifacts.
    - Hard-fails on broken pages, missing metrics, console/page errors, catastrophic page-weight blowups, and trusted budget violations.
 4. **Final PR authority:** `./run ci:prod-build`
    - Keep as the final release-shaped gate: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, content status, release RPC introspection, and current `oha` route-latency comparison.
@@ -408,13 +408,13 @@ Proposed feedback ladder:
 
 First implementation slice:
 
-1. Add `ci/browser-performance.mjs` and `ci/browser-budget.json`. Done.
+1. Add `ci/gates/browser-performance.mjs` and public page budgets inside `ci/contracts/routes.json`. Done.
 2. Add canonical command `./run ci:performance-browser`. Done.
 3. Use Playwright first because it is already in `assets/package.json`, avoids Lighthouse score theater, and can emit explicit route/page metrics.
-4. Keep `oha` for origin route latency; it already feeds `ci/last-run.json`.
-5. Write browser results to `ci/browser-last-run.json`. Done; generated artifact is gitignored and uploaded by CI.
-6. Call the browser check from `ci/prod-build.sh` after the release is ready and route smoke has passed. Done; this is the embed-first phase, not the final desired check topology.
-7. Upload `ci/browser-last-run.json` beside `ci/last-run.json` and `ci/baseline.json`. Done.
+4. Keep `oha` for route latency; it feeds `.tmp/ci-artifacts/prod-build/route-latency-last-run.json`.
+5. Write browser results to `.tmp/ci-artifacts/prod-build/browser-performance-last-run.json`. Done; generated artifacts live under `.tmp/ci-artifacts/` and are uploaded by CI.
+6. Call the browser check from `ci/gates/prod-build.sh` after the release is ready and route smoke has passed. Done; this is the embed-first phase, not the final desired check topology.
+7. Upload browser performance output beside route latency output and `ci/contracts/prod-build-baseline.json`. Done.
 8. After the command has accumulated enough trusted runs and false-positive behavior is understood, consider splitting it out of `Prod build` into its own top-level `Performance browser` workflow check.
 
 Hardening added after peer review:
@@ -422,7 +422,7 @@ Hardening added after peer review:
 - Browser byte metrics use Playwright network-size data consistently instead of mixing `content-length` and decompressed body lengths.
 - Resource byte totals count transferred response body plus response headers, which makes the metric closer to what the browser actually downloads.
 - The browser artifact records WebSocket frames and bytes so future LiveView traffic cannot hide outside the page-weight budget.
-- `ci/prod-build.sh` derives its route-smoke list from `ci/browser-budget.json`, plus the legacy `/en/self` smoke route, so browser and HTTP route coverage do not drift apart.
+- `ci/gates/prod-build.sh`, `ci/gates/probe-routes.sh`, `ci/gates/browser-performance.mjs`, runtime viability, and preview page acceptance all read `ci/contracts/routes.json`, so route coverage does not drift apart.
 - Initial hard ceilings are intentionally close to current reality: `max_total_bytes=120000`, `max_css_bytes=50000`, `max_js_bytes=120000`, `max_request_count=12`, `max_fcp_ms=1800`, and `max_cls=0.1`.
 
 Do not add Lighthouse CI, sitespeed.io, Server-Timing, or `hyperfine` in the first slice unless implementation evidence changes the tradeoff. Lighthouse CI is useful later but easier to turn into score theater. Server-Timing should wait until `oha` plus browser timing cannot explain a server-side ambiguity. `hyperfine` should wait until release boot timing needs repeated command-level measurement outside the current Docker orchestration.
@@ -456,14 +456,14 @@ Route/page: /en/notes
 Problem: CSS shipped to first-time visitors grew too much
 Observed: total=184KB css=73KB requests=12
 Allowed: total<=130KB or <=20% drift
-Artifact: ci/browser-last-run.json
+Artifact: .tmp/ci-artifacts/prod-build/browser-performance-last-run.json
 Next: reduce shipped CSS, split noncritical CSS, or submit an explicit budget-change proposal
 ```
 
 Budget and anti-cheat rules:
 
 - Warnings are failures unless allowlisted with exact source, reason, and expiry.
-- Budgets live in a versioned file, initially `ci/browser-budget.json`.
+- Budgets live in the versioned route contract at `ci/contracts/routes.json`.
 - Budgets cannot be silently weakened. Increasing thresholds, removing metrics, removing routes, lowering sample counts, disabling mobile emulation, or broadening exemptions requires an explicit budget-change proposal.
 - Baselines update only from trusted `main`/nightly paths, not arbitrary PR branches.
 - Missing measured values from the current run fail. Missing historical baselines do not automatically fail for newly introduced routes or metrics.
@@ -477,7 +477,7 @@ Budget and anti-cheat rules:
 Budget-change UX:
 
 - Legitimate budget increases should be possible without teaching agents to weaken gates by stealth.
-- Use an explicit versioned exception/change record, initially in `ci/browser-budget.json` unless it grows enough to split into `ci/browser-budget-exceptions.json`.
+- Use an explicit versioned exception/change record, initially in `ci/contracts/routes.json` unless it grows enough to split into a separate contract.
 - Each exception must name: route/page, metric, old value, new value, reason, expiry or follow-up, and whether it is a temporary exception or a deliberate new budget.
 - Expired exceptions fail.
 - Tightening budgets requires no exception record, but should still print a ratchet summary so the improvement is visible.
@@ -485,8 +485,9 @@ Budget-change UX:
 
 Artifact naming:
 
-- Keep the current `ci/last-run.json` during the first slice to avoid a noisy rename.
-- If the browser artifact lands cleanly, consider a later compatibility-preserving rename or alias from `ci/last-run.json` to `ci/latency-last-run.json` so it sits symmetrically beside `ci/browser-last-run.json`.
+- Generated outputs default to `.tmp/ci-artifacts/`, not `ci/`.
+- Route latency evidence lives at `.tmp/ci-artifacts/prod-build/route-latency-last-run.json`.
+- Browser performance evidence lives at `.tmp/ci-artifacts/prod-build/browser-performance-last-run.json`.
 
 Cleanup completed during implementation:
 

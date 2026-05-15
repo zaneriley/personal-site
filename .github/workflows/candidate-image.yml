@@ -1,4 +1,4 @@
-name: "Preview image"
+name: "Candidate image"
 
 on:
   pull_request:
@@ -11,12 +11,12 @@ permissions:
   packages: write
 
 concurrency:
-  group: "preview-image-${{ github.ref }}"
+  group: "candidate-image-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
-  preview-image:
-    name: "Preview image"
+  candidate-image:
+    name: "Candidate image"
     runs-on: "ubuntu-22.04"
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
@@ -37,14 +37,14 @@ jobs:
         id: image
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
-          tag="${image}:preview-sha-${GITHUB_SHA}"
-          browser_check_tag="${image}:preview-browser-check-sha-${GITHUB_SHA}"
+          tag="${image}:candidate-sha-${GITHUB_SHA}"
+          page_acceptance_tag="${image}:preview-page-acceptance-sha-${GITHUB_SHA}"
 
           echo "image=${image}" >> "${GITHUB_OUTPUT}"
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
-          echo "browser_check_tag=${browser_check_tag}" >> "${GITHUB_OUTPUT}"
+          echo "page_acceptance_tag=${page_acceptance_tag}" >> "${GITHUB_OUTPUT}"
 
-      - name: "Build and push preview image"
+      - name: "Build and push candidate app image"
         id: app_build
         uses: "docker/build-push-action@v7"
         with:
@@ -56,32 +56,32 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.description=Non-release preview image for runtime proof
+            org.opencontainers.image.description=Non-release candidate image for runtime viability
 
-      - name: "Build and push preview browser check image"
-        id: browser_check_build
+      - name: "Build and push preview page acceptance image"
+        id: page_acceptance_build
         uses: "docker/build-push-action@v7"
         with:
           context: .
           push: true
-          target: "preview-browser-check"
+          target: "preview-page-acceptance"
           platforms: "linux/amd64"
-          tags: ${{ steps.image.outputs.browser_check_tag }}
+          tags: ${{ steps.image.outputs.page_acceptance_tag }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.description=One-shot preview browser check image
+            org.opencontainers.image.description=One-shot preview page acceptance image
 
-      - name: "Write preview image receipt"
+      - name: "Write candidate image receipt"
         run: |
-          mkdir -p ci
+          mkdir -p .tmp/ci-artifacts/candidate-image
 
           jq -n \
             --arg image "${{ steps.image.outputs.image }}" \
             --arg tag "${{ steps.image.outputs.tag }}" \
             --arg digest "${{ steps.app_build.outputs.digest }}" \
-            --arg browser_check_tag "${{ steps.image.outputs.browser_check_tag }}" \
-            --arg browser_check_digest "${{ steps.browser_check_build.outputs.digest }}" \
+            --arg page_acceptance_tag "${{ steps.image.outputs.page_acceptance_tag }}" \
+            --arg page_acceptance_digest "${{ steps.page_acceptance_build.outputs.digest }}" \
             --arg sha "${GITHUB_SHA}" \
             --arg ref "${GITHUB_REF_NAME}" \
             --arg run_id "${GITHUB_RUN_ID}" \
@@ -90,21 +90,21 @@ jobs:
               tag: $tag,
               digest: $digest,
               image_ref: ($image + "@" + $digest),
-              preview_browser_check_tag: $browser_check_tag,
-              preview_browser_check_digest: $browser_check_digest,
-              preview_browser_check_image_ref: ($image + "@" + $browser_check_digest),
+              preview_page_acceptance_tag: $page_acceptance_tag,
+              preview_page_acceptance_digest: $page_acceptance_digest,
+              preview_page_acceptance_image_ref: ($image + "@" + $page_acceptance_digest),
               sha: $sha,
               ref: $ref,
               run_id: $run_id,
-              purpose: "non-release preview image for disposable runtime proof"
-            }' > ci/preview-image.json
+              purpose: "non-release candidate image for disposable runtime viability"
+            }' > .tmp/ci-artifacts/candidate-image/candidate-image.json
 
-          jq '.' ci/preview-image.json
+          jq '.' .tmp/ci-artifacts/candidate-image/candidate-image.json
 
-      - name: "Upload preview image receipt"
+      - name: "Upload candidate image receipt"
         uses: "actions/upload-artifact@v7"
         with:
-          name: "preview-image"
-          path: "ci/preview-image.json"
+          name: "candidate-image"
+          path: ".tmp/ci-artifacts/candidate-image/candidate-image.json"
           if-no-files-found: "error"
           retention-days: 7

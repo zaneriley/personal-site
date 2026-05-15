@@ -38,6 +38,6 @@ jobs:
         with:
           name: "prod-build-measurements"
           path: |
-            ci/last-run.json
-            ci/browser-last-run.json
-            ci/baseline.json
+            .tmp/ci-artifacts/prod-build/route-latency-last-run.json
+            .tmp/ci-artifacts/prod-build/browser-performance-last-run.json
+            ci/contracts/prod-build-baseline.json

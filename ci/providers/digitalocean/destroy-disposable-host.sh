@@ -4,10 +4,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=ci/deploy/digitalocean-env.sh
-. "${script_dir}/digitalocean-env.sh"
-
 response_file=""
 api_status_code=""
 
@@ -23,8 +19,8 @@ function usage {
     cat <<'USAGE'
 Usage:
   DROPLET_ID=<id> CONFIRM_DESTROY=1 ./run host:disposable:destroy
-  CONFIRM_DESTROY=1 ./run host:disposable:destroy ci/digitalocean-host.json
-  DIGITALOCEAN_TOKEN_STDIN=1 CONFIRM_DESTROY=1 ./run host:disposable:destroy ci/digitalocean-host.json < token-file
+  CONFIRM_DESTROY=1 ./run host:disposable:destroy .tmp/ci-artifacts/disposable-host/digitalocean-host.json
+  DIGITALOCEAN_TOKEN_STDIN=1 CONFIRM_DESTROY=1 ./run host:disposable:destroy .tmp/ci-artifacts/disposable-host/digitalocean-host.json < token-file
 
 Destroying a DigitalOcean Droplet is irreversible. This command requires
 CONFIRM_DESTROY=1 and either DROPLET_ID or a JSON artifact with droplet_id.
@@ -39,6 +35,24 @@ function require_env {
     if [[ -z "${!name:-}" ]]; then
         echo "fatal: ${name} is required" >&2
         return 1
+    fi
+}
+
+function load_digitalocean_token {
+    if [[ -n "${DIGITALOCEAN_TOKEN:-}" ]]; then
+        return 0
+    fi
+
+    if [[ -n "${DIGITALOCEAN_TOKEN_FILE:-}" ]]; then
+        DIGITALOCEAN_TOKEN="$(< "${DIGITALOCEAN_TOKEN_FILE}")"
+        export DIGITALOCEAN_TOKEN
+        return 0
+    fi
+
+    if [[ "${DIGITALOCEAN_TOKEN_STDIN:-0}" == "1" ]]; then
+        IFS= read -r DIGITALOCEAN_TOKEN
+        export DIGITALOCEAN_TOKEN
+        return 0
     fi
 }
 
@@ -90,13 +104,13 @@ function print_api_error {
     fi
 }
 
-function verify_disposable_origin {
+function verify_disposable_host {
     local expected_tags_json
     local missing_tags
     local name
 
     expected_tags_json="$(
-        printf "%s" "${DO_EXPECTED_TAGS:-personal-site,disposable-origin,preview}" |
+        printf "%s" "${DO_EXPECTED_TAGS:-personal-site,disposable-host,preview}" |
             jq -R 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))'
     )"
 
@@ -144,7 +158,7 @@ do_api_to_file GET "droplets/${droplet_id}"
 
 case "${api_status_code}" in
     200)
-        verify_disposable_origin
+        verify_disposable_host
         ;;
     404)
         echo "DigitalOcean droplet already absent"

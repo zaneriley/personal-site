@@ -4,8 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-LAST_RUN_FILE="${1:-ci/last-run.json}"
-BASELINE_FILE="${2:-ci/baseline.json}"
+LAST_RUN_FILE="${1:-.tmp/ci-artifacts/prod-build/route-latency-last-run.json}"
+BASELINE_FILE="${2:-ci/contracts/prod-build-baseline.json}"
 branch=""
 
 if branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null)"; then

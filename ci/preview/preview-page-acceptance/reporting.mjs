@@ -46,7 +46,7 @@ export async function writeResult(filePath, result) {
 
 export async function writeFailureSummary(filePath, result) {
   const lines = [
-    `# preview_browser_check: ${result.status}`,
+    `# preview_page_acceptance: ${result.status}`,
     "",
     `browser_connect_url: ${result.browser_connect_url}`,
     `expected_site_origin: ${result.expected_site_origin}`,
@@ -77,7 +77,7 @@ export function printRouteSummary(routeResult) {
 }
 
 export function printFailureSummary(result) {
-  printStatusLine("preview browser check failed");
+  printStatusLine("preview page acceptance failed");
 
   for (const bucket of result.failure_summary) {
     printStatusLine(`  ${bucket.code}: ${bucket.count}`);
