@@ -216,6 +216,11 @@ When `runs_count >= 30`, the perf-budget gate transitions from disabled (logging
 
 ## Workflow shape (concrete)
 
+> Current-path note, 2026-05-16: the accepted gate contract below is still
+> current, but the file paths were reorganized by the CI IA reset. Current live
+> inputs are under `ci/contracts/`, gate scripts under `ci/gates/`, and generated
+> evidence under `.tmp/ci-artifacts/`.
+
 ```yaml
 name: "Prod build"
 

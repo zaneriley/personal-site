@@ -67,16 +67,6 @@ function literal_misses {
         jq -R -s 'split("\n") | map(select(length > 0))'
 }
 
-function status_allowed {
-    local allowed_statuses_json
-    local status_code
-
-    allowed_statuses_json="${1}"
-    status_code="${2}"
-
-    jq -e --argjson status_code "${status_code}" 'index($status_code) != null' <<< "${allowed_statuses_json}" >/dev/null
-}
-
 function expected_site_origin_uses_loopback {
     case "${PHX_HOST:-}" in
         "localhost" | "0.0.0.0" | "web" | "web:8000" | 127.*)
@@ -322,3 +312,15 @@ done < <(contract_routes)
 mkdir -p "$(dirname "${OUTPUT_FILE}")"
 printf "%s\n" "${result}" > "${OUTPUT_FILE}"
 jq . "${OUTPUT_FILE}"
+
+if jq -e '[.routes[] | select(.status != "pass")] | length == 0' "${OUTPUT_FILE}" >/dev/null; then
+    exit 0
+fi
+
+jq -r '
+    .routes
+    | to_entries[]
+    | select(.value.status != "pass")
+    | "route probe failed: \(.key)"
+' "${OUTPUT_FILE}" >&2
+exit 1
