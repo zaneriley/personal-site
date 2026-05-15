@@ -1,6 +1,27 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+const failureDetailFormatters = {
+  bad_document_status: (failure) =>
+    `status ${failure.status}; allowed ${failure.allowed_statuses.join(", ")}`,
+  csp_violation: (failure) =>
+    `${failure.violated_directive}: ${failure.blocked_uri}`,
+  live_view_not_connected: (failure) =>
+    `app_js_loaded=${failure.app_js_loaded} live_socket_present=${failure.live_socket_present}`,
+  missing_required_dom: (failure) => `${failure.selector}: ${failure.reason}`,
+  missing_share_metadata: (failure) => failure.name,
+  viewport_overflow: (failure) =>
+    `document ${failure.document_scroll_width}px > viewport ${failure.viewport_width}px`,
+  wrong_site_origin_in_dom: (failure) => {
+    const expected =
+      failure.expected_origin === undefined
+        ? ""
+        : ` expected ${failure.expected_origin}`;
+
+    return `${failure.name} ${failure.issue}: ${JSON.stringify(failure.value)}${expected}`;
+  },
+};
+
 export function buildResult({ plan, routes, failures }) {
   return {
     schema_version: 1,
@@ -10,7 +31,7 @@ export function buildResult({ plan, routes, failures }) {
     browser_connect_url: plan.browserConnectUrl,
     expected_site_origin: plan.expectedSiteOrigin,
     allowed_response_origins: plan.allowedResponseOrigins,
-    route_assertions: plan.routeAssertions,
+    route_config_file: plan.routeConfigFile,
     routes,
     failures,
     failure_summary: summarizeFailures(failures),
@@ -105,6 +126,12 @@ function formatFailureLine(failure) {
 }
 
 function firstUsefulDetail(failure) {
+  const formatter = failureDetailFormatters[failure.code];
+
+  if (formatter !== undefined) {
+    return formatter(failure);
+  }
+
   if (failure.problem !== undefined) {
     return failure.problem;
   }

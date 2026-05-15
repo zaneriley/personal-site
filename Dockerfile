@@ -141,3 +141,21 @@ RUN npx playwright install-deps chromium
 
 USER node
 RUN npx playwright install chromium
+
+###############################################################################
+
+# Stage 5: One-shot preview browser check runner
+FROM browser AS preview-browser-check
+
+USER root
+RUN mkdir -p /opt/preview-browser-check && chown node:node /opt/preview-browser-check
+
+USER node
+WORKDIR /opt/preview-browser-check
+ENV PREVIEW_BROWSER_CHECK_ROOT=/opt/preview-browser-check
+
+COPY --chown=node:node ci/deploy/preview-browser-check.mjs ./preview-browser-check.mjs
+COPY --chown=node:node ci/deploy/preview-browser-check ./preview-browser-check
+COPY --chown=node:node ci/deploy/preview-route-assertions.json ./preview-route-assertions.json
+
+ENTRYPOINT ["node", "/opt/preview-browser-check/preview-browser-check.mjs"]

@@ -38,12 +38,14 @@ jobs:
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
           tag="${image}:preview-sha-${GITHUB_SHA}"
+          browser_check_tag="${image}:preview-browser-check-sha-${GITHUB_SHA}"
 
           echo "image=${image}" >> "${GITHUB_OUTPUT}"
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "browser_check_tag=${browser_check_tag}" >> "${GITHUB_OUTPUT}"
 
       - name: "Build and push preview image"
-        id: build
+        id: app_build
         uses: "docker/build-push-action@v7"
         with:
           context: .
@@ -56,6 +58,20 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.description=Non-release preview image for runtime proof
 
+      - name: "Build and push preview browser check image"
+        id: browser_check_build
+        uses: "docker/build-push-action@v7"
+        with:
+          context: .
+          push: true
+          target: "preview-browser-check"
+          platforms: "linux/amd64"
+          tags: ${{ steps.image.outputs.browser_check_tag }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.description=One-shot preview browser check image
+
       - name: "Write preview image receipt"
         run: |
           mkdir -p ci
@@ -63,7 +79,9 @@ jobs:
           jq -n \
             --arg image "${{ steps.image.outputs.image }}" \
             --arg tag "${{ steps.image.outputs.tag }}" \
-            --arg digest "${{ steps.build.outputs.digest }}" \
+            --arg digest "${{ steps.app_build.outputs.digest }}" \
+            --arg browser_check_tag "${{ steps.image.outputs.browser_check_tag }}" \
+            --arg browser_check_digest "${{ steps.browser_check_build.outputs.digest }}" \
             --arg sha "${GITHUB_SHA}" \
             --arg ref "${GITHUB_REF_NAME}" \
             --arg run_id "${GITHUB_RUN_ID}" \
@@ -72,6 +90,9 @@ jobs:
               tag: $tag,
               digest: $digest,
               image_ref: ($image + "@" + $digest),
+              preview_browser_check_tag: $browser_check_tag,
+              preview_browser_check_digest: $browser_check_digest,
+              preview_browser_check_image_ref: ($image + "@" + $browser_check_digest),
               sha: $sha,
               ref: $ref,
               run_id: $run_id,

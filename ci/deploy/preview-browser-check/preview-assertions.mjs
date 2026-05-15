@@ -1,5 +1,16 @@
 import { FailureCode, makeFailure } from "./failure-catalog.mjs";
 
+const REQUIRED_SHARE_METADATA = [
+  "og:title",
+  "og:description",
+  "og:url",
+  "og:image",
+  "twitter:card",
+  "twitter:title",
+  "twitter:description",
+  "twitter:image",
+];
+
 export function assertViewport({
   route,
   viewportLabel,
@@ -11,16 +22,19 @@ export function assertViewport({
 
   failures.push(
     ...documentStatusFailures(route, viewportLabel, observation.status),
+    ...missingRequiredDomFailures(route, viewportLabel, observation.requiredDomState),
     ...missingRequiredContentFailures(route, viewportLabel, observation.bodyText),
     ...visibleErrorStateFailures(route, viewportLabel, observation.bodyText, textPolicy),
-    ...internalHostLeakFailures(route, viewportLabel, observation.html, textPolicy),
-    ...canonicalSiteOriginFailures(
+    ...htmlPolicyFailures(route, viewportLabel, observation.html, textPolicy),
+    ...documentPublicUrlOriginFailures(
       route,
       viewportLabel,
       observation.documentAbsoluteUrls,
       expectedSiteOrigin,
     ),
     ...shareMetadataFailures(route, viewportLabel, observation.documentMetadata),
+    ...liveViewFailures(route, viewportLabel, observation.clientState),
+    ...viewportLayoutFailures(route, viewportLabel, observation.layoutState),
     ...runtimeObservationFailures(route, viewportLabel, observation),
   );
 
@@ -40,6 +54,17 @@ function documentStatusFailures(route, viewportLabel, status) {
   ];
 }
 
+function missingRequiredDomFailures(route, viewportLabel, requiredDomState) {
+  return requiredDomState
+    .filter((entry) => !entry.visible)
+    .map((entry) =>
+      makeFailure(route.label, viewportLabel, FailureCode.MISSING_REQUIRED_DOM, {
+        selector: entry.selector,
+        reason: entry.reason,
+      }),
+    );
+}
+
 function missingRequiredContentFailures(route, viewportLabel, bodyText) {
   return route.requiredVisibleText
     .filter((text) => !bodyText.includes(text))
@@ -51,7 +76,7 @@ function missingRequiredContentFailures(route, viewportLabel, bodyText) {
 }
 
 function visibleErrorStateFailures(route, viewportLabel, bodyText, textPolicy) {
-  return textPolicy.forbiddenText
+  return textPolicy.forbiddenVisibleText
     .filter((text) => bodyText.includes(text))
     .map((text) =>
       makeFailure(route.label, viewportLabel, FailureCode.FORBIDDEN_VISIBLE_TEXT, {
@@ -60,17 +85,22 @@ function visibleErrorStateFailures(route, viewportLabel, bodyText, textPolicy) {
     );
 }
 
-function internalHostLeakFailures(route, viewportLabel, html, textPolicy) {
-  return textPolicy.wrongHostText
+function htmlPolicyFailures(route, viewportLabel, html, textPolicy) {
+  return textPolicy.forbiddenHtmlText
     .filter((text) => html.includes(text))
     .map((text) =>
-      makeFailure(route.label, viewportLabel, FailureCode.WRONG_HOST_TEXT, {
+      makeFailure(route.label, viewportLabel, FailureCode.FORBIDDEN_HTML_TEXT, {
         text,
       }),
     );
 }
 
-function canonicalSiteOriginFailures(route, viewportLabel, urls, expectedSiteOrigin) {
+function documentPublicUrlOriginFailures(
+  route,
+  viewportLabel,
+  urls,
+  expectedSiteOrigin,
+) {
   return urls.flatMap((entry) => {
     if (entry.value === null || entry.value.trim() === "") {
       return [
@@ -150,13 +180,53 @@ function shareMetadataFailures(route, viewportLabel, metadata) {
     return [];
   }
 
-  return Object.entries(metadata)
-    .filter(([, value]) => value === undefined || value.trim() === "")
-    .map(([name]) =>
+  return REQUIRED_SHARE_METADATA
+    .filter((name) => {
+      const value = metadata[name];
+
+      return value === undefined || value.trim() === "";
+    })
+    .map((name) =>
       makeFailure(route.label, viewportLabel, FailureCode.MISSING_SHARE_METADATA, {
         name,
       }),
     );
+}
+
+function liveViewFailures(route, viewportLabel, clientState) {
+  if (!route.requireLiveView || clientState.liveViewConnected) {
+    return [];
+  }
+
+  return [
+    makeFailure(route.label, viewportLabel, FailureCode.LIVE_VIEW_NOT_CONNECTED, {
+      app_js_loaded: clientState.appJsLoaded,
+      live_socket_present: clientState.liveSocketPresent,
+    }),
+  ];
+}
+
+function viewportLayoutFailures(route, viewportLabel, layoutState) {
+  const failures = [];
+
+  if (layoutState.bodyTextLength === 0) {
+    failures.push(
+      makeFailure(route.label, viewportLabel, FailureCode.BLANK_PAGE, {
+        problem: "document body has no visible text",
+      }),
+    );
+  }
+
+  if (layoutState.documentScrollWidth > layoutState.viewportWidth + 2) {
+    failures.push(
+      makeFailure(route.label, viewportLabel, FailureCode.VIEWPORT_OVERFLOW, {
+        viewport_width: layoutState.viewportWidth,
+        document_scroll_width: layoutState.documentScrollWidth,
+      }),
+    );
+  }
+
+  return failures;
 }
 
 function runtimeObservationFailures(route, viewportLabel, observation) {
@@ -174,7 +244,7 @@ function runtimeObservationFailures(route, viewportLabel, observation) {
         ...requestFailure,
       }),
     ),
-    ...observation.unexpectedNetworkResponses.map((response) =>
+    ...observation.wrongOriginResponses.map((response) =>
       makeFailure(route.label, viewportLabel, FailureCode.WRONG_ORIGIN_RESPONSE, {
         ...response,
       }),

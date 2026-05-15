@@ -26,6 +26,18 @@ GitHub CI must expose the real acceptance gates as legible top-level check jobs.
 
 Route smoke is part of the production-build gate, not a separate placeholder job. Do not add another route-smoke gate just to make CI look broader; widen `./run ci:prod-build` only when the app has a stronger readiness/content contract.
 
+### CI / deploy IA guardrail
+
+The CI/deploy/preview area is under an IA reset as of 2026-05-16. Until that reset lands, do not add more deploy, preview, browser, receipt, route, or provider files under the current `ci/deploy/` pile.
+
+Locked direction:
+
+- Generated local evidence defaults to `.tmp/ci-artifacts/`, not `ci/`. CI can upload those paths as GitHub artifacts; durable repo inputs stay source-shaped.
+- Prefer one coherent IA reset over a long strangler migration. Temporary wrappers or aliases are allowed only for real external compatibility and must have an explicit removal condition.
+- Prefer fewer files. Do not split tiny scripts/configs just to make a taxonomy look clean; split only when a folder/file owns a durable concept a future maintainer can name.
+- `./run` remains the canonical command surface. The tree behind it must explain where contracts, gates, preview verification, provider glue, fixtures, and generated artifacts live.
+- Reserve `preview` for a deployed private candidate lane or checks against that lane. Reserve `origin` for the future durable runtime environment. Use `candidate image`, `disposable host`, `runtime viability`, `route probe`, `preview page acceptance`, `public page budget`, `published fixture content`, and `receipt` for the current verification concepts.
+
 ### Gate integrity: no fake green
 
 The canonical commands above are the gate contract. Use `./run <task>` unless debugging a command internals issue; if you use a raw underlying command, explain why and still re-run the canonical gate before calling it green. There is no `./psh` wrapper in this repo.

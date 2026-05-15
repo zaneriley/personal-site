@@ -636,11 +636,51 @@ function ci:performance-browser {
 }
 
 function ci:preview-browser-check:test {
+    local check_image
     local image
 
+    check_image="${PREVIEW_BROWSER_CHECK_IMAGE:-personal-site-preview-browser-check}"
     image="${PREVIEW_BROWSER_CHECK_TEST_IMAGE:-personal-site-preview-browser-check-test}"
+    docker build --target preview-browser-check -t "${check_image}" . >/dev/null
     docker build --target browser -t "${image}" . >/dev/null
-    docker run --rm "${image}" node /app/ci/deploy/preview-browser-check-test.mjs
+    docker run --rm --tmpfs /tmp:rw,size=256m "${image}" node /app/ci/deploy/preview-browser-check-test.mjs
+}
+
+function ci:preview-browser-check {
+    local browser_connect_url
+    local expected_site_origin
+    local image
+    local output_dir
+
+    image="${PREVIEW_BROWSER_CHECK_IMAGE_REF:-${PREVIEW_BROWSER_CHECK_IMAGE:-personal-site-preview-browser-check}}"
+    browser_connect_url="${PREVIEW_BROWSER_CONNECT_URL:-${1:-}}"
+    expected_site_origin="${PREVIEW_EXPECTED_SITE_ORIGIN:-${2:-${browser_connect_url}}}"
+    output_dir="${PREVIEW_BROWSER_CHECK_OUTPUT_DIR:-ci/preview-browser-check}"
+
+    if [[ -z "${browser_connect_url}" ]]; then
+        echo "Usage: PREVIEW_BROWSER_CHECK_IMAGE_REF=ghcr.io/owner/repo@sha256:<digest> ./run ci:preview-browser-check http://<preview-host>:<port> [expected-site-origin]" >&2
+        return 1
+    fi
+
+    if [[ -n "${PREVIEW_BROWSER_CHECK_IMAGE_REF:-}" && ! "${PREVIEW_BROWSER_CHECK_IMAGE_REF}" =~ @sha256:[0-9a-fA-F]{64}$ ]]; then
+        echo "fatal: PREVIEW_BROWSER_CHECK_IMAGE_REF must be digest-pinned with @sha256:<64 hex chars>" >&2
+        return 1
+    fi
+
+    mkdir -p "${output_dir}"
+
+    docker run --rm \
+        --init \
+        --ipc=host \
+        --tmpfs /tmp:rw,size=256m \
+        -v "${PWD}/${output_dir}:/artifacts" \
+        "${image}" \
+        --browser-connect-url "${browser_connect_url}" \
+        --expected-site-origin "${expected_site_origin}" \
+        --routes-json /opt/preview-browser-check/preview-route-assertions.json \
+        --screenshots-dir /artifacts/screenshots \
+        --output /artifacts/preview-browser-check.json \
+        --failure-summary /artifacts/preview-browser-check.md
 }
 
 function ci:content-validate {

@@ -8,9 +8,10 @@ host_receipt="${1:-${DO_HOST_RECEIPT:-ci/digitalocean-host.json}}"
 app_image_ref="${APP_IMAGE_REF:-${APP_IMAGE:-}}"
 output="${RUNTIME_PROOF_OUTPUT:-ci/disposable-runtime-proof.json}"
 artifact_dir="${RUNTIME_PROOF_ARTIFACT_DIR:-ci/disposable-runtime-proof}"
-preview_routes_file="${PREVIEW_BROWSER_ROUTES_FILE:-ci/deploy/preview-browser-routes.json}"
+route_assertions_file="${PREVIEW_ROUTE_ASSERTIONS_FILE:-ci/deploy/preview-route-assertions.json}"
 remote_dir="${RUNTIME_PROOF_REMOTE_DIR:-/var/lib/personal-site/runtime-proof}"
 project="${RUNTIME_PROOF_PROJECT:-personal-site-runtime-proof}"
+bind_host="${RUNTIME_PROOF_BIND_HOST:-0.0.0.0}"
 host_port="${RUNTIME_PROOF_HOST_PORT:-18080}"
 ssh_private_key_file=""
 ssh_known_hosts_file=""
@@ -37,11 +38,12 @@ trap 'cleanup' EXIT
 function usage {
     cat <<'USAGE'
 Usage:
-  APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<digest> ./run host:disposable:runtime-proof ci/digitalocean-host.json
+  APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-proof ci/digitalocean-host.json
 
 Runs a digest-pinned application image on a ready disposable host, starts
-Postgres beside it, checks /readyz and public routes, and records runtime
-resource evidence.
+Postgres beside the app, checks /readyz, probes public routes, and records
+runtime resource evidence. Run the browser-real preview check from an external
+runner against the public_base_url emitted in the artifact.
 USAGE
 }
 
@@ -68,31 +70,38 @@ function require_file {
 }
 
 function require_digest_image {
-    if [[ -z "${app_image_ref}" ]]; then
+    local name
+    local value
+
+    name="${1}"
+    value="${2}"
+
+    if [[ -z "${value}" ]]; then
         usage >&2
-        echo "fatal: APP_IMAGE_REF is required" >&2
+        echo "fatal: ${name} is required" >&2
         exit 1
     fi
 
-    if [[ ! "${app_image_ref}" =~ @sha256:[0-9a-fA-F]{64}$ ]]; then
-        echo "fatal: APP_IMAGE_REF must be digest-pinned with @sha256:<64 hex chars>" >&2
+    if [[ ! "${value}" =~ @sha256:[0-9a-fA-F]{64}$ ]]; then
+        echo "fatal: ${name} must be digest-pinned with @sha256:<64 hex chars>" >&2
         exit 1
     fi
 }
 
-function validate_preview_routes {
+function validate_route_assertions {
     jq -e '
         .schema_version == 1
-        and (.forbidden_text | type == "array")
-        and (.wrong_host_text | type == "array")
+        and (.text_policy.forbidden_visible_text | type == "array")
+        and (.text_policy.forbidden_html_text | type == "array")
         and (.routes | type == "array" and length > 0)
+        and ([.routes[] | select((.browser.enabled // true) != false)] | length > 0)
         and all(.routes[];
             (.label | type == "string" and length > 0)
             and (.path | type == "string" and startswith("/"))
             and (.allowed_statuses | type == "array" and length > 0)
-            and (.required_text | type == "array")
+            and (.required_body_text | type == "array" and length > 0)
         )
-    ' "${preview_routes_file}" >/dev/null
+    ' "${route_assertions_file}" >/dev/null
 }
 
 function assert_safe_shell_value {
@@ -222,7 +231,7 @@ services:
       PHX_URL_PORT: "${PHX_URL_PORT}"
       PHX_URL_SCHEME: "${PHX_URL_SCHEME}"
     ports:
-      - "127.0.0.1:${RUNTIME_PROOF_HOST_PORT}:${PORT}"
+      - "${RUNTIME_PROOF_BIND_HOST}:${RUNTIME_PROOF_HOST_PORT}:${PORT}"
     volumes:
       - "./content:${CONTENT_BASE_PATH}:ro"
 
@@ -230,7 +239,7 @@ volumes:
   postgres: {}
 YAML
 
-    cp "${preview_routes_file}" "${payload_dir}/preview-browser-routes.json"
+    cp "${route_assertions_file}" "${payload_dir}/preview-route-assertions.json"
 
     cat > "${payload_dir}/.env" <<ENV
 APP_IMAGE_REF=${app_image_ref}
@@ -242,6 +251,7 @@ POSTGRES_DB=portfolio
 POSTGRES_PASSWORD=$(random_hex 32)
 POSTGRES_USER=portfolio
 RUNTIME_PROOF_HOST_PORT=${host_port}
+RUNTIME_PROOF_BIND_HOST=${bind_host}
 SECRET_KEY_BASE=$(random_hex 64)
 PHX_FORCE_SSL=false
 PHX_HOST=${RUNTIME_PROOF_PHX_HOST:-${public_ipv4}}
@@ -262,7 +272,7 @@ status="fail"
 failure_reason="not_started"
 ready_ms=""
 routes_json="${artifact_dir}/routes.json"
-preview_routes_file="preview-browser-routes.json"
+route_assertions_file="preview-route-assertions.json"
 memory_peaks_json="${artifact_dir}/memory-peaks.json"
 docker_stats_json="${artifact_dir}/docker-stats.json"
 compose_ps_json="${artifact_dir}/compose-ps.json"
@@ -365,6 +375,7 @@ function collect_artifacts {
         --arg app_image_ref "${APP_IMAGE_REF}" \
         --arg project "${RUNTIME_PROOF_PROJECT}" \
         --arg port "${RUNTIME_PROOF_HOST_PORT}" \
+        --arg public_base_url "$(expected_site_origin)" \
         --argjson ready_ms "${ready_ms_json}" \
         --slurpfile routes "${routes_json}" \
         --slurpfile memory_peaks "${memory_peaks_json}" \
@@ -376,8 +387,15 @@ function collect_artifacts {
             app_image_ref: $app_image_ref,
             project: $project,
             ready_ms: $ready_ms,
-            base_url: ("http://127.0.0.1:" + $port),
+            loopback_base_url: ("http://127.0.0.1:" + $port),
+            public_base_url: $public_base_url,
             routes: $routes[0],
+            preview_browser_check: {
+                status: "external_required",
+                browser_connect_url: $public_base_url,
+                expected_site_origin: $public_base_url,
+                route_assertions_file: "ci/deploy/preview-route-assertions.json"
+            },
             memory_peaks: $memory_peaks[0],
             docker_stats: $docker_stats[0],
             compose_ps: $compose_ps[0]
@@ -479,44 +497,44 @@ function probe_routes {
     local allowed_statuses_json
     local body_file
     local byte_count
-    local forbidden_hits_json
-    local forbidden_text_json
+    local forbidden_html_hits_json
+    local forbidden_html_text_json
+    local forbidden_visible_hits_json
+    local forbidden_visible_text_json
     local failures
     local label
     local route
-    local required_text_json
-    local required_text_missing_json
-    local required_text_present_json
+    local required_body_text_json
+    local required_body_text_missing_json
+    local required_body_text_present_json
     local status_code
     local status_number
     local status_ok
     local tmp_jsonl
-    local wrong_host_hits_json
-    local wrong_host_text_json
 
     failures=0
     tmp_jsonl="${artifact_dir}/routes.jsonl"
     : > "${tmp_jsonl}"
-    forbidden_text_json="$(jq -c '.forbidden_text // []' "${preview_routes_file}")"
-    wrong_host_text_json="$(jq -c '.wrong_host_text // []' "${preview_routes_file}")"
+    forbidden_visible_text_json="$(jq -c '.text_policy.forbidden_visible_text // []' "${route_assertions_file}")"
+    forbidden_html_text_json="$(jq -c '.text_policy.forbidden_html_text // []' "${route_assertions_file}")"
 
     while IFS= read -r route_json; do
         label="$(jq -r '.label' <<< "${route_json}")"
         route="$(jq -r '.path' <<< "${route_json}")"
         allowed_statuses_json="$(jq -c '.allowed_statuses' <<< "${route_json}")"
-        required_text_json="$(jq -c '.required_text // []' <<< "${route_json}")"
+        required_body_text_json="$(jq -c '.required_body_text // []' <<< "${route_json}")"
         body_file="$(mktemp)"
         status_code="$(curl -sS -o "${body_file}" -w "%{http_code}" "http://127.0.0.1:${RUNTIME_PROOF_HOST_PORT}${route}" || true)"
         status_number="null"
         byte_count="$(wc -c < "${body_file}" | tr -d ' ')"
-        required_text_present_json="$(literal_hits "${body_file}" "${required_text_json}")"
-        required_text_missing_json="$(literal_misses "${body_file}" "${required_text_json}")"
-        forbidden_hits_json="$(literal_hits "${body_file}" "${forbidden_text_json}")"
+        required_body_text_present_json="$(literal_hits "${body_file}" "${required_body_text_json}")"
+        required_body_text_missing_json="$(literal_misses "${body_file}" "${required_body_text_json}")"
+        forbidden_visible_hits_json="$(literal_hits "${body_file}" "${forbidden_visible_text_json}")"
 
         if expected_site_origin_uses_loopback; then
-            wrong_host_hits_json="[]"
+            forbidden_html_hits_json="[]"
         else
-            wrong_host_hits_json="$(literal_hits "${body_file}" "${wrong_host_text_json}")"
+            forbidden_html_hits_json="$(literal_hits "${body_file}" "${forbidden_html_text_json}")"
         fi
 
         status_ok="false"
@@ -530,9 +548,9 @@ function probe_routes {
         fi
 
         if [[ "${status_ok}" != "true" ]] ||
-            [[ "$(jq 'length' <<< "${required_text_missing_json}")" -gt 0 ]] ||
-            [[ "$(jq 'length' <<< "${forbidden_hits_json}")" -gt 0 ]] ||
-            [[ "$(jq 'length' <<< "${wrong_host_hits_json}")" -gt 0 ]]; then
+            [[ "$(jq 'length' <<< "${required_body_text_missing_json}")" -gt 0 ]] ||
+            [[ "$(jq 'length' <<< "${forbidden_visible_hits_json}")" -gt 0 ]] ||
+            [[ "$(jq 'length' <<< "${forbidden_html_hits_json}")" -gt 0 ]]; then
             failures=$((failures + 1))
         fi
 
@@ -542,10 +560,10 @@ function probe_routes {
             --arg byte_count "${byte_count}" \
             --argjson status_code "${status_number}" \
             --argjson allowed_statuses "${allowed_statuses_json}" \
-            --argjson required_text_present "${required_text_present_json}" \
-            --argjson required_text_missing "${required_text_missing_json}" \
-            --argjson forbidden_hits "${forbidden_hits_json}" \
-            --argjson wrong_host_hits "${wrong_host_hits_json}" \
+            --argjson required_body_text_present "${required_body_text_present_json}" \
+            --argjson required_body_text_missing "${required_body_text_missing_json}" \
+            --argjson forbidden_visible_hits "${forbidden_visible_hits_json}" \
+            --argjson forbidden_html_hits "${forbidden_html_hits_json}" \
             --argjson status_ok "${status_ok}" \
             '{
                 label: $label,
@@ -554,15 +572,15 @@ function probe_routes {
                 allowed_statuses: $allowed_statuses,
                 status_ok: $status_ok,
                 bytes: ($byte_count | tonumber),
-                required_text_present: $required_text_present,
-                required_text_missing: $required_text_missing,
-                forbidden_hits: $forbidden_hits,
-                wrong_host_hits: $wrong_host_hits,
+                required_body_text_present: $required_body_text_present,
+                required_body_text_missing: $required_body_text_missing,
+                forbidden_visible_hits: $forbidden_visible_hits,
+                forbidden_html_hits: $forbidden_html_hits,
                 result: (
                     if $status_ok
-                        and ($required_text_missing | length) == 0
-                        and ($forbidden_hits | length) == 0
-                        and ($wrong_host_hits | length) == 0
+                        and ($required_body_text_missing | length) == 0
+                        and ($forbidden_visible_hits | length) == 0
+                        and ($forbidden_html_hits | length) == 0
                     then "pass"
                     else "fail"
                     end
@@ -570,7 +588,7 @@ function probe_routes {
             }' >> "${tmp_jsonl}"
 
         rm -f "${body_file}"
-    done < <(jq -c '.routes[]' "${preview_routes_file}")
+    done < <(jq -c '.routes[]' "${route_assertions_file}")
 
     json_array_from_jsonl "${tmp_jsonl}" "${routes_json}"
 
@@ -579,8 +597,20 @@ function probe_routes {
     fi
 }
 
+function expected_site_origin {
+    local origin
+
+    origin="${PHX_URL_SCHEME}://${PHX_HOST}"
+
+    if [[ "${PHX_URL_PORT}" != "80" && "${PHX_URL_PORT}" != "443" ]]; then
+        origin="${origin}:${PHX_URL_PORT}"
+    fi
+
+    printf "%s\n" "${origin}"
+}
+
 mkdir -p "${artifact_dir}"
-rm -f "${artifact_dir}"/*
+rm -rf "${artifact_dir:?}"/*
 set -o allexport
 # shellcheck disable=SC1091
 . ./.env
@@ -636,11 +666,13 @@ require_command openssl
 require_command ssh
 require_command tar
 require_file "${host_receipt}"
-require_file "${preview_routes_file}"
-require_digest_image
-validate_preview_routes
+require_file "${route_assertions_file}"
+require_digest_image APP_IMAGE_REF "${app_image_ref}"
+
+validate_route_assertions
 assert_safe_shell_value RUNTIME_PROOF_REMOTE_DIR "${remote_dir}"
 assert_safe_shell_value RUNTIME_PROOF_PROJECT "${project}"
+assert_safe_shell_value RUNTIME_PROOF_BIND_HOST "${bind_host}"
 
 droplet_id="$(read_receipt_value '.droplet_id')"
 public_ipv4="$(read_receipt_value '.public_ipv4')"

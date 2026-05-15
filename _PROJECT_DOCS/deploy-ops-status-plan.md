@@ -195,6 +195,92 @@ These are durable findings from the 2026-05-12 simple preview bug bash, not scra
 6. **The disposable host needs Docker Compose before runtime spikes.** Ubuntu's `docker.io` package did not provide `docker compose`; cloud-init now installs `docker-compose-v2` and readiness must prove `docker compose version`.
 7. **Browser-test payloads now need to earn rent.** Playwright in the image was previously flagged as production-image bloat. Since the next deploy gate needs browser-real proof, keep the browser tooling question open until the gate is shaped: use it for preview smoke if it is already present, then decide whether both root and node installs are necessary or whether browser tooling belongs in a separate test image target.
 8. **1Password CLI authorization remains an operator nuisance.** `op read ... | DIGITALOCEAN_TOKEN_STDIN=1` avoids clipboard leakage, but local runs still surface GUI authorization prompts. Treat this as an operator-flow decision, not a new discovery, if it appears in future observation packets.
+9. **Deploy/proof IA is now a show-stopping blocker, not a naming nit.** The preview proof work has individually useful pieces, but the aggregate shape has turned `ci/` into a mixed pile of CI gates, provider lifecycle scripts, route smoke, browser proof, runtime receipts, image receipts, and temporary spike machinery. Do not add more deploy/preview machinery until the locked IA reset below lands. The vault blocker is `Backlog/side-projects/portfolio/portfolio-deploy-ia-breakdown.md`.
+
+### Locked CI / Deploy / Preview IA Reset
+
+Status: ratified direction 2026-05-16 after DDD, IA, and Subtractive Elegance forward tests. Working artifacts live at `.tmp/2026-05-16-skill-forward-test/` and `.tmp/2026-05-16-skill-solution-ideation/`.
+
+This is a blocker before more Slice B/C deploy work. The goal is not a prettier tree; the goal is to stop the LLM-additive pattern where every new check adds another route list, receipt path, script, manifest, sidecar, or doc without deleting the old path.
+
+Locked preferences:
+
+1. **Generated evidence goes to `.tmp/ci-artifacts/`.** Do not keep writing default receipts, screenshots, and last-run files under `ci/`. GitHub Actions may upload `.tmp/ci-artifacts/...` as artifacts.
+2. **Prefer one coherent IA reset.** This work is early, and the problem is the map itself. A long strangler migration would preserve the old map and the new map at the same time.
+3. **Prefer fewer files.** Use folders to express durable concepts, but do not split small files just to make a taxonomy look clean.
+
+Canonical vocabulary:
+
+| Term | Meaning |
+|---|---|
+| `candidate image` | Digest-pinned app image built from a branch/SHA for verification before promotion. Not a deployed preview. |
+| `browser check image` | One-shot tool image that runs browser assertions. Tooling, not the app candidate. |
+| `disposable host` | Short-lived Docker-capable machine used for host lifecycle and runtime learning. Not the durable origin. |
+| `origin` | Future durable runtime environment behind the edge/cache layer. Do not use for throwaway Droplets. |
+| `preview` / `preview lane` | Private prod-like deployed candidate URL/lane before production promotion. Do not use for image builds. |
+| `runtime viability` | Candidate image boots with Postgres on the host shape, reaches `/readyz`, serves route probes, and records resource evidence. |
+| `route probe` | HTTP-level path/status/body assertion. Weaker than browser acceptance. |
+| `preview page acceptance` | Browser-real page credibility: assets, CSP, LiveView, visible error copy, share metadata, viewport overflow, screenshots, origin roles. |
+| `public page budget` | Browser-backed visitor performance budget for public pages. |
+| `published fixture content` | Stable note/case-study content used by gates to exercise detail routes. Not owned by one gate. |
+| `receipt` | Machine-readable evidence from a lifecycle/check step. |
+
+Target map:
+
+```text
+ci/
+  README.md                    # short map: commands, contracts, generated output, where new files go
+  contracts/
+    routes.json                # one compact route authority; avoid splitting unless it earns it
+  fixtures/
+    published-content/         # one source for stable note/case-study fixture content
+  gates/
+    prod-build.sh
+    probe-routes.sh
+    browser-performance.mjs
+    compare.sh
+    update-baseline.sh         # only if repo baseline remains real
+  preview/
+    runtime-viability.sh
+    preview-page-acceptance.mjs
+    preview-page-acceptance/
+      check-plan.mjs
+      failure-catalog.mjs
+      fixture-server.mjs
+      reporting.mjs
+  providers/
+    digitalocean/
+      create-disposable-host.sh
+      status-disposable-host.sh
+      destroy-disposable-host.sh
+      cloud-init.yml
+```
+
+Generated local evidence:
+
+```text
+.tmp/ci-artifacts/
+  prod-build/
+  candidate-image/
+  disposable-host/
+  runtime-viability/
+  preview-page-acceptance/
+```
+
+Minimum reset scope:
+
+1. Supersede stale `_PROJECT_DOCS/ci-prod-build-gate.md` with a pointer to ADR 0001.
+2. Move generated local outputs to `.tmp/ci-artifacts/`.
+3. Extract published fixture content out of duplicated shell heredocs.
+4. Add one compact route authority and move all current route readers to it.
+5. Rename candidate/host/origin vocabulary where it otherwise locks in the wrong concept.
+6. Rename browser correctness vocabulary to `preview page acceptance`; keep browser/Playwright below the implementation boundary.
+
+Next decisions after the reset:
+
+1. Make preview verification one verdict instead of manual runtime-proof plus external browser-proof handoff.
+2. Resolve baseline authority: either add a real trusted refresh path, or stop mutating a pretend rolling baseline in normal PR/prod-build runs.
+3. Decide the DigitalOcean spike exit before adding janitors, IPv6, deploy receipts, or provider-neutral abstractions.
 
 ### DigitalOcean Disposable Origin Requirements
 
@@ -227,16 +313,19 @@ Current command surface:
    - Requires `DROPLET_ID` or a receipt file path.
    - Fetches the Droplet first and refuses to delete unless it has the expected `personal-site`, `disposable-origin`, and `preview` tags plus the expected preview name prefix.
    - Destroys the Droplet only after ownership verification. Powering off is not the disposal path because powered-off Droplets still bill.
-4. `APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<digest> ./run host:disposable:runtime-proof ci/digitalocean-host.json`
+4. `APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-proof ci/digitalocean-host.json`
    - Runs only against a ready disposable-host receipt; it refuses non-ready receipts and floating image tags.
    - Copies a small runtime payload to `/var/lib/personal-site/runtime-proof`, starts Postgres plus the digest-pinned app image with fixture content, waits for `/readyz`, and probes the public route set.
-   - Writes `ci/disposable-runtime-proof.json` and `ci/disposable-runtime-proof/` artifacts with ready time, route statuses, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
-   - This is a runtime viability proof, not a production deploy. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
+   - Writes `ci/disposable-runtime-proof.json` and `ci/disposable-runtime-proof/` artifacts with ready time, route statuses, the public browser-check URL, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
+   - This is a runtime viability proof, not a production deploy and not a browser proof. It keeps the 1 GiB host measurement focused on `web` plus Postgres. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
+5. `PREVIEW_BROWSER_CHECK_IMAGE_REF=ghcr.io/owner/repo@sha256:<browser-check-digest> ./run ci:preview-browser-check "$(jq -r .public_base_url ci/disposable-runtime-proof.json)"`
+   - Runs the digest-pinned one-shot browser-check image from the operator machine or CI runner, outside the Droplet, against the public preview URL emitted by the runtime proof.
+   - Writes `ci/preview-browser-check/preview-browser-check.json`, `ci/preview-browser-check/preview-browser-check.md`, and screenshots. This is the browser-real proof: assets, CSP, LiveView connection, share metadata, mobile/desktop layout, screenshots, and wrong-origin DOM/network checks.
 
 Preview image workflow:
 
 - `Preview image` builds a non-release `linux/amd64` production image in GitHub Actions and pushes only a SHA-scoped tag: `ghcr.io/zaneriley/personal-site:preview-sha-<sha>`.
-- It writes `ci/preview-image.json` as the `preview-image` artifact. The runtime-proof command should consume `.image_ref`, which is digest-pinned as `ghcr.io/zaneriley/personal-site@sha256:<digest>`.
+- It writes `ci/preview-image.json` as the `preview-image` artifact. The runtime-proof command consumes `.image_ref` for the app image. The external browser proof consumes `.preview_browser_check_image_ref` for the one-shot browser-check image. Both are digest-pinned as `ghcr.io/zaneriley/personal-site@sha256:<digest>`.
 - This workflow is deliberately separate from Release Please. It must not create GitHub Releases, version tags, `latest`, or semver tags.
 - Local handoff after a successful workflow run:
 
@@ -244,6 +333,9 @@ Preview image workflow:
   gh run download <run-id> -n preview-image -D .tmp/preview-image
   APP_IMAGE_REF="$(jq -r .image_ref .tmp/preview-image/preview-image.json)" \
     ./run host:disposable:runtime-proof ci/digitalocean-host.json
+
+  PREVIEW_BROWSER_CHECK_IMAGE_REF="$(jq -r .preview_browser_check_image_ref .tmp/preview-image/preview-image.json)" \
+    ./run ci:preview-browser-check "$(jq -r .public_base_url ci/disposable-runtime-proof.json)"
   ```
 
 GitHub workflow:

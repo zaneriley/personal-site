@@ -34,7 +34,7 @@ export async function observeRouteViewport({
   const pageErrors = [];
   const consoleErrors = [];
   const requestFailures = [];
-  const unexpectedNetworkResponses = [];
+  const wrongOriginResponses = [];
   const badResponseStatuses = [];
   const exerciseFailures = [];
   const context = await browser.newContext({
@@ -50,6 +50,17 @@ export async function observeRouteViewport({
   let cspViolations = [];
   let documentAbsoluteUrls = [];
   let documentMetadata = {};
+  let requiredDomState = [];
+  let clientState = {
+    appJsLoaded: false,
+    liveSocketPresent: false,
+    liveViewConnected: false,
+  };
+  let layoutState = {
+    bodyTextLength: 0,
+    viewportWidth: 0,
+    documentScrollWidth: 0,
+  };
 
   try {
     await installCspObserver(context);
@@ -58,7 +69,7 @@ export async function observeRouteViewport({
       pageErrors,
       consoleErrors,
       requestFailures,
-      unexpectedNetworkResponses,
+      wrongOriginResponses,
       badResponseStatuses,
       previewFetchOrigin,
     });
@@ -83,12 +94,15 @@ export async function observeRouteViewport({
     });
 
     try {
-      const snapshot = await collectPageSnapshot(page);
+      const snapshot = await collectPageSnapshot(page, route);
       bodyText = snapshot.bodyText;
       html = snapshot.html;
       cspViolations = snapshot.cspViolations;
       documentAbsoluteUrls = snapshot.documentAbsoluteUrls;
       documentMetadata = snapshot.documentMetadata;
+      requiredDomState = snapshot.requiredDomState;
+      clientState = snapshot.clientState;
+      layoutState = snapshot.layoutState;
     } catch (error) {
       exerciseFailures.push(
         makeFailure(route.label, viewport.label, FailureCode.BROWSER_CHECK_EXCEPTION, {
@@ -111,11 +125,14 @@ export async function observeRouteViewport({
     pageErrors,
     consoleErrors,
     requestFailures,
-    unexpectedNetworkResponses,
+    wrongOriginResponses,
     badResponseStatuses,
     cspViolations,
     documentAbsoluteUrls,
     documentMetadata,
+    requiredDomState,
+    clientState,
+    layoutState,
   };
 }
 
@@ -157,7 +174,7 @@ function observePageEvents(page, observations) {
       parsedUrl !== null &&
       parsedUrl.origin !== observations.previewFetchOrigin
     ) {
-      observations.unexpectedNetworkResponses.push({
+      observations.wrongOriginResponses.push({
         url: response.url(),
         origin: parsedUrl.origin,
         allowed_origins: [observations.previewFetchOrigin],
@@ -183,17 +200,35 @@ async function exerciseRoutePage(page, route) {
     await page.waitForLoadState("load", { timeout: 10_000 }).catch(() => {});
 
     for (const selector of route.requiredDom) {
-      await page.locator(selector).first().waitFor({
-        state: "visible",
-        timeout: 5_000,
-      });
+      await page
+        .locator(selector)
+        .first()
+        .waitFor({
+          state: "visible",
+          timeout: 5_000,
+        })
+        .catch(() => {});
     }
 
     for (const text of route.requiredVisibleText) {
-      await page.getByText(text, { exact: false }).first().waitFor({
-        state: "visible",
-        timeout: 5_000,
-      });
+      await page
+        .getByText(text, { exact: false })
+        .first()
+        .waitFor({
+          state: "visible",
+          timeout: 5_000,
+        })
+        .catch(() => {});
+    }
+
+    if (route.requireLiveView) {
+      await page
+        .waitForFunction(
+          () => Boolean(window.liveSocket?.isConnected?.()),
+          undefined,
+          { timeout: 5_000 },
+        )
+        .catch(() => {});
     }
 
     await page.waitForTimeout(250);
@@ -234,7 +269,7 @@ async function captureScreenshot({
   return screenshotPath;
 }
 
-async function collectPageSnapshot(page) {
+async function collectPageSnapshot(page, route) {
   return {
     bodyText: await page.locator("body").innerText({ timeout: 5_000 }),
     html: await page.content(),
@@ -243,7 +278,32 @@ async function collectPageSnapshot(page) {
     ),
     documentAbsoluteUrls: await collectDocumentAbsoluteUrls(page),
     documentMetadata: await collectDocumentMetadata(page),
+    requiredDomState: await collectRequiredDomState(page, route.requiredDom),
+    clientState: await collectClientState(page),
+    layoutState: await collectLayoutState(page),
   };
+}
+
+async function collectRequiredDomState(page, selectors) {
+  return page.evaluate((requiredSelectors) => {
+    return requiredSelectors.map((selector) => {
+      const element = document.querySelector(selector);
+
+      if (element === null) {
+        return { selector, visible: false, reason: "missing" };
+      }
+
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      const visible =
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.display !== "none" &&
+        style.visibility !== "hidden";
+
+      return { selector, visible, reason: visible ? null : "not_visible" };
+    });
+  }, selectors);
 }
 
 async function collectDocumentAbsoluteUrls(page) {
@@ -266,6 +326,22 @@ async function collectDocumentMetadata(page) {
       ]),
     );
   }, SHARE_METADATA_SELECTORS);
+}
+
+async function collectClientState(page) {
+  return page.evaluate(() => ({
+    appJsLoaded: Boolean(window.liveSocket),
+    liveSocketPresent: Boolean(window.liveSocket),
+    liveViewConnected: Boolean(window.liveSocket?.isConnected?.()),
+  }));
+}
+
+async function collectLayoutState(page) {
+  return page.evaluate(() => ({
+    bodyTextLength: document.body.innerText.trim().length,
+    viewportWidth: window.innerWidth,
+    documentScrollWidth: document.documentElement.scrollWidth,
+  }));
 }
 
 function contextOptions(viewport) {

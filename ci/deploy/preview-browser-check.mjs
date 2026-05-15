@@ -17,7 +17,9 @@ import {
 } from "./preview-browser-check/reporting.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
-const repoRoot = path.resolve(path.dirname(scriptPath), "../..");
+const repoRoot =
+  process.env.PREVIEW_BROWSER_CHECK_ROOT ??
+  path.resolve(path.dirname(scriptPath), "../..");
 
 const exitStatus = await main(process.argv.slice(2));
 process.exit(exitStatus);
@@ -28,7 +30,7 @@ async function main(args) {
   const { plan, failures: planFailures } = buildPreviewCheckPlan(rawConfig, {
     browserConnectUrl: options.browserConnectUrl,
     expectedSiteOrigin: options.expectedSiteOrigin,
-    routeAssertions: path.relative(repoRoot, options.routesJsonPath),
+    routeConfigFile: path.relative(repoRoot, options.routesJsonPath),
   });
 
   await fs.mkdir(options.screenshotsDir, { recursive: true });
@@ -105,9 +107,12 @@ async function checkRoute(browser, route, plan, options) {
       page_errors: observation.pageErrors,
       console_errors: observation.consoleErrors,
       request_failures: observation.requestFailures,
-      wrong_origin_responses: observation.unexpectedNetworkResponses,
+      wrong_origin_responses: observation.wrongOriginResponses,
       bad_response_statuses: observation.badResponseStatuses,
       csp_violations: observation.cspViolations,
+      required_dom_state: observation.requiredDomState,
+      client_state: observation.clientState,
+      layout_state: observation.layoutState,
     };
     routeFailures.push(...viewportFailures);
   }
@@ -155,7 +160,13 @@ function optionValue(argumentList, optionName, defaultValue) {
     return defaultValue;
   }
 
-  return argumentList[index + 1] ?? defaultValue;
+  const value = argumentList[index + 1];
+
+  if (value === undefined || value.startsWith("--")) {
+    throw new Error(`${optionName} requires a value`);
+  }
+
+  return value;
 }
 
 function requiredOption(argumentList, optionName) {

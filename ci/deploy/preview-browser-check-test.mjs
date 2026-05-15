@@ -12,6 +12,7 @@ const scriptDir = path.dirname(scriptPath);
 const repoRoot = path.resolve(scriptDir, "../..");
 const runnerPath = path.join(scriptDir, "preview-browser-check.mjs");
 const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "preview-browser-check-"));
+const runnerTimeoutMs = 30_000;
 const cases = [
   {
     name: "healthy page proves the happy path",
@@ -46,7 +47,11 @@ const cases = [
     },
     expect: {
       status: "fail",
-      failures: [{ code: "bad_response_status", status: 404 }],
+      failures: [
+        { code: "console_error" },
+        { code: "request_failed", resource_type: "script" },
+        { code: "bad_response_status", status: 404 },
+      ],
     },
   },
   {
@@ -96,6 +101,12 @@ const cases = [
           name: "og:image",
           value: "/images/og-default.png",
         },
+        {
+          code: "wrong_site_origin_in_dom",
+          issue: "non_absolute_value",
+          name: "twitter:image",
+          value: "/images/og-default.png",
+        },
       ],
     },
   },
@@ -111,7 +122,21 @@ const cases = [
     },
     expect: {
       status: "fail",
-      failures: [{ code: "csp_violation", violated_directive: "style-src-elem" }],
+      failures: [
+        { code: "console_error" },
+        { code: "console_error" },
+        { code: "request_failed", resource_type: "stylesheet", failure: "csp" },
+        {
+          code: "csp_violation",
+          violated_directive: "style-src-elem",
+          blocked_uri: /style\.css$/,
+        },
+        {
+          code: "csp_violation",
+          violated_directive: "style-src-elem",
+          blocked_uri: "inline",
+        },
+      ],
     },
   },
   {
@@ -123,7 +148,16 @@ const cases = [
     },
     expect: {
       status: "fail",
-      failures: [{ code: "missing_share_metadata", name: "og:title" }],
+      failures: [
+        { code: "missing_share_metadata", name: "og:title" },
+        { code: "missing_share_metadata", name: "og:description" },
+        { code: "missing_share_metadata", name: "og:url" },
+        { code: "missing_share_metadata", name: "og:image" },
+        { code: "missing_share_metadata", name: "twitter:card" },
+        { code: "missing_share_metadata", name: "twitter:title" },
+        { code: "missing_share_metadata", name: "twitter:description" },
+        { code: "missing_share_metadata", name: "twitter:image" },
+      ],
     },
   },
   {
@@ -135,7 +169,43 @@ const cases = [
     },
     expect: {
       status: "fail",
-      failures: [{ code: "wrong_host_text", text: "preview.local" }],
+      failures: [{ code: "forbidden_html_text", text: "preview.local" }],
+    },
+  },
+  {
+    name: "config must include at least one browser checked route",
+    route: "/no-browser-routes",
+    page: {},
+    routeConfig: {
+      browser: { enabled: false },
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "invalid_browser_route_set" }],
+    },
+  },
+  {
+    name: "unknown devices fail as schema errors",
+    route: "/unknown-device",
+    page: {},
+    config: {
+      viewports: [{ label: "mobile", device: "PalmPilot Pro" }],
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "invalid_viewport" }],
+    },
+  },
+  {
+    name: "LiveView readiness is a positive browser contract",
+    route: "/missing-live-view",
+    page: {},
+    config: {
+      browser_defaults: { require_live_view: true },
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "live_view_not_connected" }],
     },
   },
 ];
@@ -169,14 +239,22 @@ async function assertCase(testCase, fixtureOrigin) {
     throw new Error(formatCaseDebug(testCase, result, output));
   }
 
+  const unmatchedFailures = [...output.failures];
+
   for (const expectedFailure of testCase.expect.failures) {
-    const matchingFailure = output.failures.find((failure) =>
+    const matchingIndex = unmatchedFailures.findIndex((failure) =>
       failureMatches(expectedFailure, failure),
     );
 
-    if (matchingFailure === undefined) {
+    if (matchingIndex === -1) {
       throw new Error(formatCaseDebug(testCase, result, output));
     }
+
+    unmatchedFailures.splice(matchingIndex, 1);
+  }
+
+  if (output.failures.length !== testCase.expect.failures.length) {
+    throw new Error(formatCaseDebug(testCase, result, output));
   }
 }
 
@@ -213,6 +291,10 @@ function spawnRunner(command, commandArgs) {
     let stderr = "";
     let stdout = "";
     const child = spawn(command, commandArgs, { cwd: repoRoot });
+    const timeout = setTimeout(() => {
+      child.kill("SIGKILL");
+      reject(new Error(`preview browser check timed out after ${runnerTimeoutMs}ms`));
+    }, runnerTimeoutMs);
 
     child.stdout.on("data", (chunk) => {
       stdout += chunk;
@@ -222,28 +304,44 @@ function spawnRunner(command, commandArgs) {
     });
     child.on("error", reject);
     child.on("close", (status) => {
+      clearTimeout(timeout);
       resolve({ status, stderr, stdout });
     });
   });
 }
 
 function routeConfig(testCase) {
+  const routeOverride = testCase.routeConfig ?? {};
+  const browserOverride = routeOverride.browser ?? {};
+  const browserDefaults = {
+    required_dom: ["main"],
+    require_live_view: false,
+    require_share_metadata: true,
+    screenshot: false,
+    ...(testCase.config?.browser_defaults ?? {}),
+  };
+
   return {
     schema_version: 1,
-    viewports: [{ label: "desktop", width: 800, height: 600 }],
-    browser_defaults: {
-      required_dom: ["main"],
-      require_share_metadata: true,
-      screenshot: false,
+    viewports: testCase.config?.viewports ?? [
+      { label: "desktop", width: 800, height: 600 },
+    ],
+    browser_defaults: browserDefaults,
+    text_policy: {
+      forbidden_visible_text: ["Visible Error"],
+      forbidden_html_text: ["preview.local", "web:8000"],
     },
-    forbidden_text: ["Visible Error"],
-    wrong_host_text: ["preview.local", "web:8000"],
     routes: [
       {
+        ...routeOverride,
         label: slugify(testCase.name),
         path: testCase.route,
         allowed_statuses: [200],
-        required_text: ["Ready Content"],
+        required_body_text: ["Ready Content"],
+        browser: {
+          required_visible_text: ["Ready Content"],
+          ...browserOverride,
+        },
       },
     ],
   };
@@ -251,7 +349,10 @@ function routeConfig(testCase) {
 
 function failureMatches(expectedFailure, observedFailure) {
   return Object.entries(expectedFailure).every(
-    ([key, value]) => observedFailure[key] === value,
+    ([key, value]) =>
+      value instanceof RegExp
+        ? value.test(observedFailure[key])
+        : observedFailure[key] === value,
   );
 }
 
