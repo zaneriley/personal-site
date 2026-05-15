@@ -68,5 +68,24 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
         live(conn, ~p"/en/case-study/foo_bar")
       end
     end
+
+    test "emits Open Graph and Twitter Card meta tags", %{
+      conn: conn,
+      case_study: case_study
+    } do
+      {:ok, _view, html} = live(conn, ~p"/en/case-study/#{case_study.url}")
+
+      assert html =~ ~r/<meta property="og:title" content="[^"]+"/
+      assert html =~ ~s(<meta property="og:type" content="article")
+      assert html =~ ~s(<meta property="og:url" content=")
+      assert html =~ "/en/case-study/#{case_study.url}\""
+      assert html =~ ~s(/images/og-default.png)
+      assert html =~ ~s(<meta property="og:locale" content="en")
+      assert html =~ ~s(<meta property="og:locale:alternate" content="ja")
+      assert html =~ ~s(<meta name="twitter:card" content="summary_large_image")
+      assert html =~ ~s(<meta name="twitter:site" content="@zaneriley")
+      refute html =~ "og_meta"
+      refute html =~ "preview.local"
+    end
   end
 end

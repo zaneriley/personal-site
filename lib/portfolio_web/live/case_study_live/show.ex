@@ -2,6 +2,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
+  alias PortfolioWeb.ShareMetadata
   import PortfolioWeb.LiveHelpers
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.ContentMetadata
@@ -35,13 +36,16 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
         {page_title, introduction} =
           set_page_metadata(case_study, translations)
 
+        share_meta = build_share_metadata(socket, case_study, translations)
+
         {:noreply,
          assign(socket,
            case_study: case_study,
            translations: translations,
            body_ast: body_ast,
            page_title: page_title,
-           page_description: introduction
+           page_description: introduction,
+           share_metadata: share_meta
          )}
 
       {:error, :not_found} ->
@@ -70,5 +74,24 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     Logger.debug("Set introduction: #{introduction}")
 
     {page_title, introduction}
+  end
+
+  defp build_share_metadata(socket, case_study, translations) do
+    share_title =
+      translations["share_title"] || case_study.share_title ||
+        translations["title"] || case_study.title
+
+    share_description =
+      translations["share_description"] || case_study.share_description ||
+        translations["introduction"] || case_study.introduction ||
+        socket.assigns.page_description
+
+    ShareMetadata.build(
+      title: share_title,
+      description: share_description,
+      type: "article",
+      locale: socket.assigns.user_locale,
+      path: socket.assigns.current_path
+    )
   end
 end

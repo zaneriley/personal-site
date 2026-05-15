@@ -53,15 +53,27 @@
     <!-- Color definitions -->
     <meta name="msapplication-TileColor" content="#2b5797" />
     <meta name="theme-color" content="#343334" />
-    <!-- Dynamic Schema Markup -->
-
-    <!-- Dynamic OG Meta -->
-    <%= if assigns[:og_meta] do %>
-      <meta property="og:title" content={assigns[:og_meta][:title]} />
-      <meta property="og:type" content={assigns[:og_meta][:type]} />
-      <meta property="og:image" content={assigns[:og_meta][:image]} />
-      <meta property="og:description" content={assigns[:og_meta][:description]} />
+    <!-- Canonical (prod canonical authority only) -->
+    <%= if href = PortfolioWeb.CanonicalUrl.for_path(@current_path) do %>
+      <link rel="canonical" href={href} />
     <% end %>
+    <!-- Open Graph -->
+    <meta property="og:title" content={@share_metadata.title} />
+    <meta property="og:description" content={@share_metadata.description} />
+    <meta property="og:type" content={@share_metadata.type} />
+    <meta property="og:url" content={@share_metadata.url} />
+    <meta property="og:image" content={@share_metadata.image} />
+    <meta property="og:locale" content={@share_metadata.locale} />
+    <%= for alt <- @share_metadata.alternate_locales do %>
+      <meta property="og:locale:alternate" content={alt} />
+    <% end %>
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@zaneriley" />
+    <meta name="twitter:creator" content="@zaneriley" />
+    <meta name="twitter:title" content={@share_metadata.title} />
+    <meta name="twitter:description" content={@share_metadata.description} />
+    <meta name="twitter:image" content={@share_metadata.image} />
     <!-- FUll CSS -->
     <link phx-track-static rel="stylesheet" href="/css/app.css" />
     <script

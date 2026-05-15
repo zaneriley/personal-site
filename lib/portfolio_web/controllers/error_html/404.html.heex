@@ -43,15 +43,35 @@
     <!-- Color definitions -->
     <meta name="msapplication-TileColor" content="#2b5797" />
     <meta name="theme-color" content="#343334" />
-    <!-- Dynamic Schema Markup -->
-
-    <!-- Dynamic OG Meta -->
-    <%= if assigns[:og_meta] do %>
-      <meta property="og:title" content={assigns[:og_meta][:title]} />
-      <meta property="og:type" content={assigns[:og_meta][:type]} />
-      <meta property="og:image" content={assigns[:og_meta][:image]} />
-      <meta property="og:description" content={assigns[:og_meta][:description]} />
-    <% end %>
+    <!-- Open Graph (static defaults; error pages have no stable canonical URL) -->
+    <meta
+      property="og:title"
+      content={assigns[:page_title] || "Zane Riley | Product Designer"}
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content={PortfolioWeb.SiteOrigin.absolute_url("/images/og-default.png")}
+    />
+    <meta
+      property="og:description"
+      content={
+        assigns[:page_description] ||
+          "Portfolio of Zane Riley, a Product Designer based in Tokyo."
+      }
+    />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@zaneriley" />
+    <meta name="twitter:creator" content="@zaneriley" />
+    <meta
+      name="twitter:title"
+      content={assigns[:page_title] || "Zane Riley | Product Designer"}
+    />
+    <meta
+      name="twitter:image"
+      content={PortfolioWeb.SiteOrigin.absolute_url("/images/og-default.png")}
+    />
     <!-- FUll CSS -->
     <link phx-track-static rel="stylesheet" href={~p"/css/app.css"} />
     <script

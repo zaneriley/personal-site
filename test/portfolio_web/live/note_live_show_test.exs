@@ -61,5 +61,34 @@ defmodule PortfolioWeb.NoteLive.ShowTest do
         live(conn, ~p"/en/note/this-slug-does-not-exist")
       end
     end
+
+    test "emits Open Graph and Twitter Card meta tags", %{conn: conn} do
+      note =
+        note_fixture(
+          %{
+            "url" => "og-smoke-note",
+            "title" => "OG Smoke Note",
+            "introduction" => "Intro text used as description."
+          },
+          skip_translations: true
+        )
+
+      {:ok, _view, html} = live(conn, ~p"/en/note/#{note.url}")
+
+      assert html =~
+               ~r/<meta property="og:title" content="[^"]*OG Smoke Note[^"]*"/
+
+      assert html =~ ~s(<meta property="og:type" content="article")
+      assert html =~ ~s(<meta property="og:url" content=")
+      assert html =~ ~s(/en/note/og-smoke-note")
+      assert html =~ ~s(/images/og-default.png)
+      assert html =~ ~s(<meta property="og:locale" content="en")
+      assert html =~ ~s(<meta property="og:locale:alternate" content="ja")
+      assert html =~ ~s(<meta name="twitter:card" content="summary_large_image")
+      assert html =~ ~s(<meta name="twitter:site" content="@zaneriley")
+      assert html =~ ~s(<meta name="twitter:creator" content="@zaneriley")
+      refute html =~ "og_meta"
+      refute html =~ "preview.local"
+    end
   end
 end
