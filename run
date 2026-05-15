@@ -599,6 +599,7 @@ function ci:acceptance-gate-bypass-check:test {
 function ci:disposable-host-check {
     ci/deploy/digitalocean-destroy-origin-test.sh
     ci/deploy/disposable-runtime-proof-test.sh
+    ci:preview-browser-check:test
 }
 
 function ci:prod-build {
@@ -632,6 +633,14 @@ function ci:performance-browser {
 
     rm -f "${tmp_output}"
     return "${status}"
+}
+
+function ci:preview-browser-check:test {
+    local image
+
+    image="${PREVIEW_BROWSER_CHECK_TEST_IMAGE:-personal-site-preview-browser-check-test}"
+    docker build --target browser -t "${image}" . >/dev/null
+    docker run --rm "${image}" node /app/ci/deploy/preview-browser-check-test.mjs
 }
 
 function ci:content-validate {

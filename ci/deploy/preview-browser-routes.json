@@ -11,6 +11,11 @@
       "device": "iPhone SE"
     }
   ],
+  "browser_defaults": {
+    "required_dom": ["main"],
+    "require_share_metadata": true,
+    "screenshot": true
+  },
   "forbidden_text": [
     "We ran into an issue loading this note",
     "We ran into an issue loading this case study",
@@ -72,13 +77,15 @@
       "label": "readyz",
       "path": "/readyz",
       "allowed_statuses": [200],
-      "required_text": ["ok"]
+      "required_text": ["ok"],
+      "browser_check": false
     },
     {
       "label": "missing-note",
       "path": "/en/note/this-route-cannot-exist-xyzzy",
       "allowed_statuses": [404],
-      "required_text": ["Not Found"]
+      "required_text": ["Not Found"],
+      "browser_check": false
     }
   ]
 }
