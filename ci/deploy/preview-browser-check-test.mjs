@@ -2,152 +2,210 @@
 
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
-import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { startPreviewFixtureServer } from "./preview-browser-check/fixture-server.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const scriptDir = path.dirname(scriptPath);
 const repoRoot = path.resolve(scriptDir, "../..");
 const runnerPath = path.join(scriptDir, "preview-browser-check.mjs");
 const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "preview-browser-check-"));
-const externalServer = await startServer((request, response) => {
-  if (request.url === "/external.png") {
-    response.writeHead(200, { "content-type": "image/png" });
-    response.end(emptyPng());
-    return;
-  }
+const cases = [
+  {
+    name: "healthy page proves the happy path",
+    route: "/pass",
+    page: {},
+    expect: { status: "pass", failures: [] },
+  },
+  {
+    name: "required visible text must render",
+    route: "/missing-text",
+    page: { body: "Different Content" },
+    expect: {
+      status: "fail",
+      failures: [{ code: "missing_visible_text", text: "Ready Content" }],
+    },
+  },
+  {
+    name: "visible error copy must fail the preview",
+    route: "/forbidden",
+    page: { body: "Ready Content Visible Error" },
+    expect: {
+      status: "fail",
+      failures: [{ code: "forbidden_visible_text", text: "Visible Error" }],
+    },
+  },
+  {
+    name: "first party assets must not return errors",
+    route: "/bad-asset",
+    page: {
+      body: "Ready Content",
+      head: '<script src="/missing.js"></script>',
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "bad_response_status", status: 404 }],
+    },
+  },
+  {
+    name: "browser responses must stay on the preview fetch origin",
+    route: "/wrong-origin-response",
+    page: {
+      body: "Ready Content",
+      externalImage: true,
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "wrong_origin_response" }],
+    },
+  },
+  {
+    name: "share urls must use the expected site origin",
+    route: "/wrong-dom-origin",
+    page: {
+      body: "Ready Content",
+      ogUrl: "https://wrong.example/wrong-dom-origin",
+    },
+    expect: {
+      status: "fail",
+      failures: [
+        {
+          code: "wrong_site_origin_in_dom",
+          issue: "origin_mismatch",
+          name: "og:url",
+          origin: "https://wrong.example",
+        },
+      ],
+    },
+  },
+  {
+    name: "present share image urls must be absolute",
+    route: "/relative-dom-url",
+    page: {
+      body: "Ready Content",
+      ogImage: "/images/og-default.png",
+    },
+    expect: {
+      status: "fail",
+      failures: [
+        {
+          code: "wrong_site_origin_in_dom",
+          issue: "non_absolute_value",
+          name: "og:image",
+          value: "/images/og-default.png",
+        },
+      ],
+    },
+  },
+  {
+    name: "csp violations must fail the preview",
+    route: "/csp-violation",
+    page: {
+      body: "Ready Content",
+      head: "<style>main { color: red; }</style>",
+      headers: {
+        "content-security-policy": "default-src 'self'; style-src 'none'",
+      },
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "csp_violation", violated_directive: "style-src-elem" }],
+    },
+  },
+  {
+    name: "share metadata must exist on checked pages",
+    route: "/missing-share-metadata",
+    page: {
+      body: "Ready Content",
+      shareMetadata: false,
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "missing_share_metadata", name: "og:title" }],
+    },
+  },
+  {
+    name: "internal host leaks must fail the preview",
+    route: "/wrong-host-text",
+    page: {
+      body: "Ready Content",
+      head: '<script type="application/json">{"origin":"preview.local"}</script>',
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "wrong_host_text", text: "preview.local" }],
+    },
+  },
+];
 
-  response.writeHead(404, { "content-type": "text/plain" });
-  response.end("not found");
-});
-const externalOrigin = `http://127.0.0.1:${externalServer.port}`;
-const fixtureServer = await startServer((request, response) => {
-  respondToFixtureRequest(request, response, externalOrigin);
-});
-const fixtureOrigin = `http://127.0.0.1:${fixtureServer.port}`;
+const fixtureServer = await startPreviewFixtureServer(cases);
 
 try {
-  await assertPass("passes a healthy page", {
-    route: "/pass",
-    requiredText: ["Ready Content"],
-  });
-
-  await assertFailure("fails when required body text is missing", {
-    route: "/missing-text",
-    requiredText: ["Ready Content"],
-    code: "missing_visible_text",
-  });
-
-  await assertFailure("fails when forbidden error copy is visible", {
-    route: "/forbidden",
-    requiredText: ["Ready Content"],
-    code: "forbidden_visible_text",
-  });
-
-  await assertFailure("fails when a first-party asset returns an error", {
-    route: "/bad-asset",
-    requiredText: ["Ready Content"],
-    code: "bad_response_status",
-  });
-
-  await assertFailure("fails when a page fetches a response from another origin", {
-    route: "/wrong-origin-response",
-    requiredText: ["Ready Content"],
-    code: "wrong_origin_response",
-  });
-
-  await assertFailure("fails when share URLs use the wrong site origin", {
-    route: "/wrong-dom-origin",
-    requiredText: ["Ready Content"],
-    code: "wrong_site_origin_in_dom",
-    issue: "origin_mismatch",
-  });
-
-  await assertFailure("fails when present share URLs are root-relative", {
-    route: "/relative-dom-url",
-    requiredText: ["Ready Content"],
-    code: "wrong_site_origin_in_dom",
-    issue: "non_absolute_value",
-  });
-
-  await assertFailure("fails on CSP violations", {
-    route: "/csp-violation",
-    requiredText: ["Ready Content"],
-    code: "csp_violation",
-  });
+  for (const testCase of cases) {
+    await assertCase(testCase, fixtureServer.origin);
+  }
 
   console.error("preview browser check fixture tests passed");
 } finally {
   await fixtureServer.close();
-  await externalServer.close();
   await fs.rm(tmpDir, { force: true, recursive: true });
 }
 
-async function assertPass(name, options) {
-  const result = await runFixture(name, options);
-
-  if (result.status !== 0) {
-    throw new Error(`${name}: expected pass, got exit ${result.status}`);
-  }
-
+async function assertCase(testCase, fixtureOrigin) {
+  const result = await runFixture(testCase, fixtureOrigin);
   const output = await readJson(result.outputPath);
 
-  if (output.status !== "pass") {
-    throw new Error(`${name}: expected output status pass`);
-  }
-}
-
-async function assertFailure(name, options) {
-  const result = await runFixture(name, options);
-
-  if (result.status === 0) {
-    throw new Error(`${name}: expected failure`);
+  if (result.status === 0 && testCase.expect.status !== "pass") {
+    throw new Error(formatCaseDebug(testCase, result, output));
   }
 
-  const output = await readJson(result.outputPath);
-  const matchingFailure = output.failures.find(
-    (failure) =>
-      failure.code === options.code &&
-      (options.issue === undefined || failure.issue === options.issue),
-  );
+  if (result.status !== 0 && testCase.expect.status === "pass") {
+    throw new Error(formatCaseDebug(testCase, result, output));
+  }
 
-  if (matchingFailure === undefined) {
-    throw new Error(
-      `${name}: expected ${options.code}, got ${output.failures
-        .map((failure) => `${failure.code}:${failure.issue ?? ""}`)
-        .join(", ")}`,
+  if (output.status !== testCase.expect.status) {
+    throw new Error(formatCaseDebug(testCase, result, output));
+  }
+
+  for (const expectedFailure of testCase.expect.failures) {
+    const matchingFailure = output.failures.find((failure) =>
+      failureMatches(expectedFailure, failure),
     );
+
+    if (matchingFailure === undefined) {
+      throw new Error(formatCaseDebug(testCase, result, output));
+    }
   }
 }
 
-async function runFixture(name, options) {
-  const slug = name.replaceAll(/[^a-z0-9]+/gi, "-").replaceAll(/^-|-$/g, "");
+async function runFixture(testCase, fixtureOrigin) {
+  const slug = slugify(testCase.name);
   const routesPath = path.join(tmpDir, `${slug}-routes.json`);
   const outputPath = path.join(tmpDir, `${slug}-output.json`);
   const screenshotsDir = path.join(tmpDir, `${slug}-screenshots`);
 
   await fs.writeFile(
     routesPath,
-    `${JSON.stringify(routeConfig(options.route, options.requiredText), null, 2)}\n`,
+    `${JSON.stringify(routeConfig(testCase, fixtureOrigin), null, 2)}\n`,
   );
 
   const result = await spawnRunner(process.execPath, [
-      runnerPath,
-      "--browser-connect-url",
-      fixtureOrigin,
-      "--expected-site-origin",
-      fixtureOrigin,
-      "--routes-json",
-      routesPath,
-      "--screenshots-dir",
-      screenshotsDir,
-      "--output",
-      outputPath,
-    ]);
+    runnerPath,
+    "--browser-connect-url",
+    fixtureOrigin,
+    "--expected-site-origin",
+    fixtureOrigin,
+    "--routes-json",
+    routesPath,
+    "--screenshots-dir",
+    screenshotsDir,
+    "--output",
+    outputPath,
+  ]);
 
-  return { ...result, outputPath };
+  return { ...result, outputPath, routesPath, screenshotsDir };
 }
 
 function spawnRunner(command, commandArgs) {
@@ -169,7 +227,7 @@ function spawnRunner(command, commandArgs) {
   });
 }
 
-function routeConfig(route, requiredText) {
+function routeConfig(testCase) {
   return {
     schema_version: 1,
     viewports: [{ label: "desktop", width: 800, height: 600 }],
@@ -182,185 +240,40 @@ function routeConfig(route, requiredText) {
     wrong_host_text: ["preview.local", "web:8000"],
     routes: [
       {
-        label: "fixture",
-        path: route,
+        label: slugify(testCase.name),
+        path: testCase.route,
         allowed_statuses: [200],
-        required_text: requiredText,
+        required_text: ["Ready Content"],
       },
     ],
   };
 }
 
-function respondToFixtureRequest(request, response, externalOrigin) {
-  const route = request.url ?? "/";
-
-  if (route === "/style.css") {
-    response.writeHead(200, { "content-type": "text/css" });
-    response.end("main { display: block; }");
-    return;
-  }
-
-  if (route === "/app.js") {
-    response.writeHead(200, { "content-type": "application/javascript" });
-    response.end("window.previewFixtureLoaded = true;");
-    return;
-  }
-
-  if (route === "/missing.js") {
-    response.writeHead(404, { "content-type": "text/plain" });
-    response.end("missing");
-    return;
-  }
-
-  if (route === "/favicon.ico") {
-    response.writeHead(204);
-    response.end();
-    return;
-  }
-
-  if (route === "/missing-text") {
-    sendHtml(response, fixtureHtml({ body: "Different Content" }));
-    return;
-  }
-
-  if (route === "/forbidden") {
-    sendHtml(response, fixtureHtml({ body: "Ready Content Visible Error" }));
-    return;
-  }
-
-  if (route === "/bad-asset") {
-    sendHtml(
-      response,
-      fixtureHtml({
-        body: "Ready Content",
-        head: '<script src="/missing.js"></script>',
-      }),
-    );
-    return;
-  }
-
-  if (route === "/wrong-origin-response") {
-    sendHtml(
-      response,
-      fixtureHtml({
-        body: "Ready Content",
-        head: `<img src="${externalOrigin}/external.png" alt="">`,
-      }),
-    );
-    return;
-  }
-
-  if (route === "/wrong-dom-origin") {
-    sendHtml(
-      response,
-      fixtureHtml({
-        body: "Ready Content",
-        ogUrl: "https://wrong.example/wrong-dom-origin",
-      }),
-    );
-    return;
-  }
-
-  if (route === "/relative-dom-url") {
-    sendHtml(
-      response,
-      fixtureHtml({
-        body: "Ready Content",
-        ogImage: "/images/og-default.png",
-      }),
-    );
-    return;
-  }
-
-  if (route === "/csp-violation") {
-    sendHtml(
-      response,
-      fixtureHtml({
-        body: "Ready Content",
-        head: "<style>main { color: red; }</style>",
-      }),
-      {
-        "content-security-policy": "default-src 'self'; style-src 'none'",
-      },
-    );
-    return;
-  }
-
-  sendHtml(response, fixtureHtml({ body: "Ready Content" }));
+function failureMatches(expectedFailure, observedFailure) {
+  return Object.entries(expectedFailure).every(
+    ([key, value]) => observedFailure[key] === value,
+  );
 }
 
-function fixtureHtml(options = {}) {
-  const origin = fixtureOrigin;
-  const ogUrl = options.ogUrl ?? `${origin}/pass`;
-  const ogImage = options.ogImage ?? `${origin}/images/og-default.png`;
-
-  return `<!doctype html>
-<html>
-  <head>
-    <title>Fixture</title>
-    <link rel="stylesheet" href="/style.css">
-    <meta property="og:title" content="Fixture Title">
-    <meta property="og:description" content="Fixture Description">
-    <meta property="og:url" content="${escapeHtml(ogUrl)}">
-    <meta property="og:image" content="${escapeHtml(ogImage)}">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fixture Title">
-    <meta name="twitter:description" content="Fixture Description">
-    <meta name="twitter:image" content="${escapeHtml(ogImage)}">
-    ${options.head ?? ""}
-  </head>
-  <body>
-    <main>${escapeHtml(options.body ?? "Ready Content")}</main>
-  </body>
-</html>`;
-}
-
-function sendHtml(response, html, headers = {}) {
-  response.writeHead(200, { "content-type": "text/html", ...headers });
-  response.end(html);
-}
-
-function startServer(handler) {
-  const server = http.createServer(handler);
-
-  return new Promise((resolve, reject) => {
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-
-      resolve({
-        port: address.port,
-        close: () =>
-          new Promise((closeResolve, closeReject) => {
-            server.close((error) => {
-              if (error) {
-                closeReject(error);
-                return;
-              }
-
-              closeResolve();
-            });
-          }),
-      });
-    });
-  });
+function formatCaseDebug(testCase, result, output) {
+  return [
+    `${testCase.name}: preview browser fixture assertion failed`,
+    `exit_status: ${result.status}`,
+    `expected: ${JSON.stringify(testCase.expect, null, 2)}`,
+    `observed_status: ${output.status}`,
+    `observed_failures: ${JSON.stringify(output.failures, null, 2)}`,
+    `stdout: ${result.stdout.trim()}`,
+    `stderr: ${result.stderr.trim()}`,
+    `routes_path: ${result.routesPath}`,
+    `output_path: ${result.outputPath}`,
+    `screenshots_dir: ${result.screenshotsDir}`,
+  ].join("\n");
 }
 
 async function readJson(filePath) {
   return JSON.parse(await fs.readFile(filePath, "utf8"));
 }
 
-function escapeHtml(value) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
-function emptyPng() {
-  return Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-    "base64",
-  );
+function slugify(value) {
+  return value.replaceAll(/[^a-z0-9]+/gi, "-").replaceAll(/^-|-$/g, "");
 }
