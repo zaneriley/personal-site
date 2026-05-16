@@ -8,7 +8,8 @@ checked-in inputs or scripts that run those inputs. Generated proof belongs in
 ## Where Things Go
 
 - `contracts/` says what the site must prove: routes, page text, browser checks, and performance budgets.
-- `fixtures/` holds small posts and case studies used to prove real detail pages render.
+- `fixtures/` holds published sample content used to prove real detail pages render. It is stable render input, not the author publication workflow.
+- `content-publication/` explains the content authoring flow: content PR, merge to content `main`, delivery intake, accepted/rejected/ignored verdicts, and last-good preservation.
 - `gates/` holds checks that can block a merge.
 - `preview/` deploys a candidate image to a disposable host and checks whether its pages look real in a browser.
 - `providers/` holds paid host plumbing. DigitalOcean lives there because it is one provider, not the deploy model.
@@ -22,6 +23,23 @@ checked-in inputs or scripts that run those inputs. Generated proof belongs in
 - `./run host:disposable:*` creates, inspects, destroys, or tests a short-lived host.
 - `./run preview:deploy --app-image-ref <digest-ref> --app-sha <sha> --preview-page-acceptance-image <trusted-image>` writes one private preview receipt.
 - `./run preview:destroy <deploy-receipt.json>` destroys the disposable host recorded by a preview deploy.
+- `./run content:rehearse` runs the fast app-repo rehearsal for content publication flow. It is a developer check, not the author workflow.
+- `./run content:rehearse-preview <deploy-receipt.json>` changes content on a running private preview and sends signed webhook deliveries. It is a preview check, not the author workflow.
+
+The first content publication flow check is local and fast: it creates a content
+Git commit, sends a signed GitHub-shaped delivery, verifies the publication
+verdict, and proves a bad delivery leaves last-good content live. The preview
+rehearsal command applies the same check to a running private preview. Neither
+command is the author DX.
+
+Private preview runtime now starts with published sample content plus a writable
+content checkout backed by a local Git source repo. That keeps normal preview
+checks stable while allowing the next publication rehearsal to change content and
+send a real webhook to the running preview.
+
+Current status: `content:rehearse-preview` is implemented but still needs to be
+run against a real private preview receipt. After that passes, promote the same
+behavior to the real content repo PR/merge trigger.
 
 ## Adding Work
 
@@ -34,3 +52,7 @@ put generated files beside the scripts that produced them.
 For preview deploys, start with `.tmp/ci-artifacts/preview/deploy-receipt.json`.
 Terminal output, GitHub summaries, and failure markdown are rendered views of
 that receipt; stage logs and screenshots are supporting evidence linked from it.
+
+For content publication flow work, start with `content-publication/README.md`.
+Publication scenarios belong under `content-publication/scenarios/`, not in the
+route contract or the stable render samples.

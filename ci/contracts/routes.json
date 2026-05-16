@@ -114,7 +114,7 @@
       }
     },
     {
-      "label": "published-fixture-note",
+      "label": "published-sample-note",
       "path": "/en/note/prod-build-smoke-note",
       "allowed_statuses": [200],
       "required_body_text": ["Prod Build Smoke Note"],
@@ -123,7 +123,7 @@
       }
     },
     {
-      "label": "published-fixture-case-study",
+      "label": "published-sample-case-study",
       "path": "/en/case-study/prod-build-smoke-case-study",
       "allowed_statuses": [200],
       "required_body_text": ["Prod Build Smoke Case Study"],

@@ -168,7 +168,8 @@ function write_payload {
 
     payload_dir="${tmpdir}/payload"
     mkdir -p "${payload_dir}"
-    cp -R ci/fixtures/published-content "${payload_dir}/content"
+    mkdir -p "${payload_dir}/publication"
+    cp -R ci/fixtures/published-content "${payload_dir}/publication/content"
 
     cat > "${payload_dir}/compose.yml" <<'YAML'
 services:
@@ -213,7 +214,7 @@ services:
     ports:
       - "${RUNTIME_VIABILITY_BIND_HOST}:${RUNTIME_VIABILITY_HOST_PORT}:${PORT}"
     volumes:
-      - "./content:${CONTENT_BASE_PATH}:ro"
+      - "./publication:/app/content-publication"
 
 volumes:
   postgres: {}
@@ -223,8 +224,8 @@ YAML
 
     cat > "${payload_dir}/.env" <<ENV
 APP_IMAGE_REF=${app_image_ref}
-CONTENT_BASE_PATH=/app/prod-build-content
-CONTENT_REPO_URL=https://example.invalid/personal-site-content.git
+CONTENT_BASE_PATH=/app/content-publication/content
+CONTENT_REPO_URL=file:///app/content-publication/content-source.git
 GITHUB_WEBHOOK_SECRET=$(random_hex 32)
 PORT=8000
 POSTGRES_DB=portfolio
@@ -357,6 +358,8 @@ function collect_artifacts {
         --arg app_image_ref "${APP_IMAGE_REF}" \
         --arg attempt_id "${PREVIEW_DEPLOY_ATTEMPT_ID:-}" \
         --arg route_contract_sha256 "$(sha256sum "${route_contract_file}" | awk '{print $1}')" \
+        --arg content_base_path "${CONTENT_BASE_PATH}" \
+        --arg content_repo_url "${CONTENT_REPO_URL}" \
         --arg project "${RUNTIME_VIABILITY_PROJECT}" \
         --arg port "${RUNTIME_VIABILITY_HOST_PORT}" \
         --arg public_base_url "$(expected_site_origin)" \
@@ -381,6 +384,11 @@ function collect_artifacts {
                 browser_connect_url: $public_base_url,
                 expected_site_origin: $public_base_url,
                 route_contract_file: "ci/contracts/routes.json"
+            },
+            content_publication_flow: {
+                status: "ready_for_rehearsal",
+                content_base_path: $content_base_path,
+                content_repo_url: $content_repo_url
             },
             memory_peaks: $memory_peaks[0],
             docker_stats: $docker_stats[0],
@@ -627,6 +635,19 @@ function expected_site_origin {
     printf "%s\n" "${origin}"
 }
 
+function prepare_content_source_repo {
+    rm -rf publication/content-source-worktree publication/content-source.git
+
+    cp -R publication/content publication/content-source-worktree
+    git -C publication/content-source-worktree init --initial-branch=main >/dev/null
+    git -C publication/content-source-worktree config user.email "preview@example.test"
+    git -C publication/content-source-worktree config user.name "Preview Content"
+    git -C publication/content-source-worktree add .
+    git -C publication/content-source-worktree commit -m "Seed published sample content" >/dev/null
+    git clone --bare publication/content-source-worktree publication/content-source.git >/dev/null 2>&1
+    rm -rf publication/content-source-worktree
+}
+
 mkdir -p "${artifact_dir}"
 rm -rf "${artifact_dir:?}"/*
 set -o allexport
@@ -636,6 +657,8 @@ set +o allexport
 
 RUNTIME_VIABILITY_PROJECT="${RUNTIME_VIABILITY_PROJECT:-personal-site-runtime-viability}"
 export RUNTIME_VIABILITY_PROJECT
+
+prepare_content_source_repo
 
 failure_reason="pull_failed"
 compose down --volumes --remove-orphans >/dev/null 2>&1 || true

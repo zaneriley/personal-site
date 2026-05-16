@@ -34,8 +34,9 @@ Locked direction:
 
 - Generated local evidence defaults to `.tmp/ci-artifacts/`, not `ci/`. CI can upload those paths as GitHub artifacts; durable repo inputs stay source-shaped.
 - Prefer fewer files. Do not split tiny scripts/configs just to make a taxonomy look clean; split only when a folder/file owns a durable concept a future maintainer can name.
-- `./run` remains the canonical command surface. The tree behind it must explain where contracts, gates, preview verification, provider glue, fixtures, and generated artifacts live.
-- Reserve `preview` for a deployed private candidate lane or checks against that lane. Reserve `origin` for the future durable runtime environment. Use `candidate image`, `disposable host`, `runtime viability`, `route probe`, `preview page acceptance`, `public page budget`, `published fixture content`, and `receipt` for the current verification concepts.
+- `./run` remains the canonical command surface. The tree behind it must explain where contracts, gates, preview verification, provider glue, published sample content, content publication flow checks, and generated artifacts live.
+- Reserve `preview` for a deployed private candidate lane or checks against that lane. Reserve `origin` for the future durable runtime environment. Use `candidate image`, `disposable host`, `runtime viability`, `route probe`, `preview page acceptance`, `public page budget`, `published sample content`, `content publication flow`, `publication verdict`, and `receipt` for the current verification concepts.
+- Do not add a second "content preview" lane. Preview owns disposable deployed targets; content publication flow owns the author loop of content PR, merge to content `main`, delivery intake, accepted/rejected/ignored verdicts, and last-good preservation. Commands and scripts may rehearse this flow, but they are not the author DX.
 
 ### Gate integrity: no fake green
 

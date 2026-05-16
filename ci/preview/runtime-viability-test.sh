@@ -96,6 +96,10 @@ RUNTIME_VIABILITY_VALIDATE_ONLY=1 \
 
 assert_contains "${tmpdir}/ready.out" "runtime viability inputs valid"
 
+assert_contains "${script_dir}/runtime-viability.sh" "CONTENT_BASE_PATH=/app/content-publication/content"
+assert_contains "${script_dir}/runtime-viability.sh" "CONTENT_REPO_URL=file:///app/content-publication/content-source.git"
+assert_contains "${script_dir}/runtime-viability.sh" "prepare_content_source_repo"
+
 routes_file="${script_dir}/../contracts/routes.json"
 assert_json "${routes_file}" '.schema_version == 1'
 assert_json "${routes_file}" '.routes | any(.path == "/en/note/prod-build-smoke-note" and (.required_body_text | index("Prod Build Smoke Note")))'

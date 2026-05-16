@@ -71,6 +71,11 @@ async function assertCase(name, expected) {
     assertEqual(receipt.failure.reason, expected.reason, `${name} failure reason`);
   } else {
     assertEqual(receipt.failure, null, `${name} failure`);
+    assertEqual(
+      receipt.content.publication_flow.status,
+      "ready_for_rehearsal",
+      `${name} publication flow status`,
+    );
   }
 }
 
@@ -113,6 +118,11 @@ async function runtime() {
     app_image_ref: process.env.APP_IMAGE_REF,
     public_base_url: "http://203.0.113.42:18080",
     preview_page_acceptance: { expected_site_origin: "http://203.0.113.42:18080" },
+    content_publication_flow: {
+      status: "ready_for_rehearsal",
+      content_base_path: "/app/content-publication/content",
+      content_repo_url: "file:///app/content-publication/content-source.git"
+    },
     content_status: {
       live_content_sha: "content-sha",
       live_content_publication_generation_id: 7

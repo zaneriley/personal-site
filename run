@@ -385,6 +385,16 @@ function content:rollback {
   _dc web mix portfolio.content.rollback "$@"
 }
 
+function content:rehearse {
+  # Rehearse the content publication flow with a Git commit and signed webhook
+  elixir:test test/portfolio_web/content_publication_flow_test.exs "$@"
+}
+
+function content:rehearse-preview {
+  # Rehearse content publication against a running private preview
+  ci/content-publication/rehearse-preview.sh "$@"
+}
+
 # -----------------------------------------------------------------------------
 # Disposable Hosts
 # -----------------------------------------------------------------------------
@@ -733,6 +743,10 @@ function ci:preview-page-acceptance {
 
 function ci:content-validate {
     content:validate "$@"
+}
+
+function ci:content-publication-flow {
+    content:rehearse "$@"
 }
 
 function ci:run-all {

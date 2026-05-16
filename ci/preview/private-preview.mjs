@@ -163,6 +163,7 @@ async function buildReceipt(options, paths) {
       sha: runtime?.content_status?.live_content_sha ?? null,
       generation_id:
         runtime?.content_status?.live_content_publication_generation_id ?? null,
+      publication_flow: runtime?.content_publication_flow ?? null,
     },
     resources: {
       web_memory_peak_bytes: memoryPeak(runtime, "web"),

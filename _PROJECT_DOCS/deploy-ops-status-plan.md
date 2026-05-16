@@ -222,7 +222,11 @@ Canonical vocabulary:
 | `route probe` | HTTP-level path/status/body assertion. Weaker than browser acceptance. |
 | `preview page acceptance` | Browser-real page credibility: assets, CSP, LiveView, visible error copy, share metadata, viewport overflow, screenshots, origin roles. |
 | `public page budget` | Browser-backed visitor performance budget for public pages. |
-| `published fixture content` | Stable note/case-study content used by gates to exercise detail routes. Not owned by one gate. |
+| `published sample content` | Stable note/case-study content used by gates to exercise detail routes. It is render input, not a content publication workflow. |
+| `content publication flow` | The author workflow from Markdown change through content PR, merge to content `main`, webhook delivery, app publication, and visible verdict. |
+| `publication verdict` | The visible result of content delivery: accepted and live, rejected with path/reason, or ignored because no publishable content changed. |
+| `content delivery intake` | The GitHub-shaped webhook edge: HMAC, event, delivery ID, repository, ref, and target SHA validation. |
+| `publication rehearsal` | CI/private-preview machinery that exercises the content publication flow. Not the human author workflow. |
 | `receipt` | Machine-readable evidence from a lifecycle/check step. |
 
 Target map:
@@ -233,7 +237,10 @@ ci/
   contracts/
     routes.json                # one compact route authority; avoid splitting unless it earns it
   fixtures/
-    published-content/         # one source for stable note/case-study fixture content
+    published-content/         # one source for stable note/case-study sample content
+  content-publication/
+    README.md                  # content PR/merge publication flow checks
+    scenarios/                 # future accepted/rejected/ignored delivery scenarios
   gates/
     prod-build.sh
     probe-routes.sh
@@ -269,6 +276,7 @@ Generated local evidence:
       host/
       runtime-viability/
       preview-page-acceptance/
+  content-publication/         # content publication rehearsal receipts
   disposable-host/              # lower-level host receipts when debugging host commands directly
   runtime-viability/            # lower-level runtime receipts when debugging runtime viability directly
   preview-page-acceptance/      # lower-level browser receipts when debugging page acceptance directly
@@ -278,7 +286,7 @@ Minimum reset scope:
 
 1. Supersede stale `_PROJECT_DOCS/ci-prod-build-gate.md` with a pointer to ADR 0001.
 2. Move generated local outputs to `.tmp/ci-artifacts/`.
-3. Extract published fixture content out of duplicated shell heredocs.
+3. Extract published sample content out of duplicated shell heredocs.
 4. Add one compact route authority and move all current route readers to it.
 5. Rename candidate/host/origin vocabulary where it otherwise locks in the wrong concept.
 6. Rename browser correctness vocabulary to `preview page acceptance`; keep browser/Playwright below the implementation boundary.
@@ -317,6 +325,15 @@ Current command surface:
    - Destroys the disposable host recorded in a preview deploy receipt.
    - Refuses to destroy unless the receipt describes a `disposable_host` with `lifecycle: "disposable"`, then delegates to the ownership-checked DigitalOcean destroy command.
    - This is the normal cleanup command after a preview deploy.
+3. `./run content:rehearse`
+   - Runs the fast local content publication flow rehearsal.
+   - Creates a temporary content Git repo, commits valid content, sends a signed GitHub-shaped delivery through the app endpoint, verifies the route renders, commits invalid content, verifies the rejection verdict, and proves last-good content stays live.
+   - This is a developer check, not the author workflow.
+4. `./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json`
+   - Runs the same content publication flow rehearsal against a running private preview.
+   - Changes content in the preview's local content source repo, sends signed webhook deliveries to the running app, checks good content goes live, and checks bad content is rejected while last-good content remains live.
+   - Writes `.tmp/ci-artifacts/content-publication/preview-rehearsal.json`.
+   - Implemented, but not yet proven against a real private preview host.
 
 Lower-level host/debug commands:
 
@@ -338,7 +355,8 @@ Lower-level host/debug commands:
    - Destroys the Droplet only after ownership verification. Powering off is not the disposal path because powered-off Droplets still bill.
 4. `APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-viability .tmp/ci-artifacts/disposable-host/digitalocean-host.json`
    - Runs only against a ready disposable-host receipt; it refuses non-ready receipts and floating image tags.
-   - Copies a small runtime payload to `/var/lib/personal-site/runtime-viability`, starts Postgres plus the digest-pinned app image with fixture content, waits for `/readyz`, and probes the public route set.
+   - Copies a small runtime payload to `/var/lib/personal-site/runtime-viability`, starts Postgres plus the digest-pinned app image with published sample content, waits for `/readyz`, and probes the public route set.
+   - Also prepares a local Git content source repo and writable checkout so `content:rehearse-preview` can change content and send real webhook deliveries without touching `personal-site-content`.
    - Writes `.tmp/ci-artifacts/runtime-viability/runtime-viability.json` and sibling artifacts with ready time, route statuses, the public preview URL, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
    - This is a runtime viability proof, not the top-level preview result, not a production deploy, and not a browser proof. It keeps the 1 GiB host measurement focused on `web` plus Postgres. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
 5. `PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=ghcr.io/owner/repo@sha256:<browser-check-digest> ./run ci:preview-page-acceptance "$(jq -r .public_base_url .tmp/ci-artifacts/runtime-viability/runtime-viability.json)"`
@@ -369,6 +387,8 @@ GitHub workflow:
 Remaining hardening before this becomes an interim DigitalOcean origin/deploy flow:
 
 - Prove the new top-level preview receipt against a real candidate image and a real disposable host, then destroy the host through `preview:destroy`.
+- Run `./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json` against a reviewable private preview. It must keep modeling the actual author DX: content changes, a GitHub-shaped delivery reaches the app, and the app emits an accepted/rejected publication verdict while preserving last-good content.
+- Promote the same checks to the real content repo PR/merge trigger. Do not create a separate content preview workflow or expose receipt-path commands as the author workflow.
 - Add production-origin promotion only after repeated private preview runs are boring. Promotion must use the same app digest and content generation proven in preview.
 - Add rollback proof for the production-origin path. The preview destroy command is cleanup, not rollback.
 - Add repeated-request/runtime-load observation before treating 1 GiB as production-safe.
@@ -453,12 +473,12 @@ Initial public route/page set:
 - `/`
 - `/en`
 - `/en/case-studies`
-- one representative case-study detail route backed by prod-build fixture content
+- one representative case-study detail route backed by prod-build sample content
 - `/en/notes`
-- one representative note detail route backed by prod-build fixture content
+- one representative note detail route backed by prod-build sample content
 - `/ja`
 
-The route set must be explicit and versioned. Removing a route from the performance matrix is a budget/integrity change, not a casual script edit. Representative detail routes must not depend on mutable `personal-site-content` state. The prod-build fixture should provide stable note and case-study content for browser performance checks, just as it already provides stable smoke content.
+The route set must be explicit and versioned. Removing a route from the performance matrix is a budget/integrity change, not a casual script edit. Representative detail routes must not depend on mutable `personal-site-content` state. The published sample content should provide stable note and case-study content for browser performance checks, just as it already provides stable smoke content.
 
 Output contract:
 
