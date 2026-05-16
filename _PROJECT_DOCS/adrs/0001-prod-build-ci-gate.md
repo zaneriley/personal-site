@@ -1,16 +1,22 @@
 # ADR 0001 — Production-build CI gates
 
-**Status:** accepted 2026-05-07; implemented and promoted to required branch protection 2026-05-07.
+**Status:** accepted 2026-05-07; implemented and promoted to required branch protection 2026-05-07; amended 2026-05-16.
 **Supersedes:** none.
 **Superseded by:** none.
 
 Implementation-PR scope (workflow yaml + Phoenix readiness controller + entrypoint patch + `ci/` scripts) follows this ADR. Tactical PR-level notes live in `.tmp/`, not here.
 
+2026-05-16 amendment: the rolling latency-baseline policy described in this ADR
+was removed. The checked-in baseline never accumulated trusted samples, and
+adding refresh machinery did not earn its complexity. Current performance
+enforcement lives in fixed public-page budgets in `ci/contracts/routes.json`,
+with generated evidence under `.tmp/ci-artifacts/`.
+
 ## Context
 
 The repo's vision (`AGENTS.md:38-42`) is a portfolio "visitors never see broken … with a deploy pipeline that doesn't require remembering anything six months later. CI catches LLM-authored mistakes before they merge." Today CI runs only `MIX_ENV=test` (`.github/workflows/ci.yml:20-46`). The class of mistakes that surfaces only in `MIX_ENV=prod` — `Mix.env()` called at runtime, missing `:applications` declarations, `runtime.exs` config gaps, `cache_static_manifest` failures, dev-only deps leaking — is invisible until first deploy attempt.
 
-A prod-build CI gate produces *continuous* signal on every PR. It also subsumes one-shot resource-frugality measurement (sub-phase 3.3, tracker `:30`): latency baselines accumulate on the same ruler each commit.
+A prod-build CI gate produces *continuous* signal on every PR. It also subsumes one-shot resource-frugality measurement (sub-phase 3.3, tracker `:30`) through route latency evidence and browser-backed public page budgets.
 
 ## Deployability contract
 
@@ -18,7 +24,7 @@ For this repo, *deployable* means a specific app artifact and a specific content
 
 There are four deployability levels:
 
-- **PR deployable**: the proposed app code passes acceptance gates, builds a prod release, boots with image-baked content, serves canonical routes, and stays inside the CI-side speed floor or baseline-drift policy.
+- **PR deployable**: the proposed app code passes acceptance gates, builds a prod release, boots with image-baked content, serves canonical routes, and stays inside fixed public page budgets.
 - **Release deployable**: the release tag creates an image that can be identified by tag, SHA, and digest; Release Please can merge only after the required gates pass.
 - **Content deployable**: a content repo commit can be authenticated, deduped, synced, parsed, and either promoted or rejected without preventing the app from booting. The configured repo URL in `.env.example` currently points at `personal-site-content`; earlier planning notes may call this `personal-website-content`.
 - **Origin deployable**: the selected origin can pull or receive the release artifact, run migrations, flip blue/green, pass live smoke, and roll back to the last known-good app/content pair.
@@ -87,11 +93,11 @@ Principle: the gate is a **shell pipeline that happens to run on GitHub Actions*
 Explicitly avoided:
 
 - **No third-party Actions** for gate logic. `oha`, `gitleaks`, future scanners install via direct `curl + tar` of release tarballs (precedent: `.github/workflows/secret-scan.yml`).
-- **No `gh-pages` for baseline storage.** Baseline lives in `ci/baseline.json` checked into the repo (precedent: `.gitleaks.baseline.json` in PR #51).
+- **No load-bearing historical performance store yet.** Fixed budgets live in `ci/contracts/routes.json`; generated measurements live under `.tmp/ci-artifacts/`.
 - **No GH Check API** beyond standard exit codes.
 - **No GitHub Secret Scanning or Dependabot** dependency.
 - **No load-bearing GH-only artifact storage.** `actions/upload-artifact@v4` uploads exist for human inspection only; the gate's verdict logic never reads them back.
-- **No `${{ github.ref }}` branch conditionals in yaml.** Branch logic lives in `ci/update-baseline.sh`.
+- **No `${{ github.ref }}` branch conditionals in yaml.** Workflow yaml stays thin; branch-specific policy belongs in repo-owned scripts when it earns its keep.
 
 **Invariant:** `ci/*.sh` may set the app's existing runtime variables whose names start with `GITHUB_`, such as `GITHUB_WEBHOOK_SECRET`, but it must not consume GitHub Actions-provided `$GITHUB_*` metadata or call the `gh` CLI. That keeps the gate portable without renaming application configuration in this slice.
 
@@ -161,11 +167,11 @@ Locked rule per `~/.agents/skills/elixir-phoenix-style/`: migration round-trip i
 
 The 200ms p50 figure (`AGENTS.md:53`, sub-phase 3.3 frugality target) stays valid as the *production* target. Enforced as an absolute gate on `ubuntu-latest` it is structurally fragile: 2.66% CV (`[p105]`), CPU-SKU rotation 5–10% across runs (`[p106]`).
 
-Adopted CI-side policy:
+Current CI-side policy:
 
-- **Absolute floor: 1000ms p50** (5× the production target; catches catastrophic regressions only).
-- **Rolling-30-main-branch median + 20% drift** (catches creeping regressions).
-- **Disabled until 30 main-branch runs accumulate.**
+- **Fixed browser/page budgets in `ci/contracts/routes.json`** for transferred bytes, request count, browser timing, WebSocket bytes, and layout stability.
+- **Route latency evidence** from `oha` remains useful as generated proof, but it is not a historical ratchet.
+- **No rolling baseline until it has ROI.** The empty checked-in baseline and refresh scripts were removed on 2026-05-16.
 
 Cite `[p108] [p122] [p123] [p124]`.
 
@@ -176,7 +182,7 @@ Captured separately from warm p50:
 - **Time to ready** — from `bin/portfolio start` to first 200 on `/readyz`.
 - **Cold response** — `oha -n 1 -c 1` on the first request.
 
-Both written to `ci/baseline.json` for trend tracking. Ties to the 400ms cold-start target in the queued cold-start audit (`.tmp/2026-05-05-upgrade-deep-dive/cold-start.md`). Not gated initially.
+Both are written to generated run artifacts for inspection. Ties to the 400ms cold-start target in the queued cold-start audit (`.tmp/2026-05-05-upgrade-deep-dive/cold-start.md`). Not gated initially.
 
 #### release-rpc-introspection
 
@@ -190,25 +196,12 @@ Adds ~3 seconds; catches "boot ran but app silently degraded" — a class HTTP p
 
 ### Group D — Persistence
 
-#### latency-baseline-file
+#### performance evidence
 
-`ci/baseline.json` (durable, repo-checked, updated on main only). Schema in repo's vocabulary, **not** `oha`'s output shape (avoids conformist anti-pattern):
-
-```json
-{
-  "runs_count": <int>,
-  "routes": {
-    "/en": {"warm_p50_ms": <int>, "warm_p95_ms": <int>, "cold_first_ms": <int>, ...},
-    ...
-  },
-  "ready_ms_median": <int>,
-  "last_updated_main_sha": "<sha>"
-}
-```
-
-The `ci/update-baseline.sh` script translates `oha`'s output into this schema; if `oha` ships v2 with renamed fields, the translation step changes, not the baseline file format.
-
-When `runs_count >= 30`, the perf-budget gate transitions from disabled (logging-only) to enforcing.
+Route latency and browser performance outputs are generated evidence under
+`.tmp/ci-artifacts/prod-build/`. They are uploaded by CI for inspection, but the
+gate does not read them back as state. Fixed budgets in `ci/contracts/routes.json`
+are the current performance authority.
 
 #### routes-known-broken
 
@@ -249,11 +242,11 @@ jobs:
         with:
           name: "prod-build-measurements"
           path: |
-            ci/last-run.json
-            ci/baseline.json
+            .tmp/ci-artifacts/prod-build/route-latency-last-run.json
+            .tmp/ci-artifacts/prod-build/browser-performance-last-run.json
 ```
 
-`ci/prod-build.sh` owns the release build, migration round-trip, boot, readiness wait, route probe, RPC introspection, comparison, and baseline update. `ci/probe-routes.sh`, `ci/compare.sh`, and `ci/update-baseline.sh` are thin shell wrappers around `oha` and `jq`. They contain all branch conditionals (`update-baseline.sh` exits 0 unless on `main`) and translate `oha`-shaped JSON into the repo-native baseline schema.
+`ci/gates/prod-build.sh` owns the release build, migration round-trip, boot, readiness wait, route probe, browser performance check, and RPC introspection.
 
 ## Mistake classes caught
 
@@ -288,7 +281,7 @@ jobs:
 
 ## Caveats
 
-The literature peer-review run at `.tmp/2026-05-06-phoenix-prod-ci-gate/literature/brief.md` has no published `ubuntu-latest` Phoenix HTTP-loop CV/latency benchmark. The first 30 main-branch runs *populate* the rolling baseline; the 1000ms floor and 20% drift threshold are derived defaults — **revisit when `ci/baseline.json` `runs_count >= 30`**, tracked as a self-trigger inside the baseline file.
+The literature peer-review run at `.tmp/2026-05-06-phoenix-prod-ci-gate/literature/brief.md` has no published `ubuntu-latest` Phoenix HTTP-loop CV/latency benchmark. Fixed budgets are intentionally simpler than a historical ratchet. Revisit historical drift only if fixed budgets and artifact inspection stop catching the performance questions that matter.
 
 ## References
 
@@ -344,8 +337,8 @@ Each `[pNNN]` resolves to a primary source. Inlined here so the ADR is self-cont
 - `.github/workflows/prod-build.yml` (new — workflow above)
 - `lib/portfolio_web/controllers/readiness_controller.ex` + route entry in `router.ex`
 - `bin/docker-entrypoint-web` patch (honor `CI_SKIP_CONTENT_PULL=1`)
-- `ci/probe-routes.sh`, `ci/compare.sh`, `ci/update-baseline.sh`
+- `ci/gates/probe-routes.sh`, `ci/gates/browser-performance.mjs`
 - `ci/routes-known-broken.txt` (initial empty)
-- `ci/baseline.json` (initial `{"runs_count": 0, "routes": {}}`)
+- `ci/contracts/routes.json` (route assertions and public page budgets)
 
 No application-code changes outside `lib/portfolio_web/controllers/readiness_controller.ex` and the `router.ex` route.

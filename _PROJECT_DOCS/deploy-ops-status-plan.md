@@ -238,8 +238,6 @@ ci/
     prod-build.sh
     probe-routes.sh
     browser-performance.mjs
-    compare.sh
-    update-baseline.sh         # only if repo baseline remains real
   preview/
     runtime-viability.sh
     preview-page-acceptance.mjs
@@ -279,8 +277,8 @@ Minimum reset scope:
 Next decisions after the reset:
 
 1. Make preview verification one verdict instead of manual runtime viability plus external preview page acceptance handoff.
-2. Resolve baseline authority: either add a real trusted refresh path, or stop mutating a pretend rolling baseline in normal PR/prod-build runs.
-3. Decide the DigitalOcean spike exit before adding janitors, IPv6, deploy receipts, or provider-neutral abstractions.
+2. Decide the DigitalOcean spike exit before adding janitors, IPv6, deploy receipts, or provider-neutral abstractions.
+3. Revisit historical performance baselines only if fixed budgets and `.tmp/ci-artifacts/` evidence stop answering the question.
 
 ### DigitalOcean Disposable Host Requirements
 
@@ -397,10 +395,10 @@ Proposed feedback ladder:
    - Uploads `.tmp/ci-artifacts/prod-build/browser-performance-last-run.json` and failure artifacts.
    - Hard-fails on broken pages, missing metrics, console/page errors, catastrophic page-weight blowups, and trusted budget violations.
 4. **Final PR authority:** `./run ci:prod-build`
-   - Keep as the final release-shaped gate: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, content status, release RPC introspection, and current `oha` route-latency comparison.
+   - Keep as the final release-shaped gate: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, content status, release RPC introspection, and public page budget checks.
    - Fold only stable, low-noise performance assertions into this gate.
 5. **Nightly calibration:** future `./run ci:performance-calibration`
-   - Heavier browser measurements, repeated samples, traces/screenshots/HAR, and baseline learning.
+   - Heavier browser measurements, repeated samples, traces/screenshots/HAR, and variance analysis.
    - Used to understand variance and decide which browser budgets are ready to move from observation to hard failure.
 6. **Live/deploy smoke:** future origin/deploy gate
    - After origin deployability exists, measure the live URL through the real edge/origin path.
@@ -414,8 +412,8 @@ First implementation slice:
 4. Keep `oha` for route latency; it feeds `.tmp/ci-artifacts/prod-build/route-latency-last-run.json`.
 5. Write browser results to `.tmp/ci-artifacts/prod-build/browser-performance-last-run.json`. Done; generated artifacts live under `.tmp/ci-artifacts/` and are uploaded by CI.
 6. Call the browser check from `ci/gates/prod-build.sh` after the release is ready and route smoke has passed. Done; this is the embed-first phase, not the final desired check topology.
-7. Upload browser performance output beside route latency output and `ci/contracts/prod-build-baseline.json`. Done.
-8. After the command has accumulated enough trusted runs and false-positive behavior is understood, consider splitting it out of `Prod build` into its own top-level `Performance browser` workflow check.
+7. Upload browser performance output beside route latency output. Done.
+8. The empty rolling-baseline policy was removed on 2026-05-16 because fixed budgets already provide the real gate and the baseline refresh path did not earn its machinery. After the command has accumulated enough trusted runs and false-positive behavior is understood, consider splitting it out of `Prod build` into its own top-level `Performance browser` workflow check.
 
 Hardening added after peer review:
 
@@ -465,14 +463,13 @@ Budget and anti-cheat rules:
 - Warnings are failures unless allowlisted with exact source, reason, and expiry.
 - Budgets live in the versioned route contract at `ci/contracts/routes.json`.
 - Budgets cannot be silently weakened. Increasing thresholds, removing metrics, removing routes, lowering sample counts, disabling mobile emulation, or broadening exemptions requires an explicit budget-change proposal.
-- Baselines update only from trusted `main`/nightly paths, not arbitrary PR branches.
 - Missing measured values from the current run fail. Missing historical baselines do not automatically fail for newly introduced routes or metrics.
-- New routes and new metrics enter an onboarding state: they must satisfy coarse absolute ceilings immediately, emit artifacts immediately, and graduate to drift enforcement only after enough trusted `main`/nightly samples exist.
+- New routes and new metrics must satisfy coarse absolute ceilings immediately and emit artifacts immediately. Do not add drift enforcement until there is a real refresh policy with clear ROI.
 - Performance claims must cite user-facing metric deltas: route p50/p95, ready time, cold first response, FCP, LCP/readable-content timing, CLS, transferred bytes, request count, JS bytes, CSS bytes, image bytes, font bytes, or main-thread work.
 - WebSocket bytes count as first-load/page-interaction cost once LiveView traffic exists. A page with low HTTP bytes but hidden LiveView frame weight is not frugal.
 - Lighthouse aggregate score alone never counts as progress.
 - Microbenchmarks only count when tied to a failing/protected product metric and a route/browser artifact moves in the same direction.
-- The integrity gate should eventually reject fake-green patterns for performance commands: `|| true`, `continue-on-error`, warning filtering, score-only reports, route removal, sample-count reduction, budget weakening, PR baseline updates, and artifact upload without threshold checks.
+- The integrity gate should eventually reject fake-green patterns for performance commands: `|| true`, `continue-on-error`, warning filtering, score-only reports, route removal, sample-count reduction, budget weakening, and artifact upload without threshold checks.
 
 Budget-change UX:
 

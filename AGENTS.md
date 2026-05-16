@@ -22,7 +22,7 @@ GitHub CI must expose the real acceptance gates as legible top-level check jobs.
 - `./run ci:static-analysis` is clean: Dialyzer reports `Total errors: 0, Skipped: 0, Unnecessary Skips: 0`.
 - `./run ci:test` is clean: Elixir tests and JS tests have 0 failures.
 - The secret-scan workflow runs `./run ci:secret-scan`; gitleaks current-tree scan has 0 findings.
-- `./run ci:prod-build` is clean: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, release RPC introspection, and perf-baseline comparison all pass. GitHub branch protection must require the top-level `Prod build` check.
+- `./run ci:prod-build` is clean: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, release RPC introspection, and public page budget checks all pass. GitHub branch protection must require the top-level `Prod build` check.
 
 Route smoke is part of the production-build gate, not a separate placeholder job. Do not add another route-smoke gate just to make CI look broader; widen `./run ci:prod-build` only when the app has a stronger readiness/content contract.
 

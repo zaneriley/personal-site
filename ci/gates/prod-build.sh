@@ -324,6 +324,3 @@ jq -e '.live != null and .last_good == .live and .sync_state == "idle" and .last
     bin/portfolio rpc "IO.inspect({Application.spec(:portfolio, :vsn), length(Supervisor.which_children(Portfolio.Supervisor)), Ecto.Adapters.SQL.query!(Portfolio.Repo, \"SELECT 1\").num_rows})"
 
 run_browser_performance
-
-ci/gates/compare.sh .tmp/ci-artifacts/prod-build/route-latency-last-run.json ci/contracts/prod-build-baseline.json
-ci/gates/update-baseline.sh .tmp/ci-artifacts/prod-build/route-latency-last-run.json ci/contracts/prod-build-baseline.json
