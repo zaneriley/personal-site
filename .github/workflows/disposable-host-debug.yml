@@ -1,10 +1,10 @@
-name: "Disposable host spike"
+name: "Disposable host debug"
 
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: "Disposable host action"
+        description: "Lower-level host debug action; use Private preview deploy for normal previews"
         required: true
         default: "status"
         type: choice
@@ -47,7 +47,7 @@ concurrency:
 
 jobs:
   digitalocean-host:
-    name: "DigitalOcean host"
+    name: "DigitalOcean host debug"
     runs-on: "ubuntu-22.04"
     environment: "preview"
     timeout-minutes: 20

@@ -19,7 +19,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Private content-repo auth is wired into clone/fetch through ephemeral Git command environment. HTTPS tokens use askpass, SSH can use `CONTENT_REPO_SSH_COMMAND`, tokenized `CONTENT_REPO_URL` values are rejected, and sync failures are redacted before they reach logs or ledger reasons.
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - The first deploy-tooling literature pass is complete. Current planning bias is **GitHub Actions as deploy operator, Kamal as an ephemeral deploy-time adapter, and the origin as a Docker-only runtime**, but Kamal is not ratified. Literature artifacts: `.tmp/2026-05-11-deploy-preview-options/literature/` and `.tmp/2026-05-11-portfolio-deploy-tooling-deep-dive/literature/`.
-- The disposable Docker-host spike has a manual GitHub Actions workflow and canonical `./run host:disposable:*` commands for DigitalOcean create/status/destroy. The GitHub `preview` environment exists and is limited to `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet, then peer review found the first implementation was not lifecycle-safe enough. The scripts now write receipts as soon as a Droplet ID exists, destroy failed creates by default, require SSH/Docker/Compose readiness proof, bound the remote readiness wait, refuse arbitrary cost inputs, list disposable hosts by tag, and verify expected disposable tags/name before destroy. GitHub manual workflow proof is still blocked until the workflow file exists on the default branch, because GitHub does not expose new `workflow_dispatch` workflows from feature branches by filename.
+- The disposable Docker-host debug workflow and canonical `./run host:disposable:*` commands remain for lower-level DigitalOcean create/status/destroy inspection. The normal preview operator path is `Private preview deploy`, not the host debug workflow. The GitHub `preview` environment exists and is limited to `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet, then peer review found the first implementation was not lifecycle-safe enough. The scripts now write receipts as soon as a Droplet ID exists, destroy failed creates by default, require SSH/Docker/Compose readiness proof, bound the remote readiness wait, refuse arbitrary cost inputs, list disposable hosts by tag, and verify expected disposable tags/name before destroy.
 - A simple preview deploy bug bash ran on 2026-05-12 and is recorded in `.tmp/2026-05-12-simple-preview-deploy-bugbash/report.md`. It proved the 1 GiB DO host is safe to create and destroy, but it also proved the host must be treated as a runtime, not a builder: an origin-side production image build OOM-killed BEAM while compiling `cowlib` after about 20 minutes. The next runtime spike must use a prebuilt image digest and measure app+Postgres runtime memory instead of rebuilding source on the origin.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
@@ -239,6 +239,9 @@ ci/
     probe-routes.sh
     browser-performance.mjs
   preview/
+    private-preview.mjs
+    destroy.sh
+    preview-artifact-safety.mjs
     runtime-viability.sh
     preview-page-acceptance.mjs
     preview-page-acceptance/
@@ -259,10 +262,16 @@ Generated local evidence:
 ```text
 .tmp/ci-artifacts/
   prod-build/
-  candidate-image/
-  disposable-host/
-  runtime-viability/
-  preview-page-acceptance/
+  preview/
+    deploy-receipt.json
+    failure-summary.md
+    stages/
+      host/
+      runtime-viability/
+      preview-page-acceptance/
+  disposable-host/              # lower-level host receipts when debugging host commands directly
+  runtime-viability/            # lower-level runtime receipts when debugging runtime viability directly
+  preview-page-acceptance/      # lower-level browser receipts when debugging page acceptance directly
 ```
 
 Minimum reset scope:
@@ -276,8 +285,8 @@ Minimum reset scope:
 
 Next decisions after the reset:
 
-1. Make preview verification one verdict instead of manual runtime viability plus external preview page acceptance handoff.
-2. Graduate the DigitalOcean path from disposable-host proof toward an interim preview lane and origin deploy flow.
+1. Done: make preview verification one result instead of a manual runtime viability plus external preview page acceptance handoff.
+2. Done: add a manual GitHub Actions private preview workflow that validates a PR SHA, builds the candidate app image, and runs `./run preview:deploy`.
 3. Revisit historical performance baselines only if fixed budgets and `.tmp/ci-artifacts/` evidence stop answering the question.
 
 ### DigitalOcean Disposable Host Requirements
@@ -297,6 +306,20 @@ Required secrets:
 
 Current command surface:
 
+1. `./run preview:deploy --app-image-ref ghcr.io/owner/repo@sha256:<app-digest> --app-sha <sha> --preview-page-acceptance-image <trusted-image>`
+   - Creates or consumes a ready DigitalOcean disposable host, deploys the exact digest-pinned candidate app image, runs runtime viability, then runs preview page acceptance if the runtime proof passes.
+   - Requires the app image to be digest-pinned. The checker image is trusted workflow tooling, built from the default branch before deploy secrets are used.
+   - Writes `.tmp/ci-artifacts/preview/deploy-receipt.json` as the top-level result, plus `.tmp/ci-artifacts/preview/failure-summary.md` when the preview is blocked or errors.
+   - Keeps stage evidence under `.tmp/ci-artifacts/preview/stages/host/`, `.tmp/ci-artifacts/preview/stages/runtime-viability/`, and `.tmp/ci-artifacts/preview/stages/preview-page-acceptance/`.
+   - Uses plain outcomes: `reviewable` or `blocked`. `reviewable` means the private preview is fit for human review; it does not mean production origin promotion has happened.
+   - Does not touch production DNS, `zaneriley.com`, AWS, CDN config, Release Please, production promotion, or rollback.
+2. `./run preview:destroy .tmp/ci-artifacts/preview/deploy-receipt.json`
+   - Destroys the disposable host recorded in a preview deploy receipt.
+   - Refuses to destroy unless the receipt describes a `disposable_host` with `lifecycle: "disposable"`, then delegates to the ownership-checked DigitalOcean destroy command.
+   - This is the normal cleanup command after a preview deploy.
+
+Lower-level host/debug commands:
+
 1. `./run host:disposable:create`
    - Creates a Basic 1 GiB / 1 vCPU Droplet by default.
    - Defaults and allowlist: `DO_REGION=sfo3`, `DO_SIZE=s-1vcpu-1gb`, `DO_IMAGE=ubuntu-24-04-x64`.
@@ -311,52 +334,50 @@ Current command surface:
    - Prints Droplet status, region, size, image, public IPv4/IPv6, and tags.
 3. `CONFIRM_DESTROY=1 ./run host:disposable:destroy`
    - Requires `DROPLET_ID` or a receipt file path.
-   - Fetches the Droplet first and refuses to delete unless it has the expected `personal-site`, `disposable-host`, and `preview` tags plus the expected preview name prefix.
+   - Fetches the Droplet first and refuses to delete unless it has the expected `personal-site` and `disposable-host` tags plus the expected disposable-host name prefix.
    - Destroys the Droplet only after ownership verification. Powering off is not the disposal path because powered-off Droplets still bill.
 4. `APP_IMAGE_REF=ghcr.io/owner/repo@sha256:<app-digest> ./run host:disposable:runtime-viability .tmp/ci-artifacts/disposable-host/digitalocean-host.json`
    - Runs only against a ready disposable-host receipt; it refuses non-ready receipts and floating image tags.
    - Copies a small runtime payload to `/var/lib/personal-site/runtime-viability`, starts Postgres plus the digest-pinned app image with fixture content, waits for `/readyz`, and probes the public route set.
-   - Writes `.tmp/ci-artifacts/runtime-viability/runtime-viability.json` and sibling artifacts with ready time, route statuses, the public browser-check URL, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
-   - This is a runtime viability proof, not a production deploy and not a browser proof. It keeps the 1 GiB host measurement focused on `web` plus Postgres. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
+   - Writes `.tmp/ci-artifacts/runtime-viability/runtime-viability.json` and sibling artifacts with ready time, route statuses, the public preview URL, `docker stats`, `free -m`, cgroup memory peaks when available, app logs, compose status, and `bin/content status --json`.
+   - This is a runtime viability proof, not the top-level preview result, not a production deploy, and not a browser proof. It keeps the 1 GiB host measurement focused on `web` plus Postgres. It does not touch DNS, `zaneriley.com`, AWS, CDN config, release automation, or blue/green promotion.
 5. `PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=ghcr.io/owner/repo@sha256:<browser-check-digest> ./run ci:preview-page-acceptance "$(jq -r .public_base_url .tmp/ci-artifacts/runtime-viability/runtime-viability.json)"`
    - Runs the digest-pinned one-shot preview page acceptance image from the operator machine or CI runner, outside the Droplet, against the public preview URL emitted by runtime viability.
    - Writes `.tmp/ci-artifacts/preview-page-acceptance/preview-page-acceptance.json`, `.tmp/ci-artifacts/preview-page-acceptance/preview-page-acceptance.md`, and screenshots. This is the browser-real proof: assets, CSP, LiveView connection, share metadata, mobile/desktop layout, screenshots, and wrong-origin DOM/network checks.
-
-Candidate image workflow:
-
-- `Candidate image` builds a non-release `linux/amd64` production image in GitHub Actions and pushes only a SHA-scoped tag: `ghcr.io/zaneriley/personal-site:candidate-sha-<sha>`.
-- It writes `.tmp/ci-artifacts/candidate-image/candidate-image.json` as the `candidate-image` artifact. The runtime viability command consumes `.image_ref` for the app image. Preview page acceptance consumes `.preview_page_acceptance_image_ref` for the one-shot browser-check image. Both are digest-pinned as `ghcr.io/zaneriley/personal-site@sha256:<digest>`.
-- This workflow is deliberately separate from Release Please. It must not create GitHub Releases, version tags, `latest`, or semver tags.
-- Local handoff after a successful workflow run:
-
-  ```bash
-  gh run download <run-id> -n candidate-image -D .tmp/candidate-image
-  APP_IMAGE_REF="$(jq -r .image_ref .tmp/candidate-image/candidate-image.json)" \
-    ./run host:disposable:runtime-viability .tmp/ci-artifacts/disposable-host/digitalocean-host.json
-
-  PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF="$(jq -r .preview_page_acceptance_image_ref .tmp/candidate-image/candidate-image.json)" \
-    ./run ci:preview-page-acceptance "$(jq -r .public_base_url .tmp/ci-artifacts/runtime-viability/runtime-viability.json)"
-  ```
+   - In the normal preview path, `./run preview:deploy` invokes this only after runtime viability passes and stores the evidence under `.tmp/ci-artifacts/preview/stages/preview-page-acceptance/`.
 
 GitHub workflow:
 
-- `Disposable host spike` is manual-only (`workflow_dispatch`).
+- `Private preview deploy` is manual-only (`workflow_dispatch`).
+- It takes a pull request number and expected head SHA.
+- It checks out the default branch first, checks out the candidate SHA into `.tmp/preview-candidate`, validates that the PR is open, same-repo, based on the default branch, and still points at the expected SHA, then builds and pushes the candidate app image from that checked-out candidate tree.
+- It builds the preview page acceptance image from the default branch and uses it as trusted workflow tooling, not as candidate code.
+- It runs `./run preview:deploy --app-image-ref <digest-ref> --app-sha <sha> --preview-page-acceptance-image <trusted-image>`.
+- It only runs from the default branch and checks out the default branch before loading deploy secrets, so workflow code and deploy harness changes must land before the workflow can use them.
+- It uses the GitHub `preview` environment and passes a read-only GitHub token to runtime viability so the disposable host can pull digest-pinned GHCR images.
+- It uploads `.tmp/ci-artifacts/preview/` as `preview-deploy-artifacts` with 2-day retention. The canonical result is `.tmp/ci-artifacts/preview/deploy-receipt.json`; GitHub summaries are rendered by `./run preview:deploy`, not by workflow-specific markdown.
+- It is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
+- Next proof: dispatch `Private preview deploy` with a real PR number and expected head SHA, inspect the preview deploy receipt, and destroy through `./run preview:destroy`.
+
+- `Disposable host debug` is manual-only (`workflow_dispatch`) and lower-level debug only.
 - Actions: `create`, `status`, `destroy`.
-- The default action is `status`, not `create`, so the easiest click path does not allocate money.
+- The default action is `status`, not `create`, so the easiest debug click path does not allocate money.
 - The workflow checks out the default branch before loading DO/SSH secrets; feature-branch workflow code should not receive deploy credentials.
 - The workflow uploads `.tmp/ci-artifacts/disposable-host/digitalocean-host.json` as the create receipt with 2-day retention and treats a missing receipt as an error.
-- The workflow is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
-- GitHub will not run this new manual workflow from a feature branch until the workflow definition is present on the default branch. Before merge, use the same canonical `./run host:disposable:*` commands locally for proof; after merge, rerun the create/status/destroy proof through GitHub Actions.
+- The workflow is deliberately not wired to PRs, `main`, Release Please, production deployment, private preview deploy, or domain cutover.
 
 Remaining hardening before this becomes an interim DigitalOcean origin/deploy flow:
 
-- Add a deploy receipt that records host id, image digest, content SHA/generation, smoke result, and rollback/destroy commands.
-- Add a browser-level preview proof that fails on missing CSS/JS/icon assets, requests to the wrong origin such as `preview.local`, visible app error states on required routes, and obvious viewport breakage before treating a preview as user-credible. First fix and assert the asset-origin problem; then re-check mobile layout so asset/config failure and true responsive bugs do not get mixed together.
+- Prove the new top-level preview receipt against a real candidate image and a real disposable host, then destroy the host through `preview:destroy`.
+- Add production-origin promotion only after repeated private preview runs are boring. Promotion must use the same app digest and content generation proven in preview.
+- Add rollback proof for the production-origin path. The preview destroy command is cleanup, not rollback.
 - Add repeated-request/runtime-load observation before treating 1 GiB as production-safe.
+- Add a network abort allowlist to preview page acceptance so wrong-origin HTTP(S) requests are blocked before they can reach production or external hosts.
+- Redact or reject raw runtime logs that contain generated runtime secret names or values before uploading preview artifacts.
 - Add a scheduled or manual age-based janitor for tagged disposable hosts.
 - Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
 - Decide whether IPv6 should stay enabled for the DigitalOcean path; if yes, firewall and smoke must treat it as first-class.
-- Keep the command taxonomy honest: this is Docker-host bootstrap. "Deploy" still means app image digest plus content SHA/generation, preview checks, promotion, and rollback.
+- Keep the command taxonomy honest: `preview:deploy` creates a private review target. Production deploy still means same-artifact promotion to the origin, live smoke, receipt, and rollback.
 
 ## Resource-frugality feedback harness proposal
 

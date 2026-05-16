@@ -80,6 +80,16 @@ fi
 
 assert_contains "${tmpdir}/waiting.out" "lifecycle_status must be ready"
 
+if RUNTIME_VIABILITY_VALIDATE_ONLY=1 \
+    APP_IMAGE_REF="ghcr.io/zaneriley/personal-site@sha256:2da620d6fe3a64aef7d23927835722be08d56c6449f3c557f14c6993b59ee467" \
+    RUNTIME_VIABILITY_REGISTRY_TOKEN="dummy-token" \
+    "${script_dir}/runtime-viability.sh" "${ready_receipt}" > "${tmpdir}/registry.out" 2>&1; then
+    echo "expected registry token without username to fail" >&2
+    exit 1
+fi
+
+assert_contains "${tmpdir}/registry.out" "RUNTIME_VIABILITY_REGISTRY_USERNAME is required"
+
 RUNTIME_VIABILITY_VALIDATE_ONLY=1 \
     APP_IMAGE_REF="ghcr.io/zaneriley/personal-site@sha256:2da620d6fe3a64aef7d23927835722be08d56c6449f3c557f14c6993b59ee467" \
     "${script_dir}/runtime-viability.sh" "${ready_receipt}" > "${tmpdir}/ready.out" 2>&1

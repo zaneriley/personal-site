@@ -117,6 +117,19 @@ function assert_safe_shell_value {
     fi
 }
 
+function assert_single_line_value {
+    local name
+    local value
+
+    name="${1}"
+    value="${2}"
+
+    if [[ "${value}" == *$'\n'* || "${value}" == *$'\r'* ]]; then
+        echo "fatal: ${name} must be a single-line value" >&2
+        exit 1
+    fi
+}
+
 function read_receipt_value {
     local filter
 
@@ -235,6 +248,8 @@ set -o nounset
 set -o pipefail
 
 artifact_dir="artifacts"
+registry_docker_config=".docker-auth"
+registry_token_file=".registry-token"
 status="fail"
 failure_reason="not_started"
 ready_ms=""
@@ -340,6 +355,8 @@ function collect_artifacts {
         --arg status "${status}" \
         --arg failure_reason "${failure_reason}" \
         --arg app_image_ref "${APP_IMAGE_REF}" \
+        --arg attempt_id "${PREVIEW_DEPLOY_ATTEMPT_ID:-}" \
+        --arg route_contract_sha256 "$(sha256sum "${route_contract_file}" | awk '{print $1}')" \
         --arg project "${RUNTIME_VIABILITY_PROJECT}" \
         --arg port "${RUNTIME_VIABILITY_HOST_PORT}" \
         --arg public_base_url "$(expected_site_origin)" \
@@ -351,6 +368,8 @@ function collect_artifacts {
         '{
             status: $status,
             failure_reason: (if $failure_reason == "" then null else $failure_reason end),
+            preview_deploy_attempt_id: (if $attempt_id == "" then null else $attempt_id end),
+            route_contract_sha256: $route_contract_sha256,
             app_image_ref: $app_image_ref,
             project: $project,
             ready_ms: $ready_ms,
@@ -373,11 +392,43 @@ function finish {
     local exit_status
 
     exit_status="$?"
+    cleanup_registry_auth
     collect_artifacts
     exit "${exit_status}"
 }
 
 trap finish EXIT
+
+function cleanup_registry_auth {
+    if [[ -d "${registry_docker_config}" ]]; then
+        DOCKER_CONFIG="${PWD}/${registry_docker_config}" \
+            docker logout "${RUNTIME_VIABILITY_REGISTRY:-ghcr.io}" >/dev/null 2>&1 || true
+        rm -rf "${registry_docker_config}"
+    fi
+
+    rm -f "${registry_token_file}"
+    unset RUNTIME_VIABILITY_REGISTRY_TOKEN
+}
+
+function registry_login {
+    if [[ "${RUNTIME_VIABILITY_REGISTRY_AUTH_REQUIRED:-0}" != "1" ]]; then
+        return 0
+    fi
+
+    IFS= read -r RUNTIME_VIABILITY_REGISTRY_TOKEN
+    printf "%s" "${RUNTIME_VIABILITY_REGISTRY_TOKEN}" > "${registry_token_file}"
+    chmod 600 "${registry_token_file}"
+
+    mkdir -p "${registry_docker_config}"
+    export DOCKER_CONFIG="${PWD}/${registry_docker_config}"
+
+    docker login "${RUNTIME_VIABILITY_REGISTRY:-ghcr.io}" \
+        --username "${RUNTIME_VIABILITY_REGISTRY_USERNAME}" \
+        --password-stdin < "${registry_token_file}" >/dev/null
+
+    unset RUNTIME_VIABILITY_REGISTRY_TOKEN
+    rm -f "${registry_token_file}"
+}
 
 function wait_for_ready {
     local attempts
@@ -588,7 +639,9 @@ export RUNTIME_VIABILITY_PROJECT
 
 failure_reason="pull_failed"
 compose down --volumes --remove-orphans >/dev/null 2>&1 || true
+registry_login
 compose pull
+cleanup_registry_auth
 
 failure_reason="start_failed"
 compose up -d
@@ -641,6 +694,17 @@ assert_safe_shell_value RUNTIME_VIABILITY_REMOTE_DIR "${remote_dir}"
 assert_safe_shell_value RUNTIME_VIABILITY_PROJECT "${project}"
 assert_safe_shell_value RUNTIME_VIABILITY_BIND_HOST "${bind_host}"
 
+if [[ -n "${RUNTIME_VIABILITY_REGISTRY_TOKEN:-}" && -z "${RUNTIME_VIABILITY_REGISTRY_USERNAME:-}" ]]; then
+    echo "fatal: RUNTIME_VIABILITY_REGISTRY_USERNAME is required when RUNTIME_VIABILITY_REGISTRY_TOKEN is set" >&2
+    exit 1
+fi
+
+if [[ -n "${RUNTIME_VIABILITY_REGISTRY_TOKEN:-}" ]]; then
+    assert_single_line_value RUNTIME_VIABILITY_REGISTRY "${RUNTIME_VIABILITY_REGISTRY:-ghcr.io}"
+    assert_single_line_value RUNTIME_VIABILITY_REGISTRY_USERNAME "${RUNTIME_VIABILITY_REGISTRY_USERNAME}"
+    assert_single_line_value RUNTIME_VIABILITY_REGISTRY_TOKEN "${RUNTIME_VIABILITY_REGISTRY_TOKEN}"
+fi
+
 droplet_id="$(read_receipt_value '.droplet_id')"
 public_ipv4="$(read_receipt_value '.public_ipv4')"
 lifecycle_status="$(read_receipt_value '.lifecycle_status')"
@@ -683,8 +747,15 @@ echo "droplet_id=${droplet_id}"
 echo "app_image_ref=${app_image_ref}"
 
 remote_status=0
-"${ssh_base[@]}" "cd '${remote_dir}' && RUNTIME_VIABILITY_PROJECT='${project}' bash ./run-runtime-viability.sh" ||
-    remote_status="$?"
+if [[ -n "${RUNTIME_VIABILITY_REGISTRY_TOKEN:-}" ]]; then
+    printf "%s\n" "${RUNTIME_VIABILITY_REGISTRY_TOKEN}" |
+        "${ssh_base[@]}" \
+            "cd '${remote_dir}' && RUNTIME_VIABILITY_PROJECT='${project}' RUNTIME_VIABILITY_REGISTRY_AUTH_REQUIRED=1 RUNTIME_VIABILITY_REGISTRY='${RUNTIME_VIABILITY_REGISTRY:-ghcr.io}' RUNTIME_VIABILITY_REGISTRY_USERNAME='${RUNTIME_VIABILITY_REGISTRY_USERNAME}' bash ./run-runtime-viability.sh" ||
+        remote_status="$?"
+else
+    "${ssh_base[@]}" "cd '${remote_dir}' && RUNTIME_VIABILITY_PROJECT='${project}' bash ./run-runtime-viability.sh" ||
+        remote_status="$?"
+fi
 
 fetch_artifacts
 

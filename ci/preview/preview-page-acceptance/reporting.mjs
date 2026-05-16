@@ -5,9 +5,9 @@ const failureDetailFormatters = {
   bad_document_status: (failure) =>
     `status ${failure.status}; allowed ${failure.allowed_statuses.join(", ")}`,
   csp_violation: (failure) =>
-    `${failure.violated_directive}: ${failure.blocked_uri}`,
+    `${failure.violated_directive}: ${sanitizeDetail(failure.blocked_uri)}`,
   live_view_not_connected: (failure) =>
-    `app_js_loaded=${failure.app_js_loaded} live_socket_present=${failure.live_socket_present}`,
+    `app_js_loaded=${failure.app_js_loaded} live_socket_present=${failure.live_socket_present} live_websocket_seen=${failure.live_websocket_seen}`,
   missing_required_dom: (failure) => `${failure.selector}: ${failure.reason}`,
   missing_share_metadata: (failure) => failure.name,
   viewport_overflow: (failure) =>
@@ -16,22 +16,26 @@ const failureDetailFormatters = {
     const expected =
       failure.expected_origin === undefined
         ? ""
-        : ` expected ${failure.expected_origin}`;
+        : ` expected ${redactUrl(failure.expected_origin)}`;
 
-    return `${failure.name} ${failure.issue}: ${JSON.stringify(failure.value)}${expected}`;
+    return `${failure.name} ${failure.issue}: ${JSON.stringify(redactUrl(failure.value))}${expected}`;
   },
 };
 
-export function buildResult({ plan, routes, failures }) {
+export function buildResult({ plan, routes, failures, routeContractSha256 }) {
   return {
     schema_version: 1,
     command: plan.command,
     generated_at: new Date().toISOString(),
+    preview_deploy_attempt_id: process.env.PREVIEW_DEPLOY_ATTEMPT_ID ?? null,
+    preview_page_acceptance_image_ref:
+      process.env.PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF ?? null,
     status: failures.length === 0 ? "pass" : "fail",
     browser_connect_url: plan.browserConnectUrl,
     expected_site_origin: plan.expectedSiteOrigin,
     allowed_response_origins: plan.allowedResponseOrigins,
     route_config_file: plan.routeConfigFile,
+    route_contract_sha256: routeContractSha256,
     routes,
     failures,
     failure_summary: summarizeFailures(failures),
@@ -48,8 +52,8 @@ export async function writeFailureSummary(filePath, result) {
   const lines = [
     `# preview_page_acceptance: ${result.status}`,
     "",
-    `browser_connect_url: ${result.browser_connect_url}`,
-    `expected_site_origin: ${result.expected_site_origin}`,
+    `browser_connect_url: ${redactUrl(result.browser_connect_url)}`,
+    `expected_site_origin: ${redactUrl(result.expected_site_origin)}`,
     "",
   ];
 
@@ -133,23 +137,23 @@ function firstUsefulDetail(failure) {
   }
 
   if (failure.problem !== undefined) {
-    return failure.problem;
+    return sanitizeDetail(failure.problem);
   }
 
   if (failure.text !== undefined) {
-    return JSON.stringify(failure.text);
+    return JSON.stringify(sanitizeDetail(failure.text));
   }
 
   if (failure.value !== undefined) {
-    return JSON.stringify(failure.value);
+    return JSON.stringify(sanitizeDetail(failure.value));
   }
 
   if (failure.url !== undefined) {
-    return `${failure.status ?? ""} ${failure.url}`.trim();
+    return `${failure.status ?? ""} ${sanitizeDetail(failure.url)}`.trim();
   }
 
   if (failure.message !== undefined) {
-    return failure.message.split("\n")[0];
+    return sanitizeDetail(failure.message.split("\n")[0]);
   }
 
   if (failure.name !== undefined) {
@@ -157,4 +161,32 @@ function firstUsefulDetail(failure) {
   }
 
   return null;
+}
+
+function redactUrl(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const shouldRedact =
+    process.env.PREVIEW_DEPLOY_REDACT_PUBLIC_URLS === "1" ||
+    process.env.GITHUB_ACTIONS === "true";
+
+  return shouldRedact
+    ? value.replaceAll(
+        /http:\/\/(?:\d{1,3}\.){3}\d{1,3}:\d{2,5}/g,
+        "stored in deploy receipt",
+      )
+    : value;
+}
+
+function sanitizeDetail(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  return redactUrl(value)
+    .replaceAll(/\bdop_v1_[A-Za-z0-9_-]{8,}/g, "redacted DigitalOcean token")
+    .replaceAll(/\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}/g, "redacted GitHub token")
+    .replaceAll(/\bgithub_pat_[A-Za-z0-9_]{20,}/g, "redacted GitHub token");
 }

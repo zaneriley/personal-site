@@ -110,7 +110,7 @@ function verify_disposable_host {
     local name
 
     expected_tags_json="$(
-        printf "%s" "${DO_EXPECTED_TAGS:-personal-site,disposable-host,preview}" |
+        printf "%s" "${DO_EXPECTED_TAGS:-personal-site,disposable-host}" |
             jq -R 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))'
     )"
 
@@ -132,7 +132,7 @@ function verify_disposable_host {
 
     name="$(jq -r '.droplet.name' "${response_file}")"
 
-    if [[ ! "${name}" =~ ^personal-site-preview- ]]; then
+    if [[ ! "${name}" =~ ^personal-site-disposable- ]]; then
         echo "fatal: refusing to destroy Droplet ${droplet_id}; unexpected name: ${name}" >&2
         jq '{id: .droplet.id, name: .droplet.name, tags: .droplet.tags}' "${response_file}" >&2
         exit 1

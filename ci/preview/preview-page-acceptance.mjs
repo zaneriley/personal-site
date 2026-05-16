@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs/promises";
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -26,7 +27,12 @@ process.exit(exitStatus);
 
 async function main(args) {
   const options = parseOptions(args);
-  const rawConfig = await readJson(options.routesContractPath);
+  const routeContractData = await fs.readFile(options.routesContractPath);
+  const rawConfig = JSON.parse(routeContractData.toString("utf8"));
+  const routeContractSha256 = crypto
+    .createHash("sha256")
+    .update(routeContractData)
+    .digest("hex");
   const { plan, failures: planFailures } = buildPreviewCheckPlan(rawConfig, {
     browserConnectUrl: options.browserConnectUrl,
     expectedSiteOrigin: options.expectedSiteOrigin,
@@ -37,8 +43,16 @@ async function main(args) {
 
   const result =
     planFailures.length > 0
-      ? buildResult({ plan, routes: {}, failures: planFailures })
-      : await runPreviewBrowserCheck(plan, options);
+      ? buildResult({
+          plan,
+          routes: {},
+          failures: planFailures,
+          routeContractSha256,
+        })
+      : await runPreviewBrowserCheck(plan, {
+          ...options,
+          routeContractSha256,
+        });
 
   await writeResult(options.outputPath, result);
 
@@ -75,7 +89,12 @@ async function runPreviewBrowserCheck(plan, options) {
     await browser.close();
   }
 
-  return buildResult({ plan, routes, failures });
+  return buildResult({
+    plan,
+    routes,
+    failures,
+    routeContractSha256: options.routeContractSha256,
+  });
 }
 
 async function checkRoute(browser, route, plan, options) {

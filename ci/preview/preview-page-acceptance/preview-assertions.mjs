@@ -194,7 +194,10 @@ function shareMetadataFailures(route, viewportLabel, metadata) {
 }
 
 function liveViewFailures(route, viewportLabel, clientState) {
-  if (!route.requireLiveView || clientState.liveViewConnected) {
+  if (
+    !route.requireLiveView ||
+    (clientState.liveViewConnected && clientState.liveWebSocketSeen)
+  ) {
     return [];
   }
 
@@ -202,6 +205,7 @@ function liveViewFailures(route, viewportLabel, clientState) {
     makeFailure(route.label, viewportLabel, FailureCode.LIVE_VIEW_NOT_CONNECTED, {
       app_js_loaded: clientState.appJsLoaded,
       live_socket_present: clientState.liveSocketPresent,
+      live_websocket_seen: clientState.liveWebSocketSeen,
     }),
   ];
 }

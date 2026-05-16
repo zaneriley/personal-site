@@ -37,6 +37,7 @@ export async function observeRouteViewport({
   const wrongOriginResponses = [];
   const badResponseStatuses = [];
   const exerciseFailures = [];
+  const liveWebSockets = [];
   const context = await browser.newContext({
     ...contextOptions(viewport),
     serviceWorkers: "block",
@@ -71,6 +72,7 @@ export async function observeRouteViewport({
       requestFailures,
       wrongOriginResponses,
       badResponseStatuses,
+      liveWebSockets,
       previewFetchOrigin,
     });
 
@@ -101,7 +103,10 @@ export async function observeRouteViewport({
       documentAbsoluteUrls = snapshot.documentAbsoluteUrls;
       documentMetadata = snapshot.documentMetadata;
       requiredDomState = snapshot.requiredDomState;
-      clientState = snapshot.clientState;
+      clientState = {
+        ...snapshot.clientState,
+        liveWebSocketSeen: liveWebSockets.length > 0,
+      };
       layoutState = snapshot.layoutState;
     } catch (error) {
       exerciseFailures.push(
@@ -186,6 +191,17 @@ function observePageEvents(page, observations) {
         url: response.url(),
         status: response.status(),
       });
+    }
+  });
+  page.on("websocket", (websocket) => {
+    const parsedUrl = parseHttpUrl(websocket.url().replace(/^ws/i, "http"));
+
+    if (
+      parsedUrl !== null &&
+      parsedUrl.origin === observations.previewFetchOrigin &&
+      parsedUrl.pathname.endsWith("/live/websocket")
+    ) {
+      observations.liveWebSockets.push(true);
     }
   });
 }
@@ -333,6 +349,7 @@ async function collectClientState(page) {
     appJsLoaded: Boolean(window.liveSocket),
     liveSocketPresent: Boolean(window.liveSocket),
     liveViewConnected: Boolean(window.liveSocket?.isConnected?.()),
+    liveWebSocketSeen: false,
   }));
 }
 

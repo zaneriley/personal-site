@@ -73,8 +73,8 @@ case "${method}:${path}" in
                 jq -n '{
                     droplet: {
                         id: 123,
-                        name: "personal-site-preview-test",
-                        tags: ["personal-site", "disposable-host", "preview"],
+                        name: "personal-site-disposable-test",
+                        tags: ["personal-site", "disposable-host"],
                         status: "active"
                     }
                 }' > "${output_file}"
@@ -83,7 +83,7 @@ case "${method}:${path}" in
                 jq -n '{
                     droplet: {
                         id: 123,
-                        name: "personal-site-preview-test",
+                        name: "personal-site-disposable-test",
                         tags: ["personal-site"],
                         status: "active"
                     }
@@ -94,7 +94,7 @@ case "${method}:${path}" in
                     droplet: {
                         id: 123,
                         name: "production-do-not-delete",
-                        tags: ["personal-site", "disposable-host", "preview"],
+                        tags: ["personal-site", "disposable-host"],
                         status: "active"
                     }
                 }' > "${output_file}"
@@ -135,6 +135,22 @@ function write_receipt {
     jq -n --arg droplet_id "${droplet_id}" '{droplet_id: $droplet_id}' > "${path}"
 }
 
+function write_preview_receipt {
+    local droplet_id
+    local path
+
+    droplet_id="${1}"
+    path="${2}"
+
+    jq -n --arg droplet_id "${droplet_id}" '{
+        host: {
+            kind: "disposable_host",
+            lifecycle: "disposable",
+            droplet_id: $droplet_id
+        }
+    }' > "${path}"
+}
+
 function run_destroy {
     local mock_case
     local receipt
@@ -150,6 +166,23 @@ function run_destroy {
         DIGITALOCEAN_TOKEN_STDIN=1 \
         CONFIRM_DESTROY=1 \
         "${repo_root}/ci/providers/digitalocean/destroy-disposable-host.sh" "${receipt}" \
+        <<< "mock-token" > "${output}" 2>&1
+}
+
+function run_preview_destroy {
+    local mock_case
+    local receipt
+    local output
+
+    mock_case="${1}"
+    receipt="${2}"
+    output="${3}"
+
+    PATH="${tmpdir}/bin:${PATH}" \
+        MOCK_DO_CASE="${mock_case}" \
+        MOCK_DO_DELETE_LOG="${tmpdir}/delete.log" \
+        DIGITALOCEAN_TOKEN_STDIN=1 \
+        "${repo_root}/run" preview:destroy "${receipt}" \
         <<< "mock-token" > "${output}" 2>&1
 }
 
@@ -181,11 +214,13 @@ ok_receipt="${tmpdir}/receipt-ok.json"
 missing_tags_receipt="${tmpdir}/receipt-missing-tags.json"
 bad_name_receipt="${tmpdir}/receipt-bad-name.json"
 absent_receipt="${tmpdir}/receipt-absent.json"
+preview_receipt="${tmpdir}/preview-receipt.json"
 
 write_receipt "123" "${ok_receipt}"
 write_receipt "123" "${missing_tags_receipt}"
 write_receipt "123" "${bad_name_receipt}"
 write_receipt "404" "${absent_receipt}"
+write_preview_receipt "123" "${preview_receipt}"
 
 run_destroy ok "${ok_receipt}" "${tmpdir}/ok.out"
 assert_contains "${tmpdir}/ok.out" "DigitalOcean droplet destroyed"
@@ -215,5 +250,12 @@ assert_no_delete
 run_destroy ok "${absent_receipt}" "${tmpdir}/absent.out"
 assert_contains "${tmpdir}/absent.out" "DigitalOcean droplet already absent"
 assert_no_delete
+
+: > "${tmpdir}/delete.log"
+
+run_preview_destroy ok "${preview_receipt}" "${tmpdir}/preview.out"
+assert_contains "${tmpdir}/preview.out" "DigitalOcean droplet destroyed"
+assert_contains "${tmpdir}/preview.out" "droplet_id=123"
+assert_contains "${tmpdir}/delete.log" "DELETE droplets/123"
 
 echo "digitalocean destroy receipt test passed"

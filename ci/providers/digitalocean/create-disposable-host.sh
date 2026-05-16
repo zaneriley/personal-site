@@ -196,6 +196,7 @@ function write_receipt {
         --arg created_at "${created_at}" \
         --arg workflow_run_id "${GITHUB_RUN_ID:-}" \
         --arg workflow_sha "${GITHUB_SHA:-}" \
+        --arg preview_deploy_attempt_id "${PREVIEW_DEPLOY_ATTEMPT_ID:-}" \
         --arg ssh_command "ssh deploy@${public_ipv4}" \
         --arg destroy_command "DROPLET_ID=${droplet_id} CONFIRM_DESTROY=1 ./run host:disposable:destroy" \
         --argjson tags "${tags_json}" \
@@ -216,6 +217,7 @@ function write_receipt {
             created_at: $created_at,
             workflow_run_id: $workflow_run_id,
             workflow_sha: $workflow_sha,
+            preview_deploy_attempt_id: $preview_deploy_attempt_id,
             ssh_command: $ssh_command,
             destroy_command: $destroy_command,
             notes: [
@@ -333,14 +335,14 @@ if [[ ! -f "${cloud_init_template}" ]]; then
 fi
 
 timestamp="$(date -u +%Y%m%d%H%M%S)"
-default_name="personal-site-preview-${GITHUB_RUN_ID:-${timestamp}}"
+default_name="personal-site-disposable-${GITHUB_RUN_ID:-${timestamp}}"
 
 droplet_name="${DO_DROPLET_NAME:-${default_name}}"
 region="${DO_REGION:-sfo3}"
 size="${DO_SIZE:-s-1vcpu-1gb}"
 image="${DO_IMAGE:-ubuntu-24-04-x64}"
 output="${DO_HOST_OUTPUT:-.tmp/ci-artifacts/disposable-host/digitalocean-host.json}"
-tags_csv="${DO_TAGS:-personal-site,disposable-host,preview}"
+tags_csv="${DO_TAGS:-personal-site,disposable-host}"
 
 assert_allowed DO_REGION "${region}" "${DO_ALLOWED_REGIONS:-sfo3}"
 assert_allowed DO_SIZE "${size}" "${DO_ALLOWED_SIZES:-s-1vcpu-1gb}"

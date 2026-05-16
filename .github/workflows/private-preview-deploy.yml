@@ -1,0 +1,122 @@
+name: "Private preview deploy"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to preview"
+        required: true
+        type: string
+      expected_head_sha:
+        description: "Expected candidate commit SHA"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: read
+
+concurrency:
+  group: "private-preview-pr-${{ inputs.pr_number }}"
+  cancel-in-progress: false
+
+jobs:
+  private-preview:
+    name: "Private preview deploy"
+    if: ${{ github.ref_name == github.event.repository.default_branch }}
+    runs-on: "ubuntu-22.04"
+    environment: "preview"
+    timeout-minutes: 45
+
+    steps:
+      - uses: "actions/checkout@v6"
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - uses: "actions/checkout@v6"
+        with:
+          ref: ${{ inputs.expected_head_sha }}
+          path: ".tmp/preview-candidate"
+
+      - name: "Install preview dependencies"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq openssl
+
+      - name: "Login to GitHub Container Registry"
+        uses: "docker/login-action@v4"
+        with:
+          registry: "ghcr.io"
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Build trusted preview browser check"
+        run: docker build --target preview-page-acceptance -t personal-site-preview-page-acceptance:trusted .
+
+      - name: "Validate preview request"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+        run: |
+          mkdir -p .tmp/ci-artifacts/preview
+          printf "Preview deploy artifacts are written by ./run preview:deploy.\n" > .tmp/ci-artifacts/preview/workflow.txt
+
+          gh pr view "${PR_NUMBER}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --json baseRefName,headRefName,headRefOid,isCrossRepository,number,state \
+            > .tmp/ci-artifacts/preview/pr.json
+
+          jq -e '
+            (.number | tostring) == env.PR_NUMBER
+            and .state == "OPEN"
+            and .isCrossRepository == false
+            and .baseRefName == env.GITHUB_REF_NAME
+            and .headRefOid == env.EXPECTED_HEAD_SHA
+          ' .tmp/ci-artifacts/preview/pr.json >/dev/null
+
+      - name: "Build and push preview candidate"
+        id: "candidate-build"
+        uses: "docker/build-push-action@v7"
+        with:
+          context: ".tmp/preview-candidate"
+          push: true
+          target: "prod"
+          platforms: "linux/amd64"
+          tags: ghcr.io/${{ github.repository }}:private-preview-sha-${{ inputs.expected_head_sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ inputs.expected_head_sha }}
+            org.opencontainers.image.description=Private preview candidate image
+
+      - name: "Deploy private preview"
+        id: "deploy-preview"
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          DEPLOY_SSH_PUBLIC_KEY: ${{ secrets.DEPLOY_SSH_PUBLIC_KEY }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          PRESERVE_FAILED_HOST: "0"
+          PREVIEW_DEPLOY_REDACT_PUBLIC_URLS: "1"
+          RUNTIME_VIABILITY_REGISTRY_USERNAME: ${{ github.actor }}
+          RUNTIME_VIABILITY_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          ./run preview:deploy \
+            --app-image-ref "${image}@${{ steps.candidate-build.outputs.digest }}" \
+            --app-sha "${{ inputs.expected_head_sha }}" \
+            --preview-page-acceptance-image "personal-site-preview-page-acceptance:trusted"
+
+      - name: "Scan preview artifacts"
+        id: "artifact-safety"
+        if: always()
+        run: ./run preview:artifact-safety .tmp/ci-artifacts/preview
+
+      - name: "Upload preview deploy artifacts"
+        if: always() && steps.artifact-safety.outcome == 'success'
+        uses: "actions/upload-artifact@v7"
+        with:
+          name: "preview-deploy-artifacts"
+          path: ".tmp/ci-artifacts/preview/"
+          if-no-files-found: "error"
+          retention-days: 2

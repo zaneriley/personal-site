@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { startPreviewFixtureServer } from "./preview-page-acceptance/fixture-server.mjs";
+import { writeFailureSummary } from "./preview-page-acceptance/reporting.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const scriptDir = path.dirname(scriptPath);
@@ -208,6 +209,20 @@ const cases = [
       failures: [{ code: "live_view_not_connected" }],
     },
   },
+  {
+    name: "fake LiveView client state is not enough",
+    route: "/fake-live-view",
+    page: {
+      head: "<script>window.liveSocket = { isConnected: () => true }</script>",
+    },
+    config: {
+      browser_defaults: { require_live_view: true },
+    },
+    expect: {
+      status: "fail",
+      failures: [{ code: "live_view_not_connected" }],
+    },
+  },
 ];
 
 const fixtureServer = await startPreviewFixtureServer(cases);
@@ -217,6 +232,8 @@ try {
     await assertCase(testCase, fixtureServer.origin);
   }
 
+  await assertFailureSummaryRedactsUnsafeDetails();
+
   console.error("preview page acceptance fixture tests passed");
 } finally {
   await fixtureServer.close();
@@ -225,7 +242,12 @@ try {
 
 async function assertCase(testCase, fixtureOrigin) {
   const result = await runFixture(testCase, fixtureOrigin);
-  const output = await readJson(result.outputPath);
+  const output = await readJson(result.outputPath).catch((error) => {
+    throw new Error(formatCaseDebug(testCase, result, {
+      status: "missing-output",
+      failures: [{ code: error.code, message: error.message }],
+    }));
+  });
 
   if (result.status === 0 && testCase.expect.status !== "pass") {
     throw new Error(formatCaseDebug(testCase, result, output));
@@ -255,6 +277,96 @@ async function assertCase(testCase, fixtureOrigin) {
 
   if (output.failures.length !== testCase.expect.failures.length) {
     throw new Error(formatCaseDebug(testCase, result, output));
+  }
+}
+
+async function assertFailureSummaryRedactsUnsafeDetails() {
+  const summaryPath = path.join(tmpDir, "redacted-failure-summary.md");
+  const previewUrl = "http://203.0.113.42:18080/en";
+  const token = "ghp_abcdefghijklmnopqrstuvwxyz1234567890";
+  const previousActions = process.env.GITHUB_ACTIONS;
+
+  process.env.GITHUB_ACTIONS = "true";
+  try {
+    await writeFailureSummary(summaryPath, {
+      status: "fail",
+      browser_connect_url: previewUrl,
+      expected_site_origin: "http://203.0.113.42:18080",
+      failures: [
+        {
+          code: "csp_violation",
+          route: "/en",
+          viewport: "desktop",
+          violated_directive: "img-src",
+          blocked_uri: `${previewUrl}?token=${token}`,
+        },
+        {
+          code: "page_error",
+          route: "/en",
+          viewport: "desktop",
+          message: `fetch failed ${previewUrl}?auth=${token}`,
+        },
+        {
+          code: "request_failed",
+          route: "/en",
+          viewport: "desktop",
+          status: 404,
+          url: `${previewUrl}?auth=${token}`,
+        },
+      ],
+      failure_summary: [
+        {
+          code: "csp_violation",
+          count: 1,
+          examples: [
+            {
+              code: "csp_violation",
+              route: "/en",
+              viewport: "desktop",
+              violated_directive: "img-src",
+              blocked_uri: `${previewUrl}?token=${token}`,
+            },
+          ],
+        },
+        {
+          code: "page_error",
+          count: 1,
+          examples: [
+            {
+              code: "page_error",
+              route: "/en",
+              viewport: "desktop",
+              message: `fetch failed ${previewUrl}?auth=${token}`,
+          },
+        ],
+      },
+      {
+        code: "request_failed",
+        count: 1,
+        examples: [
+          {
+            code: "request_failed",
+            route: "/en",
+            viewport: "desktop",
+            status: 404,
+            url: `${previewUrl}?auth=${token}`,
+          },
+        ],
+      },
+    ],
+  });
+  } finally {
+    if (previousActions === undefined) {
+      delete process.env.GITHUB_ACTIONS;
+    } else {
+      process.env.GITHUB_ACTIONS = previousActions;
+    }
+  }
+
+  const summary = await fs.readFile(summaryPath, "utf8");
+
+  if (summary.includes(previewUrl) || summary.includes(token)) {
+    throw new Error(`failure summary leaked unsafe detail:\n${summary}`);
   }
 }
 

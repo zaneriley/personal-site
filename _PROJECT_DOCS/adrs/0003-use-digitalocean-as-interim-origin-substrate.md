@@ -22,9 +22,13 @@ are done enough to revisit self-hosting deliberately.
 
 This does not make every DigitalOcean Droplet a production origin. The current
 `disposable host` commands still create short-lived hosts for proof and
-measurement. The next deploy work should promote the DigitalOcean path from
-host/runtime proof toward a real preview lane and then an interim production
-origin.
+measurement. The first preview wrapper now promotes that host/runtime proof into
+one private-preview result: candidate app image digest, disposable host, runtime
+viability, preview page acceptance, and preview deploy receipt. A manual GitHub
+Actions workflow validates a PR SHA on the default branch, builds that candidate
+image, and runs the preview path. The next deploy work should prove that
+workflow against a real PR and host, then add an interim production origin only
+after preview is boring.
 
 Self-hosting remains the likely long-term direction, but it is parked until the
 application, content flow, deploy receipts, rollback, browser proof, and
@@ -35,9 +39,9 @@ operational loop are boring on DigitalOcean.
 - Do not keep reopening provider choice while implementing the deploy loop.
 - Do not add provider-neutral abstractions until DigitalOcean has enough real
   deploy surface to prove what abstraction is needed.
-- Do add the DigitalOcean-specific hardening that now earns rent: deploy receipt,
-  host janitor, key handling, firewall/IPv6 decision, rollback proof, and
-  promotion flow.
+- Do add the DigitalOcean-specific hardening that now earns rent: real GitHub
+  Actions preview proof, host janitor, SSH login path, firewall/IPv6 decision,
+  rollback proof, and promotion flow.
 - Continue treating AWS/S3/CloudFront as the live fallback until the DigitalOcean
   path has preview proof, rollback proof, and SEO-safe cutover work.
 - Revisit owned hardware/self-hosting after the app is done enough that moving

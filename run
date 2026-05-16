@@ -409,6 +409,21 @@ function host:disposable:runtime-viability {
   ci/preview/runtime-viability.sh "$@"
 }
 
+function preview:deploy {
+  # Create and verify a private preview from an app image digest
+  ci/preview/private-preview.mjs "$@"
+}
+
+function preview:destroy {
+  # Destroy the disposable host recorded in a preview deploy receipt
+  ci/preview/destroy.sh "$@"
+}
+
+function preview:artifact-safety {
+  # Scan private preview artifacts before upload
+  ci/preview/preview-artifact-safety.mjs "${1:-.tmp/ci-artifacts/preview}"
+}
+
 # -----------------------------------------------------------------------------
 # Database
 # -----------------------------------------------------------------------------
@@ -599,6 +614,8 @@ function ci:acceptance-gate-bypass-check:test {
 function ci:disposable-host-check {
     ci/providers/digitalocean/destroy-disposable-host-test.sh
     ci/preview/runtime-viability-test.sh
+    ci/preview/private-preview-test.mjs
+    ci/preview/preview-artifact-safety-test.mjs
     ci:preview-page-acceptance:test
 }
 
@@ -637,11 +654,47 @@ function ci:performance-browser {
 
 function ci:preview-page-acceptance:test {
     local check_image
+    local entrypoint
     local image
 
     check_image="${PREVIEW_PAGE_ACCEPTANCE_IMAGE:-personal-site-preview-page-acceptance}"
     image="${PREVIEW_PAGE_ACCEPTANCE_TEST_IMAGE:-personal-site-preview-page-acceptance-test}"
     docker build --target preview-page-acceptance -t "${check_image}" . >/dev/null
+    entrypoint="$(docker image inspect --format '{{json .Config.Entrypoint}}' "${check_image}")"
+    if [[ "${entrypoint}" != '["node","/opt/preview-page-acceptance/preview-page-acceptance.mjs"]' ]]; then
+        echo "fatal: preview-page-acceptance image entrypoint drifted: ${entrypoint}" >&2
+        return 1
+    fi
+    docker run --rm \
+        --entrypoint node \
+        -v "${PWD}:/repo:ro" \
+        "${check_image}" \
+        --input-type=module \
+        -e '
+          import crypto from "node:crypto";
+          import fs from "node:fs";
+
+          const pairs = [
+            ["/repo/ci/preview/preview-page-acceptance.mjs", "/opt/preview-page-acceptance/preview-page-acceptance.mjs"],
+            ["/repo/ci/contracts/routes.json", "/opt/preview-page-acceptance/routes.json"],
+            ...fs.readdirSync("/repo/ci/preview/preview-page-acceptance")
+              .filter((name) => name.endsWith(".mjs"))
+              .map((name) => [
+                `/repo/ci/preview/preview-page-acceptance/${name}`,
+                `/opt/preview-page-acceptance/preview-page-acceptance/${name}`,
+              ]),
+          ];
+
+          function sha256(file) {
+            return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+          }
+
+          for (const [source, packaged] of pairs) {
+            if (sha256(source) !== sha256(packaged)) {
+              throw new Error(`packaged preview checker drifted: ${packaged}`);
+            }
+          }
+        '
     docker build --target browser -t "${image}" . >/dev/null
     docker run --rm --tmpfs /tmp:rw,size=256m "${image}" node /app/ci/preview/preview-page-acceptance-test.mjs
 }
@@ -658,12 +711,7 @@ function ci:preview-page-acceptance {
     output_dir="${PREVIEW_PAGE_ACCEPTANCE_OUTPUT_DIR:-.tmp/ci-artifacts/preview-page-acceptance}"
 
     if [[ -z "${browser_connect_url}" ]]; then
-        echo "Usage: PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=ghcr.io/owner/repo@sha256:<digest> ./run ci:preview-page-acceptance http://<preview-host>:<port> [expected-site-origin]" >&2
-        return 1
-    fi
-
-    if [[ -n "${PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF:-}" && ! "${PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF}" =~ @sha256:[0-9a-fA-F]{64}$ ]]; then
-        echo "fatal: PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF must be digest-pinned with @sha256:<64 hex chars>" >&2
+        echo "Usage: PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=<trusted-preview-page-acceptance-image> ./run ci:preview-page-acceptance http://<preview-host>:<port> [expected-site-origin]" >&2
         return 1
     fi
 

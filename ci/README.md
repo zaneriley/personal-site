@@ -10,7 +10,7 @@ checked-in inputs or scripts that run those inputs. Generated proof belongs in
 - `contracts/` says what the site must prove: routes, page text, browser checks, and performance budgets.
 - `fixtures/` holds small posts and case studies used to prove real detail pages render.
 - `gates/` holds checks that can block a merge.
-- `preview/` checks whether a candidate image can boot and whether its pages look real in a browser.
+- `preview/` deploys a candidate image to a disposable host and checks whether its pages look real in a browser.
 - `providers/` holds paid host plumbing. DigitalOcean lives there because it is one provider, not the deploy model.
 
 ## Commands
@@ -20,6 +20,8 @@ checked-in inputs or scripts that run those inputs. Generated proof belongs in
 - `./run ci:preview-page-acceptance:test` checks the browser assertions without deploying anything.
 - `./run ci:disposable-host-check` checks host scripts and runtime inputs without creating a cloud server.
 - `./run host:disposable:*` creates, inspects, destroys, or tests a short-lived host.
+- `./run preview:deploy --app-image-ref <digest-ref> --app-sha <sha> --preview-page-acceptance-image <trusted-image>` writes one private preview receipt.
+- `./run preview:destroy <deploy-receipt.json>` destroys the disposable host recorded by a preview deploy.
 
 ## Adding Work
 
@@ -28,3 +30,7 @@ Add new route, text, browser, or performance expectations to
 
 Add receipts, screenshots, and last-run JSON under `.tmp/ci-artifacts/`. Do not
 put generated files beside the scripts that produced them.
+
+For preview deploys, start with `.tmp/ci-artifacts/preview/deploy-receipt.json`.
+Terminal output, GitHub summaries, and failure markdown are rendered views of
+that receipt; stage logs and screenshots are supporting evidence linked from it.
