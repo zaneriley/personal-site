@@ -179,7 +179,7 @@ Migration sequence:
 
 This framing keeps the values in order: visitor experience and SEO safety first, then deploy confidence, then AWS removal and cost/compute optimization.
 
-The throwaway VPS literature pass is complete at `.tmp/2026-05-11-throwaway-vps-origin/literature/`. Hetzner Cloud CX23 x86 is the lowest-cost clean candidate on paper, but DigitalOcean is the chosen first spike target because Z already has an account and the goal is to reduce setup friction. Use the smallest honest DigitalOcean Droplet first: Basic 1 GiB / 1 vCPU, no backups, no snapshots unless explicitly needed, no managed database, no load balancer, no extra volumes, and destroy rather than power off when done. The 512 MiB Droplet is a later squeeze target only if the 1 GiB path works and resource measurements say it is worth testing.
+The throwaway VPS literature pass is complete at `.tmp/2026-05-11-throwaway-vps-origin/literature/`. Hetzner Cloud CX23 x86 is the lowest-cost clean candidate on paper, but DigitalOcean is now the interim origin/deploy substrate until the app and deploy loop are done enough to revisit self-hosting deliberately. See ADR 0003. Use the smallest honest DigitalOcean Droplet first: Basic 1 GiB / 1 vCPU, no backups, no snapshots unless explicitly needed, no managed database, no load balancer, no extra volumes, and destroy rather than power off when done. The 512 MiB Droplet is a later squeeze target only if the 1 GiB path works and resource measurements say it is worth testing.
 
 Static public-site export remains a **performance/deploy simplification option**, not the active path. Phoenix may be able to render the visitor-facing portfolio to static HTML someday, but do not pivot there now. Keep the current dynamic Phoenix/Docker origin path until DigitalOcean/Kamal/private-preview evidence says it fails or performance/cost data makes static export the right optimization.
 
@@ -277,10 +277,12 @@ Minimum reset scope:
 Next decisions after the reset:
 
 1. Make preview verification one verdict instead of manual runtime viability plus external preview page acceptance handoff.
-2. Decide the DigitalOcean spike exit before adding janitors, IPv6, deploy receipts, or provider-neutral abstractions.
+2. Graduate the DigitalOcean path from disposable-host proof toward an interim preview lane and origin deploy flow.
 3. Revisit historical performance baselines only if fixed budgets and `.tmp/ci-artifacts/` evidence stop answering the question.
 
 ### DigitalOcean Disposable Host Requirements
+
+DigitalOcean is the interim substrate decision, but this section still describes the short-lived host proof machinery. A disposable host is not yet the durable origin.
 
 First implementation slice: create, inspect, and destroy a disposable DigitalOcean Docker host without touching `zaneriley.com`, AWS, release automation, or production DNS.
 
@@ -346,14 +348,14 @@ GitHub workflow:
 - The workflow is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
 - GitHub will not run this new manual workflow from a feature branch until the workflow definition is present on the default branch. Before merge, use the same canonical `./run host:disposable:*` commands locally for proof; after merge, rerun the create/status/destroy proof through GitHub Actions.
 
-Remaining hardening before this graduates from host spike to deploy substrate:
+Remaining hardening before this becomes an interim DigitalOcean origin/deploy flow:
 
 - Add a deploy receipt that records host id, image digest, content SHA/generation, smoke result, and rollback/destroy commands.
 - Add a browser-level preview proof that fails on missing CSS/JS/icon assets, requests to the wrong origin such as `preview.local`, visible app error states on required routes, and obvious viewport breakage before treating a preview as user-credible. First fix and assert the asset-origin problem; then re-check mobile layout so asset/config failure and true responsive bugs do not get mixed together.
 - Add repeated-request/runtime-load observation before treating 1 GiB as production-safe.
 - Add a scheduled or manual age-based janitor for tagged disposable hosts.
 - Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
-- Decide whether IPv6 should stay enabled for the spike; if yes, firewall and smoke must treat it as first-class.
+- Decide whether IPv6 should stay enabled for the DigitalOcean path; if yes, firewall and smoke must treat it as first-class.
 - Keep the command taxonomy honest: this is Docker-host bootstrap. "Deploy" still means app image digest plus content SHA/generation, preview checks, promotion, and rollback.
 
 ## Resource-frugality feedback harness proposal
