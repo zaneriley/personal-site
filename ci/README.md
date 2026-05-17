@@ -37,9 +37,9 @@ content checkout backed by a local Git source repo. That keeps normal preview
 checks stable while allowing the next publication rehearsal to change content and
 send a real webhook to the running preview.
 
-Current status: `content:rehearse-preview` is implemented but still needs to be
-run against a real private preview receipt. After that passes, promote the same
-behavior to the real content repo PR/merge trigger.
+Current status: `content:rehearse-preview` passed in the real `Private preview
+deploy` workflow on run `25985240113`. Next, promote the same behavior to the
+real content repo PR/merge trigger.
 
 ## Adding Work
 
