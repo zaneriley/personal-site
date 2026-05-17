@@ -30,15 +30,6 @@ defmodule PortfolioWeb.ErrorHTML do
     def actions(_exception), do: []
   end
 
-  def dynamic_home_url do
-    scheme = Application.get_env(:portfolio, :url_scheme, "http")
-    host = Application.get_env(:portfolio, :url_host, "localhost")
-    port = Application.get_env(:portfolio, :url_port, "8000")
-
-    port_segment = if port in ["80", "443"], do: "", else: ":#{port}"
-    "#{scheme}://#{host}#{port_segment}"
-  end
-
   def render(embed_template, _assigns) do
     Phoenix.Controller.status_message_from_template(embed_template)
   end

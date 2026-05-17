@@ -167,7 +167,7 @@
       "label": "missing-note",
       "path": "/en/note/this-route-cannot-exist-xyzzy",
       "allowed_statuses": [404],
-      "required_body_text": ["Not Found"],
+      "required_body_text": ["ERROR 404", "DATA NOT FOUND"],
       "load_probe": {
         "enabled": false
       },
