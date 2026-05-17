@@ -60,6 +60,7 @@ async function assertCase(name, expected) {
       PRIVATE_PREVIEW_FIXTURE: name,
       PREVIEW_DEPLOY_REDACT_PUBLIC_URLS: "1",
       GITHUB_STEP_SUMMARY: summaryFile,
+      GITHUB_ACTIONS: "",
     },
   );
   const receipt = await readJson(path.join(outputDir, "deploy-receipt.json"));
