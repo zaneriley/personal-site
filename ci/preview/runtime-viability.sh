@@ -551,7 +551,7 @@ function probe_routes {
         allowed_statuses_json="$(jq -c '.allowed_statuses' <<< "${route_json}")"
         required_body_text_json="$(jq -c '.required_body_text // []' <<< "${route_json}")"
         body_file="$(mktemp)"
-        status_code="$(curl -sS -o "${body_file}" -w "%{http_code}" "http://127.0.0.1:${RUNTIME_VIABILITY_HOST_PORT}${route}" || true)"
+        status_code="$(curl -L -sS -o "${body_file}" -w "%{http_code}" "http://127.0.0.1:${RUNTIME_VIABILITY_HOST_PORT}${route}" || true)"
         status_number="null"
         byte_count="$(wc -c < "${body_file}" | tr -d ' ')"
         required_body_text_present_json="$(literal_hits "${body_file}" "${required_body_text_json}")"

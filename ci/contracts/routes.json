@@ -14,7 +14,12 @@
       "127.0.0.1",
       "0.0.0.0",
       "web:8000",
-      "zaneriley.com"
+      "http://zaneriley.com",
+      "https://zaneriley.com",
+      "http://www.zaneriley.com",
+      "https://www.zaneriley.com",
+      "//zaneriley.com",
+      "//www.zaneriley.com"
     ]
   },
   "browser": {
