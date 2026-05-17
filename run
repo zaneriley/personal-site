@@ -692,6 +692,8 @@ function ci:performance-browser {
 }
 
 function ci:preview-page-acceptance:test {
+    local env_probe_dir
+    local probe_status
     local check_image
     local entrypoint
     local image
@@ -736,6 +738,28 @@ function ci:preview-page-acceptance:test {
         '
     docker build --target browser -t "${image}" . >/dev/null
     docker run --rm --tmpfs /tmp:rw,size=256m "${image}" node /app/ci/preview/preview-page-acceptance-test.mjs
+
+    mkdir -p .tmp/ci-artifacts
+    env_probe_dir="$(mktemp -d "${PWD}/.tmp/ci-artifacts/preview-page-acceptance-env.XXXXXX")"
+    set +o errexit
+    PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF="${check_image}" \
+        PREVIEW_PAGE_ACCEPTANCE_OUTPUT_DIR="${env_probe_dir}" \
+        PREVIEW_DEPLOY_ATTEMPT_ID="preview-page-acceptance-env-probe" \
+        PREVIEW_DEPLOY_REDACT_PUBLIC_URLS=1 \
+        ./run ci:preview-page-acceptance "http://127.0.0.1:9" "http://127.0.0.1:9" \
+        >"${env_probe_dir}/stdout.log" 2>"${env_probe_dir}/stderr.log"
+    probe_status="$?"
+    set -o errexit
+    if [[ "${probe_status}" == "0" ]]; then
+        echo "fatal: preview-page-acceptance env probe unexpectedly passed against a dead port" >&2
+        return 1
+    fi
+    jq -e \
+        --arg attempt_id "preview-page-acceptance-env-probe" \
+        --arg image_ref "${check_image}" \
+        '.preview_deploy_attempt_id == $attempt_id
+          and .preview_page_acceptance_image_ref == $image_ref' \
+        "${env_probe_dir}/preview-page-acceptance.json" >/dev/null
 }
 
 function ci:preview-page-acceptance {
@@ -768,6 +792,9 @@ function ci:preview-page-acceptance {
         --ipc=host \
         --tmpfs /tmp:rw,size=256m \
         -v "${output_mount_dir}:/artifacts" \
+        -e "PREVIEW_DEPLOY_ATTEMPT_ID=${PREVIEW_DEPLOY_ATTEMPT_ID:-}" \
+        -e "PREVIEW_DEPLOY_REDACT_PUBLIC_URLS=${PREVIEW_DEPLOY_REDACT_PUBLIC_URLS:-}" \
+        -e "PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=${image}" \
         "${image}" \
         --browser-connect-url "${browser_connect_url}" \
         --expected-site-origin "${expected_site_origin}" \
