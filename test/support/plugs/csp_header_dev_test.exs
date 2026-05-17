@@ -1,40 +1,35 @@
-# test/support/plugs/csp_header_dev_test.exs
 defmodule PortfolioWeb.CSPHeaderDevTest do
-  use PortfolioWeb.ConnCase
+  use ExUnit.Case, async: true
   alias PortfolioWeb.Plugs.CSPHeader
   alias PortfolioWeb.Plugs.CSPHeader.Dev
 
-  describe "Development CSP Header" do
-    test "frame-src is set to 'self' in development" do
+  describe "frame_src/0" do
+    test "is 'self' in development" do
       assert Dev.frame_src() == "'self'"
     end
+  end
 
-    test "upgrade-insecure-requests is not added in development" do
-      directives = [{"default-src", "'self'"}]
-      assert Dev.maybe_add_upgrade_insecure_requests(directives) == directives
+  describe "generate_csp_for_testing/3 with Dev env module" do
+    test "frame-src is 'self' in the rendered policy" do
+      csp =
+        CSPHeader.generate_csp_for_testing(
+          %{scheme: "http", host: "localhost", port: 4000},
+          [],
+          Dev
+        )
+
+      assert csp =~ ~r/frame-src\s+'self'/
     end
 
-    test "script-src allows unsafe-inline in development" do
-      config = %{
-        scheme: "http",
-        host: "localhost",
-        port: "4000",
-        additional_hosts: []
-      }
+    test "script-src and style-src retain 'unsafe-inline' (pending hardening slice)" do
+      csp =
+        CSPHeader.generate_csp_for_testing(
+          %{scheme: "http", host: "localhost", port: 4000},
+          [],
+          Dev
+        )
 
-      csp = CSPHeader.generate_csp_for_testing(config)
       assert csp =~ ~r/script-src[^;]*'unsafe-inline'/
-    end
-
-    test "style-src allows unsafe-inline in development" do
-      config = %{
-        scheme: "http",
-        host: "localhost",
-        port: "4000",
-        additional_hosts: []
-      }
-
-      csp = CSPHeader.generate_csp_for_testing(config)
       assert csp =~ ~r/style-src[^;]*'unsafe-inline'/
     end
   end

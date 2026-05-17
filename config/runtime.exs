@@ -2,23 +2,48 @@ import Config
 
 config :portfolio, environment: config_env()
 
-url_host = System.fetch_env!("URL_HOST")
-
 config :portfolio, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-config :portfolio, PortfolioWeb.Endpoint,
-  url: [
-    scheme: System.get_env("URL_SCHEME", "https"),
-    host: url_host,
-    port: System.get_env("URL_PORT", "443")
-  ],
-  static_url: [
-    host: System.get_env("URL_STATIC_HOST", url_host)
-  ],
-  http: [port: System.get_env("PORT", "8000")],
-  secret_key_base: System.fetch_env!("SECRET_KEY_BASE"),
-  # It is completely safe to hard code and use this salt value.
-  live_view: [signing_salt: "k4yfnQW4r"]
+config :portfolio,
+  canonical_origin: nil,
+  noindex: true
+
+if config_env() == :prod do
+  phx_host = System.fetch_env!("PHX_HOST")
+  phx_scheme = System.get_env("PHX_URL_SCHEME", "https")
+  phx_port = System.get_env("PHX_URL_PORT", "443")
+  force_ssl? = System.get_env("PHX_FORCE_SSL", "true") in ~w(1 true yes)
+
+  endpoint_config = [
+    url: [
+      scheme: phx_scheme,
+      host: phx_host,
+      port: String.to_integer(phx_port)
+    ],
+    http: [port: String.to_integer(System.get_env("PORT", "8000"))],
+    secret_key_base: System.fetch_env!("SECRET_KEY_BASE"),
+    # It is completely safe to hard code and use this salt value.
+    live_view: [signing_salt: "k4yfnQW4r"]
+  ]
+
+  endpoint_config =
+    if force_ssl? do
+      Keyword.put(endpoint_config, :force_ssl, hsts: true)
+    else
+      endpoint_config
+    end
+
+  canonical_origin =
+    if phx_host == "zaneriley.com" do
+      "https://zaneriley.com"
+    end
+
+  config :portfolio, PortfolioWeb.Endpoint, endpoint_config
+
+  config :portfolio,
+    canonical_origin: canonical_origin,
+    noindex: System.get_env("PHX_NOINDEX", "false") in ~w(1 true yes)
+end
 
 db_user = System.get_env("POSTGRES_USER", "portfolio")
 database = System.get_env("POSTGRES_DB", db_user)

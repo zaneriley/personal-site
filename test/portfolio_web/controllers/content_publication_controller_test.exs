@@ -5,6 +5,21 @@ defmodule PortfolioWeb.ContentPublicationControllerTest do
   alias PortfolioWeb.ContentPublicationDebugLink
 
   describe "GET /ops/content/publications/:id" do
+    test "signed debug URLs use the configured site origin" do
+      content_sha = String.duplicate("a", 40)
+
+      assert {:ok, entry} =
+               Publishing.record_publication_event(
+                 "debug-view-signed-url",
+                 content_sha,
+                 :ignored,
+                 reason: "No relevant content changes"
+               )
+
+      assert ContentPublicationDebugLink.signed_url(entry) =~
+               ~r/\A#{Regex.escape(PortfolioWeb.Endpoint.url())}\/ops\/content\/publications\//
+    end
+
     test "renders a signed private publication debug view", %{conn: conn} do
       content_sha = String.duplicate("d", 40)
 

@@ -385,23 +385,53 @@ function content:rollback {
   _dc web mix portfolio.content.rollback "$@"
 }
 
+function content:rehearse {
+  # Rehearse the content publication flow with a Git commit and signed webhook
+  elixir:test test/portfolio_web/content_publication_flow_test.exs "$@"
+}
+
+function content:rehearse-preview {
+  # Rehearse content publication against a running private preview
+  ci/content-publication/rehearse-preview.sh "$@"
+}
+
 # -----------------------------------------------------------------------------
 # Disposable Hosts
 # -----------------------------------------------------------------------------
 
 function host:disposable:create {
   # Create a disposable DigitalOcean Docker host
-  ci/deploy/digitalocean-create-origin.sh "$@"
+  ci/providers/digitalocean/create-disposable-host.sh "$@"
 }
 
 function host:disposable:status {
   # Print status for disposable DigitalOcean Docker hosts
-  ci/deploy/digitalocean-origin-status.sh "$@"
+  ci/providers/digitalocean/status-disposable-host.sh "$@"
 }
 
 function host:disposable:destroy {
   # Destroy a disposable DigitalOcean Docker host
-  ci/deploy/digitalocean-destroy-origin.sh "$@"
+  ci/providers/digitalocean/destroy-disposable-host.sh "$@"
+}
+
+function host:disposable:runtime-viability {
+  # Check a digest-pinned app image on a disposable host
+  ci/preview/runtime-viability.sh "$@"
+}
+
+function preview:deploy {
+  # Create and verify a private preview from an app image digest
+  ci/preview/private-preview.mjs "$@"
+}
+
+function preview:destroy {
+  # Destroy the disposable host recorded in a preview deploy receipt
+  ci/preview/destroy.sh "$@"
+}
+
+function preview:artifact-safety {
+  # Scan private preview artifacts before upload
+  ci/preview/preview-artifact-safety.mjs "${1:-.tmp/ci-artifacts/preview}"
 }
 
 # -----------------------------------------------------------------------------
@@ -503,7 +533,59 @@ function ci:workflow-lint {
     bin/ci/actionlint "${workflows[@]}"
 }
 
+function ci:url-discipline {
+    local rg_status
+    local -a url_wrap_command
+    local -a csp_env_command
+    local url_wrap_matches
+    local csp_env_matches
+
+    if command -v rg >/dev/null 2>&1; then
+        url_wrap_command=(rg --line-number '\burl\(~p' lib/portfolio_web/)
+        csp_env_command=(rg --line-number 'URL_SCHEME|URL_PORT' lib/portfolio_web/plugs/)
+    else
+        url_wrap_command=(grep -RInE '(^|[^[:alnum:]_])url\(~p' lib/portfolio_web/)
+        csp_env_command=(grep -RInE 'URL_SCHEME|URL_PORT' lib/portfolio_web/plugs/)
+    fi
+
+    if url_wrap_matches="$("${url_wrap_command[@]}")"; then
+        :
+    else
+        rg_status="$?"
+        if [[ "${rg_status}" -eq 1 ]]; then
+            url_wrap_matches=""
+        else
+            return "${rg_status}"
+        fi
+    fi
+
+    if [[ -n "${url_wrap_matches}" ]]; then
+        echo "Do not wrap verified routes with url(~p...) in web code." >&2
+        echo "Use ~p for root-relative in-app paths, or absolute_url(~p...) when an absolute site URL is required." >&2
+        printf "%s\n" "${url_wrap_matches}" >&2
+        return 1
+    fi
+
+    if csp_env_matches="$("${csp_env_command[@]}")"; then
+        :
+    else
+        rg_status="$?"
+        if [[ "${rg_status}" -eq 1 ]]; then
+            csp_env_matches=""
+        else
+            return "${rg_status}"
+        fi
+    fi
+
+    if [[ -n "${csp_env_matches}" ]]; then
+        echo "CSP must derive scheme/port from conn, not URL_SCHEME / URL_PORT env vars." >&2
+        printf "%s\n" "${csp_env_matches}" >&2
+        return 1
+    fi
+}
+
 function ci:lint {
+    ci:url-discipline
     lint:shell
     lint:dockerfile "${@}"
     elixir:lint
@@ -569,11 +651,15 @@ function ci:acceptance-gate-bypass-check:test {
 }
 
 function ci:disposable-host-check {
-    ci/deploy/digitalocean-destroy-origin-test.sh
+    ci/providers/digitalocean/destroy-disposable-host-test.sh
+    ci/preview/runtime-viability-test.sh
+    ci/preview/private-preview-test.mjs
+    ci/preview/preview-artifact-safety-test.mjs
+    ci:preview-page-acceptance:test
 }
 
 function ci:prod-build {
-    ci/prod-build.sh
+    ci/gates/prod-build.sh
 }
 
 function ci:performance-browser {
@@ -581,11 +667,11 @@ function ci:performance-browser {
     local tmp_output
     local status
 
-    output="${PERF_BROWSER_OUTPUT:-ci/browser-last-run.json}"
+    output="${PERF_BROWSER_OUTPUT:-.tmp/ci-artifacts/prod-build/browser-performance-last-run.json}"
     tmp_output="$(mktemp)"
 
     if docker compose build js >/dev/null &&
-        docker compose run --rm ${TTY} js node ../ci/browser-performance.mjs --output - > "${tmp_output}" &&
+        docker compose run --rm ${TTY} js node ../ci/gates/browser-performance.mjs --output - > "${tmp_output}" &&
         jq -e '.status == "pass"' "${tmp_output}" >/dev/null; then
         mkdir -p "$(dirname "${output}")"
         mv "${tmp_output}" "${output}"
@@ -605,8 +691,91 @@ function ci:performance-browser {
     return "${status}"
 }
 
+function ci:preview-page-acceptance:test {
+    local check_image
+    local entrypoint
+    local image
+
+    check_image="${PREVIEW_PAGE_ACCEPTANCE_IMAGE:-personal-site-preview-page-acceptance}"
+    image="${PREVIEW_PAGE_ACCEPTANCE_TEST_IMAGE:-personal-site-preview-page-acceptance-test}"
+    docker build --target preview-page-acceptance -t "${check_image}" . >/dev/null
+    entrypoint="$(docker image inspect --format '{{json .Config.Entrypoint}}' "${check_image}")"
+    if [[ "${entrypoint}" != '["node","/opt/preview-page-acceptance/preview-page-acceptance.mjs"]' ]]; then
+        echo "fatal: preview-page-acceptance image entrypoint drifted: ${entrypoint}" >&2
+        return 1
+    fi
+    docker run --rm \
+        --entrypoint node \
+        -v "${PWD}:/repo:ro" \
+        "${check_image}" \
+        --input-type=module \
+        -e '
+          import crypto from "node:crypto";
+          import fs from "node:fs";
+
+          const pairs = [
+            ["/repo/ci/preview/preview-page-acceptance.mjs", "/opt/preview-page-acceptance/preview-page-acceptance.mjs"],
+            ["/repo/ci/contracts/routes.json", "/opt/preview-page-acceptance/routes.json"],
+            ...fs.readdirSync("/repo/ci/preview/preview-page-acceptance")
+              .filter((name) => name.endsWith(".mjs"))
+              .map((name) => [
+                `/repo/ci/preview/preview-page-acceptance/${name}`,
+                `/opt/preview-page-acceptance/preview-page-acceptance/${name}`,
+              ]),
+          ];
+
+          function sha256(file) {
+            return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+          }
+
+          for (const [source, packaged] of pairs) {
+            if (sha256(source) !== sha256(packaged)) {
+              throw new Error(`packaged preview checker drifted: ${packaged}`);
+            }
+          }
+        '
+    docker build --target browser -t "${image}" . >/dev/null
+    docker run --rm --tmpfs /tmp:rw,size=256m "${image}" node /app/ci/preview/preview-page-acceptance-test.mjs
+}
+
+function ci:preview-page-acceptance {
+    local browser_connect_url
+    local expected_site_origin
+    local image
+    local output_dir
+
+    image="${PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF:-${PREVIEW_PAGE_ACCEPTANCE_IMAGE:-personal-site-preview-page-acceptance}}"
+    browser_connect_url="${PREVIEW_BROWSER_CONNECT_URL:-${1:-}}"
+    expected_site_origin="${PREVIEW_EXPECTED_SITE_ORIGIN:-${2:-${browser_connect_url}}}"
+    output_dir="${PREVIEW_PAGE_ACCEPTANCE_OUTPUT_DIR:-.tmp/ci-artifacts/preview-page-acceptance}"
+
+    if [[ -z "${browser_connect_url}" ]]; then
+        echo "Usage: PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF=<trusted-preview-page-acceptance-image> ./run ci:preview-page-acceptance http://<preview-host>:<port> [expected-site-origin]" >&2
+        return 1
+    fi
+
+    mkdir -p "${output_dir}"
+
+    docker run --rm \
+        --init \
+        --ipc=host \
+        --tmpfs /tmp:rw,size=256m \
+        -v "${PWD}/${output_dir}:/artifacts" \
+        "${image}" \
+        --browser-connect-url "${browser_connect_url}" \
+        --expected-site-origin "${expected_site_origin}" \
+        --routes-contract /opt/preview-page-acceptance/routes.json \
+        --screenshots-dir /artifacts/screenshots \
+        --output /artifacts/preview-page-acceptance.json \
+        --failure-summary /artifacts/preview-page-acceptance.md
+}
+
 function ci:content-validate {
     content:validate "$@"
+}
+
+function ci:content-publication-flow {
+    content:rehearse "$@"
 }
 
 function ci:run-all {

@@ -1,10 +1,10 @@
-name: "Disposable host spike"
+name: "Disposable host debug"
 
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: "Disposable origin action"
+        description: "Lower-level host debug action; use Private preview deploy for normal previews"
         required: true
         default: "status"
         type: choice
@@ -47,7 +47,7 @@ concurrency:
 
 jobs:
   digitalocean-host:
-    name: "DigitalOcean host"
+    name: "DigitalOcean host debug"
     runs-on: "ubuntu-22.04"
     environment: "preview"
     timeout-minutes: 20
@@ -71,7 +71,7 @@ jobs:
           DO_REGION: ${{ inputs.region }}
           DO_SIZE: ${{ inputs.size }}
           DO_IMAGE: ${{ inputs.image }}
-          PRESERVE_FAILED_ORIGIN: "0"
+          PRESERVE_FAILED_HOST: "0"
         run: ./run host:disposable:create
 
       - name: "Show disposable host status"
@@ -94,6 +94,6 @@ jobs:
         uses: "actions/upload-artifact@v7"
         with:
           name: "digitalocean-host"
-          path: "ci/digitalocean-host.json"
+          path: ".tmp/ci-artifacts/disposable-host/digitalocean-host.json"
           if-no-files-found: "error"
           retention-days: 2

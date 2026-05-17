@@ -34,6 +34,7 @@ defmodule PortfolioWeb.LiveHelpers do
 
   import Phoenix.Component
   use Gettext, backend: PortfolioWeb.Gettext
+  alias PortfolioWeb.ShareMetadata
 
   @default_title gettext("Zane Riley | Product Designer")
   @default_description gettext(
@@ -61,20 +62,42 @@ defmodule PortfolioWeb.LiveHelpers do
       params["request_path"] || socket.assigns[:current_path] || "/"
     )
     |> assign_default_page_metadata()
+    |> assign_default_share_metadata()
   end
 
   def assign_page_metadata(socket, title \\ nil, description \\ nil) do
-    assign(socket,
+    socket
+    |> assign(
       page_title: title || socket.assigns[:page_title] || @default_title,
       page_description:
         description || socket.assigns[:page_description] || @default_description
     )
+    |> refresh_share_metadata()
   end
 
   defp assign_default_page_metadata(socket) do
     assign(socket,
       page_title: @default_title,
       page_description: @default_description
+    )
+  end
+
+  defp assign_default_share_metadata(socket) do
+    assign(socket, :share_metadata, build_share_metadata(socket, "website"))
+  end
+
+  defp refresh_share_metadata(socket) do
+    type = (socket.assigns[:share_metadata] || %{})[:type] || "website"
+    assign(socket, :share_metadata, build_share_metadata(socket, type))
+  end
+
+  defp build_share_metadata(socket, type) do
+    ShareMetadata.build(
+      title: socket.assigns.page_title,
+      description: socket.assigns.page_description,
+      type: type,
+      locale: socket.assigns.user_locale,
+      path: socket.assigns.current_path
     )
   end
 

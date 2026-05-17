@@ -2,50 +2,16 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
   require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
+  alias PortfolioWeb.ShareMetadata
   import PortfolioWeb.LiveHelpers
   import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.ContentMetadata
 
-  import Portfolio.Content.Markdown.Renderer, only: [render_html: 1]
+  import Portfolio.Content.Markdown.Renderer, only: [render_to_safe: 1]
 
   def on_mount(:default, params, session, socket) do
     {:cont,
      PortfolioWeb.LiveHelpers.on_mount(:default, params, session, socket)}
-  end
-
-  @impl true
-  def mount(%{"locale" => user_locale, "url" => url}, _session, socket) do
-    if valid_slug?(url) do
-      case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations, ast_content}
-        when is_list(ast_content) ->
-          {page_title, introduction} =
-            set_page_metadata(case_study, translations)
-
-          Logger.debug("Case study translations: #{inspect(translations)}")
-
-          {:ok,
-           assign(socket,
-             case_study: case_study,
-             translations: translations,
-             ast_content: ast_content,
-             compiled_content: nil,
-             page_title: page_title,
-             page_description: introduction
-           )}
-
-        {:error, :not_found} ->
-          Logger.error("Case study not found in database for URL: #{url}")
-          {:ok, socket, layout: false}
-
-        {:error, :compilation_failed} ->
-          Logger.error("Failed to compile case study content for URL: #{url}")
-          {:ok, socket, layout: false}
-      end
-    else
-      Logger.error("Invalid URL format: #{url}")
-      {:ok, socket, layout: false}
-    end
   end
 
   @impl true
@@ -62,35 +28,31 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
       ) do
     socket = handle_locale_and_path(socket, params, uri)
 
-    if valid_slug?(url) do
-      case Content.get_with_translations("case_study", url, user_locale) do
-        {:ok, case_study, translations, ast_content}
-        when is_list(ast_content) ->
-          Logger.debug(
-            "HELLO! Case study translations: #{inspect(translations)}"
-          )
+    unless valid_slug?(url), do: raise(PortfolioWeb.LiveError)
 
-          {page_title, introduction} =
-            set_page_metadata(case_study, translations)
+    case Content.get_with_translations("case_study", url, user_locale) do
+      {:ok, case_study, translations, body_ast}
+      when is_list(body_ast) ->
+        {page_title, introduction} =
+          set_page_metadata(case_study, translations)
 
-          {:noreply,
-           assign(socket,
-             case_study: case_study,
-             translations: translations,
-             ast_content: ast_content,
-             compiled_content: nil,
-             page_title: page_title,
-             page_description: introduction
-           )}
+        share_meta = build_share_metadata(socket, case_study, translations)
 
-        {:error, :not_found} ->
-          raise PortfolioWeb.LiveError
+        {:noreply,
+         assign(socket,
+           case_study: case_study,
+           translations: translations,
+           body_ast: body_ast,
+           page_title: page_title,
+           page_description: introduction,
+           share_metadata: share_meta
+         )}
 
-        {:error, :compilation_failed} ->
-          raise PortfolioWeb.LiveError
-      end
-    else
-      raise PortfolioWeb.LiveError
+      {:error, :not_found} ->
+        raise PortfolioWeb.LiveError
+
+      {:error, :compilation_failed} ->
+        raise "case_study content compilation failed for slug=#{url}, locale=#{user_locale}"
     end
   end
 
@@ -112,5 +74,24 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     Logger.debug("Set introduction: #{introduction}")
 
     {page_title, introduction}
+  end
+
+  defp build_share_metadata(socket, case_study, translations) do
+    share_title =
+      translations["share_title"] || case_study.share_title ||
+        translations["title"] || case_study.title
+
+    share_description =
+      translations["share_description"] || case_study.share_description ||
+        translations["introduction"] || case_study.introduction ||
+        socket.assigns.page_description
+
+    ShareMetadata.build(
+      title: share_title,
+      description: share_description,
+      type: "article",
+      locale: socket.assigns.user_locale,
+      path: socket.assigns.current_path
+    )
   end
 end

@@ -33,13 +33,9 @@
   <!-- Main Content -->
   <div class="space-y-md">
     <%= if @translations["content"] do %>
-      {raw(@translations["content"])}
+      {render_to_safe(@translations["content"])}
     <% else %>
-      <%= if @note.compiled_content do %>
-        {raw(@note.compiled_content)}
-      <% else %>
-        <p>{gettext("We ran into an issue loading this note!")}</p>
-      <% end %>
+      {render_to_safe(@body_ast)}
     <% end %>
   </div>
 </article>

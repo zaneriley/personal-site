@@ -141,3 +141,21 @@ RUN npx playwright install-deps chromium
 
 USER node
 RUN npx playwright install chromium
+
+###############################################################################
+
+# Stage 5: One-shot preview page acceptance runner
+FROM browser AS preview-page-acceptance
+
+USER root
+RUN mkdir -p /opt/preview-page-acceptance && chown node:node /opt/preview-page-acceptance
+
+USER node
+WORKDIR /opt/preview-page-acceptance
+ENV PREVIEW_PAGE_ACCEPTANCE_ROOT=/opt/preview-page-acceptance
+
+COPY --chown=node:node ci/preview/preview-page-acceptance.mjs ./preview-page-acceptance.mjs
+COPY --chown=node:node ci/preview/preview-page-acceptance ./preview-page-acceptance
+COPY --chown=node:node ci/contracts/routes.json ./routes.json
+
+ENTRYPOINT ["node", "/opt/preview-page-acceptance/preview-page-acceptance.mjs"]

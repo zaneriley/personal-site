@@ -6,18 +6,19 @@ import { fileURLToPath } from "node:url";
 import { chromium, devices } from "playwright";
 
 const scriptPath = fileURLToPath(import.meta.url);
-const repoRoot = path.resolve(path.dirname(scriptPath), "..");
+const repoRoot = path.resolve(path.dirname(scriptPath), "../..");
 
 const args = process.argv.slice(2);
 const outputPath = optionValue(
   args,
   "--output",
-  process.env.PERF_BROWSER_OUTPUT ?? "ci/browser-last-run.json",
+  process.env.PERF_BROWSER_OUTPUT ??
+    ".tmp/ci-artifacts/prod-build/browser-performance-last-run.json",
 );
 const budgetPath = optionValue(
   args,
-  "--budget",
-  process.env.PERF_BROWSER_BUDGET ?? "ci/browser-budget.json",
+  "--routes-contract",
+  process.env.PERF_BROWSER_ROUTES_CONTRACT ?? "ci/contracts/routes.json",
 );
 const baseUrl = normalizeBaseUrl(
   optionValue(
@@ -29,7 +30,7 @@ const baseUrl = normalizeBaseUrl(
   ),
 );
 const appSha = process.env.PROD_BUILD_APP_SHA ?? currentAppSha();
-const budget = await readJson(resolveRepoPath(budgetPath));
+const budget = normalizePerformanceContract(await readJson(resolveRepoPath(budgetPath)));
 const baseOrigin = new URL(baseUrl).origin;
 const failures = [];
 const warnings = [];
@@ -617,7 +618,9 @@ function printFailureSummary(result) {
     printHuman(`Problem: ${failure.problem}`);
     printHuman(`Observed: ${formatValue(failure.observed)}`);
     printHuman(`Allowed: ${formatValue(failure.allowed)}`);
-    printHuman("Artifact: ci/browser-last-run.json");
+    printHuman(
+      "Artifact: .tmp/ci-artifacts/prod-build/browser-performance-last-run.json",
+    );
     printHuman(`Next: ${nextStepFor(failure)}`);
   }
 }
@@ -625,7 +628,7 @@ function printFailureSummary(result) {
 function nextStepFor(failure) {
   switch (failure.code) {
     case "budget_exceeded":
-      return "reduce shipped assets, improve render timing, or submit an explicit browser-budget change";
+      return "reduce shipped assets, improve render timing, or submit an explicit route-contract budget change";
     case "missing_metric":
       return "fix browser metric collection or the page render path; do not coerce missing metrics to zero";
     case "console_errors":
@@ -730,6 +733,26 @@ function sameOriginHttpRequest(requestUrl, origin) {
   } catch (_error) {
     return false;
   }
+}
+
+function normalizePerformanceContract(routeContract) {
+  const performance = routeContract.performance ?? {};
+  const routes = (routeContract.routes ?? [])
+    .filter((route) => route.performance?.enabled !== false)
+    .map((route) => ({
+      ...route,
+      ...(route.performance ?? {}),
+      performance: undefined,
+    }));
+
+  return {
+    schema_version: routeContract.schema_version,
+    profile: performance.profile ?? {},
+    required_metrics: performance.required_metrics ?? [],
+    defaults: performance.defaults ?? {},
+    routes,
+    exceptions: performance.exceptions ?? [],
+  };
 }
 
 function validateBudget(budgetConfig, budgetFailures) {

@@ -30,45 +30,57 @@
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href={url(~p"/apple-touch-icon.png")}
+      href={~p"/apple-touch-icon.png"}
     />
     <link
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href={url(~p"/favicon-32x32.png")}
+      href={~p"/favicon-32x32.png"}
     />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href={url(~p"/favicon-16x16.png")}
+      href={~p"/favicon-16x16.png"}
     />
     <link
       rel="mask-icon"
-      href={url(~p"/safari-pinned-tab.svg")}
+      href={~p"/safari-pinned-tab.svg"}
       color="#597099"
     />
-    <link rel="manifest" href={url(~p"/site.webmanifest")} />
+    <link rel="manifest" href={~p"/site.webmanifest"} />
     <!-- Color definitions -->
     <meta name="msapplication-TileColor" content="#2b5797" />
     <meta name="theme-color" content="#343334" />
-    <!-- Dynamic Schema Markup -->
-
-    <!-- Dynamic OG Meta -->
-    <%= if assigns[:og_meta] do %>
-      <meta property="og:title" content={assigns[:og_meta][:title]} />
-      <meta property="og:type" content={assigns[:og_meta][:type]} />
-      <meta property="og:image" content={assigns[:og_meta][:image]} />
-      <meta property="og:description" content={assigns[:og_meta][:description]} />
+    <!-- Canonical (prod canonical authority only) -->
+    <%= if href = PortfolioWeb.CanonicalUrl.for_path(@current_path) do %>
+      <link rel="canonical" href={href} />
     <% end %>
+    <!-- Open Graph -->
+    <meta property="og:title" content={@share_metadata.title} />
+    <meta property="og:description" content={@share_metadata.description} />
+    <meta property="og:type" content={@share_metadata.type} />
+    <meta property="og:url" content={@share_metadata.url} />
+    <meta property="og:image" content={@share_metadata.image} />
+    <meta property="og:locale" content={@share_metadata.locale} />
+    <%= for alt <- @share_metadata.alternate_locales do %>
+      <meta property="og:locale:alternate" content={alt} />
+    <% end %>
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@zaneriley" />
+    <meta name="twitter:creator" content="@zaneriley" />
+    <meta name="twitter:title" content={@share_metadata.title} />
+    <meta name="twitter:description" content={@share_metadata.description} />
+    <meta name="twitter:image" content={@share_metadata.image} />
     <!-- FUll CSS -->
     <link phx-track-static rel="stylesheet" href="/css/app.css" />
     <script
       defer
       phx-track-static
       type="text/javascript"
-      src={url(~p"/js/app.js")}
+      src={~p"/js/app.js"}
     />
   </head>
   <body class="min-h-screen flex flex-col text-md bg-gradient">

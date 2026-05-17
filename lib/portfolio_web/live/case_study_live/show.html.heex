@@ -57,24 +57,9 @@
   <!-- Main Content -->
   <div class="space-y-md drop-cap">
     <%= if @translations["content"] do %>
-      {render_html(@translations["content"])}
+      {render_to_safe(@translations["content"])}
     <% else %>
-      <%= if @ast_content do %>
-        {render_html(@ast_content)}
-      <% else %>
-        <%= if @compile_error do %>
-          <p>
-            {gettext(
-              "We encountered an error while preparing this case study: %{error}",
-              error: @compile_error
-            )}
-          </p>
-        <% else %>
-          <p>
-            {gettext("We ran into an issue loading this case study!")}
-          </p>
-        <% end %>
-      <% end %>
+      {render_to_safe(@body_ast)}
     <% end %>
   </div>
 </article>

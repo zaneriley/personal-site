@@ -7,6 +7,7 @@ defmodule PortfolioWeb.ContentPublicationDebugLink do
 
   alias Portfolio.Content.PublicationDebug.Scope
   alias Portfolio.Content.Schemas.PublicationLedgerEntry
+  alias PortfolioWeb.SiteOrigin
 
   @salt "content-publication-debug"
 
@@ -17,7 +18,7 @@ defmodule PortfolioWeb.ContentPublicationDebugLink do
   def signed_url(%PublicationLedgerEntry{id: id}) when is_binary(id) do
     token = Phoenix.Token.sign(PortfolioWeb.Endpoint, @salt, id)
 
-    url(~p"/ops/content/publications/#{id}?token=#{token}")
+    SiteOrigin.absolute_url(~p"/ops/content/publications/#{id}?token=#{token}")
   end
 
   @doc """

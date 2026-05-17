@@ -4,6 +4,7 @@ defmodule PortfolioWeb.Router do
   alias PortfolioWeb.Plugs.ContentAliasRedirect
   alias PortfolioWeb.Plugs.CSPHeader
   alias PortfolioWeb.Plugs.LocaleRedirection
+  alias PortfolioWeb.Plugs.Noindex
   alias PortfolioWeb.Plugs.SetLocale
   import Phoenix.LiveView.Router
   import Phoenix.LiveDashboard.Router
@@ -22,6 +23,7 @@ defmodule PortfolioWeb.Router do
     plug :put_root_layout, {PortfolioWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug Noindex
     plug CSPHeader
     plug CommonMetadata
   end

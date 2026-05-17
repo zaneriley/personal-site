@@ -22,9 +22,21 @@ GitHub CI must expose the real acceptance gates as legible top-level check jobs.
 - `./run ci:static-analysis` is clean: Dialyzer reports `Total errors: 0, Skipped: 0, Unnecessary Skips: 0`.
 - `./run ci:test` is clean: Elixir tests and JS tests have 0 failures.
 - The secret-scan workflow runs `./run ci:secret-scan`; gitleaks current-tree scan has 0 findings.
-- `./run ci:prod-build` is clean: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, release RPC introspection, and perf-baseline comparison all pass. GitHub branch protection must require the top-level `Prod build` check.
+- `./run ci:prod-build` is clean: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, release RPC introspection, and public page budget checks all pass. GitHub branch protection must require the top-level `Prod build` check.
 
 Route smoke is part of the production-build gate, not a separate placeholder job. Do not add another route-smoke gate just to make CI look broader; widen `./run ci:prod-build` only when the app has a stronger readiness/content contract.
+
+### CI / deploy IA guardrail
+
+The CI/deploy/preview area was reset on 2026-05-16. New CI files must fit the map below instead of recreating a junk drawer.
+
+Locked direction:
+
+- Generated local evidence defaults to `.tmp/ci-artifacts/`, not `ci/`. CI can upload those paths as GitHub artifacts; durable repo inputs stay source-shaped.
+- Prefer fewer files. Do not split tiny scripts/configs just to make a taxonomy look clean; split only when a folder/file owns a durable concept a future maintainer can name.
+- `./run` remains the canonical command surface. The tree behind it must explain where contracts, gates, preview verification, provider glue, published sample content, content publication flow checks, and generated artifacts live.
+- Reserve `preview` for a deployed private candidate lane or checks against that lane. Reserve `origin` for the future durable runtime environment. Use `candidate image`, `disposable host`, `runtime viability`, `route probe`, `preview page acceptance`, `public page budget`, `published sample content`, `content publication flow`, `publication verdict`, and `receipt` for the current verification concepts.
+- Do not add a second "content preview" lane. Preview owns disposable deployed targets; content publication flow owns the author loop of content PR, merge to content `main`, delivery intake, accepted/rejected/ignored verdicts, and last-good preservation. Commands and scripts may rehearse this flow, but they are not the author DX.
 
 ### Gate integrity: no fake green
 
@@ -95,7 +107,7 @@ In approximate PM rank order. #1 anchors first because the site is meaningless w
 2. **CI gates.** LLM-mistake catcher. Shipped 2026-05-07: existing compile/lint/security/test/static-analysis/workflow/secret gates are required, and `Prod build` is now a required branch-protection check. The gate builds the release image, runs migrations up/down/up, boots the release, checks `/readyz`, probes canonical routes, runs release RPC introspection, and records perf data.
 3. **Resource-frugality of the app itself.** Measure cold-start, p50 request latency, memory footprint, cache-hit rate. Reduce until "small enough." Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` is queued input. Hardware decision falls out of this measurement, not before.
 4. **Front-edge cache substrate.** CDN choice. Depends on #3 to know what's safely cacheable and TTL bounds. **Requires `/literature` before tool selection.**
-5. **Origin substrate + deploy pipeline.** Hardware + release format + blue/green at origin + deploy mechanics. Hardware falls out of #3. **Requires `/literature` before tool selection.**
+5. **Origin substrate + deploy pipeline.** DigitalOcean is the interim deploy/origin substrate until the app and deploy loop are boring enough to revisit self-hosting deliberately. Hardware/self-hosting still falls out of #3 later. See `_PROJECT_DOCS/adrs/0003-use-digitalocean-as-interim-origin-substrate.md`.
 6. **Observability + rollback loop.** Metrics, logs, the auto-cancel-on-spike loop. **Requires `/literature` before tool selection.** No Grafana.
 
 The order is not fully ratified beyond #1; #2 explicitly parallelizes with #1; #3 is prerequisite to #4–#5.
