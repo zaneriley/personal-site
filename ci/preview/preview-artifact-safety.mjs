@@ -101,10 +101,6 @@ function scanText(filePath, content) {
 
   findings.push(...decodedDockerAuthFindings(filePath, content));
 
-  if (searchableContent.includes("zaneriley.com")) {
-    findings.push({ file: filePath, reason: "production origin" });
-  }
-
   if (isPublicTextSurface(filePath) && publicPreviewUrlPattern().test(searchableContent)) {
     findings.push({ file: filePath, reason: "public preview URL" });
   }

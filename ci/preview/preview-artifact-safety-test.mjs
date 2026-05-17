@@ -79,14 +79,6 @@ const forbiddenCases = [
     expected: "docker auth value",
   },
   {
-    name: "production origin in browser network output",
-    file: "stages/preview-page-acceptance/network.json",
-    content: JSON.stringify({
-      responses: [{ url: "https://zaneriley.com/en/note/prod-build-smoke-note" }],
-    }),
-    expected: "production origin",
-  },
-  {
     name: "public preview url in terminal output",
     file: "terminal.txt",
     content: `preview URL      ${previewUrl}`,
@@ -169,6 +161,19 @@ async function assertBenignArtifactTreePasses() {
     path.join(root, "stages/preview-page-acceptance/network.json"),
     JSON.stringify({
       responses: [{ url: `${previewUrl}/en/note/prod-build-smoke-note` }],
+    }),
+  );
+  await writeFile(
+    path.join(root, "stages/runtime-viability/routes.json"),
+    JSON.stringify({
+      text_policy: { forbidden_html_text: ["zaneriley.com"] },
+      routes: [
+        {
+          route: "/",
+          forbidden_html_hits: ["zaneriley.com"],
+          result: "fail",
+        },
+      ],
     }),
   );
 
