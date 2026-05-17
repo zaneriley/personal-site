@@ -98,7 +98,9 @@ assert_contains "${tmpdir}/ready.out" "runtime viability inputs valid"
 
 assert_contains "${script_dir}/runtime-viability.sh" "CONTENT_BASE_PATH=/app/content-publication/content"
 assert_contains "${script_dir}/runtime-viability.sh" "CONTENT_REPO_URL=file:///app/content-publication/content-source.git"
+assert_contains "${script_dir}/runtime-viability.sh" "PREVIEW_DEPLOY_ATTEMPT_ID=\${PREVIEW_DEPLOY_ATTEMPT_ID:-}"
 assert_contains "${script_dir}/runtime-viability.sh" "prepare_content_source_repo"
+assert_contains "${script_dir}/runtime-viability.sh" "redact_public_preview_urls_in_text_artifacts"
 
 routes_file="${script_dir}/../contracts/routes.json"
 assert_json "${routes_file}" '.schema_version == 1'

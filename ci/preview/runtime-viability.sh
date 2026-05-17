@@ -231,6 +231,7 @@ PORT=8000
 POSTGRES_DB=portfolio
 POSTGRES_PASSWORD=$(random_hex 32)
 POSTGRES_USER=portfolio
+PREVIEW_DEPLOY_ATTEMPT_ID=${PREVIEW_DEPLOY_ATTEMPT_ID:-}
 RUNTIME_VIABILITY_HOST_PORT=${host_port}
 RUNTIME_VIABILITY_BIND_HOST=${bind_host}
 SECRET_KEY_BASE=$(random_hex 64)
@@ -699,9 +700,23 @@ function fetch_artifacts {
     "${ssh_base[@]}" "tar -C '${remote_dir}/artifacts' -czf - ." |
         tar -C "${artifact_dir}" -xzf -
 
+    redact_public_preview_urls_in_text_artifacts
+
     jq --slurpfile host "${host_receipt}" \
         '. + {host: $host[0]}' \
         "${artifact_dir}/summary.json" > "${output}"
+}
+
+function redact_public_preview_urls_in_text_artifacts {
+    local file
+    local tmp_file
+
+    while IFS= read -r -d '' file; do
+        tmp_file="${file}.redacted"
+        sed -E 's#http://([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{2,5}#see deploy-receipt.json artifact#g' \
+            "${file}" > "${tmp_file}"
+        mv "${tmp_file}" "${file}"
+    done < <(find "${artifact_dir}" -type f \( -name '*.log' -o -name '*.txt' -o -name '*.md' \) -print0)
 }
 
 require_command jq
@@ -726,6 +741,10 @@ if [[ -n "${RUNTIME_VIABILITY_REGISTRY_TOKEN:-}" ]]; then
     assert_single_line_value RUNTIME_VIABILITY_REGISTRY "${RUNTIME_VIABILITY_REGISTRY:-ghcr.io}"
     assert_single_line_value RUNTIME_VIABILITY_REGISTRY_USERNAME "${RUNTIME_VIABILITY_REGISTRY_USERNAME}"
     assert_single_line_value RUNTIME_VIABILITY_REGISTRY_TOKEN "${RUNTIME_VIABILITY_REGISTRY_TOKEN}"
+fi
+
+if [[ -n "${PREVIEW_DEPLOY_ATTEMPT_ID:-}" ]]; then
+    assert_single_line_value PREVIEW_DEPLOY_ATTEMPT_ID "${PREVIEW_DEPLOY_ATTEMPT_ID}"
 fi
 
 droplet_id="$(read_receipt_value '.droplet_id')"
