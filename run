@@ -755,6 +755,7 @@ function ci:preview-page-acceptance {
     fi
 
     mkdir -p "${output_dir}"
+    chmod ugo+rwx "${output_dir}"
 
     docker run --rm \
         --init \
