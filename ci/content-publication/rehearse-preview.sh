@@ -348,7 +348,7 @@ function wrong_signature_payload {
 }
 
 function content_status {
-    compose exec -T web /app/bin/content status --json
+    compose exec -T web /app/bin/content status --json </dev/null
 }
 
 load_env
