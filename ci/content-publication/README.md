@@ -1,7 +1,8 @@
 # Content Publication Flow
 
-Status: local rehearsal implemented; preview rehearsal command implemented but
-not yet proven against a real private preview host.
+Status: local rehearsal implemented; preview rehearsal is wired into the
+private-preview workflow, but it has not yet passed against a real private
+preview host.
 
 This folder owns checks for the content authoring flow:
 
@@ -51,9 +52,83 @@ that last-good content stays live. It writes
 This is still rehearsal machinery. The author workflow remains content PR,
 merge to main, and read the verdict.
 
-Current next step: create a real private preview, then run
-`./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json`.
-If it passes, wire the same behavior to the real content repo PR/merge flow.
+Current next step: dispatch the `Private preview deploy` workflow for a real
+candidate PR with the default `preserve_preview=false`. The workflow should
+create the preview, run
+`./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json`,
+upload the preview plus content-publication receipts, and destroy the disposable
+host. If it passes, wire the same behavior to the real content repo PR/merge
+flow.
+
+Operator view:
+
+```text
+Lane: Private preview deploy
+Input: app PR number + expected head SHA
+Success: preview deploy receipt is reviewable, content rehearsal receipt passes,
+and the disposable host is destroyed unless preserve_preview=true
+Failure: inspect preview-deploy-artifacts, then use the receipt's destroy command
+if preserve_preview=true or cleanup failed
+```
+
+## Acceptance Criteria
+
+The next step is complete only when all of this is true:
+
+- A real private preview was created from the candidate app image.
+- The workflow wrote
+  `.tmp/ci-artifacts/candidate-image/candidate-image.json`.
+- The candidate image receipt names a digest-pinned `image_ref`, and that same
+  image ref appears in the preview deploy receipt.
+- The preview receipt says `outcome: "reviewable"`.
+- `./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json`
+  ran against that preview receipt and exited 0.
+- The generated receipt exists at
+  `.tmp/ci-artifacts/content-publication/preview-rehearsal.json`.
+- The generated receipt says `status: "pass"`.
+- The rehearsal changed content in the preview content source repo after the app
+  was already running.
+- A wrong-signed webhook delivery was rejected before any rehearsal content
+  changed, and publication state did not move.
+- A signed webhook delivery reached the running preview app for the good content
+  change.
+- `bin/content status --json` on the preview reported the good content SHA as
+  live.
+- The public preview route rendered the new good content body.
+- A signed webhook delivery reached the running preview app for the bad content
+  change.
+- `bin/content status --json` on the preview reported the bad content SHA as the
+  last rejected SHA.
+- The rejection reason named the bad content path and a useful reason.
+- The same public preview route still rendered the previous good content body
+  after the bad delivery.
+- The private preview host was destroyed after the check, unless
+  `preserve_preview=true` was set for human review or debugging.
+
+## Ways To Cheat
+
+Do not call the next step done if any of these are true:
+
+- Only `./run content:rehearse` passed. That is the local check, not the preview
+  check.
+- The preview was never created, or the receipt is missing/stale.
+- The command ran against a local test server instead of the private preview
+  URL/host.
+- The content was present before the app started. The rehearsal must change
+  content after the app is already running.
+- The check only inspected a database row and did not verify the public route.
+- The check only verified the public route and did not verify the publication
+  status.
+- The check only tested the good path and skipped the bad content rejection.
+- The bad content was rejected, but the previous good content was not proven
+  still visible.
+- The rehearsal only sent correctly signed webhooks and never proved that
+  invalid signatures are rejected.
+- The webhook was bypassed by calling internal Elixir functions directly.
+- The webhook was unsigned or missing the GitHub-shaped headers/payload.
+- A failed command was treated as advisory.
+- The preview host was left running without `preserve_preview=true` and a clear
+  review or debugging reason.
 
 ## Reader Goal
 

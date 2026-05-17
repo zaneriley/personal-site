@@ -127,6 +127,7 @@ async function buildReceipt(options, paths) {
     generated_at: new Date().toISOString(),
     candidate: {
       app_image_ref: options.appImageRef,
+      app_image_digest: imageDigest(options.appImageRef),
       app_git_sha: options.appSha,
     },
     evidence: {
@@ -256,35 +257,43 @@ function checkPageChecks(pageChecks, runtime, options) {
 
 async function runTask(runner, task, args, env) {
   const result = await spawnTask(runner, [task, ...args], env);
+
+  process.stdout.write(redactPublicPreviewUrls(result.stdout));
+
   if (result.status !== 0) {
-    process.stderr.write(result.stderr);
+    process.stderr.write(redactPublicPreviewUrls(result.stderr));
   }
 }
 
 function spawnTask(command, args, env) {
   return new Promise((resolve, reject) => {
+    let stdout = "";
     let stderr = "";
     const child = spawn(command, args, {
       cwd: repoRoot,
       env: { ...process.env, ...env },
-      stdio: ["ignore", "inherit", "pipe"],
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
     });
     child.stderr.on("data", (chunk) => {
       stderr += chunk;
     });
     child.on("error", reject);
-    child.on("close", (status) => resolve({ status, stderr }));
+    child.on("close", (status) => resolve({ status, stdout, stderr }));
   });
 }
 
 function renderTerminal(receipt) {
+  const previewUrl = displayPreviewUrl(receipt);
   const lines = [
     "Private preview",
     "",
     `  outcome      ${receipt.outcome.toUpperCase()}`,
     `  app image    ${receipt.candidate.app_image_ref}`,
     `  commit       ${receipt.candidate.app_git_sha.slice(0, 12)}`,
-    `  preview      ${receipt.preview.url ?? "not available"}`,
+    `  preview      ${previewUrl}`,
     `  receipt      ${receipt.evidence.receipt}`,
   ];
 
@@ -308,13 +317,15 @@ function renderTerminal(receipt) {
 }
 
 function renderSummary(receipt) {
+  const previewUrl = displayPreviewUrl(receipt);
+
   return [
     `## Private preview: ${receipt.outcome.toUpperCase()}`,
     "",
     `- App image: \`${receipt.candidate.app_image_ref}\``,
     `- Commit: \`${receipt.candidate.app_git_sha}\``,
     `- Receipt: \`${receipt.evidence.receipt}\``,
-    `- Preview URL: ${receipt.preview.url ?? "not available"}`,
+    `- Preview URL: ${previewUrl}`,
     `- Destroy: \`${receipt.commands.destroy ?? "not available"}\``,
     ...(receipt.failure === null
       ? ["", "Private preview is ready for review."]
@@ -323,6 +334,31 @@ function renderSummary(receipt) {
           `Blocked at \`${receipt.failure.stage}\`: ${receipt.failure.summary}`,
         ]),
   ].join("\n");
+}
+
+function displayPreviewUrl(receipt) {
+  if (process.env.PREVIEW_DEPLOY_REDACT_PUBLIC_URLS === "1") {
+    return receipt.preview.url === null || receipt.preview.url === undefined
+      ? "not available"
+      : "see deploy-receipt.json artifact";
+  }
+
+  return receipt.preview.url ?? "not available";
+}
+
+function redactPublicPreviewUrls(content) {
+  if (process.env.PREVIEW_DEPLOY_REDACT_PUBLIC_URLS !== "1") {
+    return content;
+  }
+
+  return content.replaceAll(
+    /http:\/\/(?:\d{1,3}\.){3}\d{1,3}:\d{2,5}\b/g,
+    "see deploy-receipt.json artifact",
+  );
+}
+
+function imageDigest(imageRef) {
+  return imageRef.match(/@(sha256:[0-9a-fA-F]{64})$/)?.[1]?.toLowerCase() ?? null;
 }
 
 function renderFailureSummary(receipt) {

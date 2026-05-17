@@ -40,6 +40,7 @@ try {
 async function assertCase(name, expected) {
   const root = path.join(tmpDir, name);
   const outputDir = path.join(root, "preview");
+  const summaryFile = path.join(root, "summary.md");
   const fakeRunner = await writeFakeRunner(root);
   const result = await run(
     [
@@ -57,14 +58,25 @@ async function assertCase(name, expected) {
       PRIVATE_PREVIEW_RUNNER: fakeRunner,
       PREVIEW_DEPLOY_ATTEMPT_ID: `attempt-${name}`,
       PRIVATE_PREVIEW_FIXTURE: name,
+      PREVIEW_DEPLOY_REDACT_PUBLIC_URLS: "1",
+      GITHUB_STEP_SUMMARY: summaryFile,
     },
   );
   const receipt = await readJson(path.join(outputDir, "deploy-receipt.json"));
+  const summary = await fs.readFile(summaryFile, "utf8");
 
   assertEqual(result.status, expected.status, `${name} exit status`);
   assertEqual(receipt.outcome, expected.outcome, `${name} outcome`);
+  assertEqual(receipt.candidate.app_image_ref, appImage, `${name} app image ref`);
+  assertEqual(receipt.candidate.app_image_digest, `sha256:${digest}`, `${name} app image digest`);
   assertEqual(receipt.host.kind, "disposable_host", `${name} host kind`);
   assertEqual(receipt.host.lifecycle, "disposable", `${name} host lifecycle`);
+  if (receipt.preview.url !== null) {
+    assertEqual(receipt.preview.url, "http://203.0.113.42:18080", `${name} receipt preview url`);
+    assertNoPublicPreviewUrl(result.stdout, `${name} terminal output`);
+    assertNoPublicPreviewUrl(result.stderr, `${name} terminal error output`, false);
+    assertNoPublicPreviewUrl(summary, `${name} GitHub summary`);
+  }
 
   if (expected.stage !== undefined) {
     assertEqual(receipt.failure.stage, expected.stage, `${name} failure stage`);
@@ -137,6 +149,9 @@ async function runtime() {
 
 async function pageChecks() {
   const pass = fixture !== "page-fails";
+  if (!pass) {
+    console.error("failed while checking http://203.0.113.42:18080/en");
+  }
   await writeJson(path.join(process.env.PREVIEW_PAGE_ACCEPTANCE_OUTPUT_DIR, "preview-page-acceptance.json"), {
     preview_deploy_attempt_id: process.env.PREVIEW_DEPLOY_ATTEMPT_ID,
     preview_page_acceptance_image_ref: process.env.PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF,
@@ -183,5 +198,15 @@ async function readJson(file) {
 function assertEqual(observed, expected, label) {
   if (observed !== expected) {
     throw new Error(`${label}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(observed)}`);
+  }
+}
+
+function assertNoPublicPreviewUrl(content, label, requirePlaceholder = true) {
+  if (content.includes("http://203.0.113.42:18080")) {
+    throw new Error(`${label}: public preview URL was not redacted`);
+  }
+
+  if (requirePlaceholder && !content.includes("see deploy-receipt.json artifact")) {
+    throw new Error(`${label}: redaction placeholder missing`);
   }
 }

@@ -1,5 +1,10 @@
 name: "Private preview deploy"
 
+# Manual candidate lane. This workflow runs from default-branch workflow code
+# before loading preview secrets, then builds the requested PR SHA into a
+# digest-pinned image. Receipts live under .tmp/ci-artifacts/candidate-image,
+# .tmp/ci-artifacts/preview, and .tmp/ci-artifacts/content-publication.
+
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +16,11 @@ on:
         description: "Expected candidate commit SHA"
         required: true
         type: string
+      preserve_preview:
+        description: "Keep the disposable preview after checks for human review/debugging"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -76,6 +86,19 @@ jobs:
             and .headRefOid == env.EXPECTED_HEAD_SHA
           ' .tmp/ci-artifacts/preview/pr.json >/dev/null
 
+      - name: "Prepare candidate image metadata"
+        id: "candidate-meta"
+        env:
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+        run: |
+          mkdir -p .tmp/ci-artifacts/candidate-image
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          tag="${image}:private-preview-sha-${EXPECTED_HEAD_SHA}"
+          {
+            echo "image=${image}"
+            echo "tag=${tag}"
+          } >> "${GITHUB_OUTPUT}"
+
       - name: "Build and push preview candidate"
         id: "candidate-build"
         uses: "docker/build-push-action@v7"
@@ -84,11 +107,55 @@ jobs:
           push: true
           target: "prod"
           platforms: "linux/amd64"
-          tags: ghcr.io/${{ github.repository }}:private-preview-sha-${{ inputs.expected_head_sha }}
+          tags: ${{ steps.candidate-meta.outputs.tag }}
+          provenance: "mode=max"
+          sbom: true
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ inputs.expected_head_sha }}
             org.opencontainers.image.description=Private preview candidate image
+
+      - name: "Record candidate image receipt"
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+          CANDIDATE_IMAGE: ${{ steps.candidate-meta.outputs.image }}
+          CANDIDATE_IMAGE_TAG: ${{ steps.candidate-meta.outputs.tag }}
+          CANDIDATE_IMAGE_DIGEST: ${{ steps.candidate-build.outputs.digest }}
+        run: |
+          candidate_image_ref="${CANDIDATE_IMAGE}@${CANDIDATE_IMAGE_DIGEST}"
+          jq -n \
+            --arg pr_number "${PR_NUMBER}" \
+            --arg expected_head_sha "${EXPECTED_HEAD_SHA}" \
+            --arg image_tag "${CANDIDATE_IMAGE_TAG}" \
+            --arg image_digest "${CANDIDATE_IMAGE_DIGEST}" \
+            --arg image_ref "${candidate_image_ref}" \
+            --slurpfile pr .tmp/ci-artifacts/preview/pr.json \
+            '{
+              schema_version: 1,
+              receipt_type: "candidate_image",
+              status: "pass",
+              pr_number: $pr_number,
+              expected_head_sha: $expected_head_sha,
+              validated_head_sha: $pr[0].headRefOid,
+              image_tag: $image_tag,
+              image_digest: $image_digest,
+              image_ref: $image_ref,
+              platform: "linux/amd64",
+              target: "prod",
+              provenance: "mode=max",
+              sbom: true,
+              validated_pr: $pr[0]
+            }' > .tmp/ci-artifacts/candidate-image/candidate-image.json
+
+          jq -e '
+            .receipt_type == "candidate_image"
+            and .status == "pass"
+            and .validated_head_sha == env.EXPECTED_HEAD_SHA
+            and (.image_digest | test("^sha256:[0-9a-f]{64}$"))
+            and (.image_ref | test("^ghcr[.]io/.+@sha256:[0-9a-f]{64}$"))
+            and (.image_ref | contains(":latest") | not)
+          ' .tmp/ci-artifacts/candidate-image/candidate-image.json >/dev/null
 
       - name: "Deploy private preview"
         id: "deploy-preview"
@@ -101,22 +168,67 @@ jobs:
           RUNTIME_VIABILITY_REGISTRY_USERNAME: ${{ github.actor }}
           RUNTIME_VIABILITY_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          candidate_image_ref="$(jq -r .image_ref .tmp/ci-artifacts/candidate-image/candidate-image.json)"
+          candidate_app_sha="$(jq -r .validated_head_sha .tmp/ci-artifacts/candidate-image/candidate-image.json)"
           ./run preview:deploy \
-            --app-image-ref "${image}@${{ steps.candidate-build.outputs.digest }}" \
-            --app-sha "${{ inputs.expected_head_sha }}" \
+            --app-image-ref "${candidate_image_ref}" \
+            --app-sha "${candidate_app_sha}" \
             --preview-page-acceptance-image "personal-site-preview-page-acceptance:trusted"
+
+      - name: "Verify private preview receipt"
+        run: |
+          jq -e \
+            --slurpfile candidate .tmp/ci-artifacts/candidate-image/candidate-image.json \
+            '
+              .receipt_type == "private_preview"
+              and .outcome == "reviewable"
+              and .candidate.app_image_ref == $candidate[0].image_ref
+              and .candidate.app_image_digest == $candidate[0].image_digest
+              and .candidate.app_git_sha == $candidate[0].validated_head_sha
+            ' .tmp/ci-artifacts/preview/deploy-receipt.json >/dev/null
+
+      - name: "Rehearse content publication on private preview"
+        env:
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        run: ./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json
+
+      - name: "Verify content publication rehearsal receipt"
+        run: |
+          jq -e '
+            .receipt_type == "content_publication_rehearsal"
+            and .status == "pass"
+            and .wrong_signature.http_status != 200
+            and .wrong_signature.live_content_sha_after_probe == .initial.live_content_sha
+            and .wrong_signature.last_delivery_id_after_probe == .initial.last_delivery_id
+            and .accepted.content_sha == .accepted.live_content_sha
+            and .rejected.content_sha == .rejected.last_rejected_sha
+            and .rejected.live_content_sha_after_rejection == .accepted.content_sha
+          ' .tmp/ci-artifacts/content-publication/preview-rehearsal.json >/dev/null
 
       - name: "Scan preview artifacts"
         id: "artifact-safety"
         if: always()
-        run: ./run preview:artifact-safety .tmp/ci-artifacts/preview
+        run: ./run preview:artifact-safety .tmp/ci-artifacts
 
       - name: "Upload preview deploy artifacts"
         if: always() && steps.artifact-safety.outcome == 'success'
         uses: "actions/upload-artifact@v7"
         with:
           name: "preview-deploy-artifacts"
-          path: ".tmp/ci-artifacts/preview/"
+          path: |
+            .tmp/ci-artifacts/candidate-image/
+            .tmp/ci-artifacts/preview/
+            .tmp/ci-artifacts/content-publication/
           if-no-files-found: "error"
           retention-days: 2
+
+      - name: "Destroy private preview"
+        if: always() && !inputs.preserve_preview && hashFiles('.tmp/ci-artifacts/preview/deploy-receipt.json') != ''
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+        run: |
+          ./run preview:destroy .tmp/ci-artifacts/preview/deploy-receipt.json
+          {
+            echo ""
+            echo "Preview host destroyed because preserve_preview=false."
+          } >> "${GITHUB_STEP_SUMMARY}"

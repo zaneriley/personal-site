@@ -1,6 +1,6 @@
 # ADR 0001 — Production-build CI gates
 
-**Status:** accepted 2026-05-07; implemented and promoted to required branch protection 2026-05-07; amended 2026-05-16.
+**Status:** accepted 2026-05-07; implemented and promoted to required branch protection 2026-05-07; amended 2026-05-16 and 2026-05-17.
 **Supersedes:** none.
 **Superseded by:** none.
 
@@ -28,6 +28,8 @@ There are four deployability levels:
 - **Release deployable**: the release tag creates an image that can be identified by tag, SHA, and digest; Release Please can merge only after the required gates pass.
 - **Content deployable**: a content repo commit can be authenticated, deduped, synced, parsed, and either promoted or rejected without preventing the app from booting. The configured repo URL in `.env.example` currently points at `personal-site-content`; earlier planning notes may call this `personal-website-content`.
 - **Origin deployable**: the selected origin can pull or receive the release artifact, run migrations, flip blue/green, pass live smoke, and roll back to the last known-good app/content pair.
+
+2026-05-17 amendment: do not cut a production release tag until the same app SHA has passed the private-preview deploy lane end to end: reviewable preview receipt plus passing content-publication rehearsal receipt. That lane is the boundary between "release image can be built" and "candidate is safe to aim at an origin."
 
 This ADR implements the first level and prepares the second. Content and origin deployability remain follow-up work because they involve the webhook/sync path and the deploy substrate.
 

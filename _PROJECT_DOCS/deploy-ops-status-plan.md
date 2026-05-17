@@ -371,9 +371,11 @@ GitHub workflow:
 - It checks out the default branch first, checks out the candidate SHA into `.tmp/preview-candidate`, validates that the PR is open, same-repo, based on the default branch, and still points at the expected SHA, then builds and pushes the candidate app image from that checked-out candidate tree.
 - It builds the preview page acceptance image from the default branch and uses it as trusted workflow tooling, not as candidate code.
 - It runs `./run preview:deploy --app-image-ref <digest-ref> --app-sha <sha> --preview-page-acceptance-image <trusted-image>`.
+- After preview deploy passes, it runs `./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json` against the same running private preview.
 - It only runs from the default branch and checks out the default branch before loading deploy secrets, so workflow code and deploy harness changes must land before the workflow can use them.
 - It uses the GitHub `preview` environment and passes a read-only GitHub token to runtime viability so the disposable host can pull digest-pinned GHCR images.
-- It uploads `.tmp/ci-artifacts/preview/` as `preview-deploy-artifacts` with 2-day retention. The canonical result is `.tmp/ci-artifacts/preview/deploy-receipt.json`; GitHub summaries are rendered by `./run preview:deploy`, not by workflow-specific markdown.
+- It uploads `.tmp/ci-artifacts/preview/` and `.tmp/ci-artifacts/content-publication/` as `preview-deploy-artifacts` with 2-day retention. The canonical preview result is `.tmp/ci-artifacts/preview/deploy-receipt.json`; the content publication rehearsal result is `.tmp/ci-artifacts/content-publication/preview-rehearsal.json`; GitHub summaries are rendered by `./run preview:deploy`, not by workflow-specific markdown.
+- By default the workflow destroys the disposable preview after artifacts upload. Set `preserve_preview=true` only when a human needs to inspect the running preview, then destroy it through the receipt's `./run preview:destroy ...` command when review is done.
 - It is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
 - Next proof: dispatch `Private preview deploy` with a real PR number and expected head SHA, inspect the preview deploy receipt, and destroy through `./run preview:destroy`.
 
@@ -387,7 +389,7 @@ GitHub workflow:
 Remaining hardening before this becomes an interim DigitalOcean origin/deploy flow:
 
 - Prove the new top-level preview receipt against a real candidate image and a real disposable host, then destroy the host through `preview:destroy`.
-- Run `./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json` against a reviewable private preview. It must keep modeling the actual author DX: content changes, a GitHub-shaped delivery reaches the app, and the app emits an accepted/rejected publication verdict while preserving last-good content.
+- Dispatch `Private preview deploy` against a real PR and confirm the workflow-run `content:rehearse-preview` passes. It must keep modeling the actual author DX: content changes after the app is already running, a GitHub-shaped delivery reaches the app, the public route shows accepted content, bad content is rejected, and last-good content stays visible. The acceptance criteria live in `ci/content-publication/README.md`; do not call this done from the local rehearsal alone.
 - Promote the same checks to the real content repo PR/merge trigger. Do not create a separate content preview workflow or expose receipt-path commands as the author workflow.
 - Add production-origin promotion only after repeated private preview runs are boring. Promotion must use the same app digest and content generation proven in preview.
 - Add rollback proof for the production-origin path. The preview destroy command is cleanup, not rollback.
