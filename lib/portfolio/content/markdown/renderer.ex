@@ -461,8 +461,6 @@ defmodule Portfolio.Content.Markdown.Renderer do
     end
   end
 
-  defp safe_url?(_), do: false
-
   defp has_scheme?(value), do: Regex.match?(~r/^[a-z][a-z0-9+\-.]*:/i, value)
 
   defp scheme_of(value) do

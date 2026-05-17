@@ -28,7 +28,7 @@ defmodule PortfolioWeb.Plugs.CommonMetadata do
       get_session(conn, "user_locale") ||
         Application.get_env(:portfolio, :default_locale)
 
-    current_path = conn.request_path || "/"
+    current_path = conn.request_path
 
     share_metadata =
       ShareMetadata.build(
