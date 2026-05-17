@@ -101,6 +101,7 @@ assert_contains "${script_dir}/runtime-viability.sh" "CONTENT_REPO_URL=file:///a
 assert_contains "${script_dir}/runtime-viability.sh" "PREVIEW_DEPLOY_ATTEMPT_ID=\${PREVIEW_DEPLOY_ATTEMPT_ID:-}"
 assert_contains "${script_dir}/runtime-viability.sh" "prepare_content_source_repo"
 assert_contains "${script_dir}/runtime-viability.sh" "redact_public_preview_urls_in_text_artifacts"
+assert_contains "${script_dir}/runtime-viability.sh" "curl -L -sS -o"
 
 routes_file="${script_dir}/../contracts/routes.json"
 assert_json "${routes_file}" '.schema_version == 1'
@@ -109,6 +110,8 @@ assert_json "${routes_file}" '.routes | any(.path == "/en/case-study/prod-build-
 assert_json "${routes_file}" '.routes | any(.path == "/en/note/this-route-cannot-exist-xyzzy" and (.allowed_statuses | index(404)))'
 assert_json "${routes_file}" '.text_policy.forbidden_visible_text | index("We ran into an issue loading this note")'
 assert_json "${routes_file}" '.text_policy.forbidden_html_text | index("web:8000")'
+assert_json "${routes_file}" '.text_policy.forbidden_html_text | index("https://zaneriley.com")'
+assert_json "${routes_file}" '.text_policy.forbidden_html_text | index("zaneriley.com") == null'
 assert_json "${routes_file}" '[.routes[] | select((.browser.enabled // true) != false)] | length > 0'
 
 echo "runtime viability input test passed"
