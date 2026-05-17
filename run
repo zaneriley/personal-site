@@ -742,6 +742,7 @@ function ci:preview-page-acceptance {
     local browser_connect_url
     local expected_site_origin
     local image
+    local output_mount_dir
     local output_dir
 
     image="${PREVIEW_PAGE_ACCEPTANCE_IMAGE_REF:-${PREVIEW_PAGE_ACCEPTANCE_IMAGE:-personal-site-preview-page-acceptance}}"
@@ -756,12 +757,17 @@ function ci:preview-page-acceptance {
 
     mkdir -p "${output_dir}"
     chmod ugo+rwx "${output_dir}"
+    if [[ "${output_dir}" == /* ]]; then
+        output_mount_dir="${output_dir}"
+    else
+        output_mount_dir="${PWD}/${output_dir}"
+    fi
 
     docker run --rm \
         --init \
         --ipc=host \
         --tmpfs /tmp:rw,size=256m \
-        -v "${PWD}/${output_dir}:/artifacts" \
+        -v "${output_mount_dir}:/artifacts" \
         "${image}" \
         --browser-connect-url "${browser_connect_url}" \
         --expected-site-origin "${expected_site_origin}" \
