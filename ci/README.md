@@ -40,7 +40,9 @@ checks stable while allowing the next publication rehearsal to change content an
 send a real webhook to the running preview.
 
 Current status: `content:rehearse-preview` passed in the real `Private preview
-deploy` workflow on run `25985240113`. Next, promote the same behavior to the
+deploy` workflow on run `25988301014`. The same run produced a reviewable
+15-minute leased preview, and the `Private preview sweeper` workflow destroyed
+the expired Droplet on run `25988708619`. Next, promote the same behavior to the
 real content repo PR/merge trigger.
 
 ## Adding Work
