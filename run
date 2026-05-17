@@ -535,10 +535,20 @@ function ci:workflow-lint {
 
 function ci:url-discipline {
     local rg_status
+    local -a url_wrap_command
+    local -a csp_env_command
     local url_wrap_matches
     local csp_env_matches
 
-    if url_wrap_matches="$(rg --line-number '\burl\(~p' lib/portfolio_web/)"; then
+    if command -v rg >/dev/null 2>&1; then
+        url_wrap_command=(rg --line-number '\burl\(~p' lib/portfolio_web/)
+        csp_env_command=(rg --line-number 'URL_SCHEME|URL_PORT' lib/portfolio_web/plugs/)
+    else
+        url_wrap_command=(grep -RInE '(^|[^[:alnum:]_])url\(~p' lib/portfolio_web/)
+        csp_env_command=(grep -RInE 'URL_SCHEME|URL_PORT' lib/portfolio_web/plugs/)
+    fi
+
+    if url_wrap_matches="$("${url_wrap_command[@]}")"; then
         :
     else
         rg_status="$?"
@@ -556,7 +566,7 @@ function ci:url-discipline {
         return 1
     fi
 
-    if csp_env_matches="$(rg --line-number 'URL_SCHEME|URL_PORT' lib/portfolio_web/plugs/)"; then
+    if csp_env_matches="$("${csp_env_command[@]}")"; then
         :
     else
         rg_status="$?"

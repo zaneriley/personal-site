@@ -261,7 +261,7 @@ function route_result {
         --argjson cold "${cold_json}" \
         --argjson warm "${warm_json}" \
         '{
-          label: $label,
+          "label": $label,
           route: $route,
           url: $url,
           status: $status,

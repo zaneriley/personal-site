@@ -592,7 +592,7 @@ function probe_routes {
             --argjson forbidden_html_hits "${forbidden_html_hits_json}" \
             --argjson status_ok "${status_ok}" \
             '{
-                label: $label,
+                "label": $label,
                 route: $route,
                 status: $status_code,
                 allowed_statuses: $allowed_statuses,
