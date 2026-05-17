@@ -23,7 +23,11 @@ defmodule PortfolioWeb.RouterTest do
   describe "Error Handling Tests" do
     test "returns 404 for non-existent routes", %{conn: conn} do
       conn = get(conn, "/non-existent-route")
-      assert conn.status == 404
+      html = html_response(conn, 404)
+
+      assert html =~ "ERROR 404"
+      assert html =~ "DATA NOT FOUND"
+      refute html =~ "localhost"
     end
   end
 end

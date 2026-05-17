@@ -51,7 +51,7 @@
     <meta property="og:type" content="website" />
     <meta
       property="og:image"
-      content={PortfolioWeb.SiteOrigin.absolute_url("/images/og-default.png")}
+      content={~p"/images/og-default.png"}
     />
     <meta
       property="og:description"
@@ -70,7 +70,7 @@
     />
     <meta
       name="twitter:image"
-      content={PortfolioWeb.SiteOrigin.absolute_url("/images/og-default.png")}
+      content={~p"/images/og-default.png"}
     />
     <!-- FUll CSS -->
     <link phx-track-static rel="stylesheet" href={~p"/css/app.css"} />
@@ -91,8 +91,8 @@
         style="filter: url('#waves');transform: translateY(-0.25rem) translateX(calc(0rem));"
       >
         /********************************************** <br />
-        <a href="/" class="" aria-label={gettext("Return to homepage")}>
-          {dynamic_home_url()}
+        <a href={~p"/"} class="" aria-label={gettext("Return to homepage")}>
+          /
         </a>
         <h1>
           {gettext("ERROR 404")} <br /> {gettext("DATA NOT FOUND")}
