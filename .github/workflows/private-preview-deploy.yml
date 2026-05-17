@@ -17,10 +17,15 @@ on:
         required: true
         type: string
       preserve_preview:
-        description: "Keep the disposable preview after checks for human review/debugging"
+        description: "Keep the disposable preview for human review until its lease expires"
         required: false
         default: false
         type: boolean
+      preview_ttl_minutes:
+        description: "Minutes before a preserved preview is eligible for cleanup"
+        required: false
+        default: "15"
+        type: string
 
 permissions:
   contents: read
@@ -166,17 +171,31 @@ jobs:
           DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
           DEPLOY_SSH_PUBLIC_KEY: ${{ secrets.DEPLOY_SSH_PUBLIC_KEY }}
           DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          PRESERVE_PREVIEW: ${{ inputs.preserve_preview }}
+          PREVIEW_LEASE_MINUTES: ${{ inputs.preview_ttl_minutes }}
           PRESERVE_FAILED_HOST: "0"
           PREVIEW_DEPLOY_REDACT_PUBLIC_URLS: "1"
           RUNTIME_VIABILITY_REGISTRY_USERNAME: ${{ github.actor }}
           RUNTIME_VIABILITY_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if ! [[ "${PREVIEW_LEASE_MINUTES}" =~ ^[0-9]+$ ]]; then
+            echo "preview_ttl_minutes must be an integer" >&2
+            exit 1
+          fi
+
+          if (( PREVIEW_LEASE_MINUTES < 5 || PREVIEW_LEASE_MINUTES > 60 )); then
+            echo "preview_ttl_minutes must be between 5 and 60" >&2
+            exit 1
+          fi
+
           candidate_image_ref="$(jq -r .image_ref .tmp/ci-artifacts/candidate-image/candidate-image.json)"
           candidate_app_sha="$(jq -r .validated_head_sha .tmp/ci-artifacts/candidate-image/candidate-image.json)"
           ./run preview:deploy \
             --app-image-ref "${candidate_image_ref}" \
             --app-sha "${candidate_app_sha}" \
-            --preview-page-acceptance-image "personal-site-preview-page-acceptance:trusted"
+            --preview-page-acceptance-image "personal-site-preview-page-acceptance:trusted" \
+            --preview-lease-minutes "${PREVIEW_LEASE_MINUTES}" \
+            --preserve-preview "${PRESERVE_PREVIEW}"
 
       - name: "Verify private preview receipt"
         run: |
@@ -188,6 +207,8 @@ jobs:
               and .candidate.app_image_ref == $candidate[0].image_ref
               and .candidate.app_image_digest == $candidate[0].image_digest
               and .candidate.app_git_sha == $candidate[0].validated_head_sha
+              and (.lease.ttl_minutes >= 5 and .lease.ttl_minutes <= 60)
+              and (.lease.expires_at | type == "string")
             ' .tmp/ci-artifacts/preview/deploy-receipt.json >/dev/null
 
       - name: "Rehearse content publication on private preview"

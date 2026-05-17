@@ -29,6 +29,7 @@ async function main(args) {
   if (!(await fileExists(paths.hostReceipt))) {
     await runTask(options.runner, "host:disposable:create", [], {
       DO_HOST_OUTPUT: paths.hostReceipt,
+      DO_EXTRA_TAGS: options.lease.providerTags.join(","),
       PREVIEW_DEPLOY_ATTEMPT_ID: options.attemptId,
     });
   }
@@ -88,6 +89,16 @@ function parseOptions(args) {
     args,
     "--preview-page-acceptance-image",
   );
+  const previewLeaseMinutes = integerOption(
+    args,
+    "--preview-lease-minutes",
+    process.env.PREVIEW_LEASE_MINUTES ?? "15",
+  );
+  const preservePreview = booleanOption(
+    args,
+    "--preserve-preview",
+    process.env.PREVIEW_PRESERVE_PREVIEW ?? "false",
+  );
   const runner = process.env.PRIVATE_PREVIEW_RUNNER ?? "./run";
   const outputDir = path.resolve(
     optionValue(args, "--output-dir", ".tmp/ci-artifacts/preview"),
@@ -101,10 +112,17 @@ function parseOptions(args) {
     fail("PRIVATE_PREVIEW_RUNNER is not allowed in GitHub Actions");
   }
 
+  if (previewLeaseMinutes < 5 || previewLeaseMinutes > 60) {
+    fail("--preview-lease-minutes must be between 5 and 60");
+  }
+
   return {
     appImageRef,
     appSha,
     previewPageAcceptanceImage,
+    previewLeaseMinutes,
+    preservePreview,
+    lease: buildLease(previewLeaseMinutes),
     outputDir,
     runner,
     attemptId:
@@ -154,6 +172,13 @@ async function buildReceipt(options, paths) {
         runtime?.preview_page_acceptance?.expected_site_origin ??
         runtime?.public_base_url ??
         publicUrl(host),
+    },
+    lease: {
+      status: options.preservePreview ? "preserved_until_expiry" : "destroy_after_run",
+      ttl_minutes: options.previewLeaseMinutes,
+      created_at: options.lease.createdAt,
+      expires_at: options.lease.expiresAt,
+      provider_tags: options.lease.providerTags,
     },
     checks: {
       host: checkHost(host, options.attemptId),
@@ -294,6 +319,7 @@ function renderTerminal(receipt) {
     `  app image    ${receipt.candidate.app_image_ref}`,
     `  commit       ${receipt.candidate.app_git_sha.slice(0, 12)}`,
     `  preview      ${previewUrl}`,
+    `  lease        ${renderLease(receipt)}`,
     `  receipt      ${receipt.evidence.receipt}`,
   ];
 
@@ -326,6 +352,7 @@ function renderSummary(receipt) {
     `- Commit: \`${receipt.candidate.app_git_sha}\``,
     `- Receipt: \`${receipt.evidence.receipt}\``,
     `- Preview URL: ${previewUrl}`,
+    `- Lease: ${renderLease(receipt)}`,
     `- Destroy: \`${receipt.commands.destroy ?? "not available"}\``,
     ...(receipt.failure === null
       ? ["", "Private preview is ready for review."]
@@ -346,6 +373,14 @@ function displayPreviewUrl(receipt) {
   return receipt.preview.url ?? "not available";
 }
 
+function renderLease(receipt) {
+  if (receipt.lease.status === "destroy_after_run") {
+    return `destroy after workflow; TTL ${receipt.lease.ttl_minutes} minutes if preserved`;
+  }
+
+  return `preserved until ${receipt.lease.expires_at} (TTL ${receipt.lease.ttl_minutes} minutes)`;
+}
+
 function redactPublicPreviewUrls(content) {
   if (process.env.PREVIEW_DEPLOY_REDACT_PUBLIC_URLS !== "1") {
     return content;
@@ -355,6 +390,18 @@ function redactPublicPreviewUrls(content) {
     /http:\/\/(?:\d{1,3}\.){3}\d{1,3}:\d{2,5}\b/g,
     "see deploy-receipt.json artifact",
   );
+}
+
+function buildLease(ttlMinutes) {
+  const createdAt = new Date();
+  const expiresAt = new Date(createdAt.getTime() + ttlMinutes * 60_000);
+  const expiresEpoch = Math.floor(expiresAt.getTime() / 1000);
+
+  return {
+    createdAt: createdAt.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+    providerTags: ["preview-lease", `preview-expires-${expiresEpoch}`],
+  };
 }
 
 function imageDigest(imageRef) {
@@ -441,6 +488,21 @@ function requiredOption(args, name) {
 function optionValue(args, name, fallback) {
   const index = args.indexOf(name);
   return index === -1 ? fallback : args[index + 1];
+}
+
+function integerOption(args, name, fallback) {
+  const rawValue = optionValue(args, name, fallback);
+  if (!/^[0-9]+$/.test(rawValue)) {
+    fail(`${name} must be an integer`);
+  }
+  return Number.parseInt(rawValue, 10);
+}
+
+function booleanOption(args, name, fallback) {
+  const rawValue = optionValue(args, name, fallback);
+  if (rawValue === true || rawValue === "true" || rawValue === "1") return true;
+  if (rawValue === false || rawValue === "false" || rawValue === "0") return false;
+  fail(`${name} must be true or false`);
 }
 
 function relative(filePath) {

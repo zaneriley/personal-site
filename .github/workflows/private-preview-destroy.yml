@@ -1,0 +1,41 @@
+name: "Private preview destroy"
+
+on:
+  workflow_dispatch:
+    inputs:
+      droplet_id:
+        description: "DigitalOcean Droplet ID from deploy-receipt.json"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "private-preview-destroy-${{ inputs.droplet_id }}"
+  cancel-in-progress: false
+
+jobs:
+  destroy:
+    name: "Destroy private preview"
+    if: ${{ github.ref_name == github.event.repository.default_branch }}
+    runs-on: "ubuntu-22.04"
+    environment: "preview"
+    timeout-minutes: 10
+
+    steps:
+      - uses: "actions/checkout@v6"
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: "Install destroy dependencies"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+
+      - name: "Destroy disposable host"
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          DROPLET_ID: ${{ inputs.droplet_id }}
+          CONFIRM_DESTROY: "1"
+        run: ./run host:disposable:destroy

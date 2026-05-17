@@ -51,6 +51,10 @@ async function assertCase(name, expected) {
       "abc123def456",
       "--preview-page-acceptance-image",
       previewPageAcceptanceImage,
+      "--preview-lease-minutes",
+      "30",
+      "--preserve-preview",
+      "true",
       "--output-dir",
       outputDir,
     ],
@@ -72,6 +76,13 @@ async function assertCase(name, expected) {
   assertEqual(receipt.candidate.app_image_digest, `sha256:${digest}`, `${name} app image digest`);
   assertEqual(receipt.host.kind, "disposable_host", `${name} host kind`);
   assertEqual(receipt.host.lifecycle, "disposable", `${name} host lifecycle`);
+  assertEqual(receipt.lease.status, "preserved_until_expiry", `${name} lease status`);
+  assertEqual(receipt.lease.ttl_minutes, 30, `${name} lease ttl`);
+  assertEqual(
+    receipt.lease.provider_tags.includes("preview-lease"),
+    true,
+    `${name} lease tag`,
+  );
   if (receipt.preview.url !== null) {
     assertEqual(receipt.preview.url, "http://203.0.113.42:18080", `${name} receipt preview url`);
     assertNoPublicPreviewUrl(result.stdout, `${name} terminal output`);
@@ -111,6 +122,9 @@ else throw new Error("unexpected task " + task);
 
 async function host() {
   if (fixture === "no-host") process.exit(1);
+  if (!process.env.DO_EXTRA_TAGS.includes("preview-lease")) {
+    throw new Error("missing preview lease tag");
+  }
   await writeJson(process.env.DO_HOST_OUTPUT, {
     preview_deploy_attempt_id: process.env.PREVIEW_DEPLOY_ATTEMPT_ID,
     provider: "digitalocean",

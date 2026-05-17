@@ -429,6 +429,11 @@ function preview:destroy {
   ci/preview/destroy.sh "$@"
 }
 
+function preview:sweep-expired {
+  # Destroy expired leased preview hosts
+  ci/providers/digitalocean/sweep-expired-disposable-hosts.sh "$@"
+}
+
 function preview:artifact-safety {
   # Scan private preview artifacts before upload
   ci/preview/preview-artifact-safety.mjs "${1:-.tmp/ci-artifacts/preview}"
@@ -652,6 +657,7 @@ function ci:acceptance-gate-bypass-check:test {
 
 function ci:disposable-host-check {
     ci/providers/digitalocean/destroy-disposable-host-test.sh
+    ci/providers/digitalocean/sweep-expired-disposable-hosts-test.sh
     ci/preview/runtime-viability-test.sh
     ci/preview/private-preview-test.mjs
     ci/preview/preview-artifact-safety-test.mjs

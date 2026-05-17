@@ -343,6 +343,9 @@ size="${DO_SIZE:-s-1vcpu-1gb}"
 image="${DO_IMAGE:-ubuntu-24-04-x64}"
 output="${DO_HOST_OUTPUT:-.tmp/ci-artifacts/disposable-host/digitalocean-host.json}"
 tags_csv="${DO_TAGS:-personal-site,disposable-host}"
+if [[ -n "${DO_EXTRA_TAGS:-}" ]]; then
+    tags_csv="${tags_csv},${DO_EXTRA_TAGS}"
+fi
 
 assert_allowed DO_REGION "${region}" "${DO_ALLOWED_REGIONS:-sfo3}"
 assert_allowed DO_SIZE "${size}" "${DO_ALLOWED_SIZES:-s-1vcpu-1gb}"
