@@ -252,7 +252,7 @@ function route_result {
     fi
 
     jq -n \
-        --arg label "${label}" \
+        --arg route_label "${label}" \
         --arg route "${path}" \
         --arg url "${url}" \
         --arg status "${route_status}" \
@@ -261,7 +261,7 @@ function route_result {
         --argjson cold "${cold_json}" \
         --argjson warm "${warm_json}" \
         '{
-          "label": $label,
+          "label": $route_label,
           route: $route,
           url: $url,
           status: $status,

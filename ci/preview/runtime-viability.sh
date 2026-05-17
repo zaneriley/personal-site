@@ -581,7 +581,7 @@ function probe_routes {
         fi
 
         jq -n \
-            --arg label "${label}" \
+            --arg route_label "${label}" \
             --arg route "${route}" \
             --arg byte_count "${byte_count}" \
             --argjson status_code "${status_number}" \
@@ -592,7 +592,7 @@ function probe_routes {
             --argjson forbidden_html_hits "${forbidden_html_hits_json}" \
             --argjson status_ok "${status_ok}" \
             '{
-                "label": $label,
+                "label": $route_label,
                 route: $route,
                 status: $status_code,
                 allowed_statuses: $allowed_statuses,
