@@ -1,8 +1,7 @@
 # Content Publication Flow
 
-Status: local rehearsal implemented; preview rehearsal is wired into the
-private-preview workflow, but it has not yet passed against a real private
-preview host.
+Status: local rehearsal implemented; preview rehearsal passed in the real
+`Private preview deploy` workflow on run `25985240113`.
 
 This folder owns checks for the content authoring flow:
 
@@ -52,12 +51,7 @@ that last-good content stays live. It writes
 This is still rehearsal machinery. The author workflow remains content PR,
 merge to main, and read the verdict.
 
-Current next step: dispatch the `Private preview deploy` workflow for a real
-candidate PR with the default `preserve_preview=false`. The workflow should
-create the preview, run
-`./run content:rehearse-preview .tmp/ci-artifacts/preview/deploy-receipt.json`,
-upload the preview plus content-publication receipts, and destroy the disposable
-host. If it passes, wire the same behavior to the real content repo PR/merge
+Current next step: wire the same behavior to the real content repo PR/merge
 flow.
 
 Operator view:
