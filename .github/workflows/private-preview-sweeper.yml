@@ -1,0 +1,36 @@
+name: "Private preview sweeper"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "private-preview-sweeper"
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: "Destroy expired private previews"
+    if: ${{ github.ref_name == github.event.repository.default_branch }}
+    runs-on: "ubuntu-22.04"
+    environment: "preview"
+    timeout-minutes: 10
+
+    steps:
+      - uses: "actions/checkout@v6"
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: "Install sweep dependencies"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+
+      - name: "Destroy expired leased previews"
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+        run: ./run preview:sweep-expired
