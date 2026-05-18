@@ -277,8 +277,9 @@ function capture_runtime_snapshot {
 
 function write_runtime_artifact {
     local after_browser_snapshot="$1"
+    local after_route_probe_snapshot="$2"
     local output=".tmp/ci-artifacts/prod-build/runtime-last-run.json"
-    local ready_snapshot="$2"
+    local ready_snapshot="$3"
 
     mkdir -p "$(dirname "${output}")"
 
@@ -288,6 +289,7 @@ function write_runtime_artifact {
         --arg content_fixture_sha256 "$(content_fixture_sha256)" \
         --arg generated_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
         --slurpfile ready "${ready_snapshot}" \
+        --slurpfile after_route_probe "${after_route_probe_snapshot}" \
         --slurpfile after_browser "${after_browser_snapshot}" \
         '{
             schema_version: 1,
@@ -301,6 +303,7 @@ function write_runtime_artifact {
             image: $after_browser[0].image,
             snapshots: {
                 ready: $ready[0],
+                after_route_probe: $after_route_probe[0],
                 after_browser_performance: $after_browser[0]
             }
         }' > "${output}"
@@ -400,11 +403,13 @@ start_ms="$(now_ms)"
 "${compose[@]}" up -d web
 wait_for_ready "${start_ms}"
 
-ready_runtime_snapshot="$(mktemp)"
 after_browser_runtime_snapshot="$(mktemp)"
+after_route_probe_runtime_snapshot="$(mktemp)"
+ready_runtime_snapshot="$(mktemp)"
 capture_runtime_snapshot "ready" > "${ready_runtime_snapshot}"
 
 ci/gates/probe-routes.sh .tmp/ci-artifacts/prod-build/route-latency-last-run.json
+capture_runtime_snapshot "after_route_probe" > "${after_route_probe_runtime_snapshot}"
 
 if ! curl -fsS "http://127.0.0.1:${HOST_PORT}/en/note/prod-build-smoke-note" |
     grep -F "Prod Build Smoke Note" >/dev/null; then
@@ -427,6 +432,9 @@ jq -e '.live != null and .last_good == .live and .sync_state == "idle" and .last
 
 run_browser_performance
 capture_runtime_snapshot "after_browser_performance" > "${after_browser_runtime_snapshot}"
-write_runtime_artifact "${after_browser_runtime_snapshot}" "${ready_runtime_snapshot}"
-rm -f "${ready_runtime_snapshot}" "${after_browser_runtime_snapshot}"
+write_runtime_artifact \
+    "${after_browser_runtime_snapshot}" \
+    "${after_route_probe_runtime_snapshot}" \
+    "${ready_runtime_snapshot}"
+rm -f "${ready_runtime_snapshot}" "${after_route_probe_runtime_snapshot}" "${after_browser_runtime_snapshot}"
 run_perf_audit

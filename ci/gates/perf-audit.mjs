@@ -107,8 +107,13 @@ function buildAudit({ generatedAt: auditGeneratedAt, routeLatency, browserPerfor
     max_websocket_bytes: maxObserved(routes, "websocket_total_bytes"),
     max_warm_p95_ms: maxObserved(routes, "warm_p95_ms"),
     max_lcp_ms: maxObserved(routes, "lcp_ms"),
-    memory_usage_bytes: memory?.usage_bytes ?? null,
-    memory_usage: memory?.usage ?? null,
+    memory_sample_count: memory.sample_count,
+    memory_min_bytes: memory.min_bytes,
+    memory_median_bytes: memory.median_bytes,
+    memory_max_bytes: memory.max_bytes,
+    memory_min: formatBytes(memory.min_bytes),
+    memory_median: formatBytes(memory.median_bytes),
+    memory_max: formatBytes(memory.max_bytes),
   };
 
   return {
@@ -122,6 +127,7 @@ function buildAudit({ generatedAt: auditGeneratedAt, routeLatency, browserPerfor
         ? "pass"
         : "review",
     headline,
+    memory,
     runtime,
     routes,
     budget_tightening_candidates: globalTighteningCandidates(routes),
@@ -227,7 +233,9 @@ function renderSummary(audit) {
   lines.push(`| Max JavaScript bytes | ${formatBytes(headline.max_js_bytes)} |`);
   lines.push(`| Max WebSocket bytes | ${formatBytes(headline.max_websocket_bytes)} |`);
   lines.push(`| Max LCP | ${formatMs(headline.max_lcp_ms)} |`);
-  lines.push(`| Instant memory after browser probe | ${headline.memory_usage ?? "unknown"} |`);
+  lines.push(
+    `| Memory usage (${formatNumber(headline.memory_sample_count)} samples, min / median / max) | ${headline.memory_min} / ${headline.memory_median} / ${headline.memory_max} |`,
+  );
   lines.push(`| Local image disk size | ${formatBytes(headline.local_image_disk_size_bytes)} |`);
   lines.push("");
   lines.push("## Routes");
@@ -331,21 +339,51 @@ function budgetHeadroomRows(routes) {
 }
 
 function memorySummary(runtime) {
-  const stats =
-    runtime.snapshots?.after_browser_performance?.docker_stats ??
-    runtime.snapshots?.ready?.docker_stats ??
-    null;
+  const samples = Object.values(runtime.snapshots ?? {})
+    .map((snapshot) => {
+      const usage = snapshot.docker_stats?.MemUsage?.split(" / ")[0] ?? null;
+      const usageBytes = parseByteString(usage);
 
-  if (!stats?.MemUsage) {
-    return null;
+      if (!Number.isFinite(usageBytes)) {
+        return null;
+      }
+
+      return {
+        stage: snapshot.stage,
+        captured_at: snapshot.captured_at,
+        usage,
+        usage_bytes: usageBytes,
+      };
+    })
+    .filter(Boolean);
+
+  if (samples.length === 0) {
+    return {
+      sample_count: 0,
+      min_bytes: null,
+      median_bytes: null,
+      max_bytes: null,
+      samples: [],
+    };
   }
 
-  const [usage] = stats.MemUsage.split(" / ");
+  const sortedSamples = [...samples].sort((left, right) => left.usage_bytes - right.usage_bytes);
 
   return {
-    usage,
-    usage_bytes: parseByteString(usage),
+    sample_count: samples.length,
+    min_bytes: sortedSamples[0].usage_bytes,
+    median_bytes: median(sortedSamples.map((sample) => sample.usage_bytes)),
+    max_bytes: sortedSamples.at(-1).usage_bytes,
+    samples,
   };
+}
+
+function median(values) {
+  const middle = Math.floor(values.length / 2);
+
+  return values.length % 2 === 1
+    ? values[middle]
+    : Math.round((values[middle - 1] + values[middle]) / 2);
 }
 
 function parseByteString(value) {
