@@ -31,7 +31,7 @@ Adversarial check: #1 succeeds only if it makes content publishing trustworthy. 
 
 Desired DX: edit content, run local content checks if useful, commit, push, then read a clear verdict: accepted and live, rejected with a parse/validation error, or ignored because no publishable content changed. No SSH, no container restart, no DB poking, no "did the watcher notice?" uncertainty.
 
-The complete authoring loop has two checks. Before merge, content-repo CI proves "this tree can publish" using the app's validator and blocks unencrypted drafts. After merge to content `main`, the production webhook proves "this commit did publish, was rejected, or was ignored" using the app's durable verdict path.
+The complete authoring loop has two checks. Before merge, content-repo CI proves "this tree can publish" using the app's validator and blocks unencrypted drafts. That CI now emits a `Content publication verdict` status directly on the PR/commit: accepted changes say `would publish ...; no live origin yet`, rejected changes name the file and reason, and ignored changes say no publishable Markdown changed. After merge to content `main`, the production webhook still needs a real origin before it can prove "this commit did publish, was rejected, or was ignored" using the app's durable verdict path.
 
 ### Content Authoring Front-Door Done Criteria
 
