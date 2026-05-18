@@ -1,7 +1,8 @@
 # Content Publication Flow
 
-Status: local rehearsal implemented; preview rehearsal passed in the real
-`Private preview deploy` workflow on run `25985240113`.
+Status: local rehearsal implemented; preview rehearsal has passed repeatedly in
+the real `Private preview deploy` workflow, including final pushed-head proof
+`26025380183`.
 
 This folder owns checks for the content authoring flow:
 
@@ -31,10 +32,10 @@ checks that the previous known-good note stays live.
 This command is not the author workflow. It is the fast app-repo rehearsal for
 the same checks the real content PR/merge flow must satisfy.
 
-The private preview runtime is prepared for the next step: it starts with
-published sample content, exposes a local content Git repository, and mounts a
-writable checkout path for the app. That lets the next rehearsal send a content
-delivery to a running preview instead of only using the in-process test harness.
+The private preview runtime starts with published sample content, exposes a
+local content Git repository, and mounts a writable checkout path for the app.
+That lets preview rehearsal send a content delivery to a running preview instead
+of only using the in-process test harness.
 
 Use this after `./run preview:deploy` creates a reviewable private preview:
 

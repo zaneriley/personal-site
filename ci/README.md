@@ -45,11 +45,12 @@ Current status: `content:rehearse-preview` has passed repeatedly in the real
 proofs `26023491513` and `26023898742` ran against PR `90` at
 `23cdc71df2ce54041a1174a68d57a42a881255bc`; after the evidence docs changed,
 Follow-up proof `26024550642` passed at
-`b3c0a9cc1e74e5d9e8512b42a685f64531b22bd2`. All three runs passed candidate
-image build, runtime viability, preview page acceptance, content publication
-rehearsal, artifact safety, artifact upload, and default destroy. Next, choose
-the next production-origin or real content-repo PR/merge proof; do not keep
-repeating the same preview proof without a new question.
+`b3c0a9cc1e74e5d9e8512b42a685f64531b22bd2`. Final pushed-head proof
+`26025380183` passed at `70b8907dc8968ab84f7a061e1169161ce0369915`. These
+runs passed candidate image build, runtime viability, preview page acceptance,
+content publication rehearsal, artifact safety, artifact upload, and default
+destroy. Next, choose the next production-origin or real content-repo PR/merge
+proof; do not keep repeating the same preview proof without a new question.
 
 ## Adding Work
 
@@ -62,9 +63,9 @@ put generated files beside the scripts that produced them.
 For preview deploys, start with `.tmp/ci-artifacts/preview/deploy-receipt.json`.
 Terminal output, GitHub summaries, and failure markdown are rendered views of
 that receipt; stage logs and screenshots are supporting evidence linked from it.
-Preserved private previews are leased, not parked indefinitely. The dispatch
-default is 15 minutes while this lane is still being proven, with a 5-to-60
-minute allowed range. The `Private preview destroy` workflow uses the Droplet ID
+Preserved private previews are leased, not parked indefinitely. Keep the
+dispatch default low while the cleanup path is still maturing; the allowed range
+is 5 to 60 minutes. The `Private preview destroy` workflow uses the Droplet ID
 from the receipt when you are done early; the `Private preview sweeper` workflow
 also runs every 15 minutes and deletes expired leased previews. Both paths keep
 the provider safety checks: the DigitalOcean name prefix and disposable-host
