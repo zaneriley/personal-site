@@ -215,6 +215,102 @@ function wait_for_ready {
     echo "release ready in ${PROD_BUILD_READY_MS}ms"
 }
 
+function content_fixture_sha256 {
+    (
+        cd "${PROD_BUILD_CONTENT_DIR}"
+        find . -type f -print | LC_ALL=C sort | while IFS= read -r file_path; do
+            shasum -a 256 "${file_path}"
+        done
+    ) | shasum -a 256 | awk '{print $1}'
+}
+
+function capture_runtime_snapshot {
+    local container_id
+    local container_inspect_file
+    local image_id
+    local image_inspect_file
+    local stage="$1"
+    local stats_file
+
+    container_id="$("${compose[@]}" ps -q web)"
+    image_id="$("${compose[@]}" images -q web | head -n 1)"
+
+    if [[ -z "${container_id}" || -z "${image_id}" ]]; then
+        echo "fatal: prod-build web container/image was not available for runtime measurement" >&2
+        exit 1
+    fi
+
+    stats_file="$(mktemp)"
+    container_inspect_file="$(mktemp)"
+    image_inspect_file="$(mktemp)"
+
+    docker stats --no-stream --format '{{json .}}' "${container_id}" > "${stats_file}"
+    docker inspect "${container_id}" > "${container_inspect_file}"
+    docker image inspect "${image_id}" > "${image_inspect_file}"
+
+    jq -n \
+        --arg captured_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        --arg stage "${stage}" \
+        --slurpfile stats "${stats_file}" \
+        --slurpfile container "${container_inspect_file}" \
+        --slurpfile image "${image_inspect_file}" \
+        '{
+            captured_at: $captured_at,
+            stage: $stage,
+            container: {
+                id: $container[0][0].Id,
+                name: $container[0][0].Name,
+                image_id: $container[0][0].Image,
+                state: $container[0][0].State.Status
+            },
+            image: {
+                id: $image[0][0].Id,
+                repo_tags: ($image[0][0].RepoTags // []),
+                repo_digests: ($image[0][0].RepoDigests // []),
+                local_image_disk_size_bytes: $image[0][0].Size
+            },
+            docker_stats: $stats[0]
+        }'
+
+    rm -f "${stats_file}" "${container_inspect_file}" "${image_inspect_file}"
+}
+
+function write_runtime_artifact {
+    local after_browser_snapshot="$1"
+    local after_route_probe_snapshot="$2"
+    local output=".tmp/ci-artifacts/prod-build/runtime-last-run.json"
+    local ready_snapshot="$3"
+
+    mkdir -p "$(dirname "${output}")"
+
+    jq -n \
+        --arg app_sha "${APP_SHA}" \
+        --arg content_fixture_path "${PROD_BUILD_CONTENT_DIR}" \
+        --arg content_fixture_sha256 "$(content_fixture_sha256)" \
+        --arg generated_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        --slurpfile ready "${ready_snapshot}" \
+        --slurpfile after_route_probe "${after_route_probe_snapshot}" \
+        --slurpfile after_browser "${after_browser_snapshot}" \
+        '{
+            schema_version: 1,
+            command: "ci:prod-build",
+            generated_at: $generated_at,
+            app_sha: $app_sha,
+            content: {
+                fixture_path: $content_fixture_path,
+                fixture_sha256: $content_fixture_sha256
+            },
+            image: $after_browser[0].image,
+            snapshots: {
+                ready: $ready[0],
+                after_route_probe: $after_route_probe[0],
+                after_browser_performance: $after_browser[0]
+            }
+        }' > "${output}"
+
+    echo "runtime artifact written: ${output}"
+}
+
 function run_browser_performance {
     local output=".tmp/ci-artifacts/prod-build/browser-performance-last-run.json"
     local tmp_output
@@ -245,6 +341,20 @@ function run_browser_performance {
 
     rm -f "${tmp_output}"
     return "${status}"
+}
+
+function run_perf_audit {
+    local repo_path
+
+    repo_path="$(pwd -P)"
+    mkdir -p .tmp
+
+    "${compose[@]}" run --rm --no-deps \
+        --user "$(id -u):$(id -g)" \
+        -v "${repo_path}/ci:/work/ci:ro" \
+        -v "${repo_path}/.tmp:/work/.tmp" \
+        -w /work \
+        js node ci/gates/perf-audit.mjs
 }
 
 trap cleanup EXIT
@@ -302,7 +412,13 @@ start_ms="$(now_ms)"
 "${compose[@]}" up -d web
 wait_for_ready "${start_ms}"
 
+after_browser_runtime_snapshot="$(mktemp)"
+after_route_probe_runtime_snapshot="$(mktemp)"
+ready_runtime_snapshot="$(mktemp)"
+capture_runtime_snapshot "ready" > "${ready_runtime_snapshot}"
+
 ci/gates/probe-routes.sh .tmp/ci-artifacts/prod-build/route-latency-last-run.json
+capture_runtime_snapshot "after_route_probe" > "${after_route_probe_runtime_snapshot}"
 
 if ! curl -fsS "http://127.0.0.1:${HOST_PORT}/en/note/prod-build-smoke-note" |
     grep -F "Prod Build Smoke Note" >/dev/null; then
@@ -324,3 +440,10 @@ jq -e '.live != null and .last_good == .live and .sync_state == "idle" and .last
     bin/portfolio rpc "IO.inspect({Application.spec(:portfolio, :vsn), length(Supervisor.which_children(Portfolio.Supervisor)), Ecto.Adapters.SQL.query!(Portfolio.Repo, \"SELECT 1\").num_rows})"
 
 run_browser_performance
+capture_runtime_snapshot "after_browser_performance" > "${after_browser_runtime_snapshot}"
+write_runtime_artifact \
+    "${after_browser_runtime_snapshot}" \
+    "${after_route_probe_runtime_snapshot}" \
+    "${ready_runtime_snapshot}"
+rm -f "${ready_runtime_snapshot}" "${after_route_probe_runtime_snapshot}" "${after_browser_runtime_snapshot}"
+run_perf_audit

@@ -36,7 +36,7 @@ Locked direction:
 - Prefer fewer files. Do not split tiny scripts/configs just to make a taxonomy look clean; split only when a folder/file owns a durable concept a future maintainer can name.
 - `./run` remains the canonical command surface. The tree behind it must explain where contracts, gates, preview verification, provider glue, published sample content, content publication flow checks, and generated artifacts live.
 - Reserve `preview` for a deployed private candidate lane or checks against that lane. Reserve `origin` for the future durable runtime environment. Use `candidate image`, `disposable host`, `runtime viability`, `route probe`, `preview page acceptance`, `public page budget`, `published sample content`, `content publication flow`, `publication verdict`, and `receipt` for the current verification concepts.
-- Preserved private previews are leased, not permanent. Keep the default TTL low while this lane is still being proven, record the expiry in the preview receipt, and rely on the destroy workflow or sweeper rather than leaving DigitalOcean droplets around by memory.
+- Preserved private previews are leased, not permanent. Keep the default TTL low while preview cleanup is still maturing, record the expiry in the preview receipt, and rely on the destroy workflow or sweeper rather than leaving DigitalOcean droplets around by memory.
 - Do not add a second "content preview" lane. Preview owns disposable deployed targets; content publication flow owns the author loop of content PR, merge to content `main`, delivery intake, accepted/rejected/ignored verdicts, and last-good preservation. Commands and scripts may rehearse this flow, but they are not the author DX.
 
 ### Gate integrity: no fake green

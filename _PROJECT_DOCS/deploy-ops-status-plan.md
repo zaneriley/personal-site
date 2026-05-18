@@ -1,6 +1,6 @@
 # Deploy / ops status and plan
 
-**Updated:** 2026-05-17.
+**Updated:** 2026-05-18.
 
 This is the working plan for Phase 3 after the production-build gate landed. It is not an ADR: it records status, sequencing, and what "done" should feel like from Z's DX.
 
@@ -20,7 +20,7 @@ This is the working plan for Phase 3 after the production-build gate landed. It 
 - Origin deploy does not exist yet. There is a release image, but no selected origin, blue/green mechanism, live smoke, or rollback command.
 - The first deploy-tooling literature pass is complete. Current planning bias is **GitHub Actions as deploy operator, Kamal as an ephemeral deploy-time adapter, and the origin as a Docker-only runtime**, but Kamal is not ratified. Literature artifacts: `.tmp/2026-05-11-deploy-preview-options/literature/` and `.tmp/2026-05-11-portfolio-deploy-tooling-deep-dive/literature/`.
 - The disposable Docker-host debug workflow and canonical `./run host:disposable:*` commands remain for lower-level DigitalOcean create/status/destroy inspection. The normal preview operator path is `Private preview deploy`, not the host debug workflow. The GitHub `preview` environment exists and is limited to `main`; `DIGITALOCEAN_TOKEN`, `DEPLOY_SSH_PUBLIC_KEY`, and `DEPLOY_SSH_PRIVATE_KEY` are installed there. Local create/status/SSH/cloud-init/Docker/destroy proof passed on 2026-05-11 against a 1 GiB `sfo3` Droplet, then peer review found the first implementation was not lifecycle-safe enough. The scripts now write receipts as soon as a Droplet ID exists, destroy failed creates by default, require SSH/Docker/Compose readiness proof, bound the remote readiness wait, refuse arbitrary cost inputs, list disposable hosts by tag, and verify expected disposable tags/name before destroy.
-- The private preview lane passed once end-to-end on a real DigitalOcean disposable host in GitHub Actions run `25988301014`: candidate image build, runtime viability, preview page acceptance, content publication rehearsal, artifact safety, artifact upload, and a reviewable 15-minute leased preview all passed. The expired preview Droplet was destroyed by the `Private preview sweeper` workflow on run `25988708619`. Keep the TTL low until repeated previews are boring.
+- The private preview lane has now passed repeatedly on real DigitalOcean disposable hosts. Historical run `25988301014` proved the first end-to-end path and the expired preview Droplet was destroyed by sweeper run `25988708619`. App-candidate repeat proofs `26023491513` and `26023898742`, both for PR `90` at candidate SHA `23cdc71df2ce54041a1174a68d57a42a881255bc`, passed candidate image build, runtime viability, preview page acceptance, content publication rehearsal, artifact safety, artifact upload, and default destroy. Follow-up run `26024550642` passed against SHA `b3c0a9cc1e74e5d9e8512b42a685f64531b22bd2` and destroyed Droplet `571638573`. Final pushed-head run `26025380183` passed against SHA `70b8907dc8968ab84f7a061e1169161ce0369915` and destroyed Droplet `571641429`. Downloaded artifacts under `.tmp/ci-artifacts/private-preview-repeat-proof/` verified the candidate image receipts, preview receipts, runtime viability receipts, browser acceptance receipts, and content rehearsal receipts. Workflow logs show DigitalOcean droplet destruction for each repeated proof run. Keep the TTL low until the next production-origin proof is shaped.
 - A simple preview deploy bug bash ran on 2026-05-12 and is recorded in `.tmp/2026-05-12-simple-preview-deploy-bugbash/report.md`. It proved the 1 GiB DO host is safe to create and destroy, but it also proved the host must be treated as a runtime, not a builder: an origin-side production image build OOM-killed BEAM while compiling `cowlib` after about 20 minutes. The next runtime spike must use a prebuilt image digest and measure app+Postgres runtime memory instead of rebuilding source on the origin.
 - Observability exists only as CI/deployability evidence. Runtime metrics/logs/alerts and auto-cancel-on-spike are not designed yet.
 - The configured content repo URL currently points at `personal-site-content`; earlier planning notes may call the separate content repo `personal-website-content`.
@@ -334,7 +334,7 @@ Current command surface:
    - Runs the same content publication flow rehearsal against a running private preview.
    - Changes content in the preview's local content source repo, sends signed webhook deliveries to the running app, checks good content goes live, and checks bad content is rejected while last-good content remains live.
    - Writes `.tmp/ci-artifacts/content-publication/preview-rehearsal.json`.
-   - Implemented, but not yet proven against a real private preview host.
+   - Proven against real private preview hosts in repeated `Private preview deploy` workflow runs.
 
 Lower-level host/debug commands:
 
@@ -378,7 +378,7 @@ GitHub workflow:
 - It uploads `.tmp/ci-artifacts/preview/` and `.tmp/ci-artifacts/content-publication/` as `preview-deploy-artifacts` with 2-day retention. The canonical preview result is `.tmp/ci-artifacts/preview/deploy-receipt.json`; the content publication rehearsal result is `.tmp/ci-artifacts/content-publication/preview-rehearsal.json`; GitHub summaries are rendered by `./run preview:deploy`, not by workflow-specific markdown.
 - By default the workflow destroys the disposable preview after artifacts upload. Set `preserve_preview=true` only when a human needs to inspect the running preview; the preserved preview is leased for 15 minutes by default, can be destroyed early with the `Private preview destroy` workflow using the Droplet ID from `deploy-receipt.json`, and is eligible for the scheduled `Private preview sweeper` after expiry.
 - It is deliberately not wired to PRs, `main`, Release Please, production deployment, or domain cutover.
-- Next proof: dispatch one preserved private preview, inspect the receipt as a human, destroy it through the GitHub destroy workflow or observe sweeper cleanup, then keep the TTL low until that path is boring.
+- Preserved-preview cleanup has been observed once through the sweeper. Keep using `preserve_preview=false` by default until a human needs to inspect a live preview, then destroy it manually or let the short TTL expire.
 
 - `Disposable host debug` is manual-only (`workflow_dispatch`) and lower-level debug only.
 - Actions: `create`, `status`, `destroy`.
@@ -389,15 +389,15 @@ GitHub workflow:
 
 Remaining hardening before this becomes an interim DigitalOcean origin/deploy flow:
 
-- Observe one preserved private preview and cleanup path with the new TTL lease: receipt expiry, manual destroy or scheduled sweep, and no leftover DigitalOcean Droplet.
-- Repeat `Private preview deploy` against real PRs until the lane is boring. It must keep modeling the actual author DX: content changes after the app is already running, a GitHub-shaped delivery reaches the app, the public route shows accepted content, bad content is rejected, and last-good content stays visible. The acceptance criteria live in `ci/content-publication/README.md`; do not call this done from the local rehearsal alone.
+- Observe manual destroy for one intentionally preserved preview. Sweeper cleanup has been observed; manual destroy is the remaining cleanup path to prove.
+- Stop repeating `Private preview deploy` without a new question. The lane has already passed repeatedly on real PR/candidate SHAs and models the actual author DX: content changes after the app is already running, a GitHub-shaped delivery reaches the app, the public route shows accepted content, bad content is rejected, and last-good content stays visible. The acceptance criteria live in `ci/content-publication/README.md`.
 - Promote the same checks to the real content repo PR/merge trigger. Do not create a separate content preview workflow or expose receipt-path commands as the author workflow.
 - Add production-origin promotion only after repeated private preview runs are boring. Promotion must use the same app digest and content generation proven in preview.
 - Add rollback proof for the production-origin path. The preview destroy command is cleanup, not rollback.
 - Add repeated-request/runtime-load observation before treating 1 GiB as production-safe.
 - Add a network abort allowlist to preview page acceptance so wrong-origin HTTP(S) requests are blocked before they can reach production or external hosts.
 - Redact or reject raw runtime logs that contain generated runtime secret names or values before uploading preview artifacts.
-- Keep the preview TTL low until the destroy workflow and scheduled sweeper have each been observed once in GitHub.
+- Keep the preview TTL low until manual destroy has been observed once in GitHub. Scheduled sweeper cleanup and default destroy have already been observed.
 - Replace the long-lived preview SSH keypair with per-run keys, or rotate the current spike key before any persistent origin exists.
 - Decide whether IPv6 should stay enabled for the DigitalOcean path; if yes, firewall and smoke must treat it as first-class.
 - Keep the command taxonomy honest: `preview:deploy` creates a private review target. Production deploy still means same-artifact promotion to the origin, live smoke, receipt, and rollback.
