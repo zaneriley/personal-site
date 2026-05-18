@@ -41,13 +41,15 @@ send a real webhook to the running preview.
 
 Current status: `content:rehearse-preview` has passed repeatedly in the real
 `Private preview deploy` workflow. Historical preserved-preview proof
-`25988301014` was cleaned by sweeper run `25988708619`. Current-SHA repeat
+`25988301014` was cleaned by sweeper run `25988708619`. App-candidate repeat
 proofs `26023491513` and `26023898742` ran against PR `90` at
-`23cdc71df2ce54041a1174a68d57a42a881255bc`; both passed candidate image build,
-runtime viability, preview page acceptance, content publication rehearsal,
-artifact safety, artifact upload, and default destroy. Next, choose the next
-production-origin or real content-repo PR/merge proof; do not keep repeating the
-same preview proof without a new question.
+`23cdc71df2ce54041a1174a68d57a42a881255bc`; after the evidence docs changed,
+Follow-up proof `26024550642` passed at
+`b3c0a9cc1e74e5d9e8512b42a685f64531b22bd2`. All three runs passed candidate
+image build, runtime viability, preview page acceptance, content publication
+rehearsal, artifact safety, artifact upload, and default destroy. Next, choose
+the next production-origin or real content-repo PR/merge proof; do not keep
+repeating the same preview proof without a new question.
 
 ## Adding Work
 

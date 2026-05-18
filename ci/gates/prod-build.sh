@@ -344,8 +344,17 @@ function run_browser_performance {
 }
 
 function run_perf_audit {
+    local repo_path
+
+    repo_path="$(pwd -P)"
+    mkdir -p .tmp
+
     "${compose[@]}" run --rm --no-deps \
-        js node ../ci/gates/perf-audit.mjs
+        --user "$(id -u):$(id -g)" \
+        -v "${repo_path}/ci:/work/ci:ro" \
+        -v "${repo_path}/.tmp:/work/.tmp" \
+        -w /work \
+        js node ci/gates/perf-audit.mjs
 }
 
 trap cleanup EXIT
