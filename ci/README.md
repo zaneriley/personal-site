@@ -39,11 +39,15 @@ content checkout backed by a local Git source repo. That keeps normal preview
 checks stable while allowing the next publication rehearsal to change content and
 send a real webhook to the running preview.
 
-Current status: `content:rehearse-preview` passed in the real `Private preview
-deploy` workflow on run `25988301014`. The same run produced a reviewable
-15-minute leased preview, and the `Private preview sweeper` workflow destroyed
-the expired Droplet on run `25988708619`. Next, promote the same behavior to the
-real content repo PR/merge trigger.
+Current status: `content:rehearse-preview` has passed repeatedly in the real
+`Private preview deploy` workflow. Historical preserved-preview proof
+`25988301014` was cleaned by sweeper run `25988708619`. Current-SHA repeat
+proofs `26023491513` and `26023898742` ran against PR `90` at
+`23cdc71df2ce54041a1174a68d57a42a881255bc`; both passed candidate image build,
+runtime viability, preview page acceptance, content publication rehearsal,
+artifact safety, artifact upload, and default destroy. Next, choose the next
+production-origin or real content-repo PR/merge proof; do not keep repeating the
+same preview proof without a new question.
 
 ## Adding Work
 
