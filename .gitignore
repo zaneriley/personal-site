@@ -189,3 +189,4 @@ flycheck_*.el
 
 # Process core dumps
 core
+.claude/launch.json
