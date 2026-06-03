@@ -112,11 +112,13 @@ html[data-theme="dark"] {
      (verified post-grain chroma 0.0484). Light is vivid enough to ride the same
      loss untouched, so only the dark grade is corrected. Raw source stops were
      #ede3eb #c7b0c2 #949cd1 #597099 / kana #676b83. */
-  --signature-1: #efe2ec;
-  --signature-2: #cbadc5;
-  --signature-3: #919ae0;
-  --signature-4: #526fa5;
-  --signature-kana: #656a8a;
+  /* Boost factor x1.40: over-corrects past the raw palette for extra pop
+     (the measured-exact x1.31 read too subtle in situ). Still holds L and H. */
+  --signature-1: #f0e2ed;
+  --signature-2: #cdadc6;
+  --signature-3: #9099e4;
+  --signature-4: #4f6fa9;
+  --signature-kana: #656a8c;
 }
 
 html[data-theme="light"] {

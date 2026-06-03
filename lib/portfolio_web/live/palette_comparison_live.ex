@@ -42,11 +42,11 @@ defmodule PortfolioWeb.PaletteComparisonLive do
       {"--text-body", "oklch(88.73% 0.056 324.15deg)"},
       {"--text-link", "oklch(76.32% 0.1 291.05deg)"},
       {"--text-deemphasized", "oklch(68.67% 0.095 276.77deg)"},
-      {"--signature-1", "#efe2ec"},
-      {"--signature-2", "#cbadc5"},
-      {"--signature-3", "#919ae0"},
-      {"--signature-4", "#526fa5"},
-      {"--signature-kana", "#656a8a"}
+      {"--signature-1", "#f0e2ed"},
+      {"--signature-2", "#cdadc6"},
+      {"--signature-3", "#9099e4"},
+      {"--signature-4", "#4f6fa9"},
+      {"--signature-kana", "#656a8c"}
     ],
     gradient:
       "radial-gradient(140.76% 178.27% at 91.11% 4.14%, oklch(0% 0 0deg) 0%, oklch(9.8% 0.021 39deg) 31%, oklch(15% 0.034 38deg) 57%, oklch(13.5% 0.029 36deg) 77%, oklch(12.5% 0.025 32deg) 100%)",
