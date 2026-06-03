@@ -10,7 +10,12 @@ This file was bootstrapped via `/grill-me` on 2026-05-06 against the deploy/ops 
 
 A change is mergeable only if all of the following hold. These are inherited expectations — running them locally or in CI catches the kinds of mistakes the gates exist for.
 
-The canonical command surface is `./run ci:*`. GitHub workflow YAML should call these canonical gate tasks, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same checks. If a gate changes, update `run` first, then call the `./run ci:*` task from CI.
+The human command surface is `./run help`, organized around `dev:*`, `ci:*`,
+and `deploy:*`. `dev:*` stands the app up locally; `ci:*` proves repo state;
+`deploy:*` handles private previews, publication rehearsals, content state, and
+release-shaped deploy proof.
+
+The canonical acceptance-gate surface is still `./run ci:*`. GitHub workflow YAML should call these canonical gate tasks, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same checks. If a gate changes, update `run` first, then call the `./run ci:*` task from CI.
 
 GitHub CI must expose the real acceptance gates as legible top-level check jobs. Do not hide compile, lint, security, test, static analysis, workflow lint, or gate-integrity work as steps inside one generic `test` job. A PR reviewer should be able to identify the failing gate from the checks list without opening logs.
 

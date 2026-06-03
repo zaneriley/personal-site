@@ -477,6 +477,82 @@ function clean {
 }
 
 # -----------------------------------------------------------------------------
+# Human-facing local development commands
+# -----------------------------------------------------------------------------
+
+function dev:setup {
+    # Prepare local environment and dependencies needed to run the app
+    ci:setup-env
+}
+
+function dev:start {
+    # Start the local Docker Compose app stack
+    docker compose up "$@"
+}
+
+function dev:stop {
+    # Stop the local Docker Compose app stack
+    docker compose down "$@"
+}
+
+function dev:logs {
+    # Follow local Docker Compose logs
+    docker compose logs -f "$@"
+}
+
+function dev:shell {
+    # Start a shell in the web container
+    shell "$@"
+}
+
+function dev:console {
+    # Start an IEx session in the web container
+    iex "$@"
+}
+
+function dev:db {
+    # Connect to the local PostgreSQL database
+    psql "$@"
+}
+
+function dev:secret {
+    # Generate a Phoenix secret
+    secret "$@"
+}
+
+function dev:clean {
+    # Remove generated local static assets
+    clean "$@"
+}
+
+function dev:format {
+    # Format Elixir, JS, and CSS sources
+    format:all "$@"
+}
+
+function dev:lint {
+    # Run local lint fixers
+    lint:all "$@"
+}
+
+function dev:test {
+    # Run local Elixir and JS tests
+    test:all "$@"
+}
+
+function dev:deps:install {
+    # Install Elixir and JS dependencies
+    mix:install
+    yarn:install
+}
+
+function dev:deps:outdated {
+    # List outdated Elixir and JS dependencies
+    mix:outdated
+    yarn:outdated
+}
+
+# -----------------------------------------------------------------------------
 # CI
 # -----------------------------------------------------------------------------
 
@@ -669,15 +745,30 @@ function ci:prod-build {
 }
 
 function ci:performance-browser {
+    local docker_env_args=()
+    local image
     local output
     local tmp_output
     local status
 
+    image="${PERF_BROWSER_IMAGE:-personal-site-browser-performance}"
     output="${PERF_BROWSER_OUTPUT:-.tmp/ci-artifacts/prod-build/browser-performance-last-run.json}"
     tmp_output="$(mktemp)"
 
-    if docker compose build js >/dev/null &&
-        docker compose run --rm ${TTY} js node ../ci/gates/browser-performance.mjs --output - > "${tmp_output}" &&
+    if [[ -n "${PERF_BROWSER_BASE_URL:-}" ]]; then
+        docker_env_args+=(-e "PERF_BROWSER_BASE_URL=${PERF_BROWSER_BASE_URL}")
+    fi
+
+    if [[ -n "${PERF_BROWSER_ROUTES_CONTRACT:-}" ]]; then
+        docker_env_args+=(-e "PERF_BROWSER_ROUTES_CONTRACT=${PERF_BROWSER_ROUTES_CONTRACT}")
+    fi
+
+    if [[ -n "${PROD_BUILD_APP_SHA:-}" ]]; then
+        docker_env_args+=(-e "PROD_BUILD_APP_SHA=${PROD_BUILD_APP_SHA}")
+    fi
+
+    if docker build --target browser -t "${image}" . >/dev/null &&
+        docker run --rm "${docker_env_args[@]}" "${image}" node ../ci/gates/browser-performance.mjs --output - > "${tmp_output}" &&
         jq -e '.status == "pass"' "${tmp_output}" >/dev/null; then
         mkdir -p "$(dirname "${output}")"
         mv "${tmp_output}" "${output}"
@@ -836,6 +927,136 @@ function ci:run-all {
     ci:static-analysis
 }
 
+function ci:format {
+    # Check source formatting and frontend formatting/lint rules
+    elixir:format:check
+    js:fix:check
+    css:lint:check
+}
+
+function ci:types {
+    # Run static type analysis
+    ci:static-analysis "$@"
+}
+
+function ci:security {
+    # Run security checks
+    ci:security-check "$@"
+}
+
+function ci:secrets {
+    # Run secret scanning
+    ci:secret-scan "$@"
+}
+
+function ci:workflow {
+    # Lint GitHub workflow files
+    ci:workflow-lint "$@"
+}
+
+function ci:performance {
+    # Check public page performance budgets
+    ci:performance-browser "$@"
+}
+
+function ci:content {
+    # Validate publishable content through the app
+    ci:content-validate "$@"
+}
+
+function ci:release {
+    # Prove the release-shaped production build gate
+    ci:prod-build "$@"
+}
+
+function ci:gate-integrity {
+    # Check that acceptance gates have not been bypassed
+    ci:acceptance-gate-bypass-check "$@"
+}
+
+function ci:all {
+    # Run the full local CI aggregate
+    ci:run-all "$@"
+}
+
+# -----------------------------------------------------------------------------
+# Human-facing deploy commands
+# -----------------------------------------------------------------------------
+
+function deploy:preview {
+    # Create and verify one private preview
+    preview:deploy "$@"
+}
+
+function deploy:preview:create {
+    # Create and verify one private preview
+    preview:deploy "$@"
+}
+
+function deploy:preview:destroy {
+    # Destroy a private preview from its deploy receipt
+    preview:destroy "$@"
+}
+
+function deploy:preview:cleanup {
+    # Destroy expired leased previews
+    preview:sweep-expired "$@"
+}
+
+function deploy:publication {
+    # Rehearse the content publication flow locally
+    content:rehearse "$@"
+}
+
+function deploy:publication:preview {
+    # Rehearse content publication against a running private preview
+    content:rehearse-preview "$@"
+}
+
+function deploy:content:status {
+    # Print the app-owned content publication status
+    content:status "$@"
+}
+
+function deploy:content:rollback {
+    # Roll back live content to a known-good publication generation
+    content:rollback "$@"
+}
+
+function deploy:release {
+    # Prove the release-shaped build gate; does not promote the origin
+    ci:prod-build "$@"
+}
+
+# -----------------------------------------------------------------------------
+# Debug commands for implementation internals
+# -----------------------------------------------------------------------------
+
+function debug:preview-host:create {
+    # Create a disposable preview host directly
+    host:disposable:create "$@"
+}
+
+function debug:preview-host:status {
+    # Print disposable preview host status directly
+    host:disposable:status "$@"
+}
+
+function debug:preview-host:destroy {
+    # Destroy a disposable preview host directly
+    host:disposable:destroy "$@"
+}
+
+function debug:preview-runtime {
+    # Run the lower-level preview runtime viability check
+    host:disposable:runtime-viability "$@"
+}
+
+function debug:preview-artifacts {
+    # Scan private preview artifacts before upload
+    preview:artifact-safety "$@"
+}
+
 # -----------------------------------------------------------------------------
 # Unified commands
 # -----------------------------------------------------------------------------
@@ -858,11 +1079,69 @@ function test:all {
 }
 
 function help {
-  printf "%s <task> [args]\n\nTasks:\n" "${0}"
+  cat <<'EOF'
+./run <task> [args]
 
-  compgen -A function | grep -v "^_" | cat -n
+Dev: local app work
+  dev:setup             Prepare local env, containers, and Postgres
+  dev:start             Start the local Docker Compose app stack
+  dev:stop              Stop the local Docker Compose app stack
+  dev:logs              Follow Docker Compose logs
+  dev:shell             Shell in the web container
+  dev:console           IEx in the web container
+  dev:db                PostgreSQL shell
+  dev:secret            Generate a Phoenix secret
+  dev:clean             Remove generated local static assets
+  dev:format            Format Elixir, JS, and CSS sources
+  dev:lint              Run local lint fixers
+  dev:test              Run local Elixir and JS tests
+  dev:deps:install      Install Elixir and JS dependencies
+  dev:deps:outdated     List outdated Elixir and JS dependencies
 
-  printf "\nExtended help:\n  Each task has comments for general usage\n"
+CI: prove repo state
+  ci:format             Check formatting and frontend style rules
+  ci:lint               Run lint gate
+  ci:test               Run Elixir and JS test gates
+  ci:types              Run static type analysis
+  ci:security           Run security checks
+  ci:secrets            Run secret scanning
+  ci:workflow           Lint GitHub workflow files
+  ci:performance        Check public page performance budgets
+  ci:content            Validate publishable content through the app
+  ci:release            Prove the release-shaped production build gate
+  ci:gate-integrity     Check that acceptance gates have not been bypassed
+  ci:all                Run the full local CI aggregate
+
+Deploy: preview, publication, content state, and release proof
+  deploy:preview        Create and verify one private preview
+  deploy:preview:create Alias for deploy:preview
+  deploy:preview:destroy
+                        Destroy a private preview from its deploy receipt
+  deploy:preview:cleanup
+                        Destroy expired leased previews
+  deploy:publication    Rehearse the content publication flow locally
+  deploy:publication:preview
+                        Rehearse publication against a private preview
+  deploy:content:status Print app-owned content publication status
+  deploy:content:rollback
+                        Roll back live content to a known-good generation
+  deploy:release        Prove release build gate; does not promote origin
+
+Debug: implementation internals
+  debug:preview-host:create
+  debug:preview-host:status
+  debug:preview-host:destroy
+  debug:preview-runtime
+  debug:preview-artifacts
+
+Compatibility aliases still exist for older commands. Use ./run help:all to list every callable task.
+EOF
+}
+
+function help:all {
+  printf "%s <task> [args]\n\nAll callable tasks:\n" "${0}"
+
+  compgen -A function | grep -v "^_" | sort | cat -n
 }
 
 # This idea is heavily inspired by: https://github.com/adriancooney/Taskfile

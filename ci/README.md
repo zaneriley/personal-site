@@ -16,41 +16,59 @@ checked-in inputs or scripts that run those inputs. Generated proof belongs in
 
 ## Commands
 
-- `./run ci:prod-build` asks, "would this release boot and serve the pages visitors need?"
-- `./run ci:performance-browser` asks, "are public pages still small and quick in a real browser?"
-- `./run ci:preview-page-acceptance:test` checks the browser assertions without deploying anything.
-- `./run ci:disposable-host-check` checks host scripts and runtime inputs without creating a cloud server.
-- `./run host:disposable:*` creates, inspects, destroys, or tests a short-lived host.
-- `./run preview:deploy --app-image-ref <digest-ref> --app-sha <sha> --preview-page-acceptance-image <trusted-image> --preview-lease-minutes 15` writes one private preview receipt.
-- `./run preview:destroy <deploy-receipt.json>` destroys the disposable host recorded by a preview deploy.
-- `./run preview:sweep-expired` destroys leased preview droplets whose TTL has expired.
-- The `Private preview destroy` workflow is the GitHub UI path for destroying a preserved preview by Droplet ID.
-- `./run content:rehearse` runs the fast app-repo rehearsal for content publication flow. It is a developer check, not the author workflow.
-- `./run content:rehearse-preview <deploy-receipt.json>` changes content on a running private preview and sends signed webhook deliveries. It is a preview check, not the author workflow.
+`./run help` is the human command map. It shows three public namespaces:
 
-The first content publication flow check is local and fast: it creates a content
-Git commit, sends a signed GitHub-shaped delivery, verifies the publication
-verdict, and proves a bad delivery leaves last-good content live. The preview
-rehearsal command applies the same check to a running private preview. Neither
-command is the author DX.
+- `dev:*` stands the app up locally or opens local development tools.
+- `ci:*` proves repo state.
+- `deploy:*` previews, rehearses publication, inspects content state, and proves release-shaped deployment gates.
 
-Private preview runtime now starts with published sample content plus a writable
-content checkout backed by a local Git source repo. That keeps normal preview
-checks stable while allowing the next publication rehearsal to change content and
-send a real webhook to the running preview.
+Use these public commands in docs and workflows when they fit. Older command names
+remain callable as compatibility aliases or implementation helpers, but they are
+not the preferred DX.
 
-Current status: `content:rehearse-preview` has passed repeatedly in the real
-`Private preview deploy` workflow. Historical preserved-preview proof
-`25988301014` was cleaned by sweeper run `25988708619`. App-candidate repeat
-proofs `26023491513` and `26023898742` ran against PR `90` at
-`23cdc71df2ce54041a1174a68d57a42a881255bc`; after the evidence docs changed,
-Follow-up proof `26024550642` passed at
-`b3c0a9cc1e74e5d9e8512b42a685f64531b22bd2`. Final pushed-head proof
-`26025380183` passed at `70b8907dc8968ab84f7a061e1169161ce0369915`. These
-runs passed candidate image build, runtime viability, preview page acceptance,
-content publication rehearsal, artifact safety, artifact upload, and default
-destroy. Next, choose the next production-origin or real content-repo PR/merge
-proof; do not keep repeating the same preview proof without a new question.
+### CI
+
+- `./run ci:format` asks, "is formatting/style shape acceptable?"
+- `./run ci:lint` asks, "do static lint gates pass?"
+- `./run ci:test` asks, "do Elixir and JS tests pass?"
+- `./run ci:types` asks, "does static type analysis pass?"
+- `./run ci:security` asks, "does the security scan pass?"
+- `./run ci:secrets` asks, "does secret scanning pass?"
+- `./run ci:workflow` asks, "are GitHub workflow files valid?"
+- `./run ci:performance` asks, "are public pages still within budget?"
+- `./run ci:content` asks, "can app-side content validation pass?"
+- `./run ci:release` asks, "would this release-shaped artifact boot and serve the pages visitors need?"
+- `./run ci:gate-integrity` asks, "have acceptance gates been bypassed?"
+- `./run ci:all` runs the local CI aggregate.
+
+### Deploy
+
+- `./run deploy:preview --app-image-ref <digest-ref> --app-sha <sha> --preview-page-acceptance-image <trusted-image> --preview-lease-minutes 15` creates one private preview receipt.
+- `./run deploy:preview:destroy <deploy-receipt.json>` destroys the disposable host recorded by a preview receipt.
+- `./run deploy:preview:cleanup` destroys leased preview hosts whose TTL has expired.
+- `./run deploy:publication` runs the fast app-repo rehearsal for content publication flow. It is a developer/deploy check, not the author workflow.
+- `./run deploy:publication:preview <deploy-receipt.json>` changes content on a running private preview and sends signed webhook deliveries. It is a preview check, not the author workflow.
+- `./run deploy:content:status` prints the app-owned content publication status.
+- `./run deploy:content:rollback` rolls live content back to a known-good publication generation.
+- `./run deploy:release` runs the release-shaped production-build gate. It does not promote the future origin.
+
+The `Private preview destroy` workflow is the GitHub UI path for destroying a
+preserved preview by Droplet ID. The content author DX remains content PR ->
+merge -> publication verdict; authors should not need to run app-repo rehearsal
+commands.
+
+### Debug Internals
+
+The following commands are for debugging preview/provider internals, not normal
+operator flow:
+
+- `./run debug:preview-host:create`
+- `./run debug:preview-host:status`
+- `./run debug:preview-host:destroy`
+- `./run debug:preview-runtime`
+- `./run debug:preview-artifacts`
+
+Use `./run help:all` to list compatibility aliases and lower-level tool wrappers.
 
 ## Adding Work
 

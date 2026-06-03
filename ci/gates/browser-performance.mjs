@@ -206,7 +206,11 @@ async function measureRoute(browserInstance, routeBudget) {
     navigationError = error.message;
   }
 
-  const metrics = await pageMetrics(page, readableContentMs);
+  const metrics = await collectPageMetrics(page, readableContentMs, (error) => {
+    navigationError = [navigationError, `metrics collection failed: ${error.message}`]
+      .filter(Boolean)
+      .join("; ");
+  });
   const resources = await resourceMetrics(responses, baseOrigin, webSockets);
   const status = mainResponse?.status() ?? null;
 
@@ -274,6 +278,23 @@ async function pageMetrics(page, readableContentMs) {
           : null,
     };
   }, readableContentMs);
+}
+
+async function collectPageMetrics(page, readableContentMs, onError) {
+  try {
+    return await pageMetrics(page, readableContentMs);
+  } catch (error) {
+    onError(error);
+    return {
+      readable_content_ms: readableContentMs,
+      ttfb_ms: null,
+      dom_content_loaded_ms: null,
+      load_ms: null,
+      fcp_ms: null,
+      lcp_ms: null,
+      cls: null,
+    };
+  }
 }
 
 async function resourceMetrics(responses, origin, webSockets) {
