@@ -23,7 +23,6 @@ defmodule PortfolioWeb.Navigation do
   - `build_localized_path/2`: Generates localized paths
   """
   use PortfolioWeb, :live_component
-  import PortfolioWeb.Components.Identity
   import PortfolioWeb.Components.ThemeSwitcher
   import PortfolioWeb.Components.Typography
 

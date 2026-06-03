@@ -79,35 +79,6 @@
   display: block;
 }
 
-/* TODO(retirement): footer still uses the old two-image big_name_logo; this
-   swap keeps it working until the footer is moved to <.hanko> and these
-   sources are deleted (Identity Phase 2 retirement). */
-.big-name-logo {
-  display: contents;
-}
-
-.big-name-logo-light {
-  display: none;
-}
-
-html[data-theme="light"] .big-name-logo-dark {
-  display: none;
-}
-
-html[data-theme="light"] .big-name-logo-light {
-  display: block;
-}
-
-@media (prefers-color-scheme: light) {
-  html:not([data-theme]) .big-name-logo-dark {
-    display: none;
-  }
-
-  html:not([data-theme]) .big-name-logo-light {
-    display: block;
-  }
-}
-
 /* Dark mode by default */
 html,
 html[data-theme="dark"] {

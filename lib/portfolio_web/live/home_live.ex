@@ -4,7 +4,6 @@ defmodule PortfolioWeb.HomeLive do
   alias Portfolio.Content
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
-  import PortfolioWeb.Components.Identity
 
   def on_mount(:default, params, session, socket) do
     {:cont,

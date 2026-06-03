@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.DarkBackgroundSketchLive do
   @moduledoc false
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Identity
 
   alias Phoenix.LiveView.Socket
 
@@ -509,13 +510,7 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
         </svg>
 
         <div class="dbs__sample">
-          <img
-            src="/images/big-name-dark.svg"
-            alt="Zane Riley"
-            width="545"
-            height="168"
-            class="dbs__logo"
-          />
+          <.signature class="dbs__logo" />
           <p class="dbs__eyebrow">
             Dark theme · in situ
             <span class="dbs__chip">contrast = worst case across gradient</span>

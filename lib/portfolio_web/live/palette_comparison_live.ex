@@ -1,12 +1,12 @@
 defmodule PortfolioWeb.PaletteComparisonLive do
   @moduledoc false
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Identity
 
   # Light: finalized sketch values
   @light %{
     id: "light",
     label: "Light",
-    logo_src: "/images/big-name-light.svg",
     has_turbulence: true,
     vars: [
       {"--surface-primary", "oklch(100% 0.079 230.2deg)"},
@@ -16,7 +16,12 @@ defmodule PortfolioWeb.PaletteComparisonLive do
       {"--text-heading", "oklch(22.6% 0.028 48deg)"},
       {"--text-body", "oklch(15.9% 0.053 54deg)"},
       {"--text-link", "oklch(58.7% 0.146 252deg)"},
-      {"--text-deemphasized", "oklch(40.6% 0.039 54deg)"}
+      {"--text-deemphasized", "oklch(40.6% 0.039 54deg)"},
+      {"--signature-1", "#b5d7bd"},
+      {"--signature-2", "#71c6e5"},
+      {"--signature-3", "#2aa7cf"},
+      {"--signature-4", "#4f589b"},
+      {"--signature-kana", "#9f8c90"}
     ],
     gradient:
       "radial-gradient(circle at 19% 20%, var(--surface-primary) 0%, color-mix(in oklch, var(--surface-primary) 49%, var(--surface-secondary)) 51%, var(--surface-secondary) 138%)",
@@ -27,7 +32,6 @@ defmodule PortfolioWeb.PaletteComparisonLive do
   @dark %{
     id: "dark",
     label: "Dark",
-    logo_src: "/images/big-name-dark.svg",
     has_turbulence: false,
     vars: [
       {"--surface-primary", "oklch(14% 0.034 38deg)"},
@@ -37,7 +41,12 @@ defmodule PortfolioWeb.PaletteComparisonLive do
       {"--text-heading", "oklch(90.76% 0.0184 316.61deg)"},
       {"--text-body", "oklch(88.73% 0.056 324.15deg)"},
       {"--text-link", "oklch(76.32% 0.1 291.05deg)"},
-      {"--text-deemphasized", "oklch(68.67% 0.095 276.77deg)"}
+      {"--text-deemphasized", "oklch(68.67% 0.095 276.77deg)"},
+      {"--signature-1", "#efe2ec"},
+      {"--signature-2", "#cbadc5"},
+      {"--signature-3", "#919ae0"},
+      {"--signature-4", "#526fa5"},
+      {"--signature-kana", "#656a8a"}
     ],
     gradient:
       "radial-gradient(140.76% 178.27% at 91.11% 4.14%, oklch(0% 0 0deg) 0%, oklch(9.8% 0.021 39deg) 31%, oklch(15% 0.034 38deg) 57%, oklch(13.5% 0.029 36deg) 77%, oklch(12.5% 0.025 32deg) 100%)",
@@ -302,7 +311,6 @@ defmodule PortfolioWeb.PaletteComparisonLive do
         <.panel
           id={@light.id}
           label={@light.label}
-          logo_src={@light.logo_src}
           has_turbulence={@light.has_turbulence}
           vars={@light.vars}
           gradient={@light.gradient}
@@ -312,7 +320,6 @@ defmodule PortfolioWeb.PaletteComparisonLive do
         <.panel
           id={@dark.id}
           label={@dark.label}
-          logo_src={@dark.logo_src}
           has_turbulence={@dark.has_turbulence}
           vars={@dark.vars}
           gradient={@dark.gradient}
@@ -326,7 +333,6 @@ defmodule PortfolioWeb.PaletteComparisonLive do
 
   attr :id, :string, required: true
   attr :label, :string, required: true
-  attr :logo_src, :string, required: true
   attr :has_turbulence, :boolean, required: true
   attr :vars, :list, required: true
   attr :gradient, :string, required: true
@@ -444,13 +450,7 @@ defmodule PortfolioWeb.PaletteComparisonLive do
       <div class="pc__content">
         <span class="pc__mode-tag">{@label}</span>
 
-        <img
-          src={@logo_src}
-          alt="Zane Riley"
-          width="545"
-          height="168"
-          class="pc__logo"
-        />
+        <.signature class="pc__logo" />
 
         <div>
           <p class="pc__eyebrow">Product designer · Tokyo</p>
@@ -504,7 +504,9 @@ defmodule PortfolioWeb.PaletteComparisonLive do
 
   defp build_token_readout(vars, :annotated) do
     Enum.map_join(vars, "\n", fn {k, v} ->
-      annotation = Map.fetch!(@dark_annotations, k)
+      # Not every token is annotated (e.g. the --signature-* art stops) — those
+      # render in the readout without a note rather than crashing.
+      annotation = Map.get(@dark_annotations, k, "")
       note = if annotation != "", do: "  #{annotation}", else: ""
       pad = String.duplicate(" ", max(0, 26 - String.length(k)))
       "#{k}:#{pad}#{v};#{note}"

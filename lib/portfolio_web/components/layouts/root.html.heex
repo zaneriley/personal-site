@@ -229,7 +229,9 @@
         class="mt-auto grid grid-cols-12 sticky top-[100vh] text-1xs"
       >
         <div class="col-span-2">
-          <.big_name_logo style="max-width: 100%; height: auto;" />
+          <%!-- Footer sign-off: the hanko seal (not the hero wordmark). Unique
+               clip id so it doesn't collide with the nav hanko on the page. --%>
+          <.hanko id="footer" size="3xl" style="color: var(--text-color-deemphasized)" />
         </div>
         <div class="col-span-3">
           <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">

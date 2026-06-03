@@ -2,6 +2,7 @@ defmodule PortfolioWeb.ColorSketchLive do
   @moduledoc false
 
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Identity
 
   @control_specs %{
     bg_a_l: %{default: 100.0, min: 0, max: 100, step: "0.1", label: "Lightness"},
@@ -811,13 +812,7 @@ defmodule PortfolioWeb.ColorSketchLive do
         <div class="color-sketch__layout">
           <main class="color-sketch__sample">
             <article class="color-sketch__copy">
-              <img
-                src="/images/big-name-light.svg"
-                alt="Zane Riley"
-                width="545"
-                height="168"
-                style="max-width: 100%; height: auto; margin-bottom: 2.5rem;"
-              />
+              <.signature style="max-width: 100%; margin-bottom: 2.5rem;" />
               <p class="color-sketch__eyebrow">Light color sketch</p>
               <h1 class="color-sketch__title">
                 A quiet cloud layer for the work

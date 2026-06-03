@@ -94,6 +94,9 @@ defmodule PortfolioWeb do
       import PortfolioWeb.SiteOrigin, only: [absolute_url: 1]
       use Gettext, backend: PortfolioWeb.Gettext
       import PortfolioWeb.Components.Typography
+      # Zane's own visual-identity marks (hanko, signature) — cross-cutting like
+      # CoreComponents/Typography: used in nav, the / hero, and the footer.
+      import PortfolioWeb.Components.Identity
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
