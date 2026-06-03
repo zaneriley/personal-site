@@ -25,6 +25,7 @@
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-config-tailwindcss": "^1.0.0",
+    "svgo": "^4.0.1",
     "tailwindcss": "3.4.12",
     "ts-node": "^10.9.2",
     "vite": "^7.0.0",
@@ -35,6 +36,7 @@
     "lint:css:fix": "stylelint \"./css/**/*.css\" --fix",
     "test:browser": "vitest",
     "assets:font-metrics": "ts-node ./tailwind/extract-font-metrics.ts",
-    "generate:typography": "ts-node ./tailwind/generate-type-tokens.ts"
+    "generate:typography": "ts-node ./tailwind/generate-type-tokens.ts",
+    "svg:optimize": "svgo -rf static -o static"
   }
 }
