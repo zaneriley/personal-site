@@ -4,6 +4,7 @@ defmodule PortfolioWeb.HomeLive do
   alias Portfolio.Content
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
+  import PortfolioWeb.Components.Identity
 
   def on_mount(:default, params, session, socket) do
     {:cont,
@@ -60,6 +61,7 @@ defmodule PortfolioWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
+    <.signature class="block max-w-[34rem] mb-1xl" />
     <.typography locale={@user_locale} tag="h2" size="1xl" class="uppercase">
       {raw(
         gettext(

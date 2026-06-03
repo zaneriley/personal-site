@@ -9,10 +9,24 @@ defmodule PortfolioWeb.Components.Identity do
       adapts via `prefers-color-scheme` because it renders in browser chrome and
       cannot read page tokens.
 
+    * `signature/1` — the calligraphic "Zane Riley" wordmark (the long signature).
+      One inline SVG whose gradient stops + kana read `--signature-*` design
+      tokens, so a single geometry recolors per theme (dark warm-violet→slate,
+      light mint→teal); noise stays in both modes. Lives on the `/` index hero.
+
   Third-party company logos are a *different* concept (foreign brand colors,
   never themed) and live in `PortfolioWeb.Components.Credits`.
   """
   use Phoenix.Component
+
+  # The signature wordmark is authored + SVGO-optimized as a source file and
+  # read at compile time, then injected raw — so the optimized SVG stays the
+  # single source of truth (no hand-transcribed copy in the heredoc) and the
+  # markup is SSR'd with zero extra requests. @external_resource recompiles the
+  # module when the asset changes.
+  @signature_path Path.join(__DIR__, "identity/signature.svg")
+  @external_resource @signature_path
+  @signature_svg File.read!(@signature_path)
 
   @doc """
   Renders the hanko (personal seal) as an inline SVG that takes `currentColor`.
@@ -25,6 +39,10 @@ defmodule PortfolioWeb.Components.Identity do
   attr :size, :string,
     default: "1xl",
     doc: "spacing rung for the mark height (3xs|2xs|1xs|md|1xl|2xl|3xl|4xl)"
+
+  attr :id, :string,
+    default: "nav",
+    doc: "suffix for the internal clipPath id; must be unique per instance on a page"
 
   attr :rest, :global, doc: "class, aria-*, and other passthrough attributes"
 
@@ -39,7 +57,7 @@ defmodule PortfolioWeb.Components.Identity do
       {@rest}
     >
       <defs>
-        <clipPath id="hanko-seal">
+        <clipPath id={"hanko-seal-#{@id}"}>
           <rect x="1.9734" y="2.6875" width="39.2886" height="36.625" rx="18.3125" />
         </clipPath>
       </defs>
@@ -52,7 +70,7 @@ defmodule PortfolioWeb.Components.Identity do
         stroke="currentColor"
         stroke-width="4"
       />
-      <g clip-path="url(#hanko-seal)">
+      <g clip-path={"url(#hanko-seal-#{@id})"}>
         <path
           fill="currentColor"
           d="M24.0948 20.4957C24.9918 20.6869 25.6392 20.3811 25.7875 19.7079C25.8809 19.2841 26.0358 18.4557 26.1896 17.7576C26.4258 16.6855 29.6378 16.9002 33.2257 17.665C36.075 18.2723 37.2226 18.8302 37.0688 19.5283C36.8436 20.5505 36.5534 21.1151 36.3777 21.913C36.2788 22.3617 36.4998 23.1136 37.7662 23.3836C38.8742 23.6197 39.4216 23.2665 39.8469 22.3392C40.2348 21.456 40.4215 20.6083 40.6028 19.7856C41.7289 14.6744 40.7446 10.3665 36.0373 6.28294C35.78 6.07149 35.2436 5.74832 34.6368 5.61899C34.03 5.48965 33.332 5.5236 32.8231 5.70226C26.6786 7.26394 24.0476 11.5583 23.0588 16.0461C22.8446 17.0185 22.6886 17.9772 22.6469 18.5426C22.5316 19.6926 23.0132 20.2651 24.0948 20.4957ZM28.0139 13.8655C27.6181 13.7812 27.3928 13.5504 27.4697 13.2013C27.7883 11.7553 29.8689 10.0844 32.6509 9.24169C33.0378 9.11534 33.4555 9.09996 33.8513 9.1843C34.2206 9.26303 34.5416 9.43586 34.7725 9.64168C36.4522 11.0438 38.0475 13.0806 37.6739 14.776C37.608 15.0751 37.4904 15.2328 36.9891 15.126C36.4615 15.0135 35.6283 14.7837 34.019 14.4407C30.8795 13.7715 28.7262 14.0173 28.0139 13.8655Z"
@@ -71,6 +89,27 @@ defmodule PortfolioWeb.Components.Identity do
         />
       </g>
     </svg>
+    """
+  end
+
+  @doc """
+  Renders the calligraphic "Zane Riley" signature wordmark as an inline SVG.
+
+  The gradient stops and kana fill read the per-theme `--signature-*` tokens
+  (defined in `assets/css/_color.css`), so one geometry recolors with the page
+  theme — no per-mode image pair, no extra request. The wrapper is a block so
+  the SVG (`width:100%`) scales to its container; constrain via the caller
+  (e.g. a `max-width` on the wrapper or its parent column).
+  """
+  attr :class, :string, default: nil, doc: "extra classes merged onto the wrapper"
+  attr :rest, :global, doc: "style, aria-*, and other passthrough on the wrapper"
+
+  @spec signature(map()) :: Phoenix.LiveView.Rendered.t()
+  def signature(assigns) do
+    assigns = assign(assigns, :markup, {:safe, @signature_svg})
+
+    ~H"""
+    <span class={["signature", @class]} role="img" aria-label="Zane Riley" {@rest}>{@markup}</span>
     """
   end
 end
