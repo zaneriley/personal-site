@@ -48,24 +48,27 @@
     {hreflang_tags(@conn)}
     <!-- Favicon and touch icons -->
     <!-- Primary: one adaptive SVG (the hanko); follows OS light/dark via
-         prefers-color-scheme. PNG/ICO below are the raster fallback. -->
-    <link rel="icon" type="image/svg+xml" href={~p"/favicon.svg"} />
+         prefers-color-scheme. PNG/ICO below are the raster fallback.
+         ?v= is a cache-buster: favicons aren't content-digested, and browsers
+         (esp. Firefox/Zen) cache them very stubbornly — bump v on icon change. -->
+    <link rel="icon" type="image/svg+xml" href={~p"/favicon.svg?v=2"} />
+    <link rel="icon" sizes="any" href={~p"/favicon.ico?v=2"} />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href={~p"/apple-touch-icon.png"}
+      href={~p"/apple-touch-icon.png?v=2"}
     />
     <link
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href={~p"/favicon-32x32.png"}
+      href={~p"/favicon-32x32.png?v=2"}
     />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href={~p"/favicon-16x16.png"}
+      href={~p"/favicon-16x16.png?v=2"}
     />
     <link
       rel="mask-icon"
