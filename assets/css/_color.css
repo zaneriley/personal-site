@@ -44,145 +44,152 @@
   /* Gold Palette */
   --ochre-0: oklch(77.77% 0.0704 75.85deg);
 
-  /* SEMANTIC TOKENS */
-  --text-color-main: var(--neutral-0);
-  --text-color-callout: var(--white-absolute);
-  --text-color-deemphasized: var(--dusk-500);
-  --text-color-suppressed: var(--dusk-600);
-  --text-color-accent: var(--ochre-0);
+  /* SHARED HUE ANCHORS (single source of truth for role hues).
+     Lightness + chroma are per-mode; only the hue is shared and re-anchored
+     in the light block. */
+  --hue-warm-text: 65deg; /* dark warm-text anchor; light re-anchors to 50deg */
+  --hue-cool-surface: 268deg; /* 250–286 band, surfaces + mid/dark neutrals */
+  --hue-link: 264deg; /* 252–277 band, links */
 
-  /* DARK MODE GRADIENTS */
+  /* SEMANTIC TEXT TOKENS are defined per-mode below (see the html[data-theme]
+     blocks) — light and dark need independent envelopes. Defining text in
+     :root is what made light-mode text resolve to near-white (invisible). */
 
-  --grad-bg-time: 10s;
-  --bg-gradient-1: radial-gradient(
-    140.76% 178.27% at 91.11% 4.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
+  /* SURFACE GRADIENTS — both always defined; the .surface layers cross-fade
+     between them on theme toggle (geometries differ, so they can't morph in
+     place; opacity cross-fade is the mechanism). Confirmed tuned values. */
+  --surface-grad-dark: radial-gradient(
+    177% 177% at 15% 98%,
+    oklch(25.7% 0.006 286deg) 0%,
+    oklch(27.5% 0.009 286deg) 50%,
+    oklch(33.1% 0.022 259deg) 100%
   );
-  --bg-gradient-2: radial-gradient(
-    140.76% 158.27% at 33.11% 95.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
-  );
-  --bg-gradient-3: radial-gradient(
-    140.76% 128.27% at 5.11% 15.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
-  );
-  --bg-gradient-4: radial-gradient(
-    140.76% 138.27% at 55.11% 10.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
-  );
-  --bg-gradient-5: radial-gradient(
-    140.76% 178.27% at 91.11% 4.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
+  --surface-grad-light: radial-gradient(
+    138% 138% at 19% 20%,
+    oklch(100% 0.079 230deg) 0%,
+    oklch(81.3% 0.144 238deg) 100%
   );
 }
 
-@property --color-grad-1 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(41.84% 0.038 261.51deg);
+/* Big name logo: show dark variant by default, swap on light mode */
+.big-name-logo {
+  display: contents;
 }
 
-@property --color-grad-2 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(33.09% 0.022 259.38deg);
+.big-name-logo__light {
+  display: none;
 }
 
-@property --color-grad-3 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(28.04% 0.012 264.36deg);
+html[data-theme="light"] .big-name-logo__dark {
+  display: none;
 }
 
-@property --color-grad-4 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(25.26% 0.008 274.64deg);
+html[data-theme="light"] .big-name-logo__light {
+  display: block;
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .big-name-logo__dark {
+    display: none;
+  }
+
+  html:not([data-theme]) .big-name-logo__light {
+    display: block;
+  }
 }
 
 /* Dark mode by default */
 html,
 html[data-theme="dark"] {
   color-scheme: dark;
+
+  /* TEXT EMPHASIS LADDER — equal OKLCH-lightness steps measured as ΔL from
+     the worst-case (lightest) dark surface stop (L≈33). Warm hue ~65°, low
+     chroma. Floor (deemphasized, ΔL 38) = 4.5:1 AA. */
+  --text-color-callout: oklch(91% 0.02 var(--hue-warm-text)); /* ΔL58 emphasis */
+  --text-color-main: oklch(81% 0.02 var(--hue-warm-text)); /* ΔL48 body */
+  --text-color-deemphasized: oklch(71% 0.02 var(--hue-warm-text)); /* ΔL38 AA floor */
+  --text-color-suppressed: oklch(61% 0.02 var(--hue-warm-text)); /* ΔL28 sub-floor */
+  --text-color-accent: var(--ochre-0);
 }
 
 html[data-theme="light"] {
   color-scheme: light;
 
-  --color-grad-1: oklch(100% 0 0deg);
-  --color-grad-2: oklch(79.52% 0.1341 209.59deg);
-  --color-grad-3: oklch(63.36% 0.1372 226.77deg);
-  --color-grad-4: oklch(55.54% 0.244 265.91deg);
+  /* TEXT LADDER — mirrored: ΔL measured from the worst-case (darkest) light
+     surface stop (L≈81), text travels darker. Warm hue re-anchored to ~50°,
+     higher chroma so low-lightness warms read warm, not muddy. */
+  --hue-warm-text: 50deg;
+  --text-color-callout: oklch(23% 0.05 var(--hue-warm-text)); /* ΔL58 emphasis */
+  --text-color-main: oklch(33% 0.05 var(--hue-warm-text)); /* ΔL48 body */
+  --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text)); /* ΔL38 AA floor */
+  --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text)); /* ΔL28 sub-floor */
+  --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
 }
 
 @media (prefers-color-scheme: light) {
   html:not([data-theme]) {
     color-scheme: light;
 
-    --color-grad-1: oklch(100% 0 0deg);
-    --color-grad-2: oklch(79.52% 0.1341 209.59deg);
-    --color-grad-3: oklch(63.36% 0.1572 226.77deg);
-    --color-grad-4: oklch(55.54% 0.244 265.91deg);
+    /* Same light ladder for OS-light users who haven't toggled explicitly —
+       without this they hit the original invisible-text bug. */
+    --hue-warm-text: 50deg;
+    --text-color-callout: oklch(23% 0.05 var(--hue-warm-text));
+    --text-color-main: oklch(33% 0.05 var(--hue-warm-text));
+    --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text));
+    --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text));
+    --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
   }
 }
 
-.bg-gradient {
-  background: linear-gradient(
-    to top,
-    var(--color-grad-1) 0%,
-    var(--color-grad-2) 12%,
-    var(--color-grad-3) 25%,
-    var(--color-grad-4) 50%
-  );
-  background-attachment: fixed;
-  transition:
-    --color-grad-1 5s,
-    --color-grad-2 5s,
-    --color-grad-3 5s,
-    --color-grad-4 5s;
-  background-size: 400% 400%;
-  animation: gradient var(--grad-bg-time) ease infinite;
-  background-image: var(--bg-gradient-1);
+/* ---- SURFACE: fixed full-viewport background, behind all content.
+   Two gradient fills cross-fade on theme toggle (dusk transition, not a hard
+   flash). Turbulence cloud/grain layers will be added inside .surface next. ---- */
+.surface {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-@keyframes gradient {
-  0% {
-    background-image: var(--bg-gradient-1);
+.surface__fill {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.6s ease;
+}
+
+.surface__fill--dark {
+  background: var(--surface-grad-dark);
+  opacity: 1;
+}
+
+.surface__fill--light {
+  background: var(--surface-grad-light);
+  opacity: 0;
+}
+
+html[data-theme="light"] .surface__fill--dark {
+  opacity: 0;
+}
+
+html[data-theme="light"] .surface__fill--light {
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .surface__fill--dark {
+    opacity: 0;
   }
 
-  25% {
-    background-image: var(--bg-gradient-2);
+  html:not([data-theme]) .surface__fill--light {
+    opacity: 1;
   }
+}
 
-  50% {
-    background-image: var(--bg-gradient-3);
-  }
-
-  75% {
-    background-image: var(--bg-gradient-4);
-  }
-
-  100% {
-    background-image: var(--bg-gradient-5);
+@media (prefers-reduced-motion: reduce) {
+  .surface__fill {
+    transition: none;
   }
 }

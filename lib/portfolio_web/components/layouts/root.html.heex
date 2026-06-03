@@ -4,6 +4,26 @@
   data-theme={Application.get_env(:portfolio, :default_theme, "dark")}
 >
   <head>
+    <%!-- Set data-theme from the saved preference BEFORE first paint, so a
+         light-preferring user never sees a flash of the server-default dark.
+         Mirrors the decision logic in assets/js/theme-switcher.ts; that file
+         remains the source of truth for runtime toggling. Inline is required
+         (must run pre-paint); CSP allows script-src 'unsafe-inline'. --%>
+    <script>
+      (function () {
+        try {
+          var d = document.documentElement;
+          var t = localStorage.getItem("theme");
+          if (t === "light" || t === "dark") {
+            d.setAttribute("data-theme", t);
+          } else {
+            var light = window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: light)").matches;
+            d.setAttribute("data-theme", light ? "light" : "dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <.live_title>
       {assigns[:page_title] ||
         "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"}
@@ -83,112 +103,125 @@
       src={~p"/js/app.js"}
     />
   </head>
-  <body class="min-h-screen flex flex-col text-md bg-gradient">
+  <body class="min-h-screen flex flex-col text-md">
+    <%!-- Fixed full-viewport background behind all content. Two gradient fills
+         cross-fade on theme toggle (dusk transition). Turbulence layers will be
+         added here next. Static markup — not LiveView-driven. --%>
+    <div class="surface" aria-hidden="true">
+      <div class="surface__fill surface__fill--dark"></div>
+      <div class="surface__fill surface__fill--light"></div>
+    </div>
     <a href="#main-content" class="sr-only" tabindex="0">
       {gettext("Skip to main content")}
     </a>
 
     {@inner_content}
-    <footer
-      role="contentinfo"
-      class="mt-auto grid grid-cols-12 sticky top-[100vh] text-1xs"
-    >
-      <div class="col-span-2">
-        Logo
-      </div>
-      <div class="col-span-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Connect")}
-        </.typography>
-        <.typography locale={@user_locale} tag="ul" size="1xs">
-          <li>
-            <a href="mailto:zane@zaneriley.com" target="_blank" rel="noopener">
-              hello@zaneriley.com
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://www.linkedin.com/in/zaneriley/"
-              target="_blank"
-              rel="noopener"
-            >
-              LinkedIn
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/zaneriley"
-              target="_blank"
-              rel="noopener"
-            >
-              Github
-            </a>
-          </li>
-        </.typography>
-      </div>
-      <div class="col-span-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Colophon")}
-        </.typography>
+    <% footer_path =
+      (assigns[:conn] && assigns[:conn].request_path) || assigns[:current_path] ||
+        "" %>
+    <%= unless String.ends_with?(footer_path, "/color-sketch") or
+                 String.ends_with?(footer_path, "/shader-scale-sketch") do %>
+      <footer
+        role="contentinfo"
+        class="mt-auto grid grid-cols-12 sticky top-[100vh] text-1xs"
+      >
+        <div class="col-span-2">
+          <.big_name_logo style="max-width: 100%; height: auto;" />
+        </div>
+        <div class="col-span-3">
+          <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
+            {gettext("Connect")}
+          </.typography>
+          <.typography locale={@user_locale} tag="ul" size="1xs">
+            <li>
+              <a href="mailto:zane@zaneriley.com" target="_blank" rel="noopener">
+                hello@zaneriley.com
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.linkedin.com/in/zaneriley/"
+                target="_blank"
+                rel="noopener"
+              >
+                LinkedIn
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://github.com/zaneriley"
+                target="_blank"
+                rel="noopener"
+              >
+                Github
+              </a>
+            </li>
+          </.typography>
+        </div>
+        <div class="col-span-3">
+          <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
+            {gettext("Colophon")}
+          </.typography>
 
-        <.typography locale={@user_locale} tag="p" size="1xs">
-          {raw(
-            gettext(
-              "Type set in %{font1}, %{font2}, %{font3}, & %{font4}.",
-              font1:
-                "<a href='https://www.grillitype.com/typeface/gt-flexa'>GT Flexa</a>",
-              font2:
-                "<a href='https://productiontype.com/font/cardinal/cardinal-fruit' class='font-cardinal-fruit' rel='noopener' target='_blank'>Cardinal Fruit</a>",
-              font3:
-                "<a href='https://ohnotype.co/fonts/cheee' class='font-cheee' rel='noopener' target='_blank'>CHEEE</a>",
-              font4:
-                "<a href='https://fonts.google.com/noto/specimen/Noto+Sans+JP' rel='noopener' target='_blank'>Noto Sans JP</a>"
-            )
-          )}<br />{raw(
-            gettext("Design avaiable in %{figma}.",
-              figma:
-                "<a href='https://www.figma.com/design/zDOcBhnjTDCWmc6OFgeoUc/Zane-Riley's-Product-Portfolio?node-id=2209-559&t=0gZqDDkC2pYanuW3-0' target='_blank' rel='noopener'>Figma</a>"
-            )
-          )}
-        </.typography>
-      </div>
-      <div class="col-span-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Server")}
-        </.typography>
-        <.typography locale={@user_locale} tag="p" size="1xs">
-          {gettext("Hosted on my home server in Tokyo.")} <br />
-          {gettext("Written in Elixir.")} <br />
-          {raw(
-            gettext("Open source on %{github}.",
-              github:
-                "<a href='https://github.com/zane-riley/personal-site' target='_blank' rel='noopener'>Github</a>"
-            )
-          )}
-        </.typography>
-      </div>
-      <div class="col-span-12">
-        <.typography
-          locale={@user_locale}
-          tag="p"
-          size="1xs"
-          font="cheee"
-          center={true}
-          color="suppressed"
-        >
-          Now in Tokyo
-        </.typography>
-        <.typography
-          locale={@user_locale}
-          tag="p"
-          size="1xs"
-          font="cheee"
-          center={true}
-          color="suppressed"
-        >
-          &copy; 2010 – {@current_year}
-        </.typography>
-      </div>
-    </footer>
+          <.typography locale={@user_locale} tag="p" size="1xs">
+            {raw(
+              gettext(
+                "Type set in %{font1}, %{font2}, %{font3}, & %{font4}.",
+                font1:
+                  "<a href='https://www.grillitype.com/typeface/gt-flexa'>GT Flexa</a>",
+                font2:
+                  "<a href='https://productiontype.com/font/cardinal/cardinal-fruit' class='font-cardinal-fruit' rel='noopener' target='_blank'>Cardinal Fruit</a>",
+                font3:
+                  "<a href='https://ohnotype.co/fonts/cheee' class='font-cheee' rel='noopener' target='_blank'>CHEEE</a>",
+                font4:
+                  "<a href='https://fonts.google.com/noto/specimen/Noto+Sans+JP' rel='noopener' target='_blank'>Noto Sans JP</a>"
+              )
+            )}<br />{raw(
+              gettext("Design avaiable in %{figma}.",
+                figma:
+                  "<a href='https://www.figma.com/design/zDOcBhnjTDCWmc6OFgeoUc/Zane-Riley's-Product-Portfolio?node-id=2209-559&t=0gZqDDkC2pYanuW3-0' target='_blank' rel='noopener'>Figma</a>"
+              )
+            )}
+          </.typography>
+        </div>
+        <div class="col-span-3">
+          <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
+            {gettext("Server")}
+          </.typography>
+          <.typography locale={@user_locale} tag="p" size="1xs">
+            {gettext("Hosted on my home server in Tokyo.")} <br />
+            {gettext("Written in Elixir.")} <br />
+            {raw(
+              gettext("Open source on %{github}.",
+                github:
+                  "<a href='https://github.com/zane-riley/personal-site' target='_blank' rel='noopener'>Github</a>"
+              )
+            )}
+          </.typography>
+        </div>
+        <div class="col-span-12">
+          <.typography
+            locale={@user_locale}
+            tag="p"
+            size="1xs"
+            font="cheee"
+            center={true}
+            color="suppressed"
+          >
+            Now in Tokyo
+          </.typography>
+          <.typography
+            locale={@user_locale}
+            tag="p"
+            size="1xs"
+            font="cheee"
+            center={true}
+            color="suppressed"
+          >
+            &copy; 2010 – {@current_year}
+          </.typography>
+        </div>
+      </footer>
+    <% end %>
   </body>
 </html>
