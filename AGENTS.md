@@ -147,6 +147,22 @@ Not yet captured: budget ceilings, telemetry-leaving-box policy, network rules (
 
 ---
 
+## Backlog
+
+Canonical backlog for this repo (per `~/.agents/AGENTS.md` §10). Vault read-view/scratch lives at `~/repos/obsidian-notes/Backlog/side-projects/portfolio/`. Items here are scoped enough to start cold; ADR-grade decisions still land in `_PROJECT_DOCS/adrs/`.
+
+### Design passes (logged 2026-06-03)
+
+These three surfaced during the light/dark theme + identity work and are explicitly **design passes**, not quick fixes.
+
+- **Grid system is broken site-wide — needs a holistic pass.** The 12-col grid is applied inconsistently and breaks at mobile. Evidence: `main` (home/about) uses `sm:col-start-3 sm:col-end-11` with **no base placement**, so below the `sm` breakpoint it falls to `grid-column: auto` = 1 of 12 tracks (~27px at a 342px viewport) and squishes all content; the footer is full-bleed `grid grid-cols-12` not constrained to `--grid-max-width` nor aligned to the content inset. `.u-container` / `.u-grid` + the `--grid-*` tokens exist but aren't consistently used. **Pass should:** go mobile-first (define base stacking, not `sm:`-only placement), pick one container (max-width + gutters via `--grid-*`), and align nav / main / footer to the same grid. Affects most templates + `assets/css/app.css`.
+
+- **`spec_sheet` primitive is close but off-mock — second pass.** The footer's Typefaces + Server cards (`PortfolioWeb.Components.Footer.spec_sheet/1`, styles in `assets/css/_footer.css`) are structurally right but don't match the Figma mock. Gaps: padding/proportions, border + inset treatment, header chip + status-dot placement (dot floats to the right edge / header wraps at narrow widths), row label-column width (values wrap awkwardly), and the green "PASSING"/dot color wants a real token. **Also:** GT Flexa Mono isn't loaded — labels/values fall back to the system monospace stack (`--footer-mono` TODO in `_footer.css`); load the face or pick a deliberate substitute. Mock: `~/Downloads/Footer.{png,svg}` (TRANSIENT — archive into the repo/vault before it's lost; the `.svg` is a flat outlined export, a visual spec only).
+
+- **No design-system solution for click/tap affordances.** There's no consistent treatment for interactive elements (links, buttons, tap targets, and hover / active / focus-visible / visited states). Hard because the dusk/neutral palette **shifts both hue and chroma across the OKLCH lightness ramp**, so naive "darken on hover" or a single fixed accent doesn't read consistently — affordances must hold across the moving neutral ramp **and** both themes, on a textured surface. **Pass should:** define interactive-state tokens (hover/active/focus-visible/visited), a minimum tap-target size (44px), a focus-visible ring legible over the surface texture, and link underline/affordance conventions — wired into the existing `--text-color-*` / `--accent` token system, not ad-hoc per component.
+
+---
+
 ## How this file gets updated
 
 - After the next `/grill-me` pass: append to or replace the partial sections above.
