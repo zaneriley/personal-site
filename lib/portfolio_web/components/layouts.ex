@@ -2,7 +2,6 @@ defmodule PortfolioWeb.Layouts do
   @moduledoc false
   use PortfolioWeb, :html
   use Gettext, backend: PortfolioWeb.Gettext
-  import PortfolioWeb.Components.Typography
   embed_templates "layouts/*"
 
   @supported_locales Application.compile_env(:portfolio, :supported_locales)

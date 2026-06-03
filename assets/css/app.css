@@ -4,6 +4,7 @@
 @import url("./_fontface.css");
 @import url("./_color.css");
 @import url("./_typography.css");
+@import url("./_footer.css");
 
 @property --fantazio-rotate {
   syntax: "<angle>";

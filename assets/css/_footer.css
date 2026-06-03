@@ -1,0 +1,131 @@
+/* ============================================================================
+   FOOTER + spec_sheet primitive
+   Styling for PortfolioWeb.Components.Footer. Layout (the 12-col grid, column
+   spans, spacing) is done with Tailwind utilities in the HEEx; this file owns
+   the spec_sheet primitive's frame + the small footer-specific text roles, all
+   driven by the design tokens in _color.css. Colours never hardcoded here —
+   they derive from --text-color-* / --accent so the footer recolours per theme.
+
+   TODO(footer-mono): the design sets labels/values in "GT Flexa Mono", which
+   isn't loaded yet. Until the face ships, --footer-mono falls back to the
+   system monospace stack. Swap the token when the font is added to _fontface.
+============================================================================ */
+
+:root {
+  --footer-mono: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+  /* Hairline derived from the suppressed text colour so it tracks the theme. */
+  --footer-rule: color-mix(in oklch, var(--text-color-suppressed) 28%, transparent);
+  --footer-inset: color-mix(in oklch, var(--text-color-suppressed) 6%, transparent);
+  --footer-ok: oklch(72% 0.17 150deg); /* status "up" dot / PASSING */
+}
+
+/* Small-caps mono eyebrow used for section headers (COLOPHON / SERVER / …). */
+.footer-eyebrow {
+  font-family: var(--footer-mono);
+  font-size: var(--fs-1xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ---- spec_sheet: a framed, titled list of labelled facts -------------------
+   One primitive; the Typefaces sheet and the Server sheet differ only by the
+   optional header chip + status dot. Rows are a semantic <dl>. */
+.spec-sheet {
+  border: 1px solid var(--footer-rule);
+  border-radius: var(--space-2xs);
+  background: var(--footer-inset);
+}
+
+.spec-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs) var(--space-1xs);
+  border-bottom: 1px solid var(--footer-rule);
+}
+
+.spec-sheet__chip {
+  font-family: var(--footer-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-color-deemphasized);
+  background: color-mix(in oklch, var(--text-color-suppressed) 18%, transparent);
+  border-radius: var(--space-3xs);
+  padding: 0.15em 0.5em;
+}
+
+.spec-sheet__title {
+  font-family: var(--footer-mono);
+  font-size: var(--fs-1xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-color-deemphasized);
+}
+
+.spec-sheet__dot {
+  width: 0.5em;
+  height: 0.5em;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--text-color-suppressed);
+}
+
+.spec-sheet__dot.is-up {
+  background: var(--footer-ok);
+  box-shadow: 0 0 0 0.25em color-mix(in oklch, var(--footer-ok) 22%, transparent);
+}
+
+/* Rows: a description list. dt = label rail, dd = value. */
+.spec-sheet__rows {
+  margin: 0;
+  padding: var(--space-1xs);
+  display: grid;
+  row-gap: var(--space-1xs);
+}
+
+.spec-sheet__row {
+  display: grid;
+  grid-template-columns: 5.5em 1fr;
+  align-items: baseline;
+  column-gap: var(--space-1xs);
+}
+
+.spec-sheet__row dt {
+  font-family: var(--footer-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-color-suppressed);
+}
+
+.spec-sheet__row dd {
+  margin: 0;
+  color: var(--text-color-main);
+}
+
+/* Server values are mono; the PASSING deploy state reads "ok". */
+.spec-sheet__value {
+  font-family: var(--footer-mono);
+  font-size: var(--fs-1xs);
+  color: var(--text-color-main);
+}
+
+.spec-sheet__value--ok {
+  color: var(--footer-ok);
+}
+
+/* Typeface specimen: primary name set in its own face, JP fallback muted. */
+.spec-sheet__specimen {
+  display: block;
+  color: var(--text-color-main);
+  line-height: 1.1;
+}
+
+.spec-sheet__specimen-sub {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-color-suppressed);
+  line-height: 1.3;
+}
