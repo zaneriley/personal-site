@@ -178,6 +178,50 @@ html[data-theme="light"] .surface__fill--light {
   opacity: 1;
 }
 
+/* Texture layers — full-viewport, blended over the gradient within the
+   surface's isolated stacking context. Opacity cross-fades with the theme. */
+.surface__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.surface__grain-dark {
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+} /* dark: heavy grain */
+
+.surface__highlight {
+  mix-blend-mode: screen;
+  opacity: 0;
+} /* light only */
+
+.surface__shadow {
+  mix-blend-mode: multiply;
+  opacity: 0;
+} /* light only */
+
+.surface__grain-light {
+  mix-blend-mode: overlay;
+  opacity: 0;
+} /* light only */
+
+html[data-theme="light"] .surface__grain-dark {
+  opacity: 0;
+}
+html[data-theme="light"] .surface__highlight {
+  opacity: 0.8;
+}
+html[data-theme="light"] .surface__shadow {
+  opacity: 0.22;
+}
+html[data-theme="light"] .surface__grain-light {
+  opacity: 0.32;
+}
+
 @media (prefers-color-scheme: light) {
   html:not([data-theme]) .surface__fill--dark {
     opacity: 0;
@@ -186,10 +230,24 @@ html[data-theme="light"] .surface__fill--light {
   html:not([data-theme]) .surface__fill--light {
     opacity: 1;
   }
+
+  html:not([data-theme]) .surface__grain-dark {
+    opacity: 0;
+  }
+  html:not([data-theme]) .surface__highlight {
+    opacity: 0.8;
+  }
+  html:not([data-theme]) .surface__shadow {
+    opacity: 0.22;
+  }
+  html:not([data-theme]) .surface__grain-light {
+    opacity: 0.32;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .surface__fill {
+  .surface__fill,
+  .surface__layer {
     transition: none;
   }
 }
