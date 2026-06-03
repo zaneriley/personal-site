@@ -32,8 +32,7 @@ defmodule PortfolioWeb.Components.Identity do
   def hanko(assigns) do
     ~H"""
     <svg
-      viewBox="0 0 44 42"
-      overflow="hidden"
+      viewBox="-3 -3 50 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={"height: var(--space-#{@size}); width: auto"}
