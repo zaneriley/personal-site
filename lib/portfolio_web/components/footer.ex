@@ -47,11 +47,7 @@ defmodule PortfolioWeb.Components.Footer do
     >
       <%!-- Seal --%>
       <div class="col-span-12 sm:col-span-2">
-        <.hanko
-          id="footer"
-          size="3xl"
-          style="color: var(--text-color-deemphasized)"
-        />
+        <.hanko id="footer" />
       </div>
 
       <%!-- Colophon: how the site is made --%>

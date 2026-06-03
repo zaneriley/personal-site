@@ -51,6 +51,11 @@
   --hue-cool-surface: 268deg; /* 250–286 band, surfaces + mid/dark neutrals */
   --hue-link: 264deg; /* 252–277 band, links */
 
+  /* Brand mark colour — the hanko's single canonical colour, referencing the
+     per-theme accent so it tracks light/dark. Change here to recolour the mark
+     everywhere. */
+  --hanko-color: var(--accent);
+
   /* SEMANTIC TEXT TOKENS are defined per-mode below (see the html[data-theme]
      blocks) — light and dark need independent envelopes. Defining text in
      :root is what made light-mode text resolve to near-white (invisible). */
@@ -77,6 +82,17 @@
    own display/width/height/isolation. */
 .signature {
   display: block;
+}
+
+/* Hanko (personal seal) — ONE canonical appearance everywhere (nav, footer,
+   future). Colour + size are design-system invariants owned by the mark, not
+   per-call choices, so instances can't drift. --hanko-color is the brand
+   accent; size is a single spacing rung. fill/stroke use currentColor, so
+   setting `color` here recolours the whole mark. */
+.hanko {
+  color: var(--hanko-color);
+  height: var(--space-2xl);
+  width: auto;
 }
 
 /* Dark mode by default */

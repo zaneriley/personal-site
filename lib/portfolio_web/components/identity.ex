@@ -29,23 +29,25 @@ defmodule PortfolioWeb.Components.Identity do
   @signature_svg File.read!(@signature_path)
 
   @doc """
-  Renders the hanko (personal seal) as an inline SVG that takes `currentColor`.
+  Renders the hanko (personal seal) as an inline SVG.
 
-  Sizing comes from the spacing scale via `size` (a `--space-*` rung, default
-  `"1xl"`), so marks stay on the same rhythm as the rest of the layout —
-  not a magic pixel value. Color comes from the caller (e.g. the nav link sets
-  `color: var(--accent)`).
+  The mark owns its appearance: the `.hanko` class fixes its colour
+  (`--hanko-color`, the brand accent) and size (one canonical `--space-2xl`
+  rung), so every instance is identical by construction. Callers **cannot**
+  recolour or resize it — that's a design-system invariant, not a per-call
+  choice. `id` only varies the internal clipPath id so multiple instances on
+  one page don't collide; `class` is for layout (margins, alignment) only.
   """
-  attr :size, :string,
-    default: "1xl",
-    doc: "spacing rung for the mark height (3xs|2xs|1xs|md|1xl|2xl|3xl|4xl)"
-
   attr :id, :string,
     default: "nav",
     doc:
       "suffix for the internal clipPath id; must be unique per instance on a page"
 
-  attr :rest, :global, doc: "class, aria-*, and other passthrough attributes"
+  attr :class, :string,
+    default: nil,
+    doc: "extra layout classes (margins, etc.)"
+
+  attr :rest, :global, doc: "aria-* and other passthrough attributes"
 
   @spec hanko(map()) :: Phoenix.LiveView.Rendered.t()
   def hanko(assigns) do
@@ -54,7 +56,7 @@ defmodule PortfolioWeb.Components.Identity do
       viewBox="-3 -3 50 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      style={"height: var(--space-#{@size}); width: auto"}
+      class={["hanko", @class]}
       {@rest}
     >
       <defs>
