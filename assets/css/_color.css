@@ -76,24 +76,24 @@
   display: contents;
 }
 
-.big-name-logo__light {
+.big-name-logo-light {
   display: none;
 }
 
-html[data-theme="light"] .big-name-logo__dark {
+html[data-theme="light"] .big-name-logo-dark {
   display: none;
 }
 
-html[data-theme="light"] .big-name-logo__light {
+html[data-theme="light"] .big-name-logo-light {
   display: block;
 }
 
 @media (prefers-color-scheme: light) {
-  html:not([data-theme]) .big-name-logo__dark {
+  html:not([data-theme]) .big-name-logo-dark {
     display: none;
   }
 
-  html:not([data-theme]) .big-name-logo__light {
+  html:not([data-theme]) .big-name-logo-light {
     display: block;
   }
 }
@@ -154,33 +154,33 @@ html[data-theme="light"] {
   isolation: isolate;
 }
 
-.surface__fill {
+.surface-fill {
   position: absolute;
   inset: 0;
   transition: opacity 0.6s ease;
 }
 
-.surface__fill--dark {
+.surface-fill-dark {
   background: var(--surface-grad-dark);
   opacity: 1;
 }
 
-.surface__fill--light {
+.surface-fill-light {
   background: var(--surface-grad-light);
   opacity: 0;
 }
 
-html[data-theme="light"] .surface__fill--dark {
+html[data-theme="light"] .surface-fill-dark {
   opacity: 0;
 }
 
-html[data-theme="light"] .surface__fill--light {
+html[data-theme="light"] .surface-fill-light {
   opacity: 1;
 }
 
 /* Texture layers — full-viewport, blended over the gradient within the
    surface's isolated stacking context. Opacity cross-fades with the theme. */
-.surface__layer {
+.surface-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -189,65 +189,71 @@ html[data-theme="light"] .surface__fill--light {
   transition: opacity 0.6s ease;
 }
 
-.surface__grain-dark {
+.surface-grain-dark {
   mix-blend-mode: overlay;
   opacity: 0.6;
 } /* dark: heavy grain */
 
-.surface__highlight {
+.surface-highlight {
   mix-blend-mode: screen;
   opacity: 0;
 } /* light only */
 
-.surface__shadow {
+.surface-shadow {
   mix-blend-mode: multiply;
   opacity: 0;
 } /* light only */
 
-.surface__grain-light {
+.surface-grain-light {
   mix-blend-mode: overlay;
   opacity: 0;
 } /* light only */
 
-html[data-theme="light"] .surface__grain-dark {
+html[data-theme="light"] .surface-grain-dark {
   opacity: 0;
 }
-html[data-theme="light"] .surface__highlight {
+
+html[data-theme="light"] .surface-highlight {
   opacity: 0.8;
 }
-html[data-theme="light"] .surface__shadow {
+
+html[data-theme="light"] .surface-shadow {
   opacity: 0.22;
 }
-html[data-theme="light"] .surface__grain-light {
+
+html[data-theme="light"] .surface-grain-light {
   opacity: 0.32;
 }
 
 @media (prefers-color-scheme: light) {
-  html:not([data-theme]) .surface__fill--dark {
+  html:not([data-theme]) .surface-fill-dark {
     opacity: 0;
   }
 
-  html:not([data-theme]) .surface__fill--light {
+  html:not([data-theme]) .surface-fill-light {
     opacity: 1;
   }
 
-  html:not([data-theme]) .surface__grain-dark {
+  html:not([data-theme]) .surface-grain-dark {
     opacity: 0;
   }
-  html:not([data-theme]) .surface__highlight {
+
+  html:not([data-theme]) .surface-highlight {
     opacity: 0.8;
   }
-  html:not([data-theme]) .surface__shadow {
+
+  html:not([data-theme]) .surface-shadow {
     opacity: 0.22;
   }
-  html:not([data-theme]) .surface__grain-light {
+
+  html:not([data-theme]) .surface-grain-light {
     opacity: 0.32;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .surface__fill,
-  .surface__layer {
+  .surface-fill,
+  .surface-layer {
     transition: none;
   }
 }

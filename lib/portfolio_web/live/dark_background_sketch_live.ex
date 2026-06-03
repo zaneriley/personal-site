@@ -2,6 +2,8 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   @moduledoc false
   use Phoenix.LiveView, layout: false
 
+  alias Phoenix.LiveView.Socket
+
   # Color stops are free-text so Figma hex/oklch can be pasted directly.
   # An empty color string disables that stop.
   @text_fields ~w(
@@ -13,8 +15,10 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   @choice_fields %{
     "g1_type" => ~w(radial linear),
     "g2_type" => ~w(linear radial),
-    "g1_blend" => ~w(normal screen multiply overlay soft-light lighten color-dodge),
-    "g2_blend" => ~w(normal screen multiply overlay soft-light lighten color-dodge),
+    "g1_blend" =>
+      ~w(normal screen multiply overlay soft-light lighten color-dodge),
+    "g2_blend" =>
+      ~w(normal screen multiply overlay soft-light lighten color-dodge),
     "tex_blend" => ~w(overlay soft-light multiply screen normal)
   }
 
@@ -94,7 +98,12 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   # Real token set pulled from Figma, for the on-surface reference board.
   # {label, hex, optical-bright sibling | nil}
   @token_groups [
-    {"Background", [{"bg-100", "#232326", nil}, {"bg-90", "#27272C", nil}, {"bg-80", "#2F3641", nil}]},
+    {"Background",
+     [
+       {"bg-100", "#232326", nil},
+       {"bg-90", "#27272C", nil},
+       {"bg-80", "#2F3641", nil}
+     ]},
     {"Neutral / text",
      [
        {"100", "#D9D9D9", nil},
@@ -123,11 +132,13 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   ]
 
   @impl Phoenix.LiveView
+  @spec mount(map(), map(), Socket.t()) :: {:ok, Socket.t()}
   def mount(_params, _session, socket) do
     {:ok, assign_derived(socket, @defaults)}
   end
 
   @impl Phoenix.LiveView
+  @spec handle_event(String.t(), map(), Socket.t()) :: {:noreply, Socket.t()}
   def handle_event("update", %{"sketch" => params}, socket) do
     {:noreply, assign_derived(socket, merge(socket.assigns.controls, params))}
   end
@@ -135,6 +146,7 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   def handle_event("update", _params, socket), do: {:noreply, socket}
 
   @impl Phoenix.LiveView
+  @spec render(map()) :: Phoenix.LiveView.Rendered.t()
   def render(assigns) do
     ~H"""
     <div class="dbs" style={@page_style}>
@@ -484,7 +496,12 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
               seed={@controls["tex_seed"]}
               result="noise"
             />
-            <feColorMatrix in="noise" type="matrix" values={@tex_matrix} result="alpha" />
+            <feColorMatrix
+              in="noise"
+              type="matrix"
+              values={@tex_matrix}
+              result="alpha"
+            />
             <feFlood flood-color="#ffffff" result="tint" />
             <feComposite in="tint" in2="alpha" operator="in" />
           </filter>
@@ -507,7 +524,8 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
           <p class="dbs__lead">
             The real tokens, applied: heading in warm white, body in neutral, and
             <a href="#" class="dbs__link">links in neutral-50</a>
-            that brighten to <span class="dbs__inline-hover">neutral-50-bright</span>
+            that brighten to
+            <span class="dbs__inline-hover">neutral-50-bright</span>
             on hover. Surfaces are drawn from the background ramp.
           </p>
           <p class="dbs__meta">
@@ -519,7 +537,8 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
             <h2 class="dbs__card-title">Layered surface</h2>
             <p class="dbs__card-body">
               Cards lift on bg-90 / bg-80 so depth reads without introducing new hues.
-              Inline code like <code class="dbs__code">def render/1</code> borrows a coding accent.
+              Inline code like <code class="dbs__code">def render/1</code>
+              borrows a coding accent.
             </p>
             <a href="#" class="dbs__link">Read the case study</a>
           </div>
@@ -533,7 +552,10 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
 
           <div class="dbs__contrast">
             <p class="dbs__token-label">Readability (worst case vs bg-80)</p>
-            <div :for={{role, hex, ratio, tag} <- @text_contrast} class="dbs__contrast-row">
+            <div
+              :for={{role, hex, ratio, tag} <- @text_contrast}
+              class="dbs__contrast-row"
+            >
               <span class="dbs__contrast-chip" style={"background: #{hex}"} />
               <span>{role}</span>
               <span class="dbs__contrast-ratio">{ratio}:1</span>
@@ -546,8 +568,17 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
               <p class="dbs__token-label">{group}</p>
               <div class="dbs__token-row">
                 <div :for={{name, hex, bright} <- swatches} class="dbs__token">
-                  <span class="dbs__swatch" style={"background: #{hex}"} title={hex} />
-                  <span :if={bright} class="dbs__swatch dbs__swatch--bright" style={"background: #{bright}"} title={bright} />
+                  <span
+                    class="dbs__swatch"
+                    style={"background: #{hex}"}
+                    title={hex}
+                  />
+                  <span
+                    :if={bright}
+                    class="dbs__swatch dbs__swatch--bright"
+                    style={"background: #{bright}"}
+                    title={bright}
+                  />
                   <span class="dbs__token-name">
                     {name}<em :if={bright}> · bright (+0.06C −4%L)</em>
                   </span>
@@ -597,16 +628,34 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   attr :controls, :map, required: true
 
   defp geometry(%{field_prefix: prefix} = assigns) do
-    assigns = assign(assigns, :radial?, assigns.controls["#{prefix}_type"] == "radial")
+    assigns =
+      assign(assigns, :radial?, assigns.controls["#{prefix}_type"] == "radial")
 
     ~H"""
-    <%= if @radial? do %>
-      <.range_row field={"#{@field_prefix}_ox"} controls={@controls} label="Origin X" />
-      <.range_row field={"#{@field_prefix}_oy"} controls={@controls} label="Origin Y" />
-      <.range_row field={"#{@field_prefix}_size"} controls={@controls} label="Size" />
-    <% else %>
-      <.range_row field={"#{@field_prefix}_angle"} controls={@controls} label="Angle" />
-    <% end %>
+    <.range_row
+      :if={@radial?}
+      field={"#{@field_prefix}_ox"}
+      controls={@controls}
+      label="Origin X"
+    />
+    <.range_row
+      :if={@radial?}
+      field={"#{@field_prefix}_oy"}
+      controls={@controls}
+      label="Origin Y"
+    />
+    <.range_row
+      :if={@radial?}
+      field={"#{@field_prefix}_size"}
+      controls={@controls}
+      label="Size"
+    />
+    <.range_row
+      :if={!@radial?}
+      field={"#{@field_prefix}_angle"}
+      controls={@controls}
+      label="Angle"
+    />
     """
   end
 
@@ -616,7 +665,10 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   defp stops(assigns) do
     ~H"""
     <div :for={n <- 1..5} class="dbs__stop">
-      <span class="dbs__stop-chip" style={"background: #{stop_color(@controls, @layer, n)}"} />
+      <span
+        class="dbs__stop-chip"
+        style={"background: #{stop_color(@controls, @layer, n)}"}
+      />
       <input
         type="text"
         name={"sketch[#{@layer}_s#{n}_color]"}
@@ -659,7 +711,8 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   attr :label, :string, default: nil
 
   defp range_row(assigns) do
-    {_field, min, max, step} = Enum.find(number_fields(), fn {f, _, _, _} -> f == assigns.field end)
+    {_field, min, max, step} =
+      Enum.find(number_fields(), fn {f, _, _, _} -> f == assigns.field end)
 
     assigns =
       assigns
@@ -689,13 +742,18 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   attr :controls, :map, required: true
 
   defp choice_row(assigns) do
-    assigns = assign(assigns, :options, Map.fetch!(choice_fields(), assigns.field))
+    assigns =
+      assign(assigns, :options, Map.fetch!(choice_fields(), assigns.field))
 
     ~H"""
     <div class="dbs__row">
       <span>{label_for(@field)}</span>
       <select name={"sketch[#{@field}]"}>
-        <option :for={opt <- @options} value={opt} selected={opt == @controls[@field]}>
+        <option
+          :for={opt <- @options}
+          value={opt}
+          selected={opt == @controls[@field]}
+        >
           {opt}
         </option>
       </select>
@@ -754,10 +812,17 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
     stops = stop_list(controls, layer)
 
     cond do
-      opacity <= 0 -> nil
-      length(stops) < 2 -> nil
-      controls["#{layer}_type"] == "radial" -> radial_css(controls, layer, stops)
-      true -> linear_css(controls, layer, stops)
+      opacity <= 0 ->
+        nil
+
+      length(stops) < 2 ->
+        nil
+
+      controls["#{layer}_type"] == "radial" ->
+        radial_css(controls, layer, stops)
+
+      true ->
+        linear_css(controls, layer, stops)
     end
   end
 
@@ -779,7 +844,8 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   defp stop_list(controls, layer) do
     1..5
     |> Enum.map(fn n ->
-      {String.trim(controls["#{layer}_s#{n}_color"] || ""), controls["#{layer}_s#{n}_pos"]}
+      {String.trim(controls["#{layer}_s#{n}_color"] || ""),
+       controls["#{layer}_s#{n}_pos"]}
     end)
     |> Enum.reject(fn {color, _pos} -> color == "" end)
   end
@@ -826,7 +892,9 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
   end
 
   defp put_choice(acc, key, value) do
-    if value in Map.fetch!(@choice_fields, key), do: Map.put(acc, key, value), else: acc
+    if value in Map.fetch!(@choice_fields, key),
+      do: Map.put(acc, key, value),
+      else: acc
   end
 
   defp put_number(acc, key, value) do
@@ -840,7 +908,8 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
     if n == Float.round(n), do: trunc(n), else: n
   end
 
-  defp number_field?(key), do: Enum.any?(@number_fields, fn {f, _, _, _} -> f == key end)
+  defp number_field?(key),
+    do: Enum.any?(@number_fields, fn {f, _, _, _} -> f == key end)
 
   ## Helpers exposed to components
 

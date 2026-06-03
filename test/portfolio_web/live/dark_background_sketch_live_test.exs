@@ -4,14 +4,14 @@ defmodule PortfolioWeb.DarkBackgroundSketchLiveTest do
   import Phoenix.LiveViewTest
 
   test "renders the composer with seeded gradient", %{conn: conn} do
-    {:ok, _view, html} = live(conn, "/en/dark-background-sketch")
+    {:ok, _view, html} = live(conn, ~p"/en/dark-background-sketch")
     assert html =~ "big-name-dark.svg"
     assert html =~ "Gradient 1"
     assert html =~ "radial-gradient"
   end
 
   test "updating a stop color repaints the background", %{conn: conn} do
-    {:ok, view, _html} = live(conn, "/en/dark-background-sketch")
+    {:ok, view, _html} = live(conn, ~p"/en/dark-background-sketch")
 
     html =
       view

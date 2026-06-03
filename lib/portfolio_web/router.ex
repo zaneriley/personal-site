@@ -1,13 +1,16 @@
 defmodule PortfolioWeb.Router do
   use PortfolioWeb, :router
+
+  import Phoenix.LiveDashboard.Router
+  import Phoenix.LiveView.Router
+
   alias PortfolioWeb.Plugs.CommonMetadata
   alias PortfolioWeb.Plugs.ContentAliasRedirect
   alias PortfolioWeb.Plugs.CSPHeader
   alias PortfolioWeb.Plugs.LocaleRedirection
   alias PortfolioWeb.Plugs.Noindex
   alias PortfolioWeb.Plugs.SetLocale
-  import Phoenix.LiveView.Router
-  import Phoenix.LiveDashboard.Router
+
   require Logger
 
   pipeline :locale do

@@ -41,12 +41,35 @@ defmodule PortfolioWeb.PaletteComparisonLive do
     ],
     gradient:
       "radial-gradient(140.76% 178.27% at 91.11% 4.14%, oklch(0% 0 0deg) 0%, oklch(9.8% 0.021 39deg) 31%, oklch(15% 0.034 38deg) 57%, oklch(13.5% 0.029 36deg) 77%, oklch(12.5% 0.025 32deg) 100%)",
-    notes: "Link: dusk-400 (pending review) · No turbulence — gradient geometry is the intentional dark-mode approach"
+    notes:
+      "Link: dusk-400 (pending review) · No turbulence — gradient geometry is the intentional dark-mode approach"
+  }
+
+  # Provenance notes for the dark-mode token readout, keyed by the same var names
+  # as @dark.vars (empty string = no note, but the key must exist for that var).
+  @dark_annotations %{
+    "--surface-primary" => "← #24150a equiv (Frieren warm dark)",
+    "--surface-secondary" => "← pure black",
+    "--surface-highlight" => "← dusk-700",
+    "--surface-shadow" => "",
+    "--text-heading" => "← white-point (neutral-0)",
+    "--text-body" => "← dusk-100",
+    "--text-link" => "← dusk-400 · TBD",
+    "--text-deemphasized" => "← dusk-500"
   }
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, light: @light, dark: @dark)}
+    light = Map.put(@light, :token_readout, build_token_readout(@light.vars))
+
+    dark =
+      Map.put(
+        @dark,
+        :token_readout,
+        build_token_readout(@dark.vars, :annotated)
+      )
+
+    {:ok, assign(socket, light: light, dark: dark)}
   end
 
   @impl Phoenix.LiveView
@@ -276,8 +299,26 @@ defmodule PortfolioWeb.PaletteComparisonLive do
       </header>
 
       <div class="pc__grid">
-        <.panel {Map.put(@light, :token_readout, build_token_readout(@light.vars))} />
-        <.panel {Map.put(@dark, :token_readout, build_token_readout(@dark.vars, :annotated))} />
+        <.panel
+          id={@light.id}
+          label={@light.label}
+          logo_src={@light.logo_src}
+          has_turbulence={@light.has_turbulence}
+          vars={@light.vars}
+          gradient={@light.gradient}
+          token_readout={@light.token_readout}
+          notes={@light.notes}
+        />
+        <.panel
+          id={@dark.id}
+          label={@dark.label}
+          logo_src={@dark.logo_src}
+          has_turbulence={@dark.has_turbulence}
+          vars={@dark.vars}
+          gradient={@dark.gradient}
+          token_readout={@dark.token_readout}
+          notes={@dark.notes}
+        />
       </div>
     </div>
     """
@@ -293,7 +334,12 @@ defmodule PortfolioWeb.PaletteComparisonLive do
   attr :notes, :string, default: nil
 
   defp panel(assigns) do
-    assigns = assign(assigns, :panel_style, build_panel_style(assigns.vars, assigns.gradient))
+    assigns =
+      assign(
+        assigns,
+        :panel_style,
+        build_panel_style(assigns.vars, assigns.gradient)
+      )
 
     ~H"""
     <section class="pc__panel" style={@panel_style}>
@@ -456,21 +502,9 @@ defmodule PortfolioWeb.PaletteComparisonLive do
     "#{var_string}; background: #{gradient};"
   end
 
-  @dark_annotations %{
-    "--surface-primary" => "← #24150a equiv (Frieren warm dark)",
-    "--surface-secondary" => "← pure black",
-    "--surface-highlight" => "← dusk-700",
-    "--surface-shadow" => "",
-    "--text-heading" => "← white-point (neutral-0)",
-    "--text-body" => "← dusk-100",
-    "--text-link" => "← dusk-400 · TBD",
-    "--text-deemphasized" => "← dusk-500"
-  }
-
   defp build_token_readout(vars, :annotated) do
-    vars
-    |> Enum.map_join("\n", fn {k, v} ->
-      annotation = Map.get(@dark_annotations, k, "")
+    Enum.map_join(vars, "\n", fn {k, v} ->
+      annotation = Map.fetch!(@dark_annotations, k)
       note = if annotation != "", do: "  #{annotation}", else: ""
       pad = String.duplicate(" ", max(0, 26 - String.length(k)))
       "#{k}:#{pad}#{v};#{note}"
@@ -478,8 +512,7 @@ defmodule PortfolioWeb.PaletteComparisonLive do
   end
 
   defp build_token_readout(vars) do
-    vars
-    |> Enum.map_join("\n", fn {k, v} ->
+    Enum.map_join(vars, "\n", fn {k, v} ->
       pad = String.duplicate(" ", max(0, 26 - String.length(k)))
       "#{k}:#{pad}#{v};"
     end)

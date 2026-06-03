@@ -15,9 +15,9 @@ defmodule PortfolioWeb.CoreComponents do
   Icons are provided by [heroicons](https://heroicons.com). See `icon/1` for usage.
   """
   use Phoenix.Component
+  use Gettext, backend: PortfolioWeb.Gettext
 
   alias Phoenix.LiveView.JS
-  use Gettext, backend: PortfolioWeb.Gettext
 
   @doc """
   Renders a modal.
@@ -133,14 +133,14 @@ defmodule PortfolioWeb.CoreComponents do
     ~H"""
     <span class="big-name-logo" {@rest}>
       <img
-        class="big-name-logo__dark"
+        class="big-name-logo-dark"
         src="/images/big-name-dark.svg"
         alt="Zane Riley"
         width="545"
         height="168"
       />
       <img
-        class="big-name-logo__light"
+        class="big-name-logo-light"
         src="/images/big-name-light.svg"
         alt="Zane Riley"
         width="545"
