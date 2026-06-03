@@ -52,10 +52,11 @@ defmodule PortfolioWeb.Navigation do
       <!-- Logo -->
       <.link
         navigate={~p"/#{@user_locale}"}
-        class="col-span-2 text-callout"
+        class="col-span-2"
+        style="color: var(--accent)"
         aria-label={gettext("Zane Riley Portfolio Logo")}
       >
-        <.hanko class="h-10 w-auto" />
+        <.hanko />
       </.link>
       <!-- Page navigation -->
       <nav role="navigation" class="col-span-6 col-start-3">

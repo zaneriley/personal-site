@@ -25,7 +25,14 @@ defmodule PortfolioWeb.Components.Identity do
   @spec hanko(map()) :: Phoenix.LiveView.Rendered.t()
   def hanko(assigns) do
     ~H"""
-    <svg viewBox="0 0 44 42" fill="none" xmlns="http://www.w3.org/2000/svg" {@rest}>
+    <svg
+      viewBox="0 0 44 42"
+      width="40"
+      height="38"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {@rest}
+    >
       <rect
         x="-0.0266113"
         y="0.6875"

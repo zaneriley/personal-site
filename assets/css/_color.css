@@ -111,6 +111,11 @@ html[data-theme="dark"] {
   --text-color-deemphasized: oklch(71% 0.02 var(--hue-warm-text)); /* ΔL38 AA floor */
   --text-color-suppressed: oklch(61% 0.02 var(--hue-warm-text)); /* ΔL28 sub-floor */
   --text-color-accent: var(--ochre-0);
+
+  /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:
+     brighter on dark, deeper on light. Same idea as the dark "bright" sibling
+     (neutral-50 → neutral-50-bright). Used by the hanko (nav + favicon). */
+  --accent: oklch(66.6% 0.138 275deg); /* brighter link (= neutral-50-bright) */
 }
 
 html[data-theme="light"] {
@@ -125,6 +130,7 @@ html[data-theme="light"] {
   --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text)); /* ΔL38 AA floor */
   --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text)); /* ΔL28 sub-floor */
   --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
+  --accent: oklch(49% 0.145 252deg); /* deeper link (link hue/chroma, −10 L) */
 }
 
 @media (prefers-color-scheme: light) {
@@ -139,6 +145,7 @@ html[data-theme="light"] {
     --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text));
     --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text));
     --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
+    --accent: oklch(49% 0.145 252deg);
   }
 }
 

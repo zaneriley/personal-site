@@ -3,8 +3,10 @@
        site's theme tokens — it adapts to the OS scheme via prefers-color-scheme.
        Colors are token-aligned: dark = neutral-75 (#C7B0C2); light = brand blue. -->
   <style>
-    .hanko { color: #1460B0; }
-    @media (prefers-color-scheme: dark) { .hanko { color: #C7B0C2; } }
+    /* Baked to match the in-page --accent token (favicon can't read page vars):
+       light = deeper link, dark = brighter link (neutral-50-bright). */
+    .hanko { color: #0361AF; }
+    @media (prefers-color-scheme: dark) { .hanko { color: #7D8BE8; } }
   </style>
   <g class="hanko">
     <rect x="-0.0266113" y="0.6875" width="43.2886" height="40.625" rx="20.3125" stroke="currentColor" stroke-width="4" />
