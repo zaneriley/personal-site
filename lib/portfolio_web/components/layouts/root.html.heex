@@ -47,6 +47,9 @@
     <!-- href langs -->
     {hreflang_tags(@conn)}
     <!-- Favicon and touch icons -->
+    <!-- Primary: one adaptive SVG (the hanko); follows OS light/dark via
+         prefers-color-scheme. PNG/ICO below are the raster fallback. -->
+    <link rel="icon" type="image/svg+xml" href={~p"/favicon.svg"} />
     <link
       rel="apple-touch-icon"
       sizes="180x180"

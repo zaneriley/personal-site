@@ -23,6 +23,7 @@ defmodule PortfolioWeb.Navigation do
   - `build_localized_path/2`: Generates localized paths
   """
   use PortfolioWeb, :live_component
+  import PortfolioWeb.Components.Identity
   import PortfolioWeb.Components.ThemeSwitcher
   import PortfolioWeb.Components.Typography
 
@@ -51,12 +52,10 @@ defmodule PortfolioWeb.Navigation do
       <!-- Logo -->
       <.link
         navigate={~p"/#{@user_locale}"}
-        class="col-span-2"
+        class="col-span-2 text-callout"
         aria-label={gettext("Zane Riley Portfolio Logo")}
       >
-        <.typography locale={@user_locale} tag="span" size="2xl" font="cardinal">
-          Zane
-        </.typography>
+        <.hanko class="h-10 w-auto" />
       </.link>
       <!-- Page navigation -->
       <nav role="navigation" class="col-span-6 col-start-3">
