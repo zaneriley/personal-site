@@ -119,6 +119,38 @@ defmodule PortfolioWeb.CoreComponents do
   end
 
   @doc """
+  Renders the large calligraphic name logo, switching between light and dark
+  variants based on the page's data-theme attribute.
+
+  ## Examples
+
+      <.big_name_logo />
+      <.big_name_logo style="max-width: 36rem;" />
+  """
+  attr :rest, :global
+
+  def big_name_logo(assigns) do
+    ~H"""
+    <span class="big-name-logo" {@rest}>
+      <img
+        class="big-name-logo__dark"
+        src="/images/big-name-dark.svg"
+        alt="Zane Riley"
+        width="545"
+        height="168"
+      />
+      <img
+        class="big-name-logo__light"
+        src="/images/big-name-light.svg"
+        alt="Zane Riley"
+        width="545"
+        height="168"
+      />
+    </span>
+    """
+  end
+
+  @doc """
   Renders a logo.
 
   ## Examples

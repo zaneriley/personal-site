@@ -113,6 +113,10 @@ defmodule PortfolioWeb.Router do
 
     live_session :default, on_mount: PortfolioWeb.LiveHelpers do
       live "/", HomeLive, :index
+      live "/color-sketch", ColorSketchLive, :index
+      live "/shader-scale-sketch", ShaderScaleSketchLive, :index
+      live "/palette-comparison", PaletteComparisonLive, :index
+      live "/dark-background-sketch", DarkBackgroundSketchLive, :index
       live "/kitchen-sink", KitchenSinkLive, :index
       live "/case-studies", CaseStudyLive.Index, :index
       live "/case-study/:url", CaseStudyLive.Show, :show
