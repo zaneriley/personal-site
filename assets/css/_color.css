@@ -91,7 +91,7 @@
    setting `color` here recolours the whole mark. */
 .hanko {
   color: var(--hanko-color);
-  height: var(--space-2xl);
+  height: var(--space-1xl);
   width: auto;
 }
 

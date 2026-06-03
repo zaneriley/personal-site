@@ -32,7 +32,7 @@ defmodule PortfolioWeb.Components.Identity do
   Renders the hanko (personal seal) as an inline SVG.
 
   The mark owns its appearance: the `.hanko` class fixes its colour
-  (`--hanko-color`, the brand accent) and size (one canonical `--space-2xl`
+  (`--hanko-color`, the brand accent) and size (one canonical `--space-1xl`
   rung), so every instance is identical by construction. Callers **cannot**
   recolour or resize it — that's a design-system invariant, not a per-call
   choice. `id` only varies the internal clipPath id so multiple instances on
