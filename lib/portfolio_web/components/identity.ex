@@ -42,7 +42,8 @@ defmodule PortfolioWeb.Components.Identity do
 
   attr :id, :string,
     default: "nav",
-    doc: "suffix for the internal clipPath id; must be unique per instance on a page"
+    doc:
+      "suffix for the internal clipPath id; must be unique per instance on a page"
 
   attr :rest, :global, doc: "class, aria-*, and other passthrough attributes"
 
@@ -101,15 +102,21 @@ defmodule PortfolioWeb.Components.Identity do
   the SVG (`width:100%`) scales to its container; constrain via the caller
   (e.g. a `max-width` on the wrapper or its parent column).
   """
-  attr :class, :string, default: nil, doc: "extra classes merged onto the wrapper"
-  attr :rest, :global, doc: "style, aria-*, and other passthrough on the wrapper"
+  attr :class, :string,
+    default: nil,
+    doc: "extra classes merged onto the wrapper"
+
+  attr :rest, :global,
+    doc: "style, aria-*, and other passthrough on the wrapper"
 
   @spec signature(map()) :: Phoenix.LiveView.Rendered.t()
   def signature(assigns) do
     assigns = assign(assigns, :markup, {:safe, @signature_svg})
 
     ~H"""
-    <span class={["signature", @class]} role="img" aria-label="Zane Riley" {@rest}>{@markup}</span>
+    <span class={["signature", @class]} role="img" aria-label="Zane Riley" {@rest}>
+      {@markup}
+    </span>
     """
   end
 end
