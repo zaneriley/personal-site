@@ -1,1 +1,62 @@
-/* Grid styles will be added here in the future */
+/* ============================================================================
+   READING GRID
+   The page's column field, derived from the type rhythm. ONE seed + TWO rung
+   choices; everything else is computed, so the whole grid regenerates from a
+   single knob. Speaks the same language as --space-* (see _typography.css).
+
+   Ladder (consecutive --space-* rungs):
+     paragraph gap = md   →  page-inset = 1xl (one rung above)  →  gutter = 2xl
+   Derivation:
+     1 measure = 4 of 12 columns
+     content-cap = 3·reading-measure + 2·gutter   (the 9 inner gutters live
+                   inside the 3 measures; only the 2 between them add to width)
+     column      = (reading-measure − 3·gutter) / 4
+   Full rationale: .tmp/2026-06-03-grid-spacing-design-system/proposal.md
+============================================================================ */
+
+:root {
+  /* --- the only hand-set values --- */
+  --reading-measure: 50ch; /* seed: narrowest comfortable prose line */
+  --gutter: var(--space-2xl); /* rung choice: one above page-inset */
+  --page-inset: 1ch; /* mobile: claw reading width back from reader-mode */
+  --columns: 12; /* 1 measure = 4 columns (track mechanic) */
+
+  /* --- derived --- */
+  --content-cap: calc(3 * var(--reading-measure) + 2 * var(--gutter));
+  --column: calc((var(--reading-measure) - 3 * var(--gutter)) / 4);
+}
+
+/* Desktop: page-inset climbs onto the ladder (one rung above paragraph gap). */
+@media (width >= 40rem) {
+  :root {
+    --page-inset: var(--space-1xl);
+  }
+}
+
+/* The reading grid: a centered 12-column field, capped at content-cap, inset
+   from the page edge. Nav / main / footer all render inside one of these so
+   they share a single inset and column rhythm. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  max-width: var(--content-cap);
+  padding-inline: var(--page-inset);
+  margin-inline: auto;
+}
+
+/* Reading region. Spans the field but caps its OWN line length at the measure
+   ceiling (66ch), so prose never reads too wide no matter how many columns it
+   sits over. Mobile-first: full field; place to a column range higher up. */
+.prose {
+  grid-column: 1 / -1;
+  max-width: 66ch;
+}
+
+/* The one sanctioned escape from content-cap: full-viewport-bleed for things
+   that aren't reading content (carousels, the hero signature, the surface). */
+.bleed {
+  grid-column: 1 / -1;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}

@@ -4,6 +4,7 @@
 @import url("./_fontface.css");
 @import url("./_color.css");
 @import url("./_typography.css");
+@import url("./_grid.css");
 @import url("./_footer.css");
 
 @property --fantazio-rotate {
@@ -35,14 +36,14 @@ body {
 }
 
 .u-container {
-  max-width: var(--grid-max-width);
-  padding-inline: var(--grid-outer-margins);
+  max-width: var(--content-cap);
+  padding-inline: var(--page-inset);
   margin-inline: auto;
 }
 
 .u-grid {
   display: grid;
-  gap: var(--grid-gutter);
+  gap: var(--gutter);
 }
 
 .col-span-12-children > * {

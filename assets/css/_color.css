@@ -1,12 +1,9 @@
 :root {
   /* TYPE & LAYOUT */
   --fs-base: clamp(1.13rem, 0vi + 1.13rem, 1.13rem);
-  /* stylelint-disable unit-disallowed-list */
-  --grid-max-width: 1440px;
-  /* stylelint-enable unit-disallowed-list */
-  --grid-gutter: 3rem;
-  --grid-outer-margins: 0.5rem;
-  --grid-columns: 12;
+
+  /* Reading grid tokens (--content-cap, --gutter, --page-inset, --columns) moved
+     to _grid.css — the layout contract belongs on the type/space axis, not here. */
 
   /* DARK MODE PRIMITIVES */
   --white-absolute: oklch(100% 0 0deg);
@@ -128,6 +125,7 @@ html[data-theme="dark"] {
      (verified post-grain chroma 0.0484). Light is vivid enough to ride the same
      loss untouched, so only the dark grade is corrected. Raw source stops were
      #ede3eb #c7b0c2 #949cd1 #597099 / kana #676b83. */
+
   /* Boost factor x1.40: over-corrects past the raw palette for extra pop
      (the measured-exact x1.31 read too subtle in situ). Still holds L and H. */
   --signature-1: #f0e2ed;
