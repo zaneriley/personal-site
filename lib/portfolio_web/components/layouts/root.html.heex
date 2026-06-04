@@ -100,6 +100,27 @@
     <meta name="twitter:title" content={@share_metadata.title} />
     <meta name="twitter:description" content={@share_metadata.description} />
     <meta name="twitter:image" content={@share_metadata.image} />
+    <%!-- Preload the one render-critical face (GT Flexa, the body type) so the
+         fetch starts during head parse — in parallel with the stylesheet —
+         instead of waiting for app.css to download and the @font-face to be
+         discovered. The face is font-display: swap with a metric-override
+         fallback (see _fontface.generated.css), so the preload only shortens the
+         swap window; it never adds layout shift.
+         href is the LITERAL non-digested path on purpose: app.css below is loaded
+         non-digested, so its @font-face requests "/fonts/gt-flexa.woff2" verbatim
+         (mix phx.digest does NOT rewrite the original CSS's url()). The preload
+         must byte-match that exact URL or the browser fetches the font twice.
+         crossorigin is mandatory — fonts always fetch in anonymous CORS mode, and
+         without it the preloaded bytes won't be reused by the @font-face. If the
+         stylesheet ever moves to a digested ~p href, move this preload to ~p in
+         lockstep (see AGENTS.md Backlog: digest the layout's CSS link). --%>
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/gt-flexa.woff2"
+      crossorigin
+    />
     <!-- FUll CSS -->
     <link phx-track-static rel="stylesheet" href="/css/app.css" />
     <script
