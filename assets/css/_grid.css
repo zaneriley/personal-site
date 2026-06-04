@@ -19,17 +19,27 @@
   --reading-measure: 50ch; /* seed: narrowest comfortable prose line */
   --gutter: var(--space-2xl); /* rung choice: one above page-inset */
   --page-inset: 1ch; /* mobile: claw reading width back from reader-mode */
-  --columns: 12; /* 1 measure = 4 columns (track mechanic) */
+  --columns: 4; /* mobile = 1 measure (4 cols); steps to 8 then 12 below */
 
   /* --- derived --- */
   --content-cap: calc(3 * var(--reading-measure) + 2 * var(--gutter));
   --column: calc((var(--reading-measure) - 3 * var(--gutter)) / 4);
 }
 
-/* Desktop: page-inset climbs onto the ladder (one rung above paragraph gap). */
+/* Column count steps with width (content-driven): 4 (mobile, 1 measure) → 8 →
+   12 (3 measures). The gutter stays 2xl throughout; fewer columns are what keep
+   11 big gutters from overflowing a narrow screen. page-inset also climbs off
+   the mobile 1ch onto the ladder (one rung above paragraph gap). */
 @media (width >= 40rem) {
   :root {
     --page-inset: var(--space-1xl);
+    --columns: 8;
+  }
+}
+
+@media (width >= 64rem) {
+  :root {
+    --columns: 12;
   }
 }
 

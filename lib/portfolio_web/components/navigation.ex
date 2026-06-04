@@ -47,17 +47,17 @@ defmodule PortfolioWeb.Navigation do
       )
 
     ~H"""
-    <nav role="banner" class="grid grid-cols-12 items-center w-full">
+    <nav role="banner" class="reading-grid items-center">
       <!-- Logo -->
       <.link
         navigate={~p"/#{@user_locale}"}
-        class="col-span-2"
+        class="col-span-full lg:col-span-2"
         aria-label={gettext("Zane Riley Portfolio Logo")}
       >
         <.hanko />
       </.link>
       <!-- Page navigation -->
-      <nav role="navigation" class="col-span-6 col-start-3">
+      <nav role="navigation" class="col-span-full lg:col-span-6 lg:col-start-3">
         <ul class="flex space-x-1xl">
           <li>
             <.link
@@ -92,11 +92,11 @@ defmodule PortfolioWeb.Navigation do
         </ul>
       </nav>
       <!-- Theme switcher -->
-      <.theme_switcher class="col-start-9 col-end-11" />
+      <.theme_switcher class="col-span-full lg:col-start-9 lg:col-end-11" />
       <!-- Language switcher -->
       <nav
         aria-label={gettext("Language switcher")}
-        class="col-start-11 col-end-13 text-1xs"
+        class="col-span-full lg:col-start-11 lg:col-end-13 text-1xs"
       >
         <ul class="flex justify-end space-x-md">
           <li>

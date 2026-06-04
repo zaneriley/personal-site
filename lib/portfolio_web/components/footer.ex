@@ -43,15 +43,15 @@ defmodule PortfolioWeb.Components.Footer do
     ~H"""
     <footer
       role="contentinfo"
-      class="mt-auto sticky top-[100vh] grid grid-cols-12 gap-md px-1xl py-2xl"
+      class="mt-auto sticky top-[100vh] reading-grid gap-y-md py-2xl"
     >
       <%!-- Seal --%>
-      <div class="col-span-12 sm:col-span-2">
+      <div class="col-span-full lg:col-span-2">
         <.hanko id="footer" />
       </div>
 
       <%!-- Colophon: how the site is made --%>
-      <section class="col-span-12 sm:col-span-3 sm:col-start-3">
+      <section class="col-span-full lg:col-span-3 lg:col-start-3">
         <p class="footer-eyebrow">{gettext("Colophon")}</p>
         <.typography locale={@user_locale} tag="p" size="md">
           {gettext("Created on a 2014 macbook. Mocks in figma, remix freely.")}
@@ -90,7 +90,7 @@ defmodule PortfolioWeb.Components.Footer do
       </section>
 
       <%!-- Server: where the site runs --%>
-      <section class="col-span-12 sm:col-span-3">
+      <section class="col-span-full lg:col-span-3">
         <p class="footer-eyebrow">{gettext("Server")}</p>
         <.typography locale={@user_locale} tag="p" size="md">
           {gettext("Self-hosted on my home server. Open source on Github.")}
@@ -120,7 +120,7 @@ defmodule PortfolioWeb.Components.Footer do
       </section>
 
       <%!-- Now in Tokyo --%>
-      <section class="col-span-12 sm:col-span-2 sm:col-start-11 sm:text-right">
+      <section class="col-span-full lg:col-span-2 lg:col-start-11 lg:text-right">
         <p class="footer-eyebrow">{gettext("Now in Tokyo")}</p>
         <%!-- TODO(footer-data): swap for the Figma "24°c" weather mark + live temp. --%>
         <p class="spec-sheet__value" style="font-size: var(--fs-2xl)">
@@ -129,7 +129,7 @@ defmodule PortfolioWeb.Components.Footer do
       </section>
 
       <%!-- Bottom bar: copyright · links · back-to-top --%>
-      <div class="col-span-12 mt-2xl flex flex-wrap items-center justify-between gap-md">
+      <div class="col-span-full mt-2xl flex flex-wrap items-center justify-between gap-md">
         <span class="footer-eyebrow">© 2011 – {@current_year}</span>
 
         <nav class="flex flex-wrap gap-md" aria-label={gettext("Footer")}>
