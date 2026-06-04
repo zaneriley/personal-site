@@ -6,13 +6,12 @@
    driven by the design tokens in _color.css. Colours never hardcoded here —
    they derive from --text-color-* / --accent so the footer recolours per theme.
 
-   TODO(footer-mono): the design sets labels/values in "GT Flexa Mono", which
-   isn't loaded yet. Until the face ships, --footer-mono falls back to the
-   system monospace stack. Swap the token when the font is added to _fontface.
+   Labels/values are set in GT Flexa Mono (self-hosted, see _fontface.css),
+   falling back to the system monospace stack if it hasn't loaded yet.
 ============================================================================ */
 
 :root {
-  --footer-mono: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
+  --footer-mono: "GT Flexa Mono", ui-monospace, "SF Mono", "Menlo", monospace;
   /* Hairline derived from the suppressed text colour so it tracks the theme. */
   --footer-rule: color-mix(in oklch, var(--text-color-suppressed) 28%, transparent);
   --footer-inset: color-mix(in oklch, var(--text-color-suppressed) 6%, transparent);

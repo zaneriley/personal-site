@@ -1,1 +1,50 @@
-/* Web font declarations belong here once the matching font files ship. */
+/* ============================================================================
+   Self-hosted web fonts. Subsetted to latin + symbols, woff2, served from
+   /fonts (assets/static/fonts → priv/static/fonts). font-display: swap so text
+   paints immediately in the fallback and swaps in when the face arrives.
+   Source cuts extracted from the foundry files (GT Flexa Variable, Cardinal
+   Fruit, Cheee Small); JP (Noto) handled separately.
+============================================================================ */
+
+/* GT Flexa — VARIABLE weight axis. Body + UI. */
+@font-face {
+  font-family: "GT Flexa";
+  src: url("/fonts/gt-flexa.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* GT Flexa Mono — VARIABLE weight axis. Mono values/labels (footer spec sheet). */
+@font-face {
+  font-family: "GT Flexa Mono";
+  src: url("/fonts/gt-flexa-mono.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Cardinal Fruit — titles. Static cuts (no italics used on the site). */
+@font-face {
+  font-family: "Cardinal Fruit";
+  src: url("/fonts/cardinal-fruit-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cardinal Fruit";
+  src: url("/fonts/cardinal-fruit-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Cheee — display headers/labels (Small optical cut; used at small heading sizes). */
+@font-face {
+  font-family: "Cheee";
+  src: url("/fonts/cheee-small.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

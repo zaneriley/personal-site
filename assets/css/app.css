@@ -14,9 +14,10 @@
 }
 
 * {
-  font-variation-settings:
-    "wght" var(--font-wght),
-    "wdth" var(--font-wdth);
+  /* Weight is driven by the standard font-weight property (GT Flexa is a
+     variable font with a 100–900 weight axis); no font-variation-settings here,
+     since "wght" in variation-settings would override font-weight and break
+     bolding. Only OT features + no synthetic faces. */
   font-feature-settings:
     "fina" 1,
     "kern" 1,
@@ -29,6 +30,9 @@
 }
 
 body {
+  font-family:
+    "GT Flexa", "Noto Sans JP", "Trebuchet MS", "Avenir", "Fira Sans",
+    -apple-system, system-ui, sans-serif;
   font-size: var(--fs-base);
   line-height: 1.5;
   min-height: 100vh;
