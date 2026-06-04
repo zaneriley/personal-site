@@ -129,10 +129,15 @@ defmodule PortfolioWeb.Components.Footer do
       </section>
 
       <%!-- Bottom bar: copyright · links · back-to-top --%>
-      <div class="col-span-full mt-2xl flex flex-wrap items-center justify-between gap-md">
-        <span class="footer-eyebrow">© 2011 – {@current_year}</span>
+      <div class="col-span-full mt-2xl grid grid-cols-subgrid items-center gap-y-md">
+        <span class="footer-eyebrow col-span-full lg:col-span-2">
+          © 2011 – {@current_year}
+        </span>
 
-        <nav class="flex flex-wrap gap-md" aria-label={gettext("Footer")}>
+        <nav
+          class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-md"
+          aria-label={gettext("Footer")}
+        >
           <%!-- TODO(footer-links): point Resume at the real PDF asset. --%>
           <.link href="#" class="footer-eyebrow">{gettext("Resume (PDF)")}</.link>
           <.link href="mailto:hello@zaneriley.com" class="footer-eyebrow">
@@ -156,7 +161,12 @@ defmodule PortfolioWeb.Components.Footer do
           </.link>
         </nav>
 
-        <a href="#main-content" class="footer-eyebrow">↑ {gettext("Go to top")}</a>
+        <a
+          href="#main-content"
+          class="footer-eyebrow col-span-full lg:col-start-11 lg:col-end-13 lg:text-right"
+        >
+          ↑ {gettext("Go to top")}
+        </a>
       </div>
     </footer>
     """
