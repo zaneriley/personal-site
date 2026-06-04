@@ -35,8 +35,9 @@
 
 /* The reading grid: a centered 12-column field, capped at content-cap, inset
    from the page edge. Nav / main / footer all render inside one of these so
-   they share a single inset and column rhythm. */
-.grid {
+   they share a single inset and column rhythm. (Named `reading-grid`, not
+   `grid`, to avoid colliding with Tailwind's `grid` display utility.) */
+.reading-grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
   column-gap: var(--gutter);
@@ -46,9 +47,9 @@
 }
 
 /* Reading region. Spans the field but caps its OWN line length at the measure
-   ceiling (66ch), so prose never reads too wide no matter how many columns it
-   sits over. Mobile-first: full field; place to a column range higher up. */
-.prose {
+   ceiling (66ch), so the line never reads too wide no matter how many columns
+   it sits over. Mobile-first: full field; place to a column range higher up. */
+.measure {
   grid-column: 1 / -1;
   max-width: 66ch;
 }
