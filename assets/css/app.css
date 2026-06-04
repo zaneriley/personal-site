@@ -31,8 +31,8 @@
 
 body {
   font-family:
-    "GT Flexa", "Noto Sans JP", "Trebuchet MS", "Avenir", "Fira Sans",
-    -apple-system, system-ui, sans-serif;
+    "GT Flexa", "GT Flexa Fallback", "Noto Sans JP", "Trebuchet MS",
+    Avenir, "Fira Sans", -apple-system, system-ui, sans-serif;
   font-size: var(--fs-base);
   line-height: 1.5;
   min-height: 100vh;

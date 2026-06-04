@@ -32,6 +32,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
   font-family: "Cardinal Fruit";
   src: url("/fonts/cardinal-fruit-bold.woff2") format("woff2");
@@ -42,9 +43,55 @@
 
 /* Cheee — display headers/labels (Small optical cut; used at small heading sizes). */
 @font-face {
-  font-family: "Cheee";
+  font-family: Cheee;
   src: url("/fonts/cheee-small.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+}
+
+/* ----------------------------------------------------------------------------
+   METRIC-OVERRIDE FALLBACKS. A system-font face per web font, scaled to match
+   the web font's rendered metrics so the font-display:swap causes ~zero layout
+   shift AND the ch-based reading grid measures identically before/after load.
+   Listed right after the real face in each font stack (see app.css /
+   tailwind.config.ts). Each declared first in its stack would be wrong — the
+   real face must win; these only fill the swap gap.
+
+   Values are BROWSER-MEASURED (a-z avg advance + fontBoundingBox ascent/descent
+   ÷ em), NOT extracted by the in-house fontkit pipeline: fontkit misreads the
+   variable GT Flexa width (0.21 vs rendered 0.55) and Cardinal's cap-height
+   (0.37 vs 0.75). Re-measure in the browser if a face changes.
+   Formula: size-adjust = webfont.width / fallback.width;
+            ascent/descent-override = webfont.metric / size-adjust.
+---------------------------------------------------------------------------- */
+
+/* GT Flexa (rendered: width .551, asc .80, desc .20) over Arial (.490/.905/.212) */
+@font-face {
+  font-family: "GT Flexa Fallback";
+  src: local("Arial"), local("Liberation Sans");
+  size-adjust: 112.52%;
+  ascent-override: 71.1%;
+  descent-override: 17.77%;
+  line-gap-override: 0%;
+}
+
+/* Cardinal Fruit (width .384, asc 1.0, desc .318) over Times New Roman (.459/.891/.216) */
+@font-face {
+  font-family: "Cardinal Fruit Fallback";
+  src: local("Times New Roman"), local("Liberation Serif");
+  size-adjust: 83.67%;
+  ascent-override: 119.52%;
+  descent-override: 38.01%;
+  line-gap-override: 0%;
+}
+
+/* Cheee (width .773, asc 1.164, desc .238) over Arial (.490/.905/.212) */
+@font-face {
+  font-family: "Cheee Fallback";
+  src: local("Arial"), local("Liberation Sans");
+  size-adjust: 157.96%;
+  ascent-override: 73.69%;
+  descent-override: 15.07%;
+  line-gap-override: 0%;
 }

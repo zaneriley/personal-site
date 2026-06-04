@@ -20,6 +20,7 @@ const config: Config = {
         ".font-cardinal-fruit": {
           "font-family": [
             "Cardinal Fruit",
+            "Cardinal Fruit Fallback",
             "Times New Roman",
             "Garamond",
             "Palatino",
@@ -29,12 +30,15 @@ const config: Config = {
           "font-size-adjust": "ex-height from-font",
         },
         ".font-cheee": {
-          "font-family": ["Cheee", "Arial", "sans-serif"].join(", "),
+          "font-family": ["Cheee", "Cheee Fallback", "Arial", "sans-serif"].join(
+            ", ",
+          ),
           "font-size-adjust": "cap-height from-font",
         },
         ".font-gt-flexa": {
           "font-family": [
             "GT Flexa",
+            "GT Flexa Fallback",
             "Noto Sans JP",
             "Trebuchet MS",
             "Avenir",
