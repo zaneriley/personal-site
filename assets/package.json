@@ -25,6 +25,7 @@
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-config-tailwindcss": "^1.0.0",
+    "subset-font": "^2.5.0",
     "svgo": "^4.0.1",
     "tailwindcss": "3.4.12",
     "ts-node": "^10.9.2",

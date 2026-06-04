@@ -336,6 +336,12 @@ function assets:font-metrics {
   _dc js yarn assets:font-metrics
 }
 
+function assets:fonts {
+  # Subset the licensed source fonts (assets/fonts/src) to web woff2 and
+  # regenerate assets/css/_fontface.generated.css. On demand; fonts change rarely.
+  _dc js sh -c "cd /app/assets && node fonts/generate-fonts.mjs"
+}
+
 # -----------------------------------------------------------------------------
 # Shell
 # -----------------------------------------------------------------------------

@@ -6,7 +6,7 @@
    driven by the design tokens in _color.css. Colours never hardcoded here —
    they derive from --text-color-* / --accent so the footer recolours per theme.
 
-   Labels/values are set in GT Flexa Mono (self-hosted, see _fontface.css),
+   Labels/values are set in GT Flexa Mono (self-hosted, see _fontface.generated.css),
    falling back to the system monospace stack if it hasn't loaded yet.
 ============================================================================ */
 

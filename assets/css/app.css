@@ -1,7 +1,7 @@
 @import url("tailwindcss/base");
 @import url("tailwindcss/components");
 @import url("tailwindcss/utilities");
-@import url("./_fontface.css");
+@import url("./_fontface.generated.css");
 @import url("./_color.css");
 @import url("./_typography.css");
 @import url("./_grid.css");

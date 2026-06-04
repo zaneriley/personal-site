@@ -128,7 +128,7 @@ describe("getFontPathsFromCSS", () => {
       const webRoot = path.resolve(__dirname, "../../static");
       console.log(`Calculated webRoot: ${webRoot}`);
 
-      const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
+      const cssFilePath = path.resolve(__dirname, "../../css/_fontface.generated.css");
       console.log(`CSS file path: ${cssFilePath}`);
 
       const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
@@ -216,7 +216,7 @@ describeWithFonts("extractFontMetrics", () => {
 // Adding tests for generateFontMetricsJSON
 
 describeWithFonts("generateFontMetricsJSON", () => {
-  const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
+  const cssFilePath = path.resolve(__dirname, "../../css/_fontface.generated.css");
   const outputJsonPath = path.resolve(
     __dirname,
     "../../tailwind/font-metrics.test.json",

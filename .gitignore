@@ -190,3 +190,6 @@ flycheck_*.el
 # Process core dumps
 core
 .claude/launch.json
+
+# Licensed source fonts (re-subset locally; never committed)
+assets/fonts/src/
