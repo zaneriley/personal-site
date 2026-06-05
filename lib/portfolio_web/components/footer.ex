@@ -52,7 +52,9 @@ defmodule PortfolioWeb.Components.Footer do
 
       <%!-- Colophon: how the site is made --%>
       <section class="col-span-full lg:col-span-3 lg:col-start-3">
-        <p class="footer-eyebrow">{gettext("Colophon")}</p>
+        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
+          {gettext("Colophon")}
+        </.typography>
         <.typography locale={@user_locale} tag="p" size="md">
           {gettext("Created on a 2014 macbook. Mocks in figma, remix freely.")}
         </.typography>
@@ -91,7 +93,9 @@ defmodule PortfolioWeb.Components.Footer do
 
       <%!-- Server: where the site runs --%>
       <section class="col-span-full lg:col-span-3">
-        <p class="footer-eyebrow">{gettext("Server")}</p>
+        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
+          {gettext("Server")}
+        </.typography>
         <.typography locale={@user_locale} tag="p" size="md">
           {gettext("Self-hosted on my home server. Open source on Github.")}
         </.typography>
@@ -121,7 +125,9 @@ defmodule PortfolioWeb.Components.Footer do
 
       <%!-- Now in Tokyo --%>
       <section class="col-span-full lg:col-span-2 lg:col-start-11 lg:text-right">
-        <p class="footer-eyebrow">{gettext("Now in Tokyo")}</p>
+        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
+          {gettext("Now in Tokyo")}
+        </.typography>
         <%!-- TODO(footer-data): swap for the Figma "24°c" weather mark + live temp. --%>
         <p class="spec-sheet__value" style="font-size: var(--fs-2xl)">
           {@status.tokyo_temp}
