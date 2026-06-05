@@ -48,17 +48,21 @@ defmodule PortfolioWeb.Navigation do
 
     ~H"""
     <nav role="banner" class="reading-grid items-center">
-      <!-- Logo -->
+      <%!-- Logo — col 1–2, the same 2-column slot as the footer's seal, so the
+           nav below starts on col 3, aligned with the footer's colophon. --%>
       <.link
         navigate={~p"/#{@user_locale}"}
-        class="col-span-full lg:col-span-2"
+        class="col-span-1 sm:col-span-2"
         aria-label={gettext("Zane Riley Portfolio Logo")}
       >
         <.hanko />
       </.link>
-      <!-- Page navigation -->
-      <nav role="navigation" class="col-span-full lg:col-span-6 lg:col-start-3">
-        <ul class="flex space-x-1xl">
+      <%!-- Primary nav — starts on col 3 (sm+), landing on the colophon line. --%>
+      <nav
+        role="navigation"
+        class="col-start-2 col-span-3 sm:col-start-3 sm:col-span-6"
+      >
+        <ul class="flex gap-md sm:gap-1xl">
           <li>
             <.link
               navigate={~p"/#{@user_locale}/case-studies"}
@@ -91,14 +95,14 @@ defmodule PortfolioWeb.Navigation do
           </li>
         </ul>
       </nav>
-      <!-- Theme switcher -->
-      <.theme_switcher class="col-span-full lg:col-start-9 lg:col-end-11" />
-      <!-- Language switcher -->
+      <%!-- Theme switcher --%>
+      <.theme_switcher class="col-span-2 lg:col-start-9" />
+      <%!-- Language switcher --%>
       <nav
         aria-label={gettext("Language switcher")}
-        class="col-span-full lg:col-start-11 lg:col-end-13 text-1xs"
+        class="col-span-2 lg:col-start-11 text-1xs"
       >
-        <ul class="flex justify-end space-x-md">
+        <ul class="flex justify-end gap-md">
           <li>
             <.link
               href={@en_path}

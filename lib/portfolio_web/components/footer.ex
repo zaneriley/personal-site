@@ -43,7 +43,7 @@ defmodule PortfolioWeb.Components.Footer do
     ~H"""
     <footer
       role="contentinfo"
-      class="mt-auto sticky top-[100vh] reading-grid gap-y-md py-2xl"
+      class="mt-auto sticky top-[100vh] reading-grid pt-2xl"
     >
       <%!-- Seal --%>
       <div class="col-span-full lg:col-span-2">
@@ -129,7 +129,7 @@ defmodule PortfolioWeb.Components.Footer do
       </section>
 
       <%!-- Bottom bar: copyright · links · back-to-top --%>
-      <div class="col-span-full mt-2xl grid grid-cols-subgrid items-center gap-y-md">
+      <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
         <span class="footer-eyebrow col-span-full lg:col-span-2">
           © 2011 – {@current_year}
         </span>

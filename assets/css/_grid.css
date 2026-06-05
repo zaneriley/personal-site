@@ -50,7 +50,7 @@
 .reading-grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-  column-gap: var(--gutter);
+  gap: var(--gutter);
   max-width: var(--content-cap);
   padding-inline: var(--page-inset);
   margin-inline: auto;
