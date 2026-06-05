@@ -37,11 +37,14 @@ export interface LineHeightConfig {
  * the base font size and line-height. These values are used to calculate the
  * vertical rhythm, grid, spacing, etc.
  */
-const baseFontSize = 18;
+const baseFontSize = 22;
 
 export const latinLineHeightConfig: LineHeightConfig = {
   baseFontSize: baseFontSize,
-  baseLineHeight: 1.5555,
+  // 28px base leading at the 22px reading size (28/22) — lands md leading on the
+  // 7px baseline grid (quarter of 28). The snapping below keeps even line spacing
+  // across the scale.
+  baseLineHeight: 1.2727,
   scalingFactor: 0.5,
   incrementStep: "quarter",
   incrementMethod: "latin",
@@ -59,7 +62,7 @@ export const latinTypeConfig: TypeConfig = {
   minWidth: 320,
   maxWidth: 1914,
   minTypeScale: 1.2,
-  maxTypeScale: 1.414,
+  maxTypeScale: 1.3,
   minFontSize: baseFontSize,
   maxFontSize: baseFontSize, // This is how large the base font will scale.
   positiveSteps: 7,
@@ -97,7 +100,7 @@ export const cjkTypeConfig: TypeConfig = {
   minWidth: 320,
   maxWidth: 1914,
   minTypeScale: 1.2,
-  maxTypeScale: 1.414,
+  maxTypeScale: 1.3,
   minFontSize: baseFontSize,
   maxFontSize: baseFontSize, // This is how large the base font will scale.
   positiveSteps: 7,

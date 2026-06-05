@@ -1,6 +1,8 @@
 :root {
   /* TYPE & LAYOUT */
-  --fs-base: clamp(1.13rem, 0vi + 1.13rem, 1.13rem);
+  /* Base reading size = the md rung of the generated scale (--fs-md, 22px). No
+     separate --fs-base: it drifted from --fs-md and was a second source of truth
+     for the same relationship. */
 
   /* Reading grid tokens (--content-cap, --gutter, --page-inset, --columns) moved
      to _grid.css — the layout contract belongs on the type/space axis, not here. */
@@ -97,13 +99,17 @@ html,
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  /* TEXT EMPHASIS LADDER — equal OKLCH-lightness steps measured as ΔL from
-     the worst-case (lightest) dark surface stop (L≈33). Warm hue ~65°, low
-     chroma. Floor (deemphasized, ΔL 38) = 4.5:1 AA. */
-  --text-color-callout: oklch(91% 0.02 var(--hue-warm-text)); /* ΔL58 emphasis */
-  --text-color-main: oklch(81% 0.02 var(--hue-warm-text)); /* ΔL48 body */
-  --text-color-deemphasized: oklch(71% 0.02 var(--hue-warm-text)); /* ΔL38 AA floor */
-  --text-color-suppressed: oklch(61% 0.02 var(--hue-warm-text)); /* ΔL28 sub-floor */
+  /* TEXT EMPHASIS LADDER — re-derived from the dusk palette (the systematized
+     Figma neutral ramp: pink→blue hue shift + chroma bulge), so text carries the
+     designed chroma instead of a flat warm low-chroma ladder. Rungs picked off
+     the dusk arc for even ΔL + WCAG AA against the worst-case (lightest) dark
+     surface stop (L≈33). Contrast verified: callout 8.5:1, main 6.6:1,
+     deemphasized 5.6:1 (the AA floor). suppressed (4.3:1) is a decorative
+     sub-floor — below AA by design, never body text. */
+  --text-color-callout: var(--dusk-100); /* emphasis ≈ neutral/100, 8.5:1 */
+  --text-color-main: var(--dusk-300); /* body ≈ neutral/75, 6.6:1 */
+  --text-color-deemphasized: var(--dusk-400); /* AA floor, 5.6:1 */
+  --text-color-suppressed: var(--dusk-500); /* decorative sub-floor, 4.3:1 */
   --text-color-accent: var(--ochre-0);
 
   /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:

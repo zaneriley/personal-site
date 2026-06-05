@@ -48,6 +48,12 @@ defmodule PortfolioWeb.Components.Typography do
         default: nil,
         description: "The font variant to use, e.g., 'cardinal', 'cheee'"
       },
+      weight: %{
+        type: :string,
+        required: false,
+        default: nil,
+        description: "The weight token to use, e.g., 'regular', 'bold'"
+      },
       dropcap: %{
         type: :boolean,
         required: false,
@@ -81,6 +87,7 @@ defmodule PortfolioWeb.Components.Typography do
     * `:id` - The HTML `id` attribute (optional).
     * `:color` - Additional text color classes (optional).
     * `:font` - The font variant to use, e.g., `"cardinal"`, `"cheee"` (optional).
+    * `:weight` - The weight token to use, e.g., `"regular"`, `"bold"` (optional).
     * `:dropcap` - Enables dropcap styling if set to `true` (default: `false`).
     * `:class` - Additional custom classes (optional).
     * `:locale` - The locale for the text (optional).
@@ -101,6 +108,7 @@ defmodule PortfolioWeb.Components.Typography do
   attr :id, :string, default: nil
   attr :color, :string, default: nil
   attr :font, :string, default: nil
+  attr :weight, :string, default: nil
   attr :dropcap, :boolean, default: false
   attr :class, :string, default: nil
   attr :locale, :string, default: nil

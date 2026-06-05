@@ -56,6 +56,7 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     # Add other colors as needed
   }
 
+
   # Default colors for specific fonts
   @font_default_colors %{
     "cheee" => "deemphasized"
@@ -122,6 +123,7 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     []
     |> add_size_class(assigns)
     |> add_color_class(assigns, font_key)
+    |> add_weight_class(assigns, font_key)
     |> add_font_class(font_key, effective_locale)
     |> add_alignment_class(assigns)
     |> add_dropcap_class(assigns)
@@ -169,6 +171,20 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     color_class = Map.get(@color_classes, color_key)
     if color_class, do: [color_class | classes], else: classes
   end
+
+  @doc false
+  # Adds the GT Flexa optical weight class for the element's size. GT Flexa has
+  # no opsz axis, so the regular weight is compensated per size step (see
+  # _type-weight.css); `weight="bold"` selects the bold rung. Only emitted for
+  # the flexa face — static faces (cardinal/noto) keep their own cut weights.
+  @spec add_weight_class(list(String.t()), map(), String.t()) :: list(String.t())
+  defp add_weight_class(classes, assigns, "flexa") do
+    size = assigns[:size] || "md"
+    suffix = if assigns[:weight] == "bold", do: "-bold", else: ""
+    ["fw-flexa-#{size}#{suffix}" | classes]
+  end
+
+  defp add_weight_class(classes, _assigns, _font_key), do: classes
 
   @doc false
   # Adds the appropriate font class based on font key and locale, with fallback.

@@ -4,6 +4,7 @@
 @import url("./_fontface.generated.css");
 @import url("./_color.css");
 @import url("./_typography.css");
+@import url("./_type-weight.css");
 @import url("./_grid.css");
 @import url("./_footer.css");
 
@@ -33,8 +34,16 @@ body {
   font-family:
     "GT Flexa", "GT Flexa Fallback", "Noto Sans JP", "Trebuchet MS",
     Avenir, "Fira Sans", -apple-system, system-ui, sans-serif;
-  font-size: var(--fs-base);
-  line-height: 1.5;
+  font-size: var(--fs-md);
+  /* GT Flexa regular at the body size (= --fw-flexa-md, the md rung of the
+     optical weight curve; see _type-weight.css). Weight is a free axis —
+     per-size optical comp comes from the typography component's fw-flexa-*
+     classes; emphasis from the -bold rungs. Was bundled into .font-gt-flexa. */
+  font-weight: var(--fw-flexa-md);
+  /* md rung of the baseline-grid leading (= 28px on the 7px grid). The root
+     layout's body also carries .text-md which sets the same value; this is the
+     grid-consistent fallback so body never falls back to an off-grid ratio. */
+  line-height: var(--lh-en-md);
   min-height: 100vh;
   hanging-punctuation: allow-end last; /* Safari only */
 }
@@ -88,6 +97,37 @@ body {
 
 html[lang="ja"] * {
   line-height: var(--cjk-lh) !important;
+}
+
+/* Japanese (:lang(ja)) typographic foundation. The Latin-calibrated knobs (the
+   ch-based measure, Latin OT features) don't fit Japanese; the font *faces* are
+   already switched per-locale in typography_helpers.ex. Research:
+   .tmp/2026-06-05-japanese-typography/literature/brief.md */
+
+/* Kinsoku (禁則処理): JP has no inter-word spaces, so default wrapping can break
+   mid-phrase; forbid breaks at the wrong side of 、。「」 etc. (BudouX phrase-
+   breaking is the next step once the copy is final.) */
+html[lang="ja"] {
+  line-break: strict;
+}
+
+/* The * Latin OT features (oldstyle figures, slashed zero) are wrong for the
+   Latin/numerals embedded in JP ("+15", "Google"); reset to JP-relevant ones. */
+html[lang="ja"] * {
+  font-feature-settings:
+    "kern" 1,
+    "palt" 1;
+}
+
+/* Hero lede measure is per-locale: Latin reads to ~36rem; Japanese is
+   character-counted (1em ≈ 1 fullwidth glyph) so ~30 chars = 30em — the Latin
+   `ch`/50ch measure would yield only ~25 kanji. */
+.hero-lede {
+  max-width: 36rem;
+}
+
+html[lang="ja"] .hero-lede {
+  max-inline-size: 30em;
 }
 
 @supports (text-justify: inter-character) {

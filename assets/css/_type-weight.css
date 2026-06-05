@@ -1,0 +1,45 @@
+/* GT Flexa optical weight tokens — hand-authored interim home.
+
+   Calibrated by eye in /weight-calibration. GT Flexa exposes wght 100–800 but
+   NO opsz/GRAD axis, so optical-size weight compensation is applied manually on
+   the wght axis, per size step (md = anchor / step 0).
+
+   Parametric form (regenerate from the calibrator if the curve changes):
+     regular(step) = 268 − 30·step    (base 268 @ md, opsz slope −30/step)
+     bold(step)    = 618 − 70·step    (bold delta +350 @ md, +40/step extra)
+   steps: 4xl=+4, 3xl=+3, 2xl=+2, 1xl=+1, md=0, 1xs=−1, 2xs=−2.
+
+   Note the curve runs Flexa light at display (4xl 148) and heavy/clamped at the
+   small end (2xs bold 758, near the 800 ceiling). Cardinal/Noto are static faces
+   and do NOT follow this curve — they keep their cut weights.
+
+   TODO: fold into assets/tailwind/generate-type-tokens.ts once that pipeline is
+   repaired (AGENTS.md backlog: type-token scripts broken). Until then this file
+   is the source of truth. */
+:root {
+  --fw-flexa-4xl: 148;  --fw-flexa-4xl-bold: 338;
+  --fw-flexa-3xl: 178;  --fw-flexa-3xl-bold: 408;
+  --fw-flexa-2xl: 208;  --fw-flexa-2xl-bold: 478;
+  --fw-flexa-1xl: 238;  --fw-flexa-1xl-bold: 548;
+  --fw-flexa-md: 268;   --fw-flexa-md-bold: 618;
+  --fw-flexa-1xs: 298;  --fw-flexa-1xs-bold: 688;
+  --fw-flexa-2xs: 328;  --fw-flexa-2xs-bold: 758;
+}
+
+/* Per-size weight utilities. The typography component emits these for GT Flexa
+   text: the regular rung automatically for the element's size, and the -bold
+   rung when weight="bold". Hand-applied for inline emphasis spans too. */
+.fw-flexa-4xl { font-weight: var(--fw-flexa-4xl); }
+.fw-flexa-4xl-bold { font-weight: var(--fw-flexa-4xl-bold); }
+.fw-flexa-3xl { font-weight: var(--fw-flexa-3xl); }
+.fw-flexa-3xl-bold { font-weight: var(--fw-flexa-3xl-bold); }
+.fw-flexa-2xl { font-weight: var(--fw-flexa-2xl); }
+.fw-flexa-2xl-bold { font-weight: var(--fw-flexa-2xl-bold); }
+.fw-flexa-1xl { font-weight: var(--fw-flexa-1xl); }
+.fw-flexa-1xl-bold { font-weight: var(--fw-flexa-1xl-bold); }
+.fw-flexa-md { font-weight: var(--fw-flexa-md); }
+.fw-flexa-md-bold { font-weight: var(--fw-flexa-md-bold); }
+.fw-flexa-1xs { font-weight: var(--fw-flexa-1xs); }
+.fw-flexa-1xs-bold { font-weight: var(--fw-flexa-1xs-bold); }
+.fw-flexa-2xs { font-weight: var(--fw-flexa-2xs); }
+.fw-flexa-2xs-bold { font-weight: var(--fw-flexa-2xs-bold); }
