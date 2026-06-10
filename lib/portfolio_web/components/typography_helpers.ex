@@ -52,7 +52,9 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     "callout" => "text-callout",
     "deemphasized" => "text-deemphasized",
     "suppressed" => "text-suppressed",
-    "accent" => "text-accent"
+    "accent" => "text-accent",
+    # Raw dusk rung — the hero's "one down from main" tier (interim, see tailwind.config.ts)
+    "dusk-100" => "text-dusk-100"
     # Add other colors as needed
   }
 
