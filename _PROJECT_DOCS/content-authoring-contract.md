@@ -20,6 +20,24 @@ The app owns the explicit mapping from these fields into runtime output:
 
 Do not author `og_*`, `twitter_*`, or `og:image` fields in content files. Those names belong to rendered HTML metadata, not to the content authoring contract.
 
+## Fenced Code Blocks
+
+Standard CommonMark fences. The info string carries the language and, optionally,
+the path the snippet comes from:
+
+    ```elixir lib/push_search/accounts.ex
+    defmodule PushSearch.Accounts do
+    ```
+
+- The first token is the language (drives syntax coloring at publish time).
+- The second token, when present, is a file path shown in the rendered block's
+  header. Other renderers (GitHub, Obsidian) ignore it — the content stays
+  portable.
+- An unknown or missing language renders as plain uncolored code; it never
+  fails a publish.
+- Indentation-style (4-space) code blocks still render, but cannot carry a
+  language or filename — prefer fences.
+
 ## Rename / Alias Frontmatter
 
 Use optional `aliases` frontmatter when a published note or case study has been renamed and the old URL should keep working.

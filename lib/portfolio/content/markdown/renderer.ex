@@ -225,6 +225,12 @@ defmodule Portfolio.Content.Markdown.Renderer do
 
   This function should be used when you need to convert the AST to
   HTML for display in a template or when HTML is required.
+
+  `{:component, type, attrs, children, meta}` nodes are rendered by applying
+  the registered component function (see
+  `Portfolio.Content.Markdown.Component.Definition` for the calling
+  convention); the result is normalized to a binary here regardless of whether
+  the component returned a `%Phoenix.LiveView.Rendered{}` or a string.
   """
   def render_html(ast) when is_binary(ast), do: ast
 

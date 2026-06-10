@@ -58,7 +58,12 @@ defmodule Portfolio.Content.Entry.Compiler do
   end
 
   @doc """
-  Processes an AST with various transformations to prepare it for rendering.
+  Runs the compile-time pipeline stages over an AST, baking their output in.
+
+  Runs in the compile path BEFORE the AST is stored, so stage work (e.g. syntax
+  classification of fenced code) is paid once at publish time. The read path
+  calls this again after deserialization, where it is a cheap no-op walk —
+  stage target nodes are already rewritten into components.
 
   ## Parameters
     - ast: The AST to process

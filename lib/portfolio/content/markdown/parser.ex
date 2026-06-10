@@ -6,10 +6,15 @@ defmodule Portfolio.Content.Markdown.Parser do
   YAML frontmatter) and a structured AST suitable for further processing by the
   `Portfolio.Content.Markdown.Pipeline`.
 
-  It performs two key functions:
+  It performs three key functions:
   1.  **Standard Markdown Parsing:** Leverages the `Earmark` library to parse standard
       Markdown syntax (headings, lists, links, etc.) into an AST.
-  2.  **(Planned) Custom Component Syntax Handling:** Includes logic (currently marked with TODOs
+  2.  **Fence Filename Stash (Earmark workaround):** CommonMark allows an arbitrary
+      fence info string (` ```elixir lib/a.ex `), but Earmark degrades any multi-word
+      info string into inline code, so filenames are lifted off fence lines before
+      parsing and re-attached to the parsed code blocks (as `data-filename`) by
+      document order afterwards.
+  3.  **(Planned) Custom Component Syntax Handling:** Includes logic (currently marked with TODOs
       in `preprocess_custom_components` and `insert_custom_components`) to recognize, extract,
       and represent custom component blocks (e.g., `::my-component{...} ... ::end::`)
       within the final AST structure. This typically involves pre-processing the raw string
@@ -28,8 +33,10 @@ defmodule Portfolio.Content.Markdown.Parser do
   This function:
   1. Extracts and parses frontmatter metadata
   2. Processes any custom component syntax
-  3. Parses the markdown into an AST using Earmark
-  4. Returns a structured map with both the frontmatter and AST
+  3. Stashes fence filenames Earmark would otherwise mangle
+  4. Parses the markdown into an AST using Earmark
+  5. Re-attaches the fence filenames, and returns a structured map with both
+     the frontmatter and AST
 
   ## Parameters
     - markdown: The raw markdown string to parse
