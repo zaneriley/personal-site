@@ -92,41 +92,37 @@ defmodule PortfolioWeb.DevController do
     |> render(:color_tokens, color_groups: @color_groups)
   end
 
-  @code_block_line_numbers Enum.map_join(1..19, "\n", &Integer.to_string/1)
-
   @code_block_sample ~S'''
-  <span class="tok-kw">defmodule</span> <span class="tok-mod">PushSearch.Accounts</span> <span class="tok-op">do</span>
-  &nbsp;&nbsp;<span class="tok-str">@behaviour PushSearch.Accounts.Interface</span>
+  <span class="tok-keyword">defmodule</span> <span class="tok-module">PushSearch.Accounts</span> <span class="tok-operator">do</span>
+  &nbsp;&nbsp;<span class="tok-string">@behaviour PushSearch.Accounts.Interface</span>
 
-  &nbsp;&nbsp;<span class="tok-str">@moduledoc """</span>
-  &nbsp;&nbsp;<span class="tok-str">The Accounts context module (Service Layer).</span>
+  &nbsp;&nbsp;<span class="tok-string">@moduledoc """</span>
+  &nbsp;&nbsp;<span class="tok-string">The Accounts context module (Service Layer).</span>
 
-  &nbsp;&nbsp;<span class="tok-str">This module serves as the boundary and</span>
-  &nbsp;&nbsp;<span class="tok-str">primary public API for all account-related</span>
-  &nbsp;&nbsp;<span class="tok-str">operations within the application. It orchestrates</span>
-  &nbsp;&nbsp;<span class="tok-str">user management tasks by coordinating with the</span>
-  &nbsp;&nbsp;<span class="tok-str">domain layer (for entities and validation) and adapters</span>
-  &nbsp;&nbsp;<span class="tok-str">(for external interactions like OAuth).</span>
-  &nbsp;&nbsp;<span class="tok-str">"""</span>
+  &nbsp;&nbsp;<span class="tok-string">This module serves as the boundary and</span>
+  &nbsp;&nbsp;<span class="tok-string">primary public API for all account-related</span>
+  &nbsp;&nbsp;<span class="tok-string">operations within the application. It orchestrates</span>
+  &nbsp;&nbsp;<span class="tok-string">user management tasks by coordinating with the</span>
+  &nbsp;&nbsp;<span class="tok-string">domain layer (for entities and validation) and adapters</span>
+  &nbsp;&nbsp;<span class="tok-string">(for external interactions like OAuth).</span>
+  &nbsp;&nbsp;<span class="tok-string">"""</span>
 
-  &nbsp;&nbsp;<span class="tok-at">@</span>impl <span class="tok-ref">PushSearch.Accounts.Interface</span>
-  &nbsp;&nbsp;<span class="tok-kw">def</span> <span class="tok-mod">find_or_create_user_from_oauth</span><span class="tok-punct">(</span>auth_struct<span class="tok-punct">)</span> <span class="tok-op">do</span>
-  &nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-kw">with</span> <span class="tok-call">normalized_attrs</span> <span class="tok-kw">when</span> <span class="tok-call">is_map</span><span class="tok-punct">(</span>normalized_attrs<span class="tok-punct">)</span> <span class="tok-op">←</span>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-mod">OauthHandler</span><span class="tok-op">.normalize_google_auth</span><span class="tok-punct">(</span>auth_struct<span class="tok-op">),</span>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-op">&#123;</span><span class="tok-kw">:ok</span><span class="tok-op">,</span> google_id<span class="tok-op">&#125; ← Map.fetch</span><span class="tok-punct">(</span>normalized_attrs<span class="tok-op">,</span> <span class="tok-kw">:google_id</span><span class="tok-punct">)</span> <span class="tok-op">do</span>
+  &nbsp;&nbsp;<span class="tok-attribute">@</span>impl <span class="tok-type">PushSearch.Accounts.Interface</span>
+  &nbsp;&nbsp;<span class="tok-keyword">def</span> <span class="tok-function">find_or_create_user_from_oauth</span><span class="tok-punctuation">(</span>auth_struct<span class="tok-punctuation">)</span> <span class="tok-operator">do</span>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-keyword">with</span> <span class="tok-call">normalized_attrs</span> <span class="tok-keyword">when</span> <span class="tok-call">is_map</span><span class="tok-punctuation">(</span>normalized_attrs<span class="tok-punctuation">)</span> <span class="tok-operator">←</span>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-module">OauthHandler</span><span class="tok-operator">.normalize_google_auth</span><span class="tok-punctuation">(</span>auth_struct<span class="tok-operator">),</span>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tok-operator">&#123;</span><span class="tok-atom">:ok</span><span class="tok-operator">,</span> google_id<span class="tok-operator">&#125; ← Map.fetch</span><span class="tok-punctuation">(</span>normalized_attrs<span class="tok-operator">,</span> <span class="tok-atom">:google_id</span><span class="tok-punctuation">)</span> <span class="tok-operator">do</span>
   '''
   @code_block_sample String.replace(@code_block_sample, ~r/^ +/m, "")
 
-  # In-situ code-block harness: the component on the real surface, light + dark,
-  # with an OKLCH tweaks panel for the code-color relationships. Used to settle
-  # the syntax palette (esp. the light theme) before anything lands in _color.css.
+  # In-situ code-block harness: the REAL CodeBlock component on the real
+  # surface, light + dark, with an OKLCH tweaks panel that overrides the
+  # shipped --code-* values inline for retuning. The sample is hand-classified
+  # (mock-fidelity) until the pipeline tokenizer lands.
   def code_block(conn, _params) do
     conn
     |> put_root_layout(false)
     |> put_layout(false)
-    |> render(:code_block,
-      code_sample: @code_block_sample,
-      line_numbers: @code_block_line_numbers
-    )
+    |> render(:code_block, code_sample: @code_block_sample)
   end
 end

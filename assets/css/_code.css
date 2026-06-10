@@ -1,0 +1,181 @@
+/* Code rendering — the code-block component chrome and the syntax-token
+   contract. Three layers meet here:
+
+     tokenizer  →  tok-* classes  →  role tokens  →  hue primitives (per theme)
+
+   The hue primitives (--code-green …) live in _color.css with per-theme
+   values. THIS file owns the role mapping ("a keyword is green") — it is
+   theme-independent, stated once. The tok-* class names are the contract
+   between the content pipeline's tokenizer and this stylesheet: classified
+   code HTML is baked into stored content at publish time carrying these
+   classes, so renaming one is a content-recompile event, not a CSS tweak.
+
+   Tuned in the /code-block dev page. */
+
+:root {
+  /* SYNTAX ROLE TOKENS — which paint each classification uses. Several roles
+     share a hue on purpose (e.g. atoms read as keywords); keeping the roles
+     separate in the markup means we can split them later without re-baking
+     content. tok-number → gold is provisional (no number in the calibration
+     sample yet). */
+  --code-keyword: var(--code-green);
+  --code-atom: var(--code-green);
+  --code-module: var(--code-teal);
+  --code-function: var(--code-teal); /* definition-site name, per the mock */
+  --code-type: var(--code-mauve); /* behaviours / protocols / structs */
+  --code-call: var(--code-gold);
+  --code-attribute: var(--code-red); /* the @ sigil / decorators */
+  --code-string: var(--code-tan);
+  --code-comment: var(--code-tan);
+  --code-operator: var(--code-orange);
+  --code-punctuation: var(--code-brown);
+  --code-number: var(--code-gold);
+}
+
+/* The classification classes the tokenizer emits. Default (unclassified) text
+   takes the block's own color (--code-white) — no class needed. */
+.tok-keyword { color: var(--code-keyword); }
+.tok-atom { color: var(--code-atom); }
+.tok-module { color: var(--code-module); }
+.tok-function { color: var(--code-function); }
+.tok-type { color: var(--code-type); }
+.tok-call { color: var(--code-call); }
+.tok-attribute { color: var(--code-attribute); }
+.tok-string { color: var(--code-string); }
+.tok-comment { color: var(--code-comment); }
+.tok-operator { color: var(--code-operator); }
+.tok-punctuation { color: var(--code-punctuation); }
+.tok-number { color: var(--code-number); }
+
+/* ── code-block component chrome (PortfolioWeb.Components.CodeBlock) ──
+   A framed listing: header (file path or language label + copy), line-number
+   gutter, scrollable code area, bottom scrim as a scroll affordance. */
+.code-block {
+  inline-size: min(var(--content-cap), calc(100vi - (var(--page-inset) * 2)));
+  margin-block: var(--space-2xl);
+  margin-inline: auto;
+  position: relative;
+  background: var(--code-bg-card);
+  border: 1px solid var(--code-border);
+  border-radius: var(--space-md);
+  overflow: clip;
+  font-family: "GT Flexa Mono", ui-monospace, monospace;
+  font-feature-settings: "salt" 1, "lnum" 1, "pnum" 1;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  block-size: var(--space-2xl);
+  padding-inline: var(--space-md);
+}
+
+.code-block-filename {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  line-height: calc(var(--fs-2xs) * var(--lh-en-2xs));
+  font-weight: var(--fw-flexa-2xs);
+}
+
+.code-block-dir { color: var(--code-folder); }
+.code-block-name { color: var(--code-filename); }
+
+/* Language label (header fallback when there's no file path). Rendered via
+   <.typography size="2xs">, whose flexa family/color this overrides into the
+   block's mono register — Typography has no mono variant yet. */
+.code-block-language {
+  color: var(--code-folder);
+  font-family: "GT Flexa Mono", ui-monospace, monospace;
+}
+
+.code-block-copy {
+  color: var(--code-folder);
+  background: none;
+  border: 0;
+  padding: var(--space-3xs);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.code-block-body {
+  --code-block-gutter-inline-size: calc((var(--space-md) * 2) + 2ch);
+
+  position: relative;
+  overflow: hidden;
+  max-block-size: calc(100vb - var(--space-4xl));
+}
+
+/* The code area's frame is painted behind the scrolling content so the
+   rounded top corners stay fixed while the text scrolls under them. */
+.code-block-frame {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: var(--code-block-gutter-inline-size) 0;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+
+  /* the card's own bottom edge closes the frame — no doubled hairline */
+  border-block-end: 0;
+  border-start-start-radius: var(--space-md);
+  border-start-end-radius: var(--space-md);
+  pointer-events: none;
+}
+
+.code-block-scroll {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--code-block-gutter-inline-size) minmax(0, 1fr);
+  max-block-size: inherit;
+  overflow-block: auto;
+  overflow-inline: hidden;
+}
+
+.code-block-gutter {
+  grid-column: 1;
+  box-sizing: border-box;
+  inline-size: var(--code-block-gutter-inline-size);
+  white-space: pre;
+  text-align: end;
+  padding-block: var(--space-md);
+  padding-inline: var(--space-md);
+  color: var(--code-folder);
+  font-size: var(--fs-2xs);
+  line-height: calc(var(--fs-1xs) * var(--lh-en-1xs));
+  font-weight: var(--fw-flexa-2xs);
+  user-select: none;
+}
+
+.code-block-code-scroll {
+  grid-column: 2;
+  min-inline-size: 0;
+  overflow-block: clip;
+  overflow-inline: auto;
+  padding-block: var(--space-md);
+  padding-inline: var(--space-md) var(--gutter);
+}
+
+.code-block-code {
+  display: block;
+  inline-size: max-content;
+  min-inline-size: 100%;
+  font-size: var(--fs-1xs);
+  line-height: calc(var(--fs-1xs) * var(--lh-en-1xs));
+  color: var(--code-white);
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* Scroll affordance: visible while more code is below; JS hides it at the
+   scroll end (and reveals nothing on short blocks). Hidden by default so a
+   short block without JS never shows a pointless fade. */
+.code-block-scrim {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: var(--space-4xl);
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(180deg, transparent, var(--code-bg));
+  transition: opacity 0.2s ease;
+}

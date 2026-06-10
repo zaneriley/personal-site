@@ -6,6 +6,7 @@
 @import url("./_type-tokens.generated.css");
 @import url("./_type-utilities.css");
 @import url("./_grid.css");
+@import url("./_code.css");
 @import url("./_footer.css");
 
 @property --fantazio-rotate {

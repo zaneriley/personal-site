@@ -7,44 +7,11 @@
     <title>Code block in situ</title>
     <link rel="stylesheet" href="/css/app.css" />
     <style>
-      /* ── CODE COLOR PRIMITIVES (experiment defaults; JS is source of truth) ──
-         Dark = the values pulled from the Figma mock. Light = a first-pass
-         re-seat (same hues, lower L, a touch more chroma) to tune in situ.
-         Surface dark = our existing tokens: card/code bg = the two darkest
-         --surface-grad-dark stops, border = --dusk-800. */
-      :root {
-        --code-white: oklch(91.6% 0.018 65deg);
-        --code-green: oklch(73.2% 0.071 155deg);
-        --code-teal: oklch(73.4% 0.045 202deg);
-        --code-gold: oklch(82.9% 0.113 82deg);
-        --code-orange: oklch(74.9% 0.118 60deg);
-        --code-red: oklch(66.9% 0.120 31deg);
-        --code-tan: oklch(74.5% 0.046 66deg);
-        --code-mauve: oklch(66.6% 0.091 329deg);
-        --code-brown: oklch(57.1% 0.035 67deg);
-        --code-bg-card: oklch(25.7% 0.006 286deg);
-        --code-bg: oklch(27.5% 0.009 286deg);
-        --code-border: oklch(33.1% 0.022 259deg);
-        --code-folder: oklch(53.3% 0.038 278deg);
-        --code-filename: oklch(70.6% 0.078 278deg);
-      }
-      html[data-theme="light"] {
-        --code-white: oklch(35% 0.02 65deg);
-        --code-green: oklch(48% 0.11 155deg);
-        --code-teal: oklch(46% 0.09 202deg);
-        --code-gold: oklch(58% 0.13 82deg);
-        --code-orange: oklch(52% 0.15 50deg);
-        --code-red: oklch(50% 0.16 30deg);
-        --code-tan: oklch(45% 0.05 66deg);
-        --code-mauve: oklch(48% 0.12 329deg);
-        --code-brown: oklch(50% 0.04 67deg);
-        --code-bg-card: oklch(96% 0.008 90deg);
-        --code-bg: oklch(93% 0.01 90deg);
-        --code-border: oklch(86% 0.02 260deg);
-        --code-folder: oklch(60% 0.04 278deg);
-        --code-filename: oklch(45% 0.11 278deg);
-      }
-
+      /* The code color primitives + the component's chrome now live in the
+         real stylesheets (_color.css / _code.css) — this page renders the real
+         component and only overrides the variables via the panel's inline
+         styles (the JS arrays are the slider defaults, seeded from the shipped
+         values). Page chrome (bar/panel) is the only CSS left here. */
       body { margin: 0; }
       .lab {
         min-block-size: 100vb;
@@ -71,110 +38,6 @@
         border-radius: var(--space-3xs); padding-block: var(--space-3xs); padding-inline: var(--space-2xs); cursor: pointer;
       }
       .seg button[aria-pressed="true"] { border-color: currentColor; font-weight: 700; }
-
-      /* ── the code block component (this CSS is the eventual real CSS) ── */
-      .cb {
-        inline-size: min(var(--content-cap), calc(100vi - (var(--page-inset) * 2)));
-        margin-block: var(--space-2xl);
-        margin-inline: auto;
-        position: relative;
-        background: var(--code-bg-card);
-        border: 1px solid var(--code-border);
-        border-radius: var(--space-md); overflow: clip;
-        font-family: "GT Flexa Mono", ui-monospace, monospace;
-        font-feature-settings: "salt" 1, "lnum" 1, "pnum" 1;
-      }
-      .cb-header {
-        display: flex; align-items: center; justify-content: space-between;
-        block-size: var(--space-2xl);
-        padding-inline: var(--space-md);
-      }
-      .cb-filename {
-        font-size: var(--fs-2xs);
-        line-height: calc(var(--fs-2xs) * var(--lh-en-2xs));
-        font-weight: var(--fw-flexa-2xs);
-      }
-      .cb-filename .dir { color: var(--code-folder); }
-      .cb-filename .name { color: var(--code-filename); }
-      .cb-copy { color: var(--code-folder); background: none; border: 0; padding: var(--space-3xs); cursor: pointer; line-height: 0; }
-
-      .cb-body {
-        --cb-gutter-inline-size: calc((var(--space-md) * 2) + 2ch);
-
-        position: relative;
-        overflow: hidden;
-        max-block-size: calc(100vb - var(--space-4xl));
-      }
-      .cb-code-frame {
-        position: absolute;
-        inset-block-start: 0;
-        inset-block-end: -1px;
-        inset-inline-start: var(--cb-gutter-inline-size);
-        inset-inline-end: 0;
-        background: var(--code-bg);
-        border: 1px solid var(--code-border);
-        border-start-start-radius: var(--space-md);
-        border-start-end-radius: var(--space-md);
-        pointer-events: none;
-      }
-      .cb-scroll {
-        position: relative;
-        display: grid;
-        grid-template-columns: var(--cb-gutter-inline-size) minmax(0, 1fr);
-        max-block-size: inherit;
-        overflow-block: auto;
-        overflow-inline: hidden;
-      }
-      .cb-gutter {
-        grid-column: 1;
-        box-sizing: border-box;
-        inline-size: var(--cb-gutter-inline-size);
-        white-space: pre; text-align: end;
-        padding-block: var(--space-md);
-        padding-inline: var(--space-md);
-        color: var(--code-folder);
-        font-size: var(--fs-2xs);
-        line-height: calc(var(--fs-1xs) * var(--lh-en-1xs));
-        font-weight: var(--fw-flexa-2xs);
-        user-select: none;
-      }
-      .cb-code-scroll {
-        grid-column: 2;
-        min-inline-size: 0;
-        overflow-block: clip;
-        overflow-inline: auto;
-        padding-block: var(--space-md);
-        padding-inline-start: var(--space-md);
-        padding-inline-end: var(--gutter);
-      }
-      .cb-code {
-        display: block;
-        inline-size: max-content;
-        min-inline-size: 100%;
-        font-size: var(--fs-1xs);
-        line-height: calc(var(--fs-1xs) * var(--lh-en-1xs));
-        color: var(--code-white);
-        white-space: pre; tab-size: 2;
-      }
-      .cb-scrim {
-        position: absolute;
-        inset-inline: 0;
-        inset-block-end: 0;
-        block-size: var(--space-4xl);
-        pointer-events: none;
-        background: linear-gradient(180deg, transparent, var(--code-bg));
-        transition: opacity .2s ease;
-      }
-
-      /* token → primitive map (the semantic layer, previewed) */
-      .tok-kw    { color: var(--code-green); }
-      .tok-mod   { color: var(--code-teal); }
-      .tok-call  { color: var(--code-gold); }
-      .tok-op    { color: var(--code-orange); }
-      .tok-at    { color: var(--code-red); }
-      .tok-str   { color: var(--code-tan); }
-      .tok-ref   { color: var(--code-mauve); }
-      .tok-punct { color: var(--code-brown); }
 
       /* ── tweaks panel ── */
       .panel {
@@ -224,28 +87,14 @@
         <span style="opacity:.6">edit a theme's values, then Export CSS ↓</span>
       </div>
 
-      <%!-- The component. Spans are hand-classified to mirror the Figma mock so we
-           judge the real color relationships; the live tokenizer (Autumn) lands later. --%>
-      <div class="cb">
-        <div class="cb-header">
-          <div class="cb-filename">
-            <span class="dir">…folder1/folder2/folder3/</span><span class="name">Accounts.ex</span>
-          </div>
-          <button class="cb-copy" type="button" aria-label="Copy code">
-            ⧉
-          </button>
-        </div>
-        <div class="cb-body">
-          <div class="cb-code-frame" aria-hidden="true"></div>
-          <div class="cb-scroll" id="cb-body">
-            <div class="cb-gutter">{@line_numbers}</div>
-            <div class="cb-code-scroll">
-              <code class="cb-code">{raw(@code_sample)}</code>
-            </div>
-          </div>
-        </div>
-        <div class="cb-scrim" id="cb-scrim"></div>
-      </div>
+      <%!-- The REAL component (PortfolioWeb.Components.CodeBlock). The sample's
+           spans are hand-classified to mirror the Figma mock so we judge the
+           color relationships; the live tokenizer (Autumn) lands later. --%>
+      <PortfolioWeb.Components.CodeBlock.code_block
+        language="elixir"
+        filename="folder1/folder2/folder3/Accounts.ex"
+        code={raw(@code_sample)}
+      />
     </div>
 
     <div class="panel" id="panel">
@@ -355,8 +204,10 @@
         e.target.textContent = p.classList.contains("hidden") ? "show panel" : "hide panel";
       });
 
-      // scrim hides at the scroll block end
-      const body = document.getElementById("cb-body"), scrim = document.getElementById("cb-scrim");
+      // scrim shows while more code is below; hides at the scroll block end
+      // (same behavior the component's JS hook will own on real pages)
+      const body = document.querySelector(".code-block-scroll"),
+            scrim = document.querySelector(".code-block-scrim");
       function scrim_update() {
         const atBlockEnd = body.scrollHeight - body.scrollTop - body.clientHeight < 4;
         const scrollable = body.scrollHeight > body.clientHeight + 4;

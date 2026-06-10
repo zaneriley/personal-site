@@ -116,6 +116,26 @@ html[data-theme="dark"] {
   --text-color-suppressed: var(--dusk-500); /* decorative sub-floor, 4.3:1 */
   --text-color-accent: var(--ochre-0);
 
+  /* CODE PALETTE PRIMITIVES (dark) — hue-named raw colors for source-code
+     rendering, from the Figma code-block mock; tuned in /code-block (dev).
+     Role mapping (keyword→green etc.) lives in _code.css — these are paint
+     only. Surface notes: card/code bgs intentionally equal the two darkest
+     --surface-grad-dark stops; the border is the same value as --dusk-800. */
+  --code-white: oklch(91.6% 0.018 65deg);
+  --code-green: oklch(73.2% 0.071 155deg);
+  --code-teal: oklch(73.4% 0.045 202deg);
+  --code-gold: oklch(82.9% 0.113 82deg);
+  --code-orange: oklch(74.9% 0.118 60deg);
+  --code-red: oklch(66.9% 0.12 31deg);
+  --code-tan: oklch(74.5% 0.046 66deg);
+  --code-mauve: oklch(66.6% 0.091 329deg);
+  --code-brown: oklch(57.1% 0.035 67deg);
+  --code-bg-card: oklch(25.7% 0.006 286deg);
+  --code-bg: oklch(27.5% 0.009 286deg);
+  --code-border: var(--dusk-800);
+  --code-folder: oklch(53.3% 0.038 278deg);
+  --code-filename: oklch(70.6% 0.078 278deg);
+
   /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:
      brighter on dark, deeper on light. Same idea as the dark "bright" sibling
      (neutral-50 → neutral-50-bright). Used by the hanko (nav + favicon). */
@@ -159,6 +179,23 @@ html[data-theme="light"] {
   --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
   --accent: oklch(49% 0.145 252deg); /* deeper link (link hue/chroma, −10 L) */
 
+  /* CODE PALETTE PRIMITIVES (light) — same hues re-seated darker with a touch
+     more chroma so they read on the light card; tuned + approved in /code-block. */
+  --code-white: oklch(35% 0.02 65deg);
+  --code-green: oklch(48% 0.11 155deg);
+  --code-teal: oklch(46% 0.09 202deg);
+  --code-gold: oklch(58% 0.13 82deg);
+  --code-orange: oklch(52% 0.15 50deg);
+  --code-red: oklch(50% 0.16 30deg);
+  --code-tan: oklch(45% 0.05 66deg);
+  --code-mauve: oklch(48% 0.12 329deg);
+  --code-brown: oklch(50% 0.04 67deg);
+  --code-bg-card: oklch(96% 0.008 90deg);
+  --code-bg: oklch(93% 0.01 90deg);
+  --code-border: oklch(86% 0.02 260deg);
+  --code-folder: oklch(60% 0.04 278deg);
+  --code-filename: oklch(45% 0.11 278deg);
+
   /* signature wordmark — light re-grade (mint → teal → blue → indigo) */
   --signature-1: #b5d7bd;
   --signature-2: #71c6e5;
@@ -180,6 +217,22 @@ html[data-theme="light"] {
     --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text));
     --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
     --accent: oklch(49% 0.145 252deg);
+
+    /* code palette — light values (same as html[data-theme="light"]) */
+    --code-white: oklch(35% 0.02 65deg);
+    --code-green: oklch(48% 0.11 155deg);
+    --code-teal: oklch(46% 0.09 202deg);
+    --code-gold: oklch(58% 0.13 82deg);
+    --code-orange: oklch(52% 0.15 50deg);
+    --code-red: oklch(50% 0.16 30deg);
+    --code-tan: oklch(45% 0.05 66deg);
+    --code-mauve: oklch(48% 0.12 329deg);
+    --code-brown: oklch(50% 0.04 67deg);
+    --code-bg-card: oklch(96% 0.008 90deg);
+    --code-bg: oklch(93% 0.01 90deg);
+    --code-border: oklch(86% 0.02 260deg);
+    --code-folder: oklch(60% 0.04 278deg);
+    --code-filename: oklch(45% 0.11 278deg);
 
     /* signature wordmark — light re-grade (same as html[data-theme="light"]) */
     --signature-1: #b5d7bd;
