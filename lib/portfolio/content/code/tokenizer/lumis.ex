@@ -71,7 +71,7 @@ defmodule Portfolio.Content.Code.Tokenizer.Lumis do
   defp unwrap_lines(html) do
     @line_pattern
     |> Regex.scan(html, capture: :all_but_first)
-    |> Enum.map_join("", fn [line] -> line end)
+    |> Enum.map_join("", &hd/1)
   end
 
   # Capture names map by longest-prefix; unmapped captures lose their class

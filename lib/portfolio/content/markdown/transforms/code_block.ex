@@ -18,6 +18,7 @@ defmodule Portfolio.Content.Markdown.Transforms.CodeBlock do
   """
 
   alias Portfolio.Content.Code.Tokenizer
+  alias Portfolio.Content.Markdown.Ast
 
   @doc """
   Walks the AST, rewriting every fenced code block.
@@ -30,18 +31,13 @@ defmodule Portfolio.Content.Markdown.Transforms.CodeBlock do
   @spec apply(list(), keyword()) :: {:ok, list()}
   def apply(ast, opts \\ []) when is_list(ast) do
     tokenizer =
-      Keyword.get_lazy(opts, :tokenizer, fn ->
+      Keyword.get(opts, :tokenizer) ||
         Application.get_env(:portfolio, :code_tokenizer, Tokenizer.Lumis)
-      end)
 
-    {:ok, walk(ast, tokenizer)}
+    {:ok, Ast.traverse(ast, &rewrite_fence(&1, tokenizer))}
   end
 
-  defp walk(nodes, tokenizer) when is_list(nodes) do
-    Enum.map(nodes, &walk_node(&1, tokenizer))
-  end
-
-  defp walk_node(
+  defp rewrite_fence(
          {"pre", _attrs, [{"code", code_attrs, [source], _}], meta},
          tokenizer
        )
@@ -58,12 +54,7 @@ defmodule Portfolio.Content.Markdown.Transforms.CodeBlock do
     {:component, :code_block, attrs, [], meta}
   end
 
-  defp walk_node({tag, attrs, children, meta}, tokenizer)
-       when is_list(children) do
-    {tag, attrs, walk(children, tokenizer), meta}
-  end
-
-  defp walk_node(other, _tokenizer), do: other
+  defp rewrite_fence(node, _tokenizer), do: node
 
   defp classify(tokenizer, source, language) do
     case tokenizer.classify(source, language) do

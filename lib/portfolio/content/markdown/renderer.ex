@@ -254,8 +254,13 @@ defmodule Portfolio.Content.Markdown.Renderer do
           content: render_html(children)
         }
 
-        # Render the component using apply/3
-        apply(module, function, [component_assigns])
+        # Render the component using apply/3. Registered components are
+        # Phoenix function components returning %Rendered{} (or any Safe);
+        # normalize to a binary here, once for every component, since
+        # render_html assembles strings.
+        module
+        |> apply(function, [component_assigns])
+        |> component_result_to_html()
 
       {:error, _reason} ->
         # Fallback rendering if component not found
@@ -272,6 +277,12 @@ defmodule Portfolio.Content.Markdown.Renderer do
   end
 
   def render_html(other), do: to_string(other)
+
+  defp component_result_to_html(binary) when is_binary(binary), do: binary
+
+  defp component_result_to_html(rendered) do
+    rendered |> Phoenix.HTML.Safe.to_iodata() |> IO.iodata_to_binary()
+  end
 
   @doc """
   Preserves the AST structure without converting to HTML.

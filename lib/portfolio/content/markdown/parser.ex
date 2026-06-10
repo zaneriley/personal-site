@@ -169,7 +169,16 @@ defmodule Portfolio.Content.Markdown.Parser do
   @fence_with_filename ~r/^(\s{0,3})```(\S+)[ \t]+(\S+)[ \t]*$/
   @fence_line ~r/^\s{0,3}```/
 
+  # Most content has no fences at all — skip the line-wise scan entirely.
   defp preprocess_fence_filenames(content) do
+    if String.contains?(content, "```") do
+      scan_fences(content)
+    else
+      {content, []}
+    end
+  end
+
+  defp scan_fences(content) do
     {reversed_lines, reversed_filenames, _in_fence} =
       content
       |> String.split("\n")
