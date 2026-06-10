@@ -112,6 +112,7 @@ defmodule PortfolioWeb.Router do
     # Dev-only design-system harnesses (standalone, client-side).
     get "/weight-calibration", DevController, :weight_calibration
     get "/color-tokens", DevController, :color_tokens
+    get "/code-block", DevController, :code_block
   end
 
   scope "/:locale", PortfolioWeb do
