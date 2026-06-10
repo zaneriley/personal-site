@@ -2,7 +2,7 @@
    READING GRID
    The page's column field, derived from the type rhythm. ONE seed + TWO rung
    choices; everything else is computed, so the whole grid regenerates from a
-   single knob. Speaks the same language as --space-* (see _typography.css).
+   single knob. Speaks the same language as --space-* (see _type-tokens.generated.css).
 
    Ladder (consecutive --space-* rungs):
      paragraph gap = md   →  page-inset = 1xl (one rung above)  →  gutter = 2xl

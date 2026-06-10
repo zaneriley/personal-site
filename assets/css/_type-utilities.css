@@ -1,0 +1,40 @@
+/* Hand-authored type utility classes — the presentation layer that consumes the
+   generated type tokens. The token VALUES (sizes, line-heights, font metrics,
+   and the GT Flexa optical weight curve) are generated into
+   _type-tokens.generated.css from assets/tailwind/configs/type-config.ts; this
+   file holds only the classes that apply them, plus the one caps-tracking knob
+   that travels with its .caps consumer. */
+:root {
+  /* Caps tracking — uppercased text always pairs with this letter-spacing (caps
+     need tracking). One variable so it's consistent + tunable. PLACEHOLDER VALUE,
+     needs tuning. Fits content/display caps; the footer's small mono UI-label
+     caps are a separate register that wants wider tracking — unresolved. */
+  --tracking-caps: 0.01em;
+}
+
+/* Per-size GT Flexa weight utilities. The typography component emits these: the
+   regular rung automatically for the element's size, and the -bold rung when
+   weight="bold". Hand-applied for inline emphasis spans too. Each references a
+   generated --fw-flexa-* token (see _type-tokens.generated.css). */
+.fw-flexa-4xl { font-weight: var(--fw-flexa-4xl); }
+.fw-flexa-4xl-bold { font-weight: var(--fw-flexa-4xl-bold); }
+.fw-flexa-3xl { font-weight: var(--fw-flexa-3xl); }
+.fw-flexa-3xl-bold { font-weight: var(--fw-flexa-3xl-bold); }
+.fw-flexa-2xl { font-weight: var(--fw-flexa-2xl); }
+.fw-flexa-2xl-bold { font-weight: var(--fw-flexa-2xl-bold); }
+.fw-flexa-1xl { font-weight: var(--fw-flexa-1xl); }
+.fw-flexa-1xl-bold { font-weight: var(--fw-flexa-1xl-bold); }
+.fw-flexa-md { font-weight: var(--fw-flexa-md); }
+.fw-flexa-md-bold { font-weight: var(--fw-flexa-md-bold); }
+.fw-flexa-1xs { font-weight: var(--fw-flexa-1xs); }
+.fw-flexa-1xs-bold { font-weight: var(--fw-flexa-1xs-bold); }
+.fw-flexa-2xs { font-weight: var(--fw-flexa-2xs); }
+.fw-flexa-2xs-bold { font-weight: var(--fw-flexa-2xs-bold); }
+
+/* Caps: uppercase ALWAYS carries the caps tracking token — use this instead of a
+   bare `uppercase` so the two never drift apart. (Cheee headers are caps via the
+   FONT, not this; the footer mono labels are a separate caps register.) */
+.caps {
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}

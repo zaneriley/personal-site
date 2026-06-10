@@ -5,7 +5,10 @@
      for the same relationship. */
 
   /* Reading grid tokens (--content-cap, --gutter, --page-inset, --columns) moved
-     to _grid.css — the layout contract belongs on the type/space axis, not here. */
+     to _grid.css — the layout contract belongs on the type/space axis, not here.
+     Type tokens (sizes, weight, metrics) are generated into
+     _type-tokens.generated.css; caps tracking + utilities in _type-utilities.css.
+     Neither lives here. */
 
   /* DARK MODE PRIMITIVES */
   --white-absolute: oklch(100% 0 0deg);

@@ -174,9 +174,11 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
 
   @doc false
   # Adds the GT Flexa optical weight class for the element's size. GT Flexa has
-  # no opsz axis, so the regular weight is compensated per size step (see
-  # _type-weight.css); `weight="bold"` selects the bold rung. Only emitted for
-  # the flexa face — static faces (cardinal/noto) keep their own cut weights.
+  # no opsz axis, so the regular weight is compensated per size step (the curve
+  # is generated from type-config.ts into _type-tokens.generated.css; the
+  # .fw-flexa-* utilities live in _type-utilities.css); `weight="bold"` selects
+  # the bold rung. Only emitted for the flexa face — static faces (cardinal/noto)
+  # keep their own cut weights.
   @spec add_weight_class(list(String.t()), map(), String.t()) :: list(String.t())
   defp add_weight_class(classes, assigns, "flexa") do
     size = assigns[:size] || "md"

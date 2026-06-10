@@ -59,7 +59,7 @@ import * as generateTypeTokensModule from "../../tailwind/generate-type-tokens";
 // import { latinTypeConfig } from "../../tailwind/configs/type-config";
 
 // Define DEFAULT_OUTPUT_PATH locally for test verification
-const DEFAULT_OUTPUT_PATH = path.resolve("css/_typography.css");
+const DEFAULT_OUTPUT_PATH = path.resolve("css/_type-tokens.generated.css");
 
 const {
   generateCSS, // This is the function we want to test directly now
@@ -134,13 +134,24 @@ describe("generateCSS Output Contract", () => {
       expect(Number.parseFloat(match1xs[1])).toBeGreaterThan(0);
     }
   });
+
+  it("should derive the GT Flexa optical weight rungs from the knobs", () => {
+    // The curve is derived: regular(step) = base − opszSlope·step;
+    // bold(step) = regular + boldDelta − boldSlope·step. md is the anchor (step 0).
+    // These exact values are the contract — a mismatch means the relationship,
+    // not a literal, changed (knobs: base 268, opsz 30, boldDelta 350, boldSlope 40).
+    expect(generatedCSS).toContain("--fw-flexa-md: 268;"); // anchor regular
+    expect(generatedCSS).toContain("--fw-flexa-md-bold: 618;"); // anchor + delta
+    expect(generatedCSS).toContain("--fw-flexa-4xl: 148;"); // +4 steps lighter
+    expect(generatedCSS).toContain("--fw-flexa-2xs-bold: 758;"); // −2 steps, near 800 ceiling
+  });
 });
 
 // --- Keep existing tests for writeCSS and generateAndWriteCSS ---
 
 describe("Critical Functional Tests - writeCSS", () => {
   const mockCSS = "/* Test CSS */"; // Specific CSS content for this test
-  const expectedPath = path.resolve("css/_typography.css");
+  const expectedPath = path.resolve("css/_type-tokens.generated.css");
 
   beforeEach(() => {
     // Clear mocks for fs sync methods used by writeCSS

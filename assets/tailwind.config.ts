@@ -4,7 +4,7 @@ const config: Config = {
   content: [
     "/app/assets/js/**/*.js",
     "/app/assets/css/**/*.css",
-    "!/app/assets/css/_typography.css", // Exclude the generated file
+    "!/app/assets/css/_type-tokens.generated.css", // Exclude the generated file
     "/app/lib/portfolio_web/**/*.*ex",
   ],
   corePlugins: {},
