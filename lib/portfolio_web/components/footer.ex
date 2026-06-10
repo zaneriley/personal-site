@@ -134,7 +134,9 @@ defmodule PortfolioWeb.Components.Footer do
              numeric mark, so it must NOT take the cheee->Noto JP substitution the
              typography component applies to header text. Plain element with the
              design-system tokens, matching the other footer data values. --%>
-        <p class="font-cheee text-main text-2xl">{@status.tokyo_temp}°<span class="text-1xl">c</span></p>
+        <p class="font-cheee text-main text-2xl">
+          {@status.tokyo_temp}°<span class="text-1xl">c</span>
+        </p>
       </section>
 
       <%!-- Bottom bar: copyright · links · back-to-top --%>
@@ -150,9 +152,11 @@ defmodule PortfolioWeb.Components.Footer do
           <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
                suffix is a secondary annotation, so it sits one colour down from the
                link label. Leading space lives in the EN msgid; JP uses fullwidth （）. --%>
-          <.link href="#" class="footer-eyebrow">{gettext("Resume")}<span class="footer-muted">{gettext(
+          <.link href="#" class="footer-eyebrow">
+            {gettext("Resume")}<span class="footer-muted">{gettext(
               " (PDF)"
-            )}</span></.link>
+            )}</span>
+          </.link>
           <.link href="mailto:hello@zaneriley.com" class="footer-eyebrow">
             {gettext("Email")}
           </.link>

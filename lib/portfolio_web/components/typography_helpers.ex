@@ -58,7 +58,6 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     # Add other colors as needed
   }
 
-
   # Default colors for specific fonts
   @font_default_colors %{
     "cheee" => "deemphasized"
@@ -181,7 +180,8 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
   # .fw-flexa-* utilities live in _type-utilities.css); `weight="bold"` selects
   # the bold rung. Only emitted for the flexa face — static faces (cardinal/noto)
   # keep their own cut weights.
-  @spec add_weight_class(list(String.t()), map(), String.t()) :: list(String.t())
+  @spec add_weight_class(list(String.t()), map(), String.t()) ::
+          list(String.t())
   defp add_weight_class(classes, assigns, "flexa") do
     size = assigns[:size] || "md"
     suffix = if assigns[:weight] == "bold", do: "-bold", else: ""

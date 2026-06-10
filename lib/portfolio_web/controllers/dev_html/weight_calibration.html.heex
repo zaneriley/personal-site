@@ -96,15 +96,21 @@
           <h1>Weight calibration</h1>
           <p class="wcal__lede">
             Tune GT Flexa's optical weight curve by eye. The sliders set the live
-            <code>--fw-flexa-*</code> tokens; everything below consumes them.
-            No <code>opsz</code> axis exists — this is the manual compensation.
+            <code>--fw-flexa-*</code>
+            tokens; everything below consumes them.
+            No <code>opsz</code>
+            axis exists — this is the manual compensation.
           </p>
 
           <div class="wcal__ctl">
             <label>Anchor size <b id="v-anchor">2xl</b></label>
             <div class="wcal__seg" id="seg-anchor">
               <%= for s <- @sizes do %>
-                <button type="button" data-anchor={s.step} aria-pressed={s.label == "2xl"}>
+                <button
+                  type="button"
+                  data-anchor={s.step}
+                  aria-pressed={s.label == "2xl"}
+                >
                   {s.label}
                 </button>
               <% end %>
@@ -112,30 +118,75 @@
           </div>
 
           <div class="wcal__ctl">
-            <label>Base regular @ anchor <b><span id="v-base">300</span></b></label>
-            <input type="range" id="c-base" min="100" max="800" step="1" value="300" />
+            <label>
+              Base regular @ anchor <b><span id="v-base">300</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-base"
+              min="100"
+              max="800"
+              step="1"
+              value="300"
+            />
           </div>
           <div class="wcal__ctl">
-            <label>Regular opsz slope (wght / step) <b><span id="v-opsz">15</span></b></label>
-            <input type="range" id="c-opsz" min="-60" max="60" step="1" value="15" />
-            <p class="wcal__lede">+ = smaller sizes get heavier (hold apparent weight)</p>
+            <label>
+              Regular opsz slope (wght / step)
+              <b><span id="v-opsz">15</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-opsz"
+              min="-60"
+              max="60"
+              step="1"
+              value="15"
+            />
+            <p class="wcal__lede">
+              + = smaller sizes get heavier (hold apparent weight)
+            </p>
           </div>
           <div class="wcal__ctl">
-            <label>Bold delta @ anchor (wght) <b><span id="v-bold">125</span></b></label>
-            <input type="range" id="c-bold" min="0" max="350" step="1" value="125" />
+            <label>
+              Bold delta @ anchor (wght) <b><span id="v-bold">125</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-bold"
+              min="0"
+              max="350"
+              step="1"
+              value="125"
+            />
           </div>
           <div class="wcal__ctl">
-            <label>Bold slope (wght / step) <b><span id="v-boldslope">0</span></b></label>
-            <input type="range" id="c-boldslope" min="-40" max="40" step="1" value="0" />
-            <p class="wcal__lede">how much the bold delta itself drifts by size</p>
+            <label>
+              Bold slope (wght / step) <b><span id="v-boldslope">0</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-boldslope"
+              min="-40"
+              max="40"
+              step="1"
+              value="0"
+            />
+            <p class="wcal__lede">
+              how much the bold delta itself drifts by size
+            </p>
           </div>
 
           <h2 style="border:0;padding:0;margin-top:1.5rem">Preview</h2>
           <div class="wcal__ctl">
             <label>Background</label>
             <div class="wcal__seg" id="seg-bg">
-              <button type="button" data-bg="dark" aria-pressed="true">Dark</button>
-              <button type="button" data-bg="light" aria-pressed="false">Light</button>
+              <button type="button" data-bg="dark" aria-pressed="true">
+                Dark
+              </button>
+              <button type="button" data-bg="light" aria-pressed="false">
+                Light
+              </button>
             </div>
           </div>
           <div class="wcal__ctl">
@@ -155,17 +206,45 @@
             <div class="situ-card situ-hero">
               <h3>Home hero</h3>
               <p style="font-size:var(--fs-2xl)">
-                <span class="text-callout" style="font-weight:var(--fw-flexa-2xl-bold)">Product designer</span>
-                <span class="text-main" style="font-weight:var(--fw-flexa-2xl)"> at</span>
-                <span class="text-callout" style="font-weight:var(--fw-flexa-2xl-bold)"> G</span>
+                <span
+                  class="text-callout"
+                  style="font-weight:var(--fw-flexa-2xl-bold)"
+                >
+                  Product designer
+                </span>
+                <span class="text-main" style="font-weight:var(--fw-flexa-2xl)">
+                   at
+                </span>
+                <span
+                  class="text-callout"
+                  style="font-weight:var(--fw-flexa-2xl-bold)"
+                >
+                   G
+                </span>
               </p>
-              <p class="text-main" style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)">
+              <p
+                class="text-main"
+                style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)"
+              >
                 Based in
-                <span class="font-cardinal-fruit text-callout" style="font-weight:700;text-transform:uppercase">Tokyo</span>
+                <span
+                  class="font-cardinal-fruit text-callout"
+                  style="font-weight:700;text-transform:uppercase"
+                >
+                  Tokyo
+                </span>
                 &amp; previously
-                <span class="font-cardinal-fruit text-callout" style="font-weight:700;text-transform:uppercase">San Francisco</span>
+                <span
+                  class="font-cardinal-fruit text-callout"
+                  style="font-weight:700;text-transform:uppercase"
+                >
+                  San Francisco
+                </span>
               </p>
-              <p class="text-main" style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)">
+              <p
+                class="text-main"
+                style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)"
+              >
                 +15 years experience in making digital products using strategy,
                 design, code or whatever else it takes.
               </p>
@@ -173,20 +252,35 @@
 
             <div class="situ-card situ-ks">
               <h3>Kitchen sink (one family, all sizes)</h3>
-              <p style="font-size:var(--fs-4xl);font-weight:var(--fw-flexa-4xl)">Display 4xl</p>
-              <p style="font-size:var(--fs-3xl);font-weight:var(--fw-flexa-3xl)">Heading 3xl</p>
-              <p style="font-size:var(--fs-2xl);font-weight:var(--fw-flexa-2xl)">Heading 2xl</p>
-              <p style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)">Subhead 1xl</p>
+              <p style="font-size:var(--fs-4xl);font-weight:var(--fw-flexa-4xl)">
+                Display 4xl
+              </p>
+              <p style="font-size:var(--fs-3xl);font-weight:var(--fw-flexa-3xl)">
+                Heading 3xl
+              </p>
+              <p style="font-size:var(--fs-2xl);font-weight:var(--fw-flexa-2xl)">
+                Heading 2xl
+              </p>
+              <p style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)">
+                Subhead 1xl
+              </p>
               <p style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)">
                 Body copy at md. The quick brown fox, and an
-                <strong style="font-weight:var(--fw-flexa-md-bold)">inline bold run</strong>
+                <strong style="font-weight:var(--fw-flexa-md-bold)">
+                  inline bold run
+                </strong>
                 inside regular text to check the emphasis step at reading size.
               </p>
-              <p class="dim" style="font-size:var(--fs-1xs);font-weight:var(--fw-flexa-1xs)">
-                Caption 1xs — metadata, timestamps,
-                <strong style="font-weight:var(--fw-flexa-1xs-bold)">a bold label</strong>.
+              <p
+                class="dim"
+                style="font-size:var(--fs-1xs);font-weight:var(--fw-flexa-1xs)"
+              >
+                Caption 1xs — metadata, timestamps, <strong style="font-weight:var(--fw-flexa-1xs-bold)">a bold label</strong>.
               </p>
-              <p class="dim" style="font-size:var(--fs-2xs);font-weight:var(--fw-flexa-2xs)">
+              <p
+                class="dim"
+                style="font-size:var(--fs-2xs);font-weight:var(--fw-flexa-2xs)"
+              >
                 Fine print 2xs — the smallest rung, where thin strokes vanish first.
               </p>
             </div>
@@ -198,7 +292,9 @@
           </div>
           <%= for s <- @sizes do %>
             <div class="wcal__row" data-step={s.step} data-label={s.label}>
-              <div class="wcal__rowhead">{s.label}<span class="step">step {s.step}</span></div>
+              <div class="wcal__rowhead">
+                {s.label}<span class="step">step {s.step}</span>
+              </div>
               <div>
                 <span class="wcal__wlabel" data-w="regular">—</span>
                 <span
@@ -224,10 +320,16 @@
 
           <h2>Cross-family check (at <span id="v-famsize">md</span>)</h2>
           <div class="wcal__ctl" style="max-width:280px">
-            <label>Compare at size <b><span id="v-famsize2">md</span></b></label>
+            <label>
+              Compare at size <b><span id="v-famsize2">md</span></b>
+            </label>
             <div class="wcal__seg" id="seg-famsize">
               <%= for s <- @sizes do %>
-                <button type="button" data-famsize={s.label} aria-pressed={s.label == "md"}>
+                <button
+                  type="button"
+                  data-famsize={s.label}
+                  aria-pressed={s.label == "md"}
+                >
                   {s.label}
                 </button>
               <% end %>
@@ -236,14 +338,20 @@
           <div id="fam-area">
             <%= for f <- @compare_faces do %>
               <div class="wcal__fam" data-fam={f.key}>
-                <div class="wcal__famname">{f.name}<span class="note">{f.note}</span></div>
+                <div class="wcal__famname">
+                  {f.name}<span class="note">{f.note}</span>
+                </div>
                 <div>
                   <span class="wcal__wlabel" data-w="regular">—</span>
-                  <span class={"wcal__sample #{f.css}"} data-variant="regular">Sample</span>
+                  <span class={"wcal__sample #{f.css}"} data-variant="regular">
+                    Sample
+                  </span>
                 </div>
                 <div>
                   <span class="wcal__wlabel" data-w="bold">—</span>
-                  <span class={"wcal__sample #{f.css}"} data-variant="bold">Sample</span>
+                  <span class={"wcal__sample #{f.css}"} data-variant="bold">
+                    Sample
+                  </span>
                 </div>
               </div>
             <% end %>

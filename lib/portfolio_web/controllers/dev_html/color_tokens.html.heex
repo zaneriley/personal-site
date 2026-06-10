@@ -63,26 +63,44 @@
   <body>
     <div class="clab" data-theme="dark">
       <div class="bar">
-        <span style="color:var(--text-color-main);font-weight:600">COLOR IN SITU</span>
-        <label>theme
+        <span style="color:var(--text-color-main);font-weight:600">
+          COLOR IN SITU
+        </span>
+        <label>
+          theme
           <span class="seg" id="seg-theme">
-            <button type="button" data-theme="dark" aria-pressed="true">dark</button>
-            <button type="button" data-theme="light" aria-pressed="false">light</button>
+            <button type="button" data-theme="dark" aria-pressed="true">
+              dark
+            </button>
+            <button type="button" data-theme="light" aria-pressed="false">
+              light
+            </button>
           </span>
         </label>
-        <label>body
+        <label>
+          body
           <span class="seg" id="seg-body">
-            <button type="button" data-body="var(--dusk-000)" aria-pressed="true">dusk-000 (= white-point)</button>
-            <button type="button" data-body="#d9d9d9" aria-pressed="false">neutral #d9d9d9</button>
+            <button
+              type="button"
+              data-body="var(--dusk-000)"
+              aria-pressed="true"
+            >
+              dusk-000 (= white-point)
+            </button>
+            <button type="button" data-body="#d9d9d9" aria-pressed="false">
+              neutral #d9d9d9
+            </button>
           </span>
         </label>
-        <label>optical bright
+        <label>
+          optical bright
           <span class="seg" id="seg-bright">
             <button type="button" data-on="1" aria-pressed="true">on</button>
             <button type="button" data-on="0" aria-pressed="false">off</button>
           </span>
         </label>
-        <label>meta shade
+        <label>
+          meta shade
           <select id="meta-shade">
             <option value="300">dusk-300</option>
             <option value="400">dusk-400</option>
@@ -90,8 +108,19 @@
             <option value="600">dusk-600</option>
           </select>
         </label>
-        <label>chroma +/step <input type="range" id="cslope" min="0" max="0.02" step="0.001" value="0.008" /> <b id="v-cslope">0.008</b></label>
-        <label>link underline
+        <label>
+          chroma +/step
+          <input
+            type="range"
+            id="cslope"
+            min="0"
+            max="0.02"
+            step="0.001"
+            value="0.008"
+          /> <b id="v-cslope">0.008</b>
+        </label>
+        <label>
+          link underline
           <select id="underline">
             <option value="--dusk-300">dusk-300</option>
             <option value="--dusk-400" selected>dusk-400</option>
@@ -104,28 +133,49 @@
       </div>
 
       <article class="post">
-        <p class="meta" data-step="-2" style="font-size: var(--fs-2xs)">Case study · 8 min read · Tokyo</p>
-        <h1 class="font-cardinal-fruit text-4xl" style="color: var(--text-color-callout)">
+        <p class="meta" data-step="-2" style="font-size: var(--fs-2xs)">
+          Case study · 8 min read · Tokyo
+        </p>
+        <h1
+          class="font-cardinal-fruit text-4xl"
+          style="color: var(--text-color-callout)"
+        >
           Designing a calmer checkout
         </h1>
         <p class="dek text-1xl fw-flexa-1xl">
           A redesign that cut abandoned carts by removing decisions, not adding features.
         </p>
-        <p class="meta" data-step="0" data-flat="1" style="font-size: var(--fs-md)">By Zane Riley · June 2026</p>
-        <p class="meta" data-step="-1" style="font-size: var(--fs-1xs)">By Zane Riley · June 2026</p>
+        <p
+          class="meta"
+          data-step="0"
+          data-flat="1"
+          style="font-size: var(--fs-md)"
+        >
+          By Zane Riley · June 2026
+        </p>
+        <p class="meta" data-step="-1" style="font-size: var(--fs-1xs)">
+          By Zane Riley · June 2026
+        </p>
 
         <p class="body text-md fw-flexa-md">
           The checkout had grown into a wall of options. Every quarter, another team had bolted on
           a field — a promo code, a gift note, an upsell — and each one looked reasonable in
           isolation. Together they read as friction. We started by
-          <a href="#" class="link">mapping every decision</a> the page asked a buyer to make.
+          <a href="#" class="link">mapping every decision</a>
+          the page asked a buyer to make.
         </p>
 
-        <h2 class="font-cheee text-1xs" style="color: var(--text-color-deemphasized)">The problem</h2>
+        <h2
+          class="font-cheee text-1xs"
+          style="color: var(--text-color-deemphasized)"
+        >
+          The problem
+        </h2>
         <p class="body text-md fw-flexa-md">
           Most carts were abandoned on the same screen. Not because the price surprised anyone, but
           because the page demanded attention it hadn't earned. The fix wasn't a new feature; it was
-          <a href="#" class="link">subtraction</a> — and a clearer hierarchy so the one button that
+          <a href="#" class="link">subtraction</a>
+          — and a clearer hierarchy so the one button that
           mattered actually looked like the one button that mattered.
         </p>
 
@@ -135,13 +185,17 @@
 
         <p class="body text-md fw-flexa-md">
           We shipped it behind a flag, watched a week of sessions, and rolled it out. Read the
-          <a href="#" class="link">full write-up</a> or the
-          <a href="#" class="link">before/after teardown</a>.
+          <a href="#" class="link">full write-up</a>
+          or the <a href="#" class="link">before/after teardown</a>.
         </p>
 
         <figure>
           <div class="figbox"></div>
-          <figcaption class="meta" data-step="-1" style="font-size: var(--fs-1xs)">
+          <figcaption
+            class="meta"
+            data-step="-1"
+            style="font-size: var(--fs-1xs)"
+          >
             Figure 1 · The redesigned flow, three steps down to one
           </figcaption>
         </figure>
