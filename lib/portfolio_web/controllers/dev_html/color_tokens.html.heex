@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Color in situ</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <style>
+      body { margin: 0; }
+      /* prototype-only: the proposed top rung — dusk-000 consumes white-point */
+      :root { --dusk-000: var(--white-point); }
+      /* Judge everything on the real surface, in the real text colors. */
+      .clab {
+        min-height: 100vh;
+        background: var(--surface-grad-dark);
+        color: var(--text-color-main);
+        font-family: "GT Flexa", system-ui, sans-serif;
+        font-weight: var(--fw-flexa-md, 350);
+      }
+      html[data-theme="light"] .clab { background: var(--surface-grad-light); }
+
+      /* compact control bar — the only chrome */
+      .bar {
+        position: sticky; top: 0; z-index: 10; display: flex; gap: 1.5rem; align-items: center;
+        flex-wrap: wrap; padding: .6rem 1.5rem;
+        background: color-mix(in oklch, var(--black-point) 60%, transparent);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid color-mix(in oklch, var(--text-color-suppressed) 30%, transparent);
+        font-family: ui-monospace, monospace; font-size: 12px; color: var(--text-color-deemphasized);
+      }
+      .bar label { display: inline-flex; gap: .4rem; align-items: center; }
+      .bar select, .bar button {
+        font: inherit; color: var(--text-color-main); background: transparent;
+        border: 1px solid color-mix(in oklch, var(--text-color-suppressed) 40%, transparent);
+        border-radius: 6px; padding: .2rem .45rem; cursor: pointer;
+      }
+      .seg button[aria-pressed="true"] { border-color: var(--text-color-main); }
+      .bar .warn { color: oklch(72% 0.18 25deg); }
+
+      /* the reading column — a real article */
+      .post { max-width: 40rem; margin: 0 auto; padding: 4rem 1.5rem 8rem; }
+      .post > * { margin: 0 0 1.1rem; }
+      .meta { font-family: var(--footer-mono); text-transform: uppercase; letter-spacing: .12em; }
+      .dek { color: var(--text-color-main); }
+      .post h1 { margin: .2rem 0 .6rem; line-height: 1.05; }
+      .post h2 { margin: 2.5rem 0 .6rem; }
+      .post .body { color: var(--body-color, var(--dusk-000)); }   /* default dusk-000; toggle vs #d9d9d9 */
+      .post blockquote { margin: 2rem 0; padding-left: 1.25rem;
+        border-left: 2px solid color-mix(in oklch, var(--text-color-suppressed) 45%, transparent);
+        color: var(--text-color-callout); }
+      .post hr { border: 0; border-top: 1px solid color-mix(in oklch, var(--text-color-suppressed) 25%, transparent);
+        margin: 2.5rem 0; }
+      .figbox { height: 9rem; border-radius: 10px;
+        background: linear-gradient(120deg, var(--dusk-300), var(--dusk-600)); opacity: .5; margin-bottom: .5rem; }
+
+      /* LINK = body-colored, italic, separately-colored underline (the only link signal) */
+      .link { color: inherit; font-style: italic; text-decoration-line: underline;
+        text-decoration-color: var(--link-underline, var(--dusk-400));
+        text-decoration-thickness: 2px; text-underline-offset: 3px; }
+    </style>
+  </head>
+  <body>
+    <div class="clab" data-theme="dark">
+      <div class="bar">
+        <span style="color:var(--text-color-main);font-weight:600">COLOR IN SITU</span>
+        <label>theme
+          <span class="seg" id="seg-theme">
+            <button type="button" data-theme="dark" aria-pressed="true">dark</button>
+            <button type="button" data-theme="light" aria-pressed="false">light</button>
+          </span>
+        </label>
+        <label>body
+          <span class="seg" id="seg-body">
+            <button type="button" data-body="var(--dusk-000)" aria-pressed="true">dusk-000 (= white-point)</button>
+            <button type="button" data-body="#d9d9d9" aria-pressed="false">neutral #d9d9d9</button>
+          </span>
+        </label>
+        <label>optical bright
+          <span class="seg" id="seg-bright">
+            <button type="button" data-on="1" aria-pressed="true">on</button>
+            <button type="button" data-on="0" aria-pressed="false">off</button>
+          </span>
+        </label>
+        <label>meta shade
+          <select id="meta-shade">
+            <option value="300">dusk-300</option>
+            <option value="400">dusk-400</option>
+            <option value="500" selected>dusk-500</option>
+            <option value="600">dusk-600</option>
+          </select>
+        </label>
+        <label>chroma +/step <input type="range" id="cslope" min="0" max="0.02" step="0.001" value="0.008" /> <b id="v-cslope">0.008</b></label>
+        <label>link underline
+          <select id="underline">
+            <option value="--dusk-300">dusk-300</option>
+            <option value="--dusk-400" selected>dusk-400</option>
+            <option value="--dusk-500">dusk-500</option>
+            <option value="--ochre-0">ochre (gold)</option>
+            <option value="--accent">accent</option>
+          </select>
+        </label>
+        <span id="warn" class="warn"></span>
+      </div>
+
+      <article class="post">
+        <p class="meta" data-step="-2" style="font-size: var(--fs-2xs)">Case study · 8 min read · Tokyo</p>
+        <h1 class="font-cardinal-fruit text-4xl" style="color: var(--text-color-callout)">
+          Designing a calmer checkout
+        </h1>
+        <p class="dek text-1xl fw-flexa-1xl">
+          A redesign that cut abandoned carts by removing decisions, not adding features.
+        </p>
+        <p class="meta" data-step="0" data-flat="1" style="font-size: var(--fs-md)">By Zane Riley · June 2026</p>
+        <p class="meta" data-step="-1" style="font-size: var(--fs-1xs)">By Zane Riley · June 2026</p>
+
+        <p class="body text-md fw-flexa-md">
+          The checkout had grown into a wall of options. Every quarter, another team had bolted on
+          a field — a promo code, a gift note, an upsell — and each one looked reasonable in
+          isolation. Together they read as friction. We started by
+          <a href="#" class="link">mapping every decision</a> the page asked a buyer to make.
+        </p>
+
+        <h2 class="font-cheee text-1xs" style="color: var(--text-color-deemphasized)">The problem</h2>
+        <p class="body text-md fw-flexa-md">
+          Most carts were abandoned on the same screen. Not because the price surprised anyone, but
+          because the page demanded attention it hadn't earned. The fix wasn't a new feature; it was
+          <a href="#" class="link">subtraction</a> — and a clearer hierarchy so the one button that
+          mattered actually looked like the one button that mattered.
+        </p>
+
+        <blockquote class="text-2xl fw-flexa-2xl">
+          “If the page has to explain itself, the page is the problem.”
+        </blockquote>
+
+        <p class="body text-md fw-flexa-md">
+          We shipped it behind a flag, watched a week of sessions, and rolled it out. Read the
+          <a href="#" class="link">full write-up</a> or the
+          <a href="#" class="link">before/after teardown</a>.
+        </p>
+
+        <figure>
+          <div class="figbox"></div>
+          <figcaption class="meta" data-step="-1" style="font-size: var(--fs-1xs)">
+            Figure 1 · The redesigned flow, three steps down to one
+          </figcaption>
+        </figure>
+
+        <hr />
+        <p class="meta" data-step="-2" style="font-size: var(--fs-2xs)">
+          Now in Tokyo · 24°C · Set in GT Flexa, Cardinal Fruit &amp; Cheee
+        </p>
+      </article>
+    </div>
+
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const clab = document.querySelector(".clab");
+        const $ = id => document.getElementById(id);
+
+        // oklch -> linear sRGB (for gamut check)
+        function oklchLinRaw(L, C, H) {
+          const a = C * Math.cos((H * Math.PI) / 180), b = C * Math.sin((H * Math.PI) / 180);
+          const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+          const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+          const s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+          return [
+            4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+            -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+          ];
+        }
+        const probe = document.createElement("span"); probe.style.display = "none"; document.body.appendChild(probe);
+        function parseOklch(c) {
+          probe.style.color = ""; probe.style.color = c;
+          const m = getComputedStyle(probe).color.match(/oklch\(\s*([\d.]+)%?\s+([\d.]+)\s+([\d.]+)/);
+          if (!m) return null;
+          let L = parseFloat(m[1]); if (L > 1.5) L /= 100;
+          return [L, parseFloat(m[2]), parseFloat(m[3])];
+        }
+
+        const REF = 4; // 4xl = reference size (no boost)
+        const state = { on: true, shade: "500", cslope: 0.008 };
+
+        function metaColor(step) {
+          const base = parseOklch(`var(--dusk-${state.shade})`);
+          if (!base) return null;
+          if (!state.on) return { str: `var(--dusk-${state.shade})`, clip: false };
+          const d = REF - step;
+          const Cp = base[1] + state.cslope * d;
+          const [r, g, b] = oklchLinRaw(base[0], Cp, base[2]);
+          const clip = ![r, g, b].every(v => v >= -0.002 && v <= 1.002);
+          return { str: `oklch(${(base[0] * 100).toFixed(2)}% ${Cp.toFixed(4)} ${base[2].toFixed(2)}deg)`, clip };
+        }
+        function applyMeta() {
+          let clips = [];
+          document.querySelectorAll(".meta").forEach(el => {
+            if (el.dataset.flat) { el.style.color = `var(--dusk-${state.shade})`; return; } // non-bright reference
+            const r = metaColor(parseInt(el.dataset.step, 10));
+            if (!r) return;
+            el.style.color = r.str;
+            if (r.clip) clips.push(el.dataset.step);
+          });
+          $("warn").textContent = clips.length ? `⚠ chroma clips sRGB at step(s) ${[...new Set(clips)].join(", ")}` : "";
+        }
+
+        // controls
+        const seg = (id, attr, fn) => $(id).addEventListener("click", e => {
+          const b = e.target.closest("button"); if (!b) return;
+          $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+          fn(b.dataset[attr]);
+        });
+        seg("seg-theme", "theme", v => { root.setAttribute("data-theme", v); clab.setAttribute("data-theme", v); applyMeta(); });
+        seg("seg-body", "body", v => { root.style.setProperty("--body-color", v); });
+        seg("seg-bright", "on", v => { state.on = v === "1"; applyMeta(); });
+        $("meta-shade").addEventListener("change", e => { state.shade = e.target.value; applyMeta(); });
+        $("cslope").addEventListener("input", e => { state.cslope = parseFloat(e.target.value); $("v-cslope").textContent = e.target.value; applyMeta(); });
+        $("underline").addEventListener("change", e => { root.style.setProperty("--link-underline", `var(${e.target.value})`); });
+
+        root.setAttribute("data-theme", "dark");
+        root.style.setProperty("--body-color", "var(--dusk-000)");  // default the experiment to dusk-000
+        applyMeta();
+      })();
+    </script>
+  </body>
+</html>

@@ -109,8 +109,9 @@ defmodule PortfolioWeb.Router do
     pipe_through :browser
     get "/up/", UpController, :index
     get "/up/databases", UpController, :databases
-    # Dev-only type-system calibration harness (standalone, client-side).
+    # Dev-only design-system harnesses (standalone, client-side).
     get "/weight-calibration", DevController, :weight_calibration
+    get "/color-tokens", DevController, :color_tokens
   end
 
   scope "/:locale", PortfolioWeb do

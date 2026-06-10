@@ -28,4 +28,48 @@ defmodule PortfolioWeb.DevController do
     |> put_layout(false)
     |> render(:weight_calibration, sizes: @sizes, compare_faces: @compare_faces)
   end
+
+  # Token groups for the color page — names only; the page reads their live
+  # computed values per theme so it always reflects the real scheme.
+  @color_groups [
+    %{
+      name: "Dusk ramp",
+      note: "the backbone neutral — pink→blue hue shift, chroma bulge",
+      tokens: ~w(--dusk-000 --dusk-100 --dusk-200 --dusk-300 --dusk-400 --dusk-500
+                 --dusk-600 --dusk-700 --dusk-800 --dusk-900 --dusk-1000)
+    },
+    %{
+      name: "Text ladder",
+      note: "semantic, per-mode — what <.typography color=…> resolves to",
+      tokens: ~w(--text-color-callout --text-color-main --text-color-deemphasized
+                 --text-color-suppressed --text-color-accent)
+    },
+    %{
+      name: "Brand / link",
+      note: "the contested ones — note --accent (blue) vs text-color-accent (gold)",
+      tokens: ~w(--accent --hanko-color)
+    },
+    %{
+      name: "Neutral (legacy)",
+      note: "vestigial — mislabeled + mixed formats, mostly unused",
+      tokens: ~w(--neutral-0 --neutral-100 --neutral-200 --neutral-300)
+    },
+    %{
+      name: "Gold / points",
+      note: "the one gold + the crushed white/black points",
+      tokens: ~w(--ochre-0 --white-point --black-point)
+    },
+    %{
+      name: "Signature",
+      note: "hand-graded wordmark gradient — its own thing",
+      tokens: ~w(--signature-1 --signature-2 --signature-3 --signature-4 --signature-kana)
+    }
+  ]
+
+  def color_tokens(conn, _params) do
+    conn
+    |> put_root_layout(false)
+    |> put_layout(false)
+    |> render(:color_tokens, color_groups: @color_groups)
+  end
 end
