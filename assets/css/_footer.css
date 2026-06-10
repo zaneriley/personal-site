@@ -27,6 +27,16 @@
   color: var(--accent);
 }
 
+/* Quieter than the accent eyebrow/links — for non-action meta (the copyright) and
+   secondary annotations (the "(PDF)" suffix). NOTE: --accent is the darkest token
+   in the set, so de-emphasis here is by DESATURATION at ~equal lightness, not by
+   going up the neutral lightness ladder (which would read brighter, not quieter).
+   --text-color-suppressed: ~same L as accent, lower chroma → recedes. Defined
+   after .footer-eyebrow so it wins the colour on shared elements. */
+.footer-muted {
+  color: var(--text-color-suppressed);
+}
+
 /* ---- spec_sheet: a framed, titled list of labelled facts -------------------
    One primitive; the Typefaces sheet and the Server sheet differ only by the
    optional header chip + status dot. Rows are a semantic <dl>. */

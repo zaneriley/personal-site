@@ -26,7 +26,8 @@ defmodule PortfolioWeb.Components.Footer do
     temp: "45.2°C",
     cost: "$0.12/day",
     deploy: "passing :: 8f3a12",
-    tokyo_temp: "24°c"
+    # Number only; the "°c" unit is presentational (rendered in the markup).
+    tokyo_temp: "24"
   }
 
   @doc """
@@ -123,20 +124,22 @@ defmodule PortfolioWeb.Components.Footer do
         </.spec_sheet>
       </section>
 
-      <%!-- Now in Tokyo --%>
+      <%!-- Now in Tokyo: a mono eyebrow (matching the footer links) over the
+           temperature — Cheee is reserved for the temp value itself, not this
+           label. --%>
       <section class="col-span-full lg:col-span-2 lg:col-start-11 lg:text-right">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Now in Tokyo")}
-        </.typography>
-        <%!-- TODO(footer-data): swap for the Figma "24°c" weather mark + live temp. --%>
-        <p class="spec-sheet__value" style="font-size: var(--fs-2xl)">
-          {@status.tokyo_temp}
-        </p>
+        <p class="footer-eyebrow">{gettext("Now in Tokyo")}</p>
+        <%!-- TODO(footer-data): wire to a live temp; the specialized persona mark
+             (each digit off-kilter) comes later. Cheee in BOTH locales — it's a
+             numeric mark, so it must NOT take the cheee->Noto JP substitution the
+             typography component applies to header text. Plain element with the
+             design-system tokens, matching the other footer data values. --%>
+        <p class="font-cheee text-main text-2xl">{@status.tokyo_temp}°<span class="text-1xl">c</span></p>
       </section>
 
       <%!-- Bottom bar: copyright · links · back-to-top --%>
       <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
-        <span class="footer-eyebrow col-span-full lg:col-span-2">
+        <span class="footer-eyebrow footer-muted col-span-full lg:col-span-2">
           © 2011 – {@current_year}
         </span>
 
@@ -144,8 +147,12 @@ defmodule PortfolioWeb.Components.Footer do
           class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-md"
           aria-label={gettext("Footer")}
         >
-          <%!-- TODO(footer-links): point Resume at the real PDF asset. --%>
-          <.link href="#" class="footer-eyebrow">{gettext("Resume (PDF)")}</.link>
+          <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
+               suffix is a secondary annotation, so it sits one colour down from the
+               link label. Leading space lives in the EN msgid; JP uses fullwidth （）. --%>
+          <.link href="#" class="footer-eyebrow">{gettext("Resume")}<span class="footer-muted">{gettext(
+              " (PDF)"
+            )}</span></.link>
           <.link href="mailto:hello@zaneriley.com" class="footer-eyebrow">
             {gettext("Email")}
           </.link>
