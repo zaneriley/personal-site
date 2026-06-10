@@ -1,20 +1,32 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
 #: lib/portfolio_web/components/content_metadata.ex:101
 #, elixir-autogen, elixir-format
 msgid "%{count} min read"
-msgstr "%{count} min read"
+msgstr ""
 
-# Word/Character count
 #: lib/portfolio_web/components/content_metadata.ex:122
 #, elixir-autogen, elixir-format
 msgid "%{formatted_count} word"
 msgid_plural "%{formatted_count} words"
-msgstr[0] "%{formatted_count} word"
-msgstr[1] "%{formatted_count} words"
+msgstr[0] ""
+msgstr[1] ""
 
 #: lib/portfolio_web/components/content_metadata.ex:99
 #, elixir-autogen, elixir-format
 msgid "1 min read"
-msgstr "1 min read"
+msgstr ""
 
 #: lib/portfolio_web/live/about_live.ex:11
 #, elixir-autogen, elixir-format
@@ -38,13 +50,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Case Study"
 msgid_plural "Case Studies"
-msgstr[0] "Case Study"
-msgstr[1] "Case Studies"
+msgstr[0] ""
+msgstr[1] ""
 
 #: lib/portfolio_web/components/footer.ex:56
 #, elixir-autogen, elixir-format
 msgid "Colophon"
-msgstr "Colophon"
+msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:115
 #, elixir-autogen, elixir-format
@@ -67,9 +79,9 @@ msgid "DISAPPEARED INTO THE VOID OR"
 msgstr ""
 
 #: lib/portfolio_web/components/theme_switcher.ex:42
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Dark"
-msgstr "Dark mode"
+msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:118
 #, elixir-autogen, elixir-format
@@ -119,7 +131,7 @@ msgstr ""
 #: lib/portfolio_web/components/navigation.ex:102
 #, elixir-autogen, elixir-format
 msgid "Language switcher"
-msgstr "Language switcher"
+msgstr ""
 
 #: lib/portfolio_web/live/about_live.ex:12
 #, elixir-autogen, elixir-format
@@ -127,20 +139,19 @@ msgid "Learn more about Zane Riley, a Product Designer with over 10 years of exp
 msgstr ""
 
 #: lib/portfolio_web/components/theme_switcher.ex:41
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Light"
-msgstr "Light mode"
+msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:172
 #, elixir-autogen, elixir-format
 msgid "LinkedIn"
 msgstr ""
 
-# Separator
 #: lib/portfolio_web/components/content_metadata.ex:55
 #, elixir-autogen, elixir-format
 msgid "Metadata separator"
-msgstr " • "
+msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:77
 #, elixir-autogen, elixir-format
@@ -153,9 +164,9 @@ msgid "NEVER EXISTED IN THE FIRST PLACE"
 msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:105
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Node"
-msgstr "Note"
+msgstr ""
 
 #: lib/portfolio_web/components/navigation.ex:82
 #: lib/portfolio_web/live/note_live/show.ex:51
@@ -163,8 +174,8 @@ msgstr "Note"
 #, elixir-autogen, elixir-format
 msgid "Note"
 msgid_plural "Notes"
-msgstr[0] "Note"
-msgstr[1] "Notes"
+msgstr[0] ""
+msgstr[1] ""
 
 #: lib/portfolio_web/components/footer.ex:130
 #, elixir-autogen, elixir-format
@@ -175,8 +186,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Platform"
 msgid_plural "Platforms"
-msgstr[0] "Platform"
-msgstr[1] "Platforms"
+msgstr[0] ""
+msgstr[1] ""
 
 #: lib/portfolio_web/live/live_helpers.ex:40
 #, elixir-autogen, elixir-format
@@ -211,7 +222,7 @@ msgstr ""
 #: lib/portfolio_web/live/case_study_live/show.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Role"
-msgstr "Role"
+msgstr ""
 
 #: lib/portfolio_web/controllers/error_html/404.html.heex:101
 #, elixir-autogen, elixir-format
@@ -226,7 +237,7 @@ msgstr ""
 #: lib/portfolio_web/components/navigation.ex:92
 #, elixir-autogen, elixir-format
 msgid "Self"
-msgstr "Self"
+msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:100
 #, elixir-autogen, elixir-format
@@ -243,7 +254,7 @@ msgstr ""
 #: lib/portfolio_web/controllers/error_html/500.html.heex:87
 #, elixir-autogen, elixir-format
 msgid "Skip to main content"
-msgstr "Skip to main content"
+msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:109
 #, elixir-autogen, elixir-format
@@ -253,12 +264,12 @@ msgstr ""
 #: lib/portfolio_web/components/navigation.ex:109
 #, elixir-autogen, elixir-format
 msgid "Switch to English"
-msgstr "Switch to English"
+msgstr ""
 
 #: lib/portfolio_web/components/navigation.ex:121
 #, elixir-autogen, elixir-format
 msgid "Switch to Japanese"
-msgstr "Switch to Japanese"
+msgstr ""
 
 #: lib/portfolio_web/components/theme_switcher.ex:43
 #, elixir-autogen, elixir-format
@@ -288,7 +299,7 @@ msgstr ""
 #: lib/portfolio_web/live/case_study_live/show.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Timeline"
-msgstr "Timeline"
+msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:63
 #, elixir-autogen, elixir-format
@@ -303,18 +314,17 @@ msgstr ""
 #: lib/portfolio_web/components/content_metadata.ex:154
 #, elixir-autogen, elixir-format
 msgid "Updated %{date}"
-msgstr "Updated %{date}"
+msgstr ""
 
-# Update date
 #: lib/portfolio_web/components/content_metadata.ex:148
 #, elixir-autogen, elixir-format
 msgid "Updated today"
-msgstr "Updated today"
+msgstr ""
 
 #: lib/portfolio_web/components/content_metadata.ex:151
 #, elixir-autogen, elixir-format
 msgid "Updated yesterday"
-msgstr "Updated yesterday"
+msgstr ""
 
 #: lib/portfolio_web/controllers/error_html/404.html.heex:115
 #, elixir-autogen, elixir-format
@@ -324,28 +334,28 @@ msgstr ""
 #: lib/portfolio_web/components/navigation.ex:56
 #, elixir-autogen, elixir-format
 msgid "Zane Riley Portfolio Logo"
-msgstr "Zane Riley Portfolio Logo"
+msgstr ""
 
 #: lib/portfolio_web/live/case_study_live/show.ex:71
 #: lib/portfolio_web/live/note_live/show.ex:53
 #, elixir-autogen, elixir-format
 msgid "Zane Riley | Product Design Portfolio"
-msgstr "Zane Riley | Product Design Portfolio"
+msgstr ""
 
 #: lib/portfolio_web/live/live_helpers.ex:39
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Zane Riley | Product Designer"
-msgstr "Zane Riley | Product Design Portfolio"
+msgstr ""
 
 #: lib/portfolio_web/live/home_live.ex:14
 #, elixir-autogen, elixir-format
 msgid "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
-msgstr "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
+msgstr ""
 
 #: lib/portfolio_web/live/home_live.ex:18
 #, elixir-autogen, elixir-format
 msgid "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
-msgstr "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+msgstr ""
 
 #: lib/portfolio_web/components/core_components.ex:81
 #: lib/portfolio_web/components/core_components.ex:191
@@ -366,6 +376,6 @@ msgid " (PDF)"
 msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:152
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Resume"
 msgstr ""
