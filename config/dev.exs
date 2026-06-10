@@ -1,6 +1,13 @@
 import Config
 
 config :portfolio, PortfolioWeb.Endpoint,
+  # Bind the same env-driven port as prod (see runtime.exs) — the prod block
+  # there is gated by config_env(), so dev needs its own wire-up or it falls
+  # back to Phoenix's 4000 default and mismatches the compose publish (PORT, 8000).
+  http: [port: String.to_integer(System.get_env("PORT") || "8000")],
+  secret_key_base:
+    System.get_env("SECRET_KEY_BASE") ||
+      "dev-only-secret-key-base-please-do-not-use-outside-local-development",
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
