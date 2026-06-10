@@ -40,7 +40,8 @@ defmodule PortfolioWeb.Components.CodeBlock do
         type: :string,
         required: false,
         default: nil,
-        description: "The source language, shown as the header label when there is no filename"
+        description:
+          "The source language, shown as the header label when there is no filename"
       },
       filename: %{
         type: :string,
@@ -61,15 +62,34 @@ defmodule PortfolioWeb.Components.CodeBlock do
 
   attr :code, :any,
     required: true,
-    doc: "classified HTML as {:safe, _} (tok-* spans) or a plain string, which gets escaped"
+    doc:
+      "classified HTML as {:safe, _} (tok-* spans) or a plain string, which gets escaped"
 
   attr :language, :string, default: nil
   attr :filename, :string, default: nil
 
   @doc """
   Renders the code-block component.
+
+  The first clause is the markdown pipeline's entry point: the renderer applies
+  registered components with `%{component:, attrs:, content:}` (attrs are
+  string-keyed after DB round-tripping) and string-joins the result, so this
+  clause normalizes to the component's attrs and returns the rendered binary.
+  The baked `code` HTML is our own compile-time tokenizer output — trusted.
   """
-  @spec code_block(map()) :: Phoenix.LiveView.Rendered.t()
+  @spec code_block(map()) :: Phoenix.LiveView.Rendered.t() | String.t()
+  def code_block(%{component: :code_block, attrs: attrs}) do
+    %{
+      code: {:safe, Map.fetch!(attrs, "code")},
+      language: Map.get(attrs, "language"),
+      filename: Map.get(attrs, "filename"),
+      __changed__: nil
+    }
+    |> code_block()
+    |> Phoenix.HTML.Safe.to_iodata()
+    |> IO.iodata_to_binary()
+  end
+
   def code_block(assigns) do
     code = ensure_safe(assigns.code)
 
@@ -93,7 +113,11 @@ defmodule PortfolioWeb.Components.CodeBlock do
         >
           {@language}
         </Typography.typography>
-        <button class="code-block-copy" type="button" aria-label={gettext("Copy code")}>
+        <button
+          class="code-block-copy"
+          type="button"
+          aria-label={gettext("Copy code")}
+        >
           ⧉
         </button>
       </div>
@@ -116,7 +140,9 @@ defmodule PortfolioWeb.Components.CodeBlock do
   # raw/1) passes through unescaped.
   @spec ensure_safe(Phoenix.HTML.safe() | String.t()) :: Phoenix.HTML.safe()
   defp ensure_safe({:safe, _} = safe), do: safe
-  defp ensure_safe(code) when is_binary(code), do: Phoenix.HTML.html_escape(code)
+
+  defp ensure_safe(code) when is_binary(code),
+    do: Phoenix.HTML.html_escape(code)
 
   # "1\n2\n…n" for the gutter, derived from the rendered code's line count.
   # Newlines in the classified HTML are the source's real newlines (token spans
@@ -135,7 +161,8 @@ defmodule PortfolioWeb.Components.CodeBlock do
 
   # Header path: directory run de-emphasized, basename emphasized. A bare
   # filename has no directory part to dim.
-  @spec split_path(String.t() | nil) :: %{dir: String.t() | nil, name: String.t()} | nil
+  @spec split_path(String.t() | nil) ::
+          %{dir: String.t() | nil, name: String.t()} | nil
   defp split_path(nil), do: nil
 
   defp split_path(filename) do

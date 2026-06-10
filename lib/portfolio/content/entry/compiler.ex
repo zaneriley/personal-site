@@ -15,6 +15,7 @@ defmodule Portfolio.Content.Entry.Compiler do
 
   alias Portfolio.Content.Markdown.Parser
   alias Portfolio.Content.Markdown.Renderer
+  alias Portfolio.Content.Markdown.Transforms
   alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.TranslationRepository
@@ -66,10 +67,13 @@ defmodule Portfolio.Content.Entry.Compiler do
     - The processed AST
   """
   @spec process_ast(ast(), keyword()) :: ast()
-  def process_ast(ast, _opts \\ []) when is_list(ast) do
-    # Apply transforms like syntax highlighting, image processing, etc.
-    # This is a simple pass-through for now as we migrate functionality
-    ast
+  def process_ast(ast, opts \\ []) when is_list(ast) do
+    # Bake syntax classification into the AST. This runs in the compile path
+    # (before the AST is stored), so tokenization is paid once at publish
+    # time; the same call on the read path is a cheap no-op walk, since
+    # fenced code nodes are already rewritten into components.
+    {:ok, processed} = Transforms.CodeBlock.apply(ast, opts)
+    processed
   end
 
   @doc """

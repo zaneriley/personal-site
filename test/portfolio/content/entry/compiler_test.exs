@@ -3,6 +3,7 @@ defmodule Portfolio.Content.Entry.CompilerTest do
 
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.AstSerialization
+  alias Portfolio.Content.Markdown.Renderer
   alias Portfolio.ContentFixtures
   alias Portfolio.Content.TranslationRepository
 
@@ -161,6 +162,72 @@ defmodule Portfolio.Content.Entry.CompilerTest do
 
     test "handles nil input" do
       assert [] = Compiler.deserialize_and_process_ast(nil)
+    end
+  end
+
+  describe "fenced code through compile -> store -> render (end to end)" do
+    setup do
+      case Portfolio.Content.Markdown.Component.Registry.register(
+             :code_block,
+             PortfolioWeb.Components.CodeBlock,
+             custom_function: :code_block
+           ) do
+        :ok -> :ok
+        {:error, :already_registered} -> :ok
+      end
+    end
+
+    test "a fenced block bakes classified code at compile and renders chrome from storage" do
+      markdown = """
+      ```elixir lib/push_search/accounts.ex
+      defmodule Foo do
+        :ok
+      end
+      ```
+      """
+
+      assert {:ok, %{ast: ast}} = Compiler.compile(markdown)
+
+      # Baked at compile: the fence is now a component node carrying tok-* HTML.
+      assert [{:component, :code_block, attrs, [], _}] = ast
+      assert attrs["language"] == "elixir"
+      assert attrs["filename"] == "lib/push_search/accounts.ex"
+      assert attrs["code"] =~ "tok-keyword"
+      assert attrs["code"] =~ "tok-atom"
+
+      # The DB round trip (storage is JSON-shaped) preserves the baked node.
+      restored =
+        ast
+        |> AstSerialization.serialize_ast()
+        |> Jason.encode!()
+        |> Jason.decode!()
+        |> AstSerialization.deserialize_ast()
+
+      # Read-path processing is a no-op on already-baked content.
+      assert Compiler.process_ast(restored) == restored
+
+      # Render is pure markup assembly: chrome + the baked spans, no tokenizing.
+      html = Renderer.render_html(restored)
+      assert html =~ "code-block"
+      assert html =~ "tok-keyword"
+      assert html =~ "accounts.ex"
+      assert html =~ "lib/push_search/"
+    end
+
+    test "a fence in an unknown language compiles to a plain uncolored code block" do
+      markdown = """
+      ```nope-lang
+      x = 1
+      ```
+      """
+
+      assert {:ok, %{ast: ast}} = Compiler.compile(markdown)
+      assert [{:component, :code_block, attrs, [], _}] = ast
+      refute attrs["code"] =~ "tok-"
+
+      html = Renderer.render_html(ast)
+      assert html =~ "code-block"
+      assert html =~ "x = 1"
     end
   end
 end

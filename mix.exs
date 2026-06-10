@@ -52,6 +52,7 @@ defmodule Portfolio.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:earmark, "~> 1.4"},
       {:earmark_parser, "~> 1.4"},
+      {:lumis, "~> 0.5.0"},
       {:ecto_sql, "~> 3.13"},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18", only: [:dev, :test]},

@@ -78,6 +78,10 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
     end
   end
 
+  # A string type is one deserialization couldn't atomize — a component type
+  # this build doesn't know. Not found, never a crash on stored content.
+  def lookup(type) when is_binary(type), do: {:error, :not_found}
+
   @doc """
   Lists all registered component types.
 
