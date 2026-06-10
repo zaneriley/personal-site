@@ -48,21 +48,21 @@ defmodule Portfolio.Content.Code.Tokenizer.Lumis do
   end
 
   def classify(source, language) when is_binary(source) do
-    case Lumis.highlight(source, formatter: {:html_linked, language: language}) do
-      {:ok, html} ->
-        classified =
-          html
-          |> unwrap_lines()
-          |> map_capture_classes()
-          |> match_trailing_newlines(source)
+    # The engine's only failure mode is raising (its success typing is
+    # {:ok, binary()} — unknown languages come back as plaintext, not errors),
+    # so match the ok assertively and let the rescue own failure: a NIF/engine
+    # crash must never take content compilation down with it.
+    {:ok, html} =
+      Lumis.highlight(source, formatter: {:html_linked, language: language})
 
-        {:ok, classified}
+    classified =
+      html
+      |> unwrap_lines()
+      |> map_capture_classes()
+      |> match_trailing_newlines(source)
 
-      {:error, reason} ->
-        {:error, reason}
-    end
+    {:ok, classified}
   rescue
-    # A NIF/engine crash must never take content compilation down with it.
     error -> {:error, error}
   end
 
