@@ -11,7 +11,7 @@
 ============================================================================ */
 
 :root {
-  --footer-mono: "GT Flexa Mono", ui-monospace, "SF Mono", "Menlo", monospace;
+  --footer-mono: var(--font-mono); /* alias; the stack lives in _type-utilities.css */
   /* Hairline derived from the suppressed text colour so it tracks the theme. */
   --footer-rule: color-mix(in oklch, var(--text-color-suppressed) 28%, transparent);
   --footer-inset: color-mix(in oklch, var(--text-color-suppressed) 6%, transparent);

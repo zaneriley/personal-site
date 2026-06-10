@@ -10,6 +10,12 @@
      needs tuning. Fits content/display caps; the footer's small mono UI-label
      caps are a separate register that wants wider tracking — unresolved. */
   --tracking-caps: 0.01em;
+
+  /* THE mono stack — one source of truth for every monospaced surface (footer
+     labels, code blocks). The face is GT Flexa Mono (variable, wght 100–900,
+     loaded in _fontface.generated.css); the fallbacks are metric-close system
+     monos. A Typography font="mono" variant should consume this too — backlog. */
+  --font-mono: "GT Flexa Mono", ui-monospace, "SF Mono", "Menlo", monospace;
 }
 
 /* Per-size GT Flexa weight utilities. The typography component emits these: the

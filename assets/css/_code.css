@@ -59,7 +59,7 @@
   border: 1px solid var(--code-border);
   border-radius: var(--space-md);
   overflow: clip;
-  font-family: "GT Flexa Mono", ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-feature-settings: "salt" 1, "lnum" 1, "pnum" 1;
 }
 
@@ -86,7 +86,7 @@
    block's mono register — Typography has no mono variant yet. */
 .code-block-language {
   color: var(--code-folder);
-  font-family: "GT Flexa Mono", ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .code-block-copy {
