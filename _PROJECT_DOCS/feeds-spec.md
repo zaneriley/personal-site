@@ -1,6 +1,6 @@
 # Feeds — syndication spec
 
-**Status:** ratified 2026-06-11 (one amendment at ratification: entry ids are locale-scoped — see Entry mapping). Grounded in the
+**Status:** ratified 2026-06-11 (amended at ratification: locale-scoped entry ids; amended same day after peer review: Content/Web boundary split, strict locale membership, rendered-document cache validator — findings at `.tmp/2026-06-11-{ia,ddd}-review/`). Grounded in the
 2026-06-11 literature run (`.tmp/2026-06-11-rss-syndication/literature/brief.md`,
 42 sources) — `[pNNN]` citations resolve there.
 
@@ -104,12 +104,16 @@ readers punish [p209]. Each is a test:
 6. Content HTML survives sanitization: a case study containing a code block
    renders as readable (if unstyled) code in a reader — token spans degrade
    to plain text, never to broken markup.
-7. en and ja feeds contain only their locale's entries.
+7. A locale's feeds contain only entries rendered in that locale: an entry
+   with no ja translation does not appear in any ja feed — no language
+   fallback. (The site's pages may fall back; the feed's subscriber promise
+   is stricter.)
 8. Every page's HTML head carries main-feed autodiscovery; section pages also
    carry their section's.
 9. `/feed.xml` 301s to `/en/feeds/main.xml`.
-10. Responses carry `application/atom+xml`, an ETag or Last-Modified derived
-    from the newest entry, and honor conditional requests with 304.
+10. Responses carry `application/atom+xml` and an ETag derived from the
+    rendered feed document (so template/copy changes invalidate, not only new
+    entries), honoring conditional requests with 304.
 
 ## Implementation shape
 
@@ -117,12 +121,24 @@ Consistent with the dormant-ecosystem finding [p200, p201, p202]: **hand-rolled
 in Phoenix** — no feed library. The design to port is Tableau's named-feed
 registry [p201]:
 
-- A feed registry (compile-time data): name → `%{title, description, predicate}`
-  where the predicate is a content query (type + main-feed membership), so
-  adding a feed is a registry entry, not a controller.
+- **The feed names (`main`, `case-studies`, `notes`, `everything`) are the
+  contract between two registries**, split on the Content/Web boundary:
+  - **Content owns membership**: a named feed-listing API
+    (`Content.list_for_feed(feed, locale)`-shaped) that owns the `main_feed`
+    type defaults, draft/publication filtering, strict locale scoping, and
+    cross-type merge-then-cap for `everything`. Web never re-implements any
+    of these.
+  - **Web owns presentation**: `PortfolioWeb.Feeds` maps the same names to
+    gettext titles/descriptions and paths, and is the single source for
+    routes, the /feeds page, and autodiscovery links (no shadow copies in
+    layouts).
 - One `FeedController` action parameterized by feed name; unknown feed = 404.
-- Atom rendered via an EEx XML template (the same shape the footer/site already
-  uses for HTML); no XML builder dependency.
+- **Feeds get their own router pipeline** — the `:browser` pipeline is
+  HTML-only (accepts, root layout, CSRF, CSP) and must not wrap Atom. The
+  `/feed.xml` alias registers ahead of locale redirection.
+- Atom rendered via an EEx XML template; no XML builder dependency. The
+  embedded content HTML is absolutized and then XML-escaped (EEx does not
+  escape automatically the way HEEx does).
 - Relative→absolute rewriting runs at feed render over the compiled HTML,
   using the canonical origin from endpoint config.
 
