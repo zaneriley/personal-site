@@ -13,6 +13,7 @@ defmodule Portfolio.Content.Feeds do
   """
 
   alias Portfolio.Content.Entry.Records
+  alias Portfolio.Content.PublicRead.Scope
   alias Portfolio.Content.TranslationRepository
 
   # newest entries per feed, capped AFTER the cross-type merge
@@ -38,10 +39,15 @@ defmodule Portfolio.Content.Feeds do
   """
   @spec list_for_feed(atom(), String.t()) :: [struct()]
   def list_for_feed(feed, locale) do
+    # One scope for all type queries: a publication flip mid-listing must not
+    # mix entries from two generations in one feed document.
+    scope = Scope.current()
+
     @feeds
     |> Map.fetch!(feed)
     |> Enum.flat_map(fn {type, membership} ->
       Records.list_contents(type,
+        scope: scope,
         main_feed: membership,
         available_in: locale,
         sort_by: :published_at,

@@ -210,6 +210,12 @@ defmodule Portfolio.Content do
   end
 
   @doc """
+  Lists the entries belonging to a syndication feed, per the ratified feeds
+  spec. See `Portfolio.Content.Feeds`.
+  """
+  defdelegate list_for_feed(feed, locale), to: Portfolio.Content.Feeds
+
+  @doc """
   Lists content items of a specific type with optional sorting and locale.
 
   ## Parameters
@@ -222,12 +228,6 @@ defmodule Portfolio.Content do
   """
   @spec list(content_type(), keyword(), String.t() | nil) ::
           [Note.t()] | [CaseStudy.t()]
-  @doc """
-  Lists the entries belonging to a syndication feed, per the ratified feeds
-  spec. See `Portfolio.Content.Feeds`.
-  """
-  defdelegate list_for_feed(feed, locale), to: Portfolio.Content.Feeds
-
   def list(type, opts \\ [], locale \\ nil) do
     locale = locale || Application.get_env(:portfolio, :default_locale, nil)
     EntryAssembler.list_assembled_entries(type, opts, locale)

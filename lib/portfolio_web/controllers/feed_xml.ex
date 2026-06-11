@@ -42,7 +42,9 @@ defmodule PortfolioWeb.FeedXML do
       updated: rfc3339(latest_of(entry.updated_at, entry.published_at)),
       summary: localized(entry, translations, :introduction),
       content_html:
-        entry |> content_html(translations, locale) |> absolutize_urls()
+        entry
+        |> content_html(translations, locale)
+        |> absolutize_urls(SiteOrigin.absolute_url(entry_path(entry, locale)))
     }
   end
 
@@ -89,8 +91,10 @@ defmodule PortfolioWeb.FeedXML do
 
   defp compile_markdown(markdown) do
     case Compiler.compile(markdown) do
+      # the template escapes content exactly once — the fallback is plain
+      # text, never pre-escaped (double-escaping showed readers &lt;)
       {:ok, %{ast: ast}} -> Renderer.render_html(ast)
-      {:error, _} -> xml_escape(markdown)
+      {:error, _} -> markdown
     end
   end
 
@@ -105,11 +109,27 @@ defmodule PortfolioWeb.FeedXML do
     "/#{locale}/#{section}/#{entry.url}"
   end
 
-  # Root-relative href/src become absolute against the canonical origin;
-  # protocol-relative (//) and already-absolute URLs pass through.
-  defp absolutize_urls(html) do
-    origin = String.trim_trailing(SiteOrigin.absolute_url("/"), "/")
-    Regex.replace(~r{((?:href|src)=")/(?!/)}, html, "\\1#{origin}/")
+  # Every relative href/src — root-relative, bare, ./ and ../ — resolves
+  # against the entry's own canonical URL (what a browser would do on the
+  # page); absolute, protocol-relative, fragment and non-http schemes pass
+  # through. Readers resolve nothing.
+  defp absolutize_urls(html, base_url) do
+    Regex.replace(~r{((?:href|src)=)(["'])(.*?)\2}s, html, fn full,
+                                                              attr,
+                                                              quote,
+                                                              value ->
+      if leave_as_is?(value) do
+        full
+      else
+        attr <> quote <> to_string(URI.merge(base_url, value)) <> quote
+      end
+    end)
+  end
+
+  defp leave_as_is?(value) do
+    value == "" or
+      String.starts_with?(value, ["#", "//"]) or
+      String.contains?(value, ":")
   end
 
   # ── dates ──

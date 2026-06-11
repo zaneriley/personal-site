@@ -81,6 +81,23 @@ defmodule PortfolioWeb.FeedControllerTest do
       refute body =~ ~s(href=&quot;/en/note/other-note)
     end
 
+    test "bare and dot-relative URLs resolve against the entry's own URL", %{
+      conn: conn
+    } do
+      note_fixture(%{
+        "main_feed" => true,
+        "url" => "my-note",
+        "content" => "![diagram](diagram.png) and [up](../self)"
+      })
+
+      body = conn |> get("/en/feeds/main.xml") |> response(200)
+
+      # what a browser would resolve on /en/note/my-note
+      assert body =~ "/en/note/diagram.png"
+      assert body =~ "/en/self"
+      refute body =~ ~s(src=&quot;diagram.png)
+    end
+
     test "dates are RFC 3339 and updated never precedes published", %{
       conn: conn
     } do
@@ -173,6 +190,20 @@ defmodule PortfolioWeb.FeedControllerTest do
       assert changed.status == 200
       assert [new_etag] = get_resp_header(changed, "etag")
       refute new_etag == etag
+    end
+
+    test "a validator list with weak validators still matches", %{conn: conn} do
+      note_fixture(%{"main_feed" => true})
+
+      first = get(conn, "/en/feeds/main.xml")
+      [etag] = get_resp_header(first, "etag")
+
+      not_modified =
+        build_conn()
+        |> put_req_header("if-none-match", ~s(W/"stale-one", W/) <> etag)
+        |> get("/en/feeds/main.xml")
+
+      assert not_modified.status == 304
     end
   end
 

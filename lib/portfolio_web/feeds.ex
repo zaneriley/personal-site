@@ -11,6 +11,10 @@ defmodule PortfolioWeb.Feeds do
 
   use Gettext, backend: PortfolioWeb.Gettext
 
+  use Phoenix.VerifiedRoutes,
+    endpoint: PortfolioWeb.Endpoint,
+    router: PortfolioWeb.Router
+
   @path_segments %{
     "main" => :main,
     "case-studies" => :case_studies,
@@ -32,7 +36,7 @@ defmodule PortfolioWeb.Feeds do
   @doc "The Atom document path for a feed in a locale."
   @spec path(atom(), String.t()) :: String.t()
   def path(feed, locale) do
-    "/#{locale}/feeds/#{segment(feed)}.xml"
+    ~p"/#{locale}/feeds/#{segment(feed) <> ".xml"}"
   end
 
   @doc "Subscriber-facing title for a feed (translated)."
@@ -66,7 +70,7 @@ defmodule PortfolioWeb.Feeds do
         name: feed,
         title: title(feed),
         description: description(feed),
-        path: path(feed, locale)
+        path: __MODULE__.path(feed, locale)
       }
     end
   end
@@ -86,7 +90,8 @@ defmodule PortfolioWeb.Feeds do
         true -> []
       end
 
-    for feed <- [:main | section], do: {title(feed), path(feed, locale)}
+    for feed <- [:main | section],
+        do: {title(feed), __MODULE__.path(feed, locale)}
   end
 
   defp segment(feed) do

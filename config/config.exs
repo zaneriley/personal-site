@@ -25,11 +25,14 @@ config :portfolio,
 # Markdown components stored content may reference ({:component, type, ...}
 # nodes). Registered with the Component.Registry at startup — prod never
 # recompiles, so compile-hook registration alone would leave these unresolved.
+# ONLY components whose render function accepts the pipeline assigns shape
+# (%{component:, attrs:, content:} — see Component.Definition) belong here.
+# Figure/Typography are registered-but-incompatible (AGENTS.md backlog):
+# listing them would turn the renderer's safe not-found fallback into a
+# KeyError crash on any stored node referencing them.
 config :portfolio,
   markdown_components: [
-    PortfolioWeb.Components.CodeBlock,
-    PortfolioWeb.Components.Typography,
-    PortfolioWeb.Components.Figure
+    PortfolioWeb.Components.CodeBlock
   ]
 
 config :portfolio, PortfolioWeb.Endpoint,

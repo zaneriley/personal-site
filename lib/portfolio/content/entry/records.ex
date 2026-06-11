@@ -11,7 +11,6 @@ defmodule Portfolio.Content.Entry.Records do
   """
 
   alias Portfolio.Content.Entry.AstSerialization
-  alias Portfolio.Content.Publishing
   alias Portfolio.Content.PublicRead.Scope
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
@@ -310,7 +309,7 @@ defmodule Portfolio.Content.Entry.Records do
 
         query =
           query
-          |> filter_live_generation()
+          |> filter_live_generation(opts[:scope])
           |> filter_main_feed(opts[:main_feed])
           |> filter_available_in(opts[:available_in], content_type)
           |> apply_sorting(schema, opts[:sort_by], opts[:sort_order])
@@ -359,8 +358,15 @@ defmodule Portfolio.Content.Entry.Records do
     end
   end
 
-  defp filter_live_generation(query) do
-    case Publishing.live_generation_id() do
+  defp filter_live_generation(query), do: filter_live_generation(query, nil)
+
+  # An explicit PublicRead.Scope pins multi-query reads (e.g. cross-type
+  # feeds) to ONE generation — without it, each query re-reads the live
+  # pointer and a publication flip between queries could mix generations.
+  defp filter_live_generation(query, %Scope{
+         publication_generation_id: generation_id
+       }) do
+    case generation_id do
       nil ->
         where(query, [content], content.id in [])
 
@@ -369,6 +375,10 @@ defmodule Portfolio.Content.Entry.Records do
         |> filter_generation(generation_id)
         |> public_content()
     end
+  end
+
+  defp filter_live_generation(query, nil) do
+    filter_live_generation(query, Scope.current())
   end
 
   defp find_content_by_alias(generation_id, schema, alias_url) do

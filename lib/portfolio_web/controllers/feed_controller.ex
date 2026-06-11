@@ -37,7 +37,7 @@ defmodule PortfolioWeb.FeedController do
 
       conn = put_resp_header(conn, "etag", etag)
 
-      if etag in get_req_header(conn, "if-none-match") do
+      if etag_matches?(get_req_header(conn, "if-none-match"), etag) do
         send_resp(conn, 304, "")
       else
         conn
@@ -54,6 +54,17 @@ defmodule PortfolioWeb.FeedController do
     conn
     |> put_status(:moved_permanently)
     |> redirect(to: Feeds.path(:main, "en"))
+  end
+
+  # If-None-Match per RFC 9110: a comma-separated validator list, `*` matches
+  # anything, and weak validators (W/"...") compare by opaque value.
+  defp etag_matches?(header_values, etag) do
+    header_values
+    |> Enum.flat_map(&String.split(&1, ","))
+    |> Enum.map(&String.trim/1)
+    |> Enum.any?(fn candidate ->
+      candidate == "*" or String.trim_leading(candidate, "W/") == etag
+    end)
   end
 
   # The feed-level <updated> is the newest entry's; an empty feed uses a
