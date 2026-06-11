@@ -1,5 +1,6 @@
 :root {
   /* TYPE & LAYOUT */
+
   /* Base reading size = the md rung of the generated scale (--fs-md, 22px). No
      separate --fs-base: it drifted from --fs-md and was a second source of truth
      for the same relationship. */
@@ -95,6 +96,22 @@
   color: var(--hanko-color);
   height: var(--space-1xl);
   width: auto;
+}
+
+/* Employer/client mark rendered in a single site color — the token override
+   for logos whose brand palette fights the scheme (e.g. Brit + Co red). The
+   asset on disk stays canonical brand color; this paints its SHAPE via mask
+   in --logo-color (default: the text color in place, hanko-style). Brand-color
+   rendering stays a plain <img>. The consumer sets the box (inline-size +
+   aspect-ratio from the mark's viewBox) and accessibility (role="img",
+   aria-label):
+
+     <span class="logo-monochrome" role="img" aria-label="Brit + Co"
+           style={"--logo-src: url(#{~p"/images/logos/brit-and-co.svg"})"} /> */
+.logo-monochrome {
+  display: inline-block;
+  background-color: var(--logo-color, currentColor);
+  mask: var(--logo-src) no-repeat center / contain;
 }
 
 /* Dark mode by default */
