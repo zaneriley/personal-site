@@ -5,8 +5,7 @@ defmodule PortfolioWeb.PaletteComparisonLiveTest do
 
   test "renders both panels", %{conn: conn} do
     {:ok, _view, html} = live(conn, ~p"/en/palette-comparison")
-    assert html =~ "big-name-light.svg"
-    assert html =~ "big-name-dark.svg"
+    assert html =~ ~s(aria-label="Zane Riley")
     assert html =~ "--surface-primary"
     assert html =~ "Light"
     assert html =~ "Dark"

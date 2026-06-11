@@ -5,7 +5,7 @@ defmodule PortfolioWeb.DarkBackgroundSketchLiveTest do
 
   test "renders the composer with seeded gradient", %{conn: conn} do
     {:ok, _view, html} = live(conn, ~p"/en/dark-background-sketch")
-    assert html =~ "big-name-dark.svg"
+    assert html =~ ~s(aria-label="Zane Riley")
     assert html =~ "Gradient 1"
     assert html =~ "radial-gradient"
   end
