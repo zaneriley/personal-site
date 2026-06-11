@@ -305,15 +305,49 @@ defmodule Portfolio.Content.Entry.Records do
       schema ->
         query =
           from c in schema,
+            as: :content,
             where: c.is_draft == false and not is_nil(c.published_at)
 
         query =
           query
           |> filter_live_generation()
+          |> filter_main_feed(opts[:main_feed])
+          |> filter_available_in(opts[:available_in], content_type)
           |> apply_sorting(schema, opts[:sort_by], opts[:sort_order])
 
         Repo.all(query)
     end
+  end
+
+  # Main-feed membership (feeds-spec.md). The caller names the semantics —
+  # :promoted = only explicit opt-ins; :not_demoted = everything not opted out
+  # (nil column means "use the type default", decided by the caller's choice
+  # of filter, so changing a default never needs a backfill).
+  defp filter_main_feed(query, nil), do: query
+  defp filter_main_feed(query, :all), do: query
+
+  defp filter_main_feed(query, :promoted),
+    do: from(c in query, where: c.main_feed == true)
+
+  defp filter_main_feed(query, :not_demoted),
+    do: from(c in query, where: is_nil(c.main_feed) or c.main_feed == true)
+
+  # Strict locale availability: the entry is canonical in the locale, or a
+  # translation for it exists. Feeds use this for their no-fallback promise.
+  defp filter_available_in(query, nil, _content_type), do: query
+
+  defp filter_available_in(query, locale, content_type) do
+    from c in query,
+      where:
+        c.locale == ^locale or
+          exists(
+            from t in Portfolio.Content.Schemas.Translation,
+              where:
+                t.translatable_id == parent_as(:content).id and
+                  t.translatable_type == ^content_type and
+                  t.locale == ^locale,
+              select: 1
+          )
   end
 
   # Private helper functions

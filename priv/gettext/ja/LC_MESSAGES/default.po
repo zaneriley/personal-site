@@ -26,7 +26,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:71
+#: lib/portfolio_web/components/footer.ex:72
 #, elixir-autogen, elixir-format
 msgid "Body"
 msgstr "本文"
@@ -34,24 +34,24 @@ msgstr "本文"
 #: lib/portfolio_web/components/navigation.ex:72
 #: lib/portfolio_web/live/case_study_live/show.ex:69
 #: lib/portfolio_web/live/case_study_live/show.html.heex:6
-#: lib/portfolio_web/live/home_live.ex:126
+#: lib/portfolio_web/live/home_live.ex:128
 #, elixir-autogen, elixir-format
 msgid "Case Study"
 msgid_plural "Case Studies"
 msgstr[0] "ケーススタディ"
 msgstr[1] "ケーススタディ"
 
-#: lib/portfolio_web/components/footer.ex:56
+#: lib/portfolio_web/components/footer.ex:57
 #, elixir-autogen, elixir-format
 msgid "Colophon"
 msgstr "奥付"
 
-#: lib/portfolio_web/components/footer.ex:115
+#: lib/portfolio_web/components/footer.ex:116
 #, elixir-autogen, elixir-format
 msgid "Cost"
 msgstr "費用"
 
-#: lib/portfolio_web/components/footer.ex:59
+#: lib/portfolio_web/components/footer.ex:60
 #, elixir-autogen, elixir-format
 msgid "Created on a 2014 macbook. Mocks in figma, remix freely."
 msgstr ""
@@ -71,7 +71,7 @@ msgstr ""
 msgid "Dark"
 msgstr "ダークモード"
 
-#: lib/portfolio_web/components/footer.ex:118
+#: lib/portfolio_web/components/footer.ex:119
 #, elixir-autogen, elixir-format
 msgid "Deploy"
 msgstr "デプロイ"
@@ -86,12 +86,12 @@ msgstr ""
 msgid "EVERY DEAD END IS JUST A NEW BEGINNING."
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:156
+#: lib/portfolio_web/components/footer.ex:161
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr "メール"
 
-#: lib/portfolio_web/components/footer.ex:147
+#: lib/portfolio_web/components/footer.ex:150
 #, elixir-autogen, elixir-format
 msgid "Footer"
 msgstr "フッター"
@@ -101,17 +101,17 @@ msgstr "フッター"
 msgid "GREETINGS,"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:164
+#: lib/portfolio_web/components/footer.ex:169
 #, elixir-autogen, elixir-format
 msgid "Github"
 msgstr "GitHub"
 
-#: lib/portfolio_web/components/footer.ex:180
+#: lib/portfolio_web/components/footer.ex:185
 #, elixir-autogen, elixir-format
 msgid "Go to top"
 msgstr "トップへ戻る"
 
-#: lib/portfolio_web/components/footer.ex:85
+#: lib/portfolio_web/components/footer.ex:86
 #, elixir-autogen, elixir-format
 msgid "Headers"
 msgstr "見出し"
@@ -131,7 +131,7 @@ msgstr ""
 msgid "Light"
 msgstr "ライトモード"
 
-#: lib/portfolio_web/components/footer.ex:172
+#: lib/portfolio_web/components/footer.ex:177
 #, elixir-autogen, elixir-format
 msgid "LinkedIn"
 msgstr "LinkedIn"
@@ -142,7 +142,7 @@ msgstr "LinkedIn"
 msgid "Metadata separator"
 msgstr " • "
 
-#: lib/portfolio_web/components/footer.ex:77
+#: lib/portfolio_web/components/footer.ex:78
 #, elixir-autogen, elixir-format
 msgid "Mono"
 msgstr "等幅"
@@ -152,7 +152,7 @@ msgstr "等幅"
 msgid "NEVER EXISTED IN THE FIRST PLACE"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:105
+#: lib/portfolio_web/components/footer.ex:106
 #, elixir-autogen, elixir-format
 msgid "Node"
 msgstr "ノード"
@@ -166,7 +166,7 @@ msgid_plural "Notes"
 msgstr[0] "メモ"
 msgstr[1] "メモ"
 
-#: lib/portfolio_web/components/footer.ex:130
+#: lib/portfolio_web/components/footer.ex:131
 #, elixir-autogen, elixir-format
 msgid "Now in Tokyo"
 msgstr "いまの東京"
@@ -183,7 +183,7 @@ msgstr[1] "プラットフォーム"
 msgid "Portfolio of Zane Riley, a Product Designer based in Tokyo with over 10 years of experience."
 msgstr ""
 
-#: lib/portfolio_web/live/home_live.ex:117
+#: lib/portfolio_web/live/home_live.ex:119
 #, elixir-autogen, elixir-format
 msgid "Portrait of Zane Riley"
 msgstr ""
@@ -198,7 +198,7 @@ msgstr ""
 msgid "Read Time"
 msgstr "読了時間"
 
-#: lib/portfolio_web/live/home_live.ex:134
+#: lib/portfolio_web/live/home_live.ex:136
 #, elixir-autogen, elixir-format
 msgid "Read more about %{title}"
 msgstr ""
@@ -228,24 +228,24 @@ msgstr ""
 msgid "Self"
 msgstr "自己紹介"
 
-#: lib/portfolio_web/components/footer.ex:100
+#: lib/portfolio_web/components/footer.ex:101
 #, elixir-autogen, elixir-format
 msgid "Self-hosted on my home server. Open source on Github."
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:97
+#: lib/portfolio_web/components/footer.ex:98
 #, elixir-autogen, elixir-format
 msgid "Server"
 msgstr "サーバー"
 
-#: lib/portfolio_web/components/layouts/root.html.heex:239
+#: lib/portfolio_web/components/layouts/root.html.heex:254
 #: lib/portfolio_web/controllers/error_html/404.html.heex:86
 #: lib/portfolio_web/controllers/error_html/500.html.heex:87
 #, elixir-autogen, elixir-format
 msgid "Skip to main content"
 msgstr "コンテンツにスキップ"
 
-#: lib/portfolio_web/components/footer.ex:109
+#: lib/portfolio_web/components/footer.ex:110
 #, elixir-autogen, elixir-format
 msgid "Stack"
 msgstr "スタック"
@@ -275,7 +275,7 @@ msgstr ""
 msgid "THIS TERMINAL WISHES YOU LUCK ON"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:112
+#: lib/portfolio_web/components/footer.ex:113
 #, elixir-autogen, elixir-format
 msgid "Temp"
 msgstr "温度"
@@ -290,12 +290,12 @@ msgstr ""
 msgid "Timeline"
 msgstr "タイムライン"
 
-#: lib/portfolio_web/components/footer.ex:63
+#: lib/portfolio_web/components/footer.ex:64
 #, elixir-autogen, elixir-format
 msgid "Titles"
 msgstr "タイトル"
 
-#: lib/portfolio_web/components/footer.ex:62
+#: lib/portfolio_web/components/footer.ex:63
 #, elixir-autogen, elixir-format
 msgid "Typefaces"
 msgstr "書体"
@@ -359,12 +359,68 @@ msgid "minute"
 msgid_plural "minutes"
 msgstr[0] ""
 
-#: lib/portfolio_web/components/footer.ex:152
+#: lib/portfolio_web/components/footer.ex:156
 #, elixir-autogen, elixir-format
 msgid " (PDF)"
 msgstr "（PDF）"
 
-#: lib/portfolio_web/components/footer.ex:152
+#: lib/portfolio_web/components/footer.ex:156
 #, elixir-autogen, elixir-format
 msgid "Resume"
 msgstr "履歴書"
+
+#: lib/portfolio_web/feeds.ex:48
+#, elixir-autogen, elixir-format
+msgid "Case studies and selected long-form notes. Low volume — the default subscription."
+msgstr "ケーススタディと選りすぐりの長文ノート。低頻度 — 標準の購読です。"
+
+#: lib/portfolio_web/components/code_block.ex:116
+#, elixir-autogen, elixir-format
+msgid "Copy code"
+msgstr "コードをコピー"
+
+#: lib/portfolio_web/feeds.ex:53
+#, elixir-autogen, elixir-format
+msgid "Every note, short and long. Higher volume."
+msgstr "長短すべてのノート。更新頻度は高めです。"
+
+#: lib/portfolio_web/feeds.ex:56
+#, elixir-autogen, elixir-format
+msgid "Every published entry — the opt-in firehose."
+msgstr "公開された全エントリー — 選んで購読する全量フィードです。"
+
+#: lib/portfolio_web/live/feeds_live.ex:18
+#: lib/portfolio_web/live/feeds_live.ex:26
+#, elixir-autogen, elixir-format
+msgid "Feeds"
+msgstr "フィード"
+
+#: lib/portfolio_web/feeds.ex:50
+#, elixir-autogen, elixir-format
+msgid "Only the case studies."
+msgstr "ケーススタディのみ。"
+
+#: lib/portfolio_web/live/feeds_live.ex:28
+#, elixir-autogen, elixir-format
+msgid "Subscribe in any feed reader. Pick the stream that matches the volume you want — each feed describes itself."
+msgstr "お好きなフィードリーダーで購読できます。受け取りたい量に合わせてストリームを選んでください — 各フィードに説明があります。"
+
+#: lib/portfolio_web/feeds.ex:42
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — all notes"
+msgstr "ゼイン・ライリー — すべてのノート"
+
+#: lib/portfolio_web/feeds.ex:41
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — case studies"
+msgstr "ゼイン・ライリー — ケーススタディ"
+
+#: lib/portfolio_web/feeds.ex:43
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — everything"
+msgstr "ゼイン・ライリー — すべて"
+
+#: lib/portfolio_web/feeds.ex:40
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — the work"
+msgstr "ゼイン・ライリー — 作品"

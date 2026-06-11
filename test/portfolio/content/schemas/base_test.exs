@@ -42,6 +42,32 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
              end)
     end
 
+    test "main-feed membership is castable from frontmatter on both types" do
+      note_cs = Note.changeset(%Note{}, valid_attrs(%{"main_feed" => true}))
+      assert note_cs.valid?
+      assert Ecto.Changeset.get_change(note_cs, :main_feed) == true
+
+      cs_attrs =
+        valid_attrs(%{
+          "main_feed" => false,
+          "company" => "Acme",
+          "role" => "Designer",
+          "timeline" => "2024",
+          "platforms" => ["web"],
+          "sort_order" => 1
+        })
+
+      cs_cs = CaseStudy.changeset(%CaseStudy{}, cs_attrs)
+      assert cs_cs.valid?
+      assert Ecto.Changeset.get_change(cs_cs, :main_feed) == false
+    end
+
+    test "an absent main_feed key stays nil — nil means use the type default, never false" do
+      changeset = Note.changeset(%Note{}, valid_attrs(%{}))
+      assert changeset.valid?
+      assert Ecto.Changeset.get_field(changeset, :main_feed) == nil
+    end
+
     test "validations are applied correctly" do
       changeset = Note.changeset(%Note{}, %{})
       assert changeset.errors[:title]
@@ -139,5 +165,17 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
       assert metadata[:kind] == :max
       assert metadata[:type] == :string
     end
+  end
+
+  defp valid_attrs(overrides) do
+    Map.merge(
+      %{
+        "title" => "A title",
+        "content" => "Some content",
+        "locale" => "en",
+        "url" => "a-title-#{System.unique_integer([:positive])}"
+      },
+      overrides
+    )
   end
 end

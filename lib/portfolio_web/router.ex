@@ -98,6 +98,14 @@ defmodule PortfolioWeb.Router do
     end
   end
 
+  # Atom feeds — deliberately OUTSIDE the :browser pipeline (HTML-only accepts,
+  # root layout, CSRF, CSP must not wrap XML) and ahead of locale redirection
+  # so the /feed.xml convention alias resolves first. See feeds-spec.md.
+  scope "/", PortfolioWeb do
+    get "/feed.xml", FeedController, :root_alias
+    get "/:locale/feeds/:feed", FeedController, :show
+  end
+
   scope "/", PortfolioWeb do
     pipe_through [:browser, :locale]
 
@@ -119,6 +127,9 @@ defmodule PortfolioWeb.Router do
     pipe_through [:browser, :locale]
 
     live_session :default, on_mount: PortfolioWeb.LiveHelpers do
+      # The /feeds discovery page (HTML, full site chrome) — the Atom
+      # documents themselves are served by the layout-free scope above.
+      live "/feeds", FeedsLive, :index
       live "/", HomeLive, :index
       live "/color-sketch", ColorSketchLive, :index
       live "/shader-scale-sketch", ShaderScaleSketchLive, :index

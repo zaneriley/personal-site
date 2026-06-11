@@ -46,6 +46,21 @@
     </noscript>
     <!-- href langs -->
     {hreflang_tags(@conn)}
+    <%!-- Atom feed autodiscovery (feeds-spec.md): main everywhere, section
+         feeds on their index pages. Rendered from the feeds registry. --%>
+    <link
+      :for={
+        {feed_title, feed_path} <-
+          PortfolioWeb.Feeds.autodiscovery(
+            @user_locale || @conn.assigns[:user_locale] || "en",
+            @conn.request_path
+          )
+      }
+      rel="alternate"
+      type="application/atom+xml"
+      title={feed_title}
+      href={feed_path}
+    />
     <!-- Favicon and touch icons -->
     <!-- Primary: one adaptive SVG (the hanko); follows OS light/dark via
          prefers-color-scheme. PNG/ICO below are the raster fallback.
