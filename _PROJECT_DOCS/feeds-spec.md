@@ -1,6 +1,6 @@
 # Feeds — syndication spec
 
-**Status:** proposed 2026-06-11; awaiting ratification. Grounded in the
+**Status:** ratified 2026-06-11 (one amendment at ratification: entry ids are locale-scoped — see Entry mapping). Grounded in the
 2026-06-11 literature run (`.tmp/2026-06-11-rss-syndication/literature/brief.md`,
 42 sources) — `[pNNN]` citations resolve there.
 
@@ -77,7 +77,7 @@ Entry mapping:
 
 | Atom | Source |
 |---|---|
-| `<id>` | `tag:zaneriley.com,2026:<type>/<binary_id>` — the DB id, NOT the slug URL. Slugs rename (the alias/301 machinery exists because they do); a URL-based id would duplicate every renamed entry in readers. The tag URI never changes. |
+| `<id>` | `tag:zaneriley.com,2026:<type>/<binary_id>/<locale>` — the DB id, NOT the slug URL. Slugs rename (the alias/301 machinery exists because they do); a URL-based id would duplicate every renamed entry in readers. The locale segment keeps the en and ja renderings of one translated entry distinct for readers subscribed to both locales' feeds. The tag URI never changes. |
 | `<link rel="alternate">` | absolute canonical URL for the entry's locale |
 | `<title>` | entry title |
 | `<published>` / `<updated>` | `published_at` / `updated_at` (RFC 3339) |
@@ -141,8 +141,6 @@ registry [p201]:
 
 ## Open items
 
-- The `main_feed` frontmatter key lands in
-  `_PROJECT_DOCS/content-authoring-contract.md` when this spec is ratified.
 - /feeds page copy (volume descriptions per feed) — written at implementation.
 - Whether the ja feeds launch alongside en or wait for translated-content
   coverage to justify them.

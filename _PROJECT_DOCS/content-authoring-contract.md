@@ -20,6 +20,16 @@ The app owns the explicit mapping from these fields into runtime output:
 
 Do not author `og_*`, `twitter_*`, or `og:image` fields in content files. Those names belong to rendered HTML metadata, not to the content authoring contract.
 
+## Main-Feed Membership
+
+`main_feed: true | false` in frontmatter controls whether an entry appears in
+the curated main Atom feed (see `_PROJECT_DOCS/feeds-spec.md`). Defaults when
+the key is absent: **case studies are in, notes are out**. So the only times
+to write the key are promoting a long-form note into the main feed
+(`main_feed: true`) or keeping an off-topic case study out of it
+(`main_feed: false`). Section feeds (notes, case-studies) and the everything
+feed ignore this key — they always carry their full stream.
+
 ## Fenced Code Blocks
 
 Standard CommonMark fences. The info string carries the language and, optionally,
