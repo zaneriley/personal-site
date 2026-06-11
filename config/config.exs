@@ -22,6 +22,16 @@ config :portfolio,
     "woff2"
   ]
 
+# Markdown components stored content may reference ({:component, type, ...}
+# nodes). Registered with the Component.Registry at startup — prod never
+# recompiles, so compile-hook registration alone would leave these unresolved.
+config :portfolio,
+  markdown_components: [
+    PortfolioWeb.Components.CodeBlock,
+    PortfolioWeb.Components.Typography,
+    PortfolioWeb.Components.Figure
+  ]
+
 config :portfolio, PortfolioWeb.Endpoint,
   # Enable both ipv4 and ipv6 on all interfaces. By the way, the port is
   # configured with an environment variable and it's in the runtime.exs config.

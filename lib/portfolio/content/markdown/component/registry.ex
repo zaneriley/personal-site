@@ -144,7 +144,27 @@ defmodule Portfolio.Content.Markdown.Component.Registry do
   @impl GenServer
   def init(_opts) do
     Logger.info("Component Registry initializing")
-    {:ok, %{components: %{}}}
+    {:ok, %{components: %{}}, {:continue, :register_configured}}
+  end
+
+  # Definition's __after_compile__ registration only fires when a module
+  # compiles inside a RUNNING system (dev hot-reload). In prod (and test),
+  # modules are precompiled before the registry boots, so the components
+  # content depends on are registered here from config at startup.
+  @impl GenServer
+  def handle_continue(:register_configured, state) do
+    components =
+      :portfolio
+      |> Application.get_env(:markdown_components, [])
+      |> Enum.reduce(state.components, fn module, acc ->
+        Map.put_new(
+          acc,
+          module.component_type(),
+          {module, module.component_function()}
+        )
+      end)
+
+    {:noreply, %{state | components: components}}
   end
 
   @impl GenServer
