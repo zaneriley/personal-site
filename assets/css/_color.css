@@ -38,11 +38,10 @@
   --dusk-900: oklch(28.04% 0.012 264.36deg);
   --dusk-1000: oklch(25.26% 0.008 274.64deg);
 
-  /* Neutral Palette */
-  --neutral-0: var(--white-point);
-  --neutral-100: oklch(78.23% 0.036 333.34deg);
-  --neutral-200: #bd9ca6;
-  --neutral-300: oklch(77.77% 0.0704 75.85deg);
+  /* Neutral ramp — the cool blue-grey UI/metadata greys (Figma `neutral/*`),
+     used for footer chrome + code-block line numbers/filename. Per-theme, so
+     the rungs live in the html[data-theme] blocks below. (Replaces a vestigial
+     warm `--neutral-0/100/200/300` set that nothing consumed.) */
 
   /* Gold Palette */
   --ochre-0: oklch(77.77% 0.0704 75.85deg);
@@ -150,8 +149,18 @@ html[data-theme="dark"] {
   --code-bg-card: oklch(25.7% 0.006 286deg);
   --code-bg: oklch(27.5% 0.009 286deg);
   --code-border: var(--dusk-800);
-  --code-folder: oklch(53.3% 0.038 278deg);
-  --code-filename: oklch(70.6% 0.078 278deg);
+  --code-folder: var(--neutral-25);
+  --code-filename: var(--neutral-50);
+
+  /* NEUTRAL RAMP (dark) — cool blue-grey, Figma neutral/25,50,75. Quiet UI
+     labels (25), emphasis labels/links (50), and the logo ring (75). */
+  --neutral-25: oklch(53.32% 0.0379 277.61deg);
+  --neutral-50: oklch(70.59% 0.0781 277.55deg);
+  --neutral-75: oklch(78.23% 0.036 333.34deg);
+
+  /* Footer panel — a solid surface the footer paints over the page gradient
+     (Figma bg/90, the same value as the code area's bg). */
+  --footer-bg: oklch(27.48% 0.0091 285.78deg);
 
   /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:
      brighter on dark, deeper on light. Same idea as the dark "bright" sibling
@@ -210,8 +219,15 @@ html[data-theme="light"] {
   --code-bg-card: oklch(96% 0.008 90deg);
   --code-bg: oklch(93% 0.01 90deg);
   --code-border: oklch(86% 0.02 260deg);
-  --code-folder: oklch(60% 0.04 278deg);
-  --code-filename: oklch(45% 0.11 278deg);
+  --code-folder: var(--neutral-25);
+  --code-filename: var(--neutral-50);
+
+  /* NEUTRAL RAMP (light) — re-seated so quiet recedes and emphasis darkens on
+     a light surface (preserves the code-block's tuned light folder/filename). */
+  --neutral-25: oklch(60% 0.04 278deg);
+  --neutral-50: oklch(45% 0.11 278deg);
+  --neutral-75: oklch(55% 0.04 333deg);
+  --footer-bg: oklch(96% 0.005 286deg);
 
   /* signature wordmark — light re-grade (mint → teal → blue → indigo) */
   --signature-1: #b5d7bd;
@@ -248,8 +264,14 @@ html[data-theme="light"] {
     --code-bg-card: oklch(96% 0.008 90deg);
     --code-bg: oklch(93% 0.01 90deg);
     --code-border: oklch(86% 0.02 260deg);
-    --code-folder: oklch(60% 0.04 278deg);
-    --code-filename: oklch(45% 0.11 278deg);
+    --code-folder: var(--neutral-25);
+    --code-filename: var(--neutral-50);
+
+    /* neutral ramp — light (same as html[data-theme="light"]) */
+    --neutral-25: oklch(60% 0.04 278deg);
+    --neutral-50: oklch(45% 0.11 278deg);
+    --neutral-75: oklch(55% 0.04 333deg);
+    --footer-bg: oklch(96% 0.005 286deg);
 
     /* signature wordmark — light re-grade (same as html[data-theme="light"]) */
     --signature-1: #b5d7bd;

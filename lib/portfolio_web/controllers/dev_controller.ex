@@ -68,9 +68,9 @@ defmodule PortfolioWeb.DevController do
       tokens: ~w(--accent --hanko-color)
     },
     %{
-      name: "Neutral (legacy)",
-      note: "vestigial — mislabeled + mixed formats, mostly unused",
-      tokens: ~w(--neutral-0 --neutral-100 --neutral-200 --neutral-300)
+      name: "Neutral ramp",
+      note: "cool blue-grey UI/metadata greys (footer chrome, code line numbers)",
+      tokens: ~w(--neutral-25 --neutral-50 --neutral-75)
     },
     %{
       name: "Gold / points",
