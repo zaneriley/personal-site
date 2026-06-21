@@ -48,11 +48,9 @@ defmodule PortfolioWeb.Components.Footer do
          content stays on the reading grid. --%>
     <div class="footer-surface mt-auto sticky top-[100vh]">
       <footer role="contentinfo" class="reading-grid pt-2xl pb-2xl">
-        <%!-- Seal: the mark sits inside a neutral ring (Figma neutral/75). --%>
+        <%!-- Seal. The hanko SVG draws its own ring; no extra wrapper ring. --%>
         <div class="col-span-full lg:col-span-2">
-          <span class="footer-logo-ring">
-            <.hanko id="footer" />
-          </span>
+          <.hanko id="footer" />
         </div>
 
         <%!-- Colophon: how the site is made --%>
