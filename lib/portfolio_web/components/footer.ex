@@ -42,150 +42,167 @@ defmodule PortfolioWeb.Components.Footer do
 
   def site_footer(assigns) do
     ~H"""
-    <footer
-      role="contentinfo"
-      class="mt-auto sticky top-[100vh] reading-grid pt-2xl"
-    >
-      <%!-- Seal --%>
-      <div class="col-span-full lg:col-span-2">
-        <.hanko id="footer" />
-      </div>
+    <%!-- Full-bleed solid panel (Figma bg/90): the footer paints over the page's
+         surface gradient instead of letting it show through. Bottom-pinning
+         layout classes sit on this wrapper so the bg spans the viewport while
+         content stays on the reading grid. --%>
+    <div class="footer-surface mt-auto sticky top-[100vh]">
+      <footer role="contentinfo" class="reading-grid pt-2xl pb-2xl">
+        <%!-- Seal: the mark sits inside a neutral ring (Figma neutral/75). --%>
+        <div class="col-span-full lg:col-span-2">
+          <span class="footer-logo-ring">
+            <.hanko id="footer" />
+          </span>
+        </div>
 
-      <%!-- Colophon: how the site is made --%>
-      <section class="col-span-full lg:col-span-3 lg:col-start-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Colophon")}
-        </.typography>
-        <.typography locale={@user_locale} tag="p" size="md">
-          {gettext("Created on a 2014 macbook. Mocks in figma, remix freely.")}
-        </.typography>
+        <%!-- Colophon: how the site is made --%>
+        <section class="col-span-full lg:col-span-3 lg:col-start-3">
+          <.typography
+            locale={@user_locale}
+            tag="h2"
+            size="1xs"
+            font="cheee"
+            class="footer-section-head"
+          >
+            {gettext("Colophon")}
+          </.typography>
+          <.typography locale={@user_locale} tag="p" size="md">
+            {gettext("Created on a 2014 macbook. Mocks in figma, remix freely.")}
+          </.typography>
 
-        <.spec_sheet label={gettext("Typefaces")} class="mt-md">
-          <:row label={gettext("Titles")}>
-            <span class="spec-sheet__specimen font-cardinal-fruit">
-              Cardinal Fruit
-            </span>
-            <span class="spec-sheet__specimen-sub font-noto-serif-jp">
-              Noto Serif JP
-            </span>
-          </:row>
-          <:row label={gettext("Body")}>
-            <span class="spec-sheet__specimen font-gt-flexa">GT Flexa</span>
-            <span class="spec-sheet__specimen-sub font-noto-sans-jp">
-              Noto Sans JP
-            </span>
-          </:row>
-          <:row label={gettext("Mono")}>
-            <span class="spec-sheet__specimen spec-sheet__value">
-              GT Flexa Mono
-            </span>
-            <span class="spec-sheet__specimen-sub spec-sheet__value">
-              GT Flexa Mono
-            </span>
-          </:row>
-          <:row label={gettext("Headers")}>
-            <span class="spec-sheet__specimen font-cheee">Cheee</span>
-            <span class="spec-sheet__specimen-sub font-noto-sans-jp">
-              Noto Sans JP
-            </span>
-          </:row>
-        </.spec_sheet>
-      </section>
+          <.spec_sheet label={gettext("Typefaces")} class="mt-md">
+            <:row label={gettext("Titles")}>
+              <span class="spec-sheet-specimen font-cardinal-fruit">
+                Cardinal Fruit
+              </span>
+              <span class="spec-sheet-specimen-sub font-noto-serif-jp">
+                Noto Serif JP
+              </span>
+            </:row>
+            <:row label={gettext("Body")}>
+              <span class="spec-sheet-specimen font-gt-flexa">GT Flexa</span>
+              <span class="spec-sheet-specimen-sub font-noto-sans-jp">
+                Noto Sans JP
+              </span>
+            </:row>
+            <:row label={gettext("Mono")}>
+              <span class="spec-sheet-specimen spec-sheet-specimen-mono">
+                GT Flexa Mono
+              </span>
+              <span class="spec-sheet-specimen-sub spec-sheet-specimen-mono">
+                GT Flexa Mono
+              </span>
+            </:row>
+            <:row label={gettext("Headers")}>
+              <span class="spec-sheet-specimen font-cheee">Cheee</span>
+              <span class="spec-sheet-specimen-sub font-noto-sans-jp">
+                Noto Sans JP
+              </span>
+            </:row>
+          </.spec_sheet>
+        </section>
 
-      <%!-- Server: where the site runs --%>
-      <section class="col-span-full lg:col-span-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Server")}
-        </.typography>
-        <.typography locale={@user_locale} tag="p" size="md">
-          {gettext("Self-hosted on my home server. Open source on Github.")}
-        </.typography>
+        <%!-- Server: where the site runs --%>
+        <section class="col-span-full lg:col-span-3">
+          <.typography
+            locale={@user_locale}
+            tag="h2"
+            size="1xs"
+            font="cheee"
+            class="footer-section-head"
+          >
+            {gettext("Server")}
+          </.typography>
+          <.typography locale={@user_locale} tag="p" size="md">
+            {gettext("Self-hosted on my home server. Open source on Github.")}
+          </.typography>
 
-        <.spec_sheet
-          label={@status.node_name}
-          chip={gettext("Node")}
-          status={if @status.node_up, do: :up, else: :down}
-          class="mt-md"
-        >
-          <:row label={gettext("Stack")}>
-            <span class="spec-sheet__value">{@status.stack}</span>
-          </:row>
-          <:row label={gettext("Temp")}>
-            <span class="spec-sheet__value">{@status.temp}</span>
-          </:row>
-          <:row label={gettext("Cost")}>
-            <span class="spec-sheet__value">{@status.cost}</span>
-          </:row>
-          <:row label={gettext("Deploy")}>
-            <span class="spec-sheet__value spec-sheet__value--ok">
-              {@status.deploy}
-            </span>
-          </:row>
-        </.spec_sheet>
-      </section>
+          <.spec_sheet
+            label={@status.node_name}
+            chip={gettext("Node")}
+            status={if @status.node_up, do: :up, else: :down}
+            class="mt-md"
+          >
+            <:row label={gettext("Stack")}>
+              <span class="spec-sheet-value">{@status.stack}</span>
+            </:row>
+            <:row label={gettext("Temp")}>
+              <span class="spec-sheet-value">{@status.temp}</span>
+            </:row>
+            <:row label={gettext("Cost")}>
+              <span class="spec-sheet-value">{@status.cost}</span>
+            </:row>
+            <:row label={gettext("Deploy")}>
+              <span class="spec-sheet-value spec-sheet-value-ok">
+                {@status.deploy}
+              </span>
+            </:row>
+          </.spec_sheet>
+        </section>
 
-      <%!-- Now in Tokyo: a mono eyebrow (matching the footer links) over the
+        <%!-- Now in Tokyo: a mono eyebrow (matching the footer links) over the
            temperature — Cheee is reserved for the temp value itself, not this
            label. --%>
-      <section class="col-span-full lg:col-span-2 lg:col-start-11 lg:text-right">
-        <p class="footer-eyebrow">{gettext("Now in Tokyo")}</p>
-        <%!-- TODO(footer-data): wire to a live temp; the specialized persona mark
+        <section class="col-span-full lg:col-span-2 lg:col-start-11 lg:text-right">
+          <p class="footer-eyebrow footer-muted">{gettext("Now in Tokyo")}</p>
+          <%!-- TODO(footer-data): wire to a live temp; the specialized persona mark
              (each digit off-kilter) comes later. Cheee in BOTH locales — it's a
              numeric mark, so it must NOT take the cheee->Noto JP substitution the
              typography component applies to header text. Plain element with the
              design-system tokens, matching the other footer data values. --%>
-        <p class="font-cheee text-main text-2xl">
-          {@status.tokyo_temp}°<span class="text-1xl">c</span>
-        </p>
-      </section>
+          <p class="font-cheee text-main text-2xl">
+            {@status.tokyo_temp}°<span class="text-1xl">c</span>
+          </p>
+        </section>
 
-      <%!-- Bottom bar: copyright · links · back-to-top --%>
-      <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
-        <span class="footer-eyebrow footer-muted col-span-full lg:col-span-2">
-          © 2011 – {@current_year}
-        </span>
+        <%!-- Bottom bar: copyright · links · back-to-top --%>
+        <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
+          <span class="footer-copyright col-span-full lg:col-span-2">
+            © 2011 – {@current_year}
+          </span>
 
-        <nav
-          class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-md"
-          aria-label={gettext("Footer")}
-        >
-          <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
+          <nav
+            class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-md"
+            aria-label={gettext("Footer")}
+          >
+            <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
                suffix is a secondary annotation, so it sits one colour down from the
                link label. Leading space lives in the EN msgid; JP uses fullwidth （）. --%>
-          <.link href="#" class="footer-eyebrow">
-            {gettext("Resume")}<span class="footer-muted">{gettext(
+            <.link href="#" class="footer-eyebrow">
+              {gettext("Resume")}<span class="footer-muted">{gettext(
               " (PDF)"
             )}</span>
-          </.link>
-          <.link href="mailto:hello@zaneriley.com" class="footer-eyebrow">
-            {gettext("Email")}
-          </.link>
-          <.link
-            href="https://github.com/zaneriley"
-            target="_blank"
-            rel="noopener"
-            class="footer-eyebrow"
-          >
-            {gettext("Github")}
-          </.link>
-          <.link
-            href="https://www.linkedin.com/in/zaneriley/"
-            target="_blank"
-            rel="noopener"
-            class="footer-eyebrow"
-          >
-            {gettext("LinkedIn")}
-          </.link>
-        </nav>
+            </.link>
+            <.link href="mailto:hello@zaneriley.com" class="footer-eyebrow">
+              {gettext("Email")}
+            </.link>
+            <.link
+              href="https://github.com/zaneriley"
+              target="_blank"
+              rel="noopener"
+              class="footer-eyebrow"
+            >
+              {gettext("Github")}
+            </.link>
+            <.link
+              href="https://www.linkedin.com/in/zaneriley/"
+              target="_blank"
+              rel="noopener"
+              class="footer-eyebrow"
+            >
+              {gettext("LinkedIn")}
+            </.link>
+          </nav>
 
-        <a
-          href="#main-content"
-          class="footer-eyebrow col-span-full lg:col-start-11 lg:col-end-13 lg:text-right"
-        >
-          ↑ {gettext("Go to top")}
-        </a>
-      </div>
-    </footer>
+          <a
+            href="#main-content"
+            class="footer-eyebrow col-span-full lg:col-start-11 lg:col-end-13 lg:text-right"
+          >
+            ↑ {gettext("Go to top")}
+          </a>
+        </div>
+      </footer>
+    </div>
     """
   end
 
@@ -213,18 +230,18 @@ defmodule PortfolioWeb.Components.Footer do
   def spec_sheet(assigns) do
     ~H"""
     <section class={["spec-sheet", @class]}>
-      <header class="spec-sheet__head">
-        <span :if={@chip} class="spec-sheet__chip">{@chip}</span>
-        <span class="spec-sheet__title">{@label}</span>
+      <header class="spec-sheet-head">
+        <span :if={@chip} class="spec-sheet-chip">{@chip}</span>
+        <span class="spec-sheet-title">{@label}</span>
         <span
           :if={@status}
-          class={["spec-sheet__dot", @status == :up && "is-up"]}
+          class={["spec-sheet-dot", @status == :up && "is-up"]}
           aria-hidden="true"
         >
         </span>
       </header>
-      <dl class="spec-sheet__rows">
-        <div :for={row <- @row} class="spec-sheet__row">
+      <dl class="spec-sheet-rows">
+        <div :for={row <- @row} class="spec-sheet-row">
           <dt>{row.label}</dt>
           <dd>{render_slot(row)}</dd>
         </div>
