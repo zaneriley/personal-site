@@ -176,7 +176,7 @@ describe("calculateTypeScale", () => {
     }
   });
 
-  it("should use the smaller scale for sizes below md", () => {
+  it("uses the max scale (fixed) for sizes below md", () => {
     const config = {
       minWidth: 320,
       maxWidth: 1200,
@@ -194,8 +194,10 @@ describe("calculateTypeScale", () => {
     const smallerSizes = result.filter((r) => r.step < 0);
 
     smallerSizes.forEach((size, index) => {
+      // Negative steps are fixed and divide by the MAX ratio, matching the
+      // wide-viewport mocks (see calculateTypeStep / the generator contract).
       const expectedSize =
-        config.minFontSize / config.minTypeScale ** (index + 1);
+        config.minFontSize / config.maxTypeScale ** (index + 1);
       expect(Number.parseFloat(size.clamp)).toBeCloseTo(expectedSize / 16, 2); // Convert to rem
     });
   });
@@ -282,7 +284,7 @@ describe("generateTypeCSSVariables", () => {
     expect(result).not.toContain("--fs-1xl:");
   });
 
-  it("should generate fixed values for sizes smaller than md", () => {
+  it("generates fixed values for sizes smaller than md, divided by the max ratio", () => {
     const config = {
       minWidth: 320,
       maxWidth: 1200,
@@ -297,9 +299,12 @@ describe("generateTypeCSSVariables", () => {
 
     const result = generateTypeCSSVariables(config);
 
+    // Small steps are fixed (no fluid shrink on narrow screens) but divide by
+    // the MAX ratio (1.25) so the small end matches mocks designed at the wide
+    // viewport — where the fluid positive steps also reach the max ratio.
     expect(result).toContain("--fs-md: clamp(");
-    expect(result).toContain("--fs-1xs: 0.8333rem;");
-    expect(result).toContain("--fs-2xs: 0.6944rem;");
+    expect(result).toContain("--fs-1xs: 0.8rem;"); // 16 / 1.25
+    expect(result).toContain("--fs-2xs: 0.64rem;"); // 16 / 1.25^2
   });
   it("should handle more sizes than available labels by extending the default labeling system", () => {
     const config = {

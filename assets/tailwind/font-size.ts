@@ -320,8 +320,12 @@ const calculateTypeStep = (
     maxWidth: config.maxWidth,
   });
 
+  // Steps below the base are fixed (small text shouldn't fluid-shrink on
+  // narrow screens). They divide by the MAX ratio (1.3) so the small end
+  // matches the mocks, which are designed at the wide viewport where the
+  // fluid positive steps also reach 1.3 — one consistent down-ratio.
   const isFixed = step < 0;
-  const fixedSize = config.minFontSize / config.minTypeScale ** Math.abs(step);
+  const fixedSize = config.minFontSize / config.maxTypeScale ** Math.abs(step);
 
   return {
     step,
