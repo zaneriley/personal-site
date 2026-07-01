@@ -11,16 +11,15 @@
 ============================================================================ */
 
 :root {
-  --footer-mono: var(--font-mono); /* alias; the stack lives in _type-utilities.css */
-
   /* Hairline derived from the suppressed text colour so it tracks the theme. */
   --footer-rule: color-mix(in oklch, var(--text-color-suppressed) 28%, transparent);
   --footer-inset: color-mix(in oklch, var(--text-color-suppressed) 6%, transparent);
 
-  /* Muted green / teal for the Server datum (Figma reuses the code palette's
-     green + blue here): PASSING green, and the metric values. */
-  --footer-ok: oklch(73.22% 0.0706 154.85deg); /* status "up" dot / PASSING */
-  --footer-metric: oklch(73.43% 0.0452 201.68deg); /* stack / temp / cost values */
+  /* Server datum colours ARE the code palette's green + blue (Figma reuses
+     them here): the PASSING status and the metric values. Alias, don't copy —
+     the code tokens re-seat per theme, so these track light/dark automatically. */
+  --footer-ok: var(--code-green); /* status "up" dot / PASSING */
+  --footer-datum: var(--code-teal); /* stack / temp / cost values */
 }
 
 /* Full-bleed solid panel behind the footer (Figma bg/90). The wrapper is a
@@ -33,7 +32,7 @@
 /* Action eyebrow — section headers, links, go-to-top. The cool emphasis grey
    (Figma neutral/50), set at the smallest mono rung. */
 .footer-eyebrow {
-  font-family: var(--footer-mono);
+  font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -62,7 +61,7 @@
 
 /* ---- spec_sheet: a framed, titled list of labelled facts -------------------
    One primitive; the Typefaces sheet and the Server sheet differ only by the
-   optional header chip + status dot. Rows are a semantic <dl>. */
+   optional header tag + status dot. Rows are a semantic <dl>. */
 .spec-sheet {
   border: 1px solid var(--footer-rule);
   border-radius: var(--space-2xs);
@@ -77,19 +76,19 @@
   border-bottom: 1px solid var(--footer-rule);
 }
 
-.spec-sheet-chip {
-  font-family: var(--footer-mono);
+.spec-sheet-tag {
+  font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--neutral-50);
-  background: var(--code-border); /* solid bg/x chip, per Figma */
+  background: var(--code-border); /* solid bg/x tag, per Figma */
   border-radius: var(--space-3xs);
   padding: 0.15em 0.5em;
 }
 
 .spec-sheet-title {
-  font-family: var(--footer-mono);
+  font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -125,7 +124,7 @@
 }
 
 .spec-sheet-row dt {
-  font-family: var(--footer-mono);
+  font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -137,12 +136,12 @@
   color: var(--text-color-main);
 }
 
-/* Server datum values: mono, in the metric teal (Figma code/blue). The PASSING
+/* Server datum values: mono, in the datum teal (Figma code/blue). The PASSING
    deploy state reads "ok" green instead. */
 .spec-sheet-value {
-  font-family: var(--footer-mono);
+  font-family: var(--font-mono);
   font-size: var(--fs-2xs);
-  color: var(--footer-metric);
+  color: var(--footer-datum);
 }
 
 .spec-sheet-value-ok {
@@ -166,5 +165,5 @@
 /* The Mono row's specimen is set in the mono face (it names GT Flexa Mono);
    it keeps the specimen colours above, unlike the teal datum values. */
 .spec-sheet-specimen-mono {
-  font-family: var(--footer-mono);
+  font-family: var(--font-mono);
 }

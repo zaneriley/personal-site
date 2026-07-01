@@ -6,7 +6,7 @@ defmodule PortfolioWeb.Components.Footer do
   `spec_sheet/1` is the shared "framed list of labelled facts" primitive: a
   bordered, titled box whose rows are a semantic description list (`<dl>`). The
   Typefaces sheet and the Server sheet are the *same* primitive — they differ
-  only by the optional header `chip` ("NODE") and `status` dot. It's named
+  only by the optional header `tag` ("NODE") and `status` dot. It's named
   `spec_sheet` (not `card`) so it reads as an *inform*-role element and leaves
   `card` free for the clickable content-preview component.
   """
@@ -117,7 +117,7 @@ defmodule PortfolioWeb.Components.Footer do
 
           <.spec_sheet
             label={@status.node_name}
-            chip={gettext("Node")}
+            tag={gettext("Node")}
             status={if @status.node_up, do: :up, else: :down}
             class="mt-md"
           >
@@ -208,15 +208,15 @@ defmodule PortfolioWeb.Components.Footer do
   A framed list of labelled facts — a bordered, titled box whose rows are a
   semantic `<dl>`. Used by the footer's Typefaces and Server sheets.
 
-  Pass the header text as `label`; the optional `chip` renders a tag before it
-  (e.g. "NODE") and `status` (`:up` / `:down`) renders a liveness dot. Each
-  `:row` slot needs a `label` and provides the value as its content.
+  Pass the header text as `label`; the optional `tag` renders a kind-label
+  before it (e.g. "NODE") and `status` (`:up` / `:down`) renders a liveness dot.
+  Each `:row` slot needs a `label` and provides the value as its content.
   """
   attr :label, :string, required: true, doc: "header title for the sheet"
 
-  attr :chip, :string,
+  attr :tag, :string,
     default: nil,
-    doc: "optional tag rendered before the title"
+    doc: "optional kind-label rendered before the title"
 
   attr :status, :atom, default: nil, doc: "optional liveness dot: :up | :down"
   attr :class, :string, default: nil, doc: "extra classes on the sheet"
@@ -229,7 +229,7 @@ defmodule PortfolioWeb.Components.Footer do
     ~H"""
     <section class={["spec-sheet", @class]}>
       <header class="spec-sheet-head">
-        <span :if={@chip} class="spec-sheet-chip">{@chip}</span>
+        <span :if={@tag} class="spec-sheet-tag">{@tag}</span>
         <span class="spec-sheet-title">{@label}</span>
         <span
           :if={@status}

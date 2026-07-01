@@ -149,17 +149,21 @@ html[data-theme="dark"] {
   --code-bg-card: oklch(25.7% 0.006 286deg);
   --code-bg: oklch(27.5% 0.009 286deg);
   --code-border: var(--dusk-800);
+
+  /* Folder/filename deliberately track the neutral ramp — code chrome and
+     footer chrome share one cool-grey kernel. Re-grade via --neutral-*, not here. */
   --code-folder: var(--neutral-25);
   --code-filename: var(--neutral-50);
 
-  /* NEUTRAL RAMP (dark) — cool blue-grey, Figma neutral/25,50,75. Quiet UI
-     labels (25), emphasis labels/links (50), and the logo ring (75). */
+  /* NEUTRAL RAMP (dark) — cool blue-grey, Figma neutral/25,50. Quiet UI
+     labels (25) and emphasis labels/links (50). Numbers mirror the Figma
+     neutral/* stops — not lightness, opacity, or the --dusk-* step scale. */
   --neutral-25: oklch(53.32% 0.0379 277.61deg);
   --neutral-50: oklch(70.59% 0.0781 277.55deg);
-  --neutral-75: oklch(78.23% 0.036 333.34deg);
 
   /* Footer panel — a solid surface the footer paints over the page gradient
-     (Figma bg/90, the same value as the code area's bg). */
+     (Figma bg/90). Its own token: it tracks the code bg in dark, but sits
+     lighter than it in light mode. */
   --footer-bg: oklch(27.48% 0.0091 285.78deg);
 
   /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:
@@ -226,7 +230,6 @@ html[data-theme="light"] {
      a light surface (preserves the code-block's tuned light folder/filename). */
   --neutral-25: oklch(60% 0.04 278deg);
   --neutral-50: oklch(45% 0.11 278deg);
-  --neutral-75: oklch(55% 0.04 333deg);
   --footer-bg: oklch(96% 0.005 286deg);
 
   /* signature wordmark — light re-grade (mint → teal → blue → indigo) */
@@ -270,7 +273,6 @@ html[data-theme="light"] {
     /* neutral ramp — light (same as html[data-theme="light"]) */
     --neutral-25: oklch(60% 0.04 278deg);
     --neutral-50: oklch(45% 0.11 278deg);
-    --neutral-75: oklch(55% 0.04 333deg);
     --footer-bg: oklch(96% 0.005 286deg);
 
     /* signature wordmark — light re-grade (same as html[data-theme="light"]) */
