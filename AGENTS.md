@@ -195,6 +195,8 @@ Manual visual-diff findings vs the Figma mocks, caught while reworking type weig
 
 - **Footer "(PDF)" vs "Resume" color — re-verify against the mock.** The "(PDF)" suffix now uses `.footer-muted` = `--neutral-25` (`bededc5` repointed it off `--text-color-suppressed`, resolving the token-model dependency this item was waiting on). Confirm the de-emphasis now reads right visually: "(PDF)" should recede from the "Resume" link (`.footer-eyebrow` = `--neutral-50`) — i.e. `--neutral-25` sits one quiet rung below `--neutral-50`, which is the intended relationship. Close this item once checked against the mock.
 
+- **Verify `--neutral-25` footer text meets WCAG AA on both surfaces.** (Codex review flag, 2026-07-01.) `--neutral-25` backs the footer's quiet text roles — the spec-sheet label rail (`.spec-sheet-row dt`), the copyright (`.footer-copyright`), and the "(PDF)"/"Now in Tokyo" muted text (`.footer-muted`) — at ~13-15px. On the **light** footer (`--footer-bg` 96% L) `--neutral-25` is 60% L; on **dark** (27% L) it's 53% L. Compute actual WCAG contrast for both (small text needs ≥4.5:1) — if either is sub-AA, don't reflexively bump to `--neutral-50` (that flattens the deliberate quiet/emphasis hierarchy the mock wants); instead re-grade `--neutral-25`'s lightness per theme to clear the floor while staying below `--neutral-50`. Check the mock's intended contrast before changing.
+
 ---
 
 ## How this file gets updated
