@@ -121,23 +121,25 @@
          discovered. The face is font-display: swap with a metric-override
          fallback (see _fontface.generated.css), so the preload only shortens the
          swap window; it never adds layout shift.
-         href is the LITERAL non-digested path on purpose: app.css below is loaded
-         non-digested, so its @font-face requests "/fonts/gt-flexa.woff2" verbatim
-         (mix phx.digest does NOT rewrite the original CSS's url()). The preload
-         must byte-match that exact URL or the browser fetches the font twice.
+         Both this preload and the stylesheet below use ~p, so in prod they
+         resolve through the cache manifest to the digested, immutable paths
+         (mix phx.digest also rewrites the @font-face url() inside the digested
+         CSS to the same digested font path). The preload URL therefore still
+         byte-matches what the @font-face requests, so the font is fetched once —
+         now with cache-control: immutable instead of an etag revalidation.
          crossorigin is mandatory — fonts always fetch in anonymous CORS mode, and
-         without it the preloaded bytes won't be reused by the @font-face. If the
-         stylesheet ever moves to a digested ~p href, move this preload to ~p in
-         lockstep (see AGENTS.md Backlog: digest the layout's CSS link). --%>
+         without it the preloaded bytes won't be reused by the @font-face.
+         NOTE: this path is a hardcoded duplicate of the pipeline's body face;
+         it should derive from one source (see AGENTS.md Backlog #1). --%>
     <link
       rel="preload"
       as="font"
       type="font/woff2"
-      href="/fonts/gt-flexa.woff2"
+      href={~p"/fonts/gt-flexa.woff2"}
       crossorigin
     />
-    <!-- FUll CSS -->
-    <link phx-track-static rel="stylesheet" href="/css/app.css" />
+    <!-- Full CSS -->
+    <link phx-track-static rel="stylesheet" href={~p"/css/app.css"} />
     <script
       defer
       phx-track-static
