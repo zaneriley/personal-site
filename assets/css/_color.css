@@ -226,11 +226,17 @@ html[data-theme="light"] {
   --code-folder: var(--neutral-25);
   --code-filename: var(--neutral-50);
 
-  /* NEUTRAL RAMP (light) — re-seated so quiet recedes and emphasis darkens on
-     a light surface (preserves the code-block's tuned light folder/filename). */
-  --neutral-25: oklch(60% 0.04 278deg);
+  /* NEUTRAL RAMP (light) — 25 is NOT re-seated: measured off both Figma footer
+     mocks, neutral/25 is the same #676B83 in light and dark, so it matches the
+     dark rung above. (It was 60% L here, a lighter invention that read at only
+     3.53:1 on the footer; the mock value gives 4.49:1 and also lifts the
+     code-block folder it feeds.) 50 stays darker than the mock's #7892BD,
+     which measures 2.71:1 — see AGENTS.md backlog before matching it. */
+  --neutral-25: oklch(53.32% 0.0379 277.61deg);
   --neutral-50: oklch(45% 0.11 278deg);
-  --footer-bg: oklch(96% 0.005 286deg);
+
+  /* Figma light footer bg #E8EEF7 — measured, not eyeballed. */
+  --footer-bg: oklch(94.7% 0.014 258deg);
 
   /* signature wordmark — light re-grade (mint → teal → blue → indigo) */
   --signature-1: #b5d7bd;
@@ -271,9 +277,9 @@ html[data-theme="light"] {
     --code-filename: var(--neutral-50);
 
     /* neutral ramp — light (same as html[data-theme="light"]) */
-    --neutral-25: oklch(60% 0.04 278deg);
+    --neutral-25: oklch(53.32% 0.0379 277.61deg);
     --neutral-50: oklch(45% 0.11 278deg);
-    --footer-bg: oklch(96% 0.005 286deg);
+    --footer-bg: oklch(94.7% 0.014 258deg);
 
     /* signature wordmark — light re-grade (same as html[data-theme="light"]) */
     --signature-1: #b5d7bd;
