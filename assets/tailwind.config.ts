@@ -110,10 +110,10 @@ const config: Config = {
       deemphasized: "var(--text-color-deemphasized)",
       suppressed: "var(--text-color-suppressed)",
       accent: "var(--text-color-accent)",
-      // Raw dusk rung exposed as a text color — the hero's "one rung down from
-      // main" (dusk-000) tier. Interim until the text ladder is re-seated onto
-      // consecutive dusk rungs; revisit naming then.
-      "dusk-100": "var(--dusk-100)",
+      // The hero's "one rung down from main" tier. Per-theme (see _color.css),
+      // replacing the raw --dusk-100 rung that was :root-only and so stayed a
+      // pale pink in light mode.
+      soft: "var(--text-color-soft)",
     },
     extend: {
       transitionProperty: {

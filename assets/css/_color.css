@@ -49,7 +49,7 @@
   /* SHARED HUE ANCHORS (single source of truth for role hues).
      Lightness + chroma are per-mode; only the hue is shared and re-anchored
      in the light block. */
-  --hue-warm-text: 65deg; /* dark warm-text anchor; light re-anchors to 50deg */
+  --hue-warm-text: 65deg; /* dark warm-text anchor; light re-anchors to 6deg */
   --hue-cool-surface: 268deg; /* 250–286 band, surfaces + mid/dark neutrals */
   --hue-link: 264deg; /* 252–277 band, links */
 
@@ -130,6 +130,13 @@ html[data-theme="dark"] {
   --text-color-main: var(--dusk-000); /* body = white-point (the crushed white), brightest neutral */
   --text-color-deemphasized: var(--dusk-400); /* AA floor, 5.6:1 */
   --text-color-suppressed: var(--dusk-500); /* decorative sub-floor, 4.3:1 */
+
+  /* Hero's soft tier — one rung under main. Keeps the shipped appearance.
+     NOTE: the dark hero mock (3715:774) measures this tier at
+     oklch(78.23% 0.036 333.34deg) — Figma `neutral/75` — so what we render is
+     ~10.5 lightness points brighter, i.e. less de-emphasised than designed.
+     Left as-is deliberately; see AGENTS.md backlog before re-seating. */
+  --text-color-soft: var(--dusk-100);
   --text-color-accent: var(--ochre-0);
 
   /* CODE PALETTE PRIMITIVES (dark) — hue-named raw colors for source-code
@@ -199,14 +206,26 @@ html[data-theme="light"] {
   color-scheme: light;
 
   /* TEXT LADDER — mirrored: ΔL measured from the worst-case (darkest) light
-     surface stop (L≈81), text travels darker. Warm hue re-anchored to ~50°,
-     higher chroma so low-lightness warms read warm, not muddy. */
-  --hue-warm-text: 50deg;
+     surface stop, text travels darker. Hue anchored at 6°: measured off the
+     light hero mock (3715:775), whose strong tier is oklch(33.6% 0.063 7deg).
+     Was 50° (yellow-brown) — a 45° error that warped every light text colour.
+     Check: --text-color-main now renders 8.86:1 on the hero surface vs the
+     mock's measured 8.72:1. */
+  --hue-warm-text: 6deg;
   --text-color-callout: oklch(23% 0.05 var(--hue-warm-text)); /* ΔL58 emphasis */
   --text-color-main: oklch(33% 0.05 var(--hue-warm-text)); /* ΔL48 body */
   --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text)); /* ΔL38 AA floor */
   --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text)); /* ΔL28 sub-floor */
-  --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
+
+  /* Hero's soft tier — one rung under main. Measured off the light hero mock;
+     replaces the interim raw --dusk-100 binding, which was :root-only and so
+     stayed a pale pink in light mode (1.31:1, invisible). */
+  --text-color-soft: oklch(50.7% 0.056 5deg);
+
+  /* Gold, NOT the warm-text anchor: --hue-warm-text anchors the neutral text
+     ramp, while accent is the ochre. Hue matches --ochre-0 (75.85°) so light
+     and dark accents stay the same colour family. */
+  --text-color-accent: oklch(50% 0.09 76deg);
   --accent: oklch(49% 0.145 252deg); /* deeper link (link hue/chroma, −10 L) */
 
   /* CODE PALETTE PRIMITIVES (light) — same hues re-seated darker with a touch
@@ -252,12 +271,13 @@ html[data-theme="light"] {
 
     /* Same light ladder for OS-light users who haven't toggled explicitly —
        without this they hit the original invisible-text bug. */
-    --hue-warm-text: 50deg;
+    --hue-warm-text: 6deg;
     --text-color-callout: oklch(23% 0.05 var(--hue-warm-text));
     --text-color-main: oklch(33% 0.05 var(--hue-warm-text));
     --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text));
     --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text));
-    --text-color-accent: oklch(50% 0.09 var(--hue-warm-text));
+    --text-color-soft: oklch(50.7% 0.056 5deg);
+    --text-color-accent: oklch(50% 0.09 76deg);
     --accent: oklch(49% 0.145 252deg);
 
     /* code palette — light values (same as html[data-theme="light"]) */

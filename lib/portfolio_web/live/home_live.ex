@@ -86,17 +86,17 @@ defmodule PortfolioWeb.HomeLive do
                mock wants 427, which is neither our 2xl regular (208) nor 2xl bold
                (478) — the weight system needs a pass (see AGENTS.md backlog +
                /weight-calibration). "at" + connective + body are one rung down
-               (dusk-100); only the cities are main. G mark on the baseline. --%>
+               (the soft tier); only the cities are main. G mark on the baseline. --%>
           <.typography locale={@user_locale} tag="p" size="2xl">
             <span class="text-callout">Product designer</span>
-            <span class="text-md fw-flexa-md text-dusk-100">at</span>
+            <span class="text-md fw-flexa-md text-soft">at</span>
             <img
               src={~p"/images/logos/google-g.svg"}
               alt="Google"
               class="inline-block h-[0.85em] w-auto align-baseline"
             />
           </.typography>
-          <.typography locale={@user_locale} tag="p" size="md" color="dusk-100">
+          <.typography locale={@user_locale} tag="p" size="md" color="soft">
             Based in
             <span class="font-cardinal-fruit caps font-bold text-main">
               Tokyo
@@ -106,7 +106,7 @@ defmodule PortfolioWeb.HomeLive do
               San Francisco
             </span>
           </.typography>
-          <.typography locale={@user_locale} tag="p" size="md" color="dusk-100">
+          <.typography locale={@user_locale} tag="p" size="md" color="soft">
             +15 years experience in making digital products using strategy, design, code or whatever else it takes
           </.typography>
         <% end %>
