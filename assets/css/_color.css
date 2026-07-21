@@ -130,13 +130,6 @@ html[data-theme="dark"] {
   --text-color-main: var(--dusk-000); /* body = white-point (the crushed white), brightest neutral */
   --text-color-deemphasized: var(--dusk-400); /* AA floor, 5.6:1 */
   --text-color-suppressed: var(--dusk-500); /* decorative sub-floor, 4.3:1 */
-
-  /* Hero's soft tier — one rung under main. Keeps the shipped appearance.
-     NOTE: the dark hero mock (3715:774) measures this tier at
-     oklch(78.23% 0.036 333.34deg) — Figma `neutral/75` — so what we render is
-     ~10.5 lightness points brighter, i.e. less de-emphasised than designed.
-     Left as-is deliberately; see AGENTS.md backlog before re-seating. */
-  --text-color-soft: var(--dusk-100);
   --text-color-accent: var(--ochre-0);
 
   /* CODE PALETTE PRIMITIVES (dark) — hue-named raw colors for source-code
@@ -217,11 +210,6 @@ html[data-theme="light"] {
   --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text)); /* ΔL38 AA floor */
   --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text)); /* ΔL28 sub-floor */
 
-  /* Hero's soft tier — one rung under main. Measured off the light hero mock;
-     replaces the interim raw --dusk-100 binding, which was :root-only and so
-     stayed a pale pink in light mode (1.31:1, invisible). */
-  --text-color-soft: oklch(50.7% 0.056 5deg);
-
   /* Gold, NOT the warm-text anchor: --hue-warm-text anchors the neutral text
      ramp, while accent is the ochre. Hue matches --ochre-0 (75.85°) so light
      and dark accents stay the same colour family. */
@@ -276,7 +264,6 @@ html[data-theme="light"] {
     --text-color-main: oklch(33% 0.05 var(--hue-warm-text));
     --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text));
     --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text));
-    --text-color-soft: oklch(50.7% 0.056 5deg);
     --text-color-accent: oklch(50% 0.09 76deg);
     --accent: oklch(49% 0.145 252deg);
 

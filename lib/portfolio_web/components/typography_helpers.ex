@@ -52,9 +52,8 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     "callout" => "text-callout",
     "deemphasized" => "text-deemphasized",
     "suppressed" => "text-suppressed",
-    "accent" => "text-accent",
-    # The hero's "one down from main" tier; per-theme, see _color.css
-    "soft" => "text-soft"
+    "accent" => "text-accent"
+
     # Add other colors as needed
   }
 

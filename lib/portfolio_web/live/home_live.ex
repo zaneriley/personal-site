@@ -89,14 +89,14 @@ defmodule PortfolioWeb.HomeLive do
                (the soft tier); only the cities are main. G mark on the baseline. --%>
           <.typography locale={@user_locale} tag="p" size="2xl">
             <span class="text-callout">Product designer</span>
-            <span class="text-md fw-flexa-md text-soft">at</span>
+            <span class="text-md fw-flexa-md text-deemphasized">at</span>
             <img
               src={~p"/images/logos/google-g.svg"}
               alt="Google"
               class="inline-block h-[0.85em] w-auto align-baseline"
             />
           </.typography>
-          <.typography locale={@user_locale} tag="p" size="md" color="soft">
+          <.typography locale={@user_locale} tag="p" size="md" color="deemphasized">
             Based in
             <span class="font-cardinal-fruit caps font-bold text-main">
               Tokyo
@@ -106,7 +106,7 @@ defmodule PortfolioWeb.HomeLive do
               San Francisco
             </span>
           </.typography>
-          <.typography locale={@user_locale} tag="p" size="md" color="soft">
+          <.typography locale={@user_locale} tag="p" size="md" color="deemphasized">
             +15 years experience in making digital products using strategy, design, code or whatever else it takes
           </.typography>
         <% end %>
