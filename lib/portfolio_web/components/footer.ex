@@ -68,7 +68,11 @@ defmodule PortfolioWeb.Components.Footer do
             {gettext("Created on a 2014 macbook. Mocks in figma, remix freely.")}
           </.typography>
 
-          <.spec_sheet label={gettext("Typefaces")} class="mt-md">
+          <.spec_sheet
+            label={gettext("Typefaces")}
+            locale={@user_locale}
+            class="mt-md"
+          >
             <:row label={gettext("Titles")}>
               <span class="spec-sheet-specimen font-cardinal-fruit">
                 Cardinal Fruit
@@ -84,12 +88,22 @@ defmodule PortfolioWeb.Components.Footer do
               </span>
             </:row>
             <:row label={gettext("Mono")}>
-              <span class="spec-sheet-specimen spec-sheet-specimen-mono">
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-specimen"
+              >
                 GT Flexa Mono
-              </span>
-              <span class="spec-sheet-specimen-sub spec-sheet-specimen-mono">
+              </.typography>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-specimen-sub"
+              >
                 GT Flexa Mono
-              </span>
+              </.typography>
             </:row>
             <:row label={gettext("Headers")}>
               <span class="spec-sheet-specimen font-cheee">Cheee</span>
@@ -119,21 +133,48 @@ defmodule PortfolioWeb.Components.Footer do
             label={@status.node_name}
             tag={gettext("Node")}
             status={if @status.node_up, do: :up, else: :down}
+            locale={@user_locale}
             class="mt-md"
           >
             <:row label={gettext("Stack")}>
-              <span class="spec-sheet-value">{@status.stack}</span>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {@status.stack}
+              </.typography>
             </:row>
             <:row label={gettext("Temp")}>
-              <span class="spec-sheet-value">{@status.temp}</span>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {@status.temp}
+              </.typography>
             </:row>
             <:row label={gettext("Cost")}>
-              <span class="spec-sheet-value">{@status.cost}</span>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {@status.cost}
+              </.typography>
             </:row>
             <:row label={gettext("Deploy")}>
-              <span class="spec-sheet-value spec-sheet-value-ok">
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value spec-sheet-value-ok"
+              >
                 {@status.deploy}
-              </span>
+              </.typography>
             </:row>
           </.spec_sheet>
         </section>
@@ -155,9 +196,14 @@ defmodule PortfolioWeb.Components.Footer do
 
         <%!-- Bottom bar: copyright · links · back-to-top --%>
         <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
-          <span class="footer-copyright col-span-full lg:col-span-2">
+          <.typography
+            tag="span"
+            size="2xs"
+            locale={@user_locale}
+            class="footer-copyright col-span-full lg:col-span-2"
+          >
             © 2011 – {@current_year}
-          </span>
+          </.typography>
 
           <nav
             class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-md"
@@ -220,6 +266,7 @@ defmodule PortfolioWeb.Components.Footer do
 
   attr :status, :atom, default: nil, doc: "optional liveness dot: :up | :down"
   attr :class, :string, default: nil, doc: "extra classes on the sheet"
+  attr :locale, :string, default: nil, doc: "locale for typography substitution"
 
   slot :row, required: true do
     attr :label, :string, required: true
@@ -229,8 +276,26 @@ defmodule PortfolioWeb.Components.Footer do
     ~H"""
     <section class={["spec-sheet", @class]}>
       <header class="spec-sheet-head">
-        <span :if={@tag} class="spec-sheet-tag">{@tag}</span>
-        <span class="spec-sheet-title">{@label}</span>
+        <.typography
+          :if={@tag}
+          tag="span"
+          font="mono"
+          size="2xs"
+          class="spec-sheet-tag"
+          locale={@locale}
+        >
+          {@tag}
+        </.typography>
+        <.typography
+          tag="span"
+          font="mono"
+          size="2xs"
+          color="main"
+          class="spec-sheet-title"
+          locale={@locale}
+        >
+          {@label}
+        </.typography>
         <span
           :if={@status}
           class={["spec-sheet-dot", @status == :up && "is-up"]}
@@ -240,7 +305,17 @@ defmodule PortfolioWeb.Components.Footer do
       </header>
       <dl class="spec-sheet-rows">
         <div :for={row <- @row} class="spec-sheet-row">
-          <dt>{row.label}</dt>
+          <dt>
+            <.typography
+              tag="span"
+              font="mono"
+              size="2xs"
+              color="suppressed"
+              locale={@locale}
+            >
+              {row.label}
+            </.typography>
+          </dt>
           <dd>{render_slot(row)}</dd>
         </div>
       </dl>

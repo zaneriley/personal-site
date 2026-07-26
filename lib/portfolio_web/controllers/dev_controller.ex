@@ -69,7 +69,8 @@ defmodule PortfolioWeb.DevController do
     },
     %{
       name: "Neutral ramp",
-      note: "cool blue-grey UI/metadata greys (footer chrome, code line numbers)",
+      note:
+        "cool blue-grey UI/metadata greys (footer chrome, code line numbers)",
       tokens: ~w(--neutral-25 --neutral-50)
     },
     %{

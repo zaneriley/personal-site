@@ -86,6 +86,10 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
       # Noto Sans JP can work for English too
       "en" => "font-noto-sans-jp",
       "ja" => "font-noto-sans-jp"
+    },
+    "mono" => %{
+      "en" => "font-gt-flexa-mono",
+      "ja" => "font-gt-flexa-mono"
     }
     # Add other fonts as needed
   }
@@ -96,7 +100,8 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     "cardinal" => "cardinal-fruit-web-medium-trial",
     "cheee" => "cheee-small",
     "flexa" => "gt-flexa-trial-vf",
-    "noto" => "noto-sans-jp"
+    "noto" => "noto-sans-jp",
+    "mono" => "gt-flexa-trial-vf"
     # Add mappings as needed
   }
 

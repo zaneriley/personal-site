@@ -75,6 +75,15 @@ const config: Config = {
           "font-size-adjust": "ic-height from-font",
           "font-weight": "480",
         },
+        ".font-gt-flexa-mono": {
+          "font-family": [
+            "GT Flexa Mono",
+            "ui-monospace",
+            "SF Mono",
+            "Menlo",
+            "monospace",
+          ].join(", "),
+        },
       };
       addUtilities(newUtilities, ["responsive"]);
     },

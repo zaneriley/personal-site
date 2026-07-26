@@ -6,8 +6,9 @@
    driven by the design tokens in _color.css. Colours never hardcoded here —
    they derive from --neutral-* / --text-color-* so the footer recolours per theme.
 
-   Labels/values are set in GT Flexa Mono (self-hosted, see _fontface.generated.css),
-   falling back to the system monospace stack if it hasn't loaded yet.
+   Labels/values are rendered through the <.typography> component (font, size,
+   and optical correction); this file keeps only role-specific colours,
+   letter-spacing, and structural styles.
 ============================================================================ */
 
 :root {
@@ -52,10 +53,9 @@
   color: var(--neutral-25);
 }
 
-/* Copyright — GT Flexa (not the mono eyebrow), quiet grey, sentence case.
-   (Figma sets it in a condensed cut; the width axis isn't wired yet.) */
+/* Copyright — quiet grey override on top of the typography component's
+   size/optical-correction. GT Flexa (not mono), sentence case. */
 .footer-copyright {
-  font-size: var(--fs-2xs);
   color: var(--neutral-25);
 }
 
@@ -76,9 +76,9 @@
   border-bottom: 1px solid var(--footer-rule);
 }
 
+/* Font/size/optical-correction come from <.typography font="mono" size="2xs">;
+   these rules keep only the role-specific colour, spacing, and frame. */
 .spec-sheet-tag {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--neutral-50);
@@ -88,8 +88,6 @@
 }
 
 .spec-sheet-title {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-color-main); /* bright (Figma neutral/100 → our brightest) */
@@ -108,24 +106,27 @@
   box-shadow: 0 0 0 0.25em color-mix(in oklch, var(--footer-ok) 22%, transparent);
 }
 
-/* Rows: a description list. dt = label rail, dd = value. */
+/* Rows: a description list. dt = label rail, dd = value.
+   The <dl> defines a two-column grid (label / value); each row is a subgrid
+   so every label shares the same track width and all values align. */
 .spec-sheet-rows {
   margin: 0;
   padding: var(--space-1xs);
   display: grid;
-  row-gap: var(--space-1xs);
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1xs);
 }
 
 .spec-sheet-row {
   display: grid;
-  grid-template-columns: 5.5em 1fr;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   align-items: baseline;
-  column-gap: var(--space-1xs);
 }
 
+/* dt is rendered through <.typography>; keep only role-specific colour
+   and the uppercase + tracking that define the spec-sheet label voice. */
 .spec-sheet-row dt {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--neutral-25); /* quiet label rail (Figma neutral/25) */
@@ -136,11 +137,10 @@
   color: var(--text-color-main);
 }
 
-/* Server datum values: mono, in the datum teal (Figma code/blue). The PASSING
+/* Server datum values: rendered through <.typography font="mono" size="2xs">;
+   keep only the role-specific datum teal (Figma code/blue). The PASSING
    deploy state reads "ok" green instead. */
 .spec-sheet-value {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
   color: var(--footer-datum);
 }
 
@@ -148,7 +148,9 @@
   color: var(--footer-ok);
 }
 
-/* Typeface specimen: primary name set in its own face, JP fallback muted. */
+/* Typeface specimen: primary name set in its own face, JP fallback muted.
+   These are raw spans (not <.typography>) because each row shows the face
+   itself as the specimen. */
 .spec-sheet-specimen {
   display: block;
   color: var(--text-color-main);
@@ -160,10 +162,4 @@
   font-size: var(--fs-2xs);
   color: var(--text-color-suppressed);
   line-height: 1.3;
-}
-
-/* The Mono row's specimen is set in the mono face (it names GT Flexa Mono);
-   it keeps the specimen colours above, unlike the teal datum values. */
-.spec-sheet-specimen-mono {
-  font-family: var(--font-mono);
 }
