@@ -27,9 +27,10 @@ config :portfolio,
 # recompiles, so compile-hook registration alone would leave these unresolved.
 # ONLY components whose render function accepts the pipeline assigns shape
 # (%{component:, attrs:, content:} — see Component.Definition) belong here.
-# Figure/Typography are registered-but-incompatible (AGENTS.md backlog):
+# Figure/Typography are registered-but-incompatible with this generic path:
 # listing them would turn the renderer's safe not-found fallback into a
-# KeyError crash on any stored node referencing them.
+# KeyError crash on any stored node referencing them. Figure compatibility is
+# tracked in _PROJECT_DOCS/BACKLOG.md; typography nodes have a dedicated renderer.
 config :portfolio,
   markdown_components: [
     PortfolioWeb.Components.CodeBlock

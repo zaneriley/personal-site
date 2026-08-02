@@ -14,7 +14,13 @@ with generated evidence under `.tmp/ci-artifacts/`.
 
 ## Context
 
-The repo's vision (`AGENTS.md:38-42`) is a portfolio "visitors never see broken … with a deploy pipeline that doesn't require remembering anything six months later. CI catches LLM-authored mistakes before they merge." Today CI runs only `MIX_ENV=test` (`.github/workflows/ci.yml:20-46`). The class of mistakes that surfaces only in `MIX_ENV=prod` — `Mix.env()` called at runtime, missing `:applications` declarations, `runtime.exs` config gaps, `cache_static_manifest` failures, dev-only deps leaking — is invisible until first deploy attempt.
+The repo's deploy objective at ratification was a portfolio visitors never see
+broken, with a deploy pipeline that does not depend on operator memory and CI
+that catches mistakes before merge. At the time, CI ran only `MIX_ENV=test`.
+The class of mistakes that surfaces only in `MIX_ENV=prod` — `Mix.env()` called
+at runtime, missing `:applications` declarations, `runtime.exs` config gaps,
+`cache_static_manifest` failures, dev-only deps leaking — was invisible until
+first deploy attempt.
 
 A prod-build CI gate produces *continuous* signal on every PR. It also subsumes one-shot resource-frugality measurement (sub-phase 3.3, tracker `:30`) through route latency evidence and browser-backed public page budgets.
 
@@ -69,7 +75,7 @@ The operator experience this ADR rejects: reading raw Actions logs to infer whet
 
 ## Hard constraints
 
-Binding from `AGENTS.md:65-76` (and global `~/.agents/AGENTS.md` §3 anti-rationalization):
+Binding constraints ratified for this decision:
 
 - No tool/stack prescription without `/literature` first. Citations to the run at `.tmp/2026-05-06-phoenix-prod-ci-gate/literature/brief.md` are the basis for every recommendation below; full URLs inlined in the **References** section so the ADR is self-contained when `.tmp/` ages out.
 - Versioned + idempotent deploys.
@@ -157,7 +163,8 @@ Locked rule per `~/.agents/skills/elixir-phoenix-style/`: migration round-trip i
     bin/portfolio eval "Portfolio.Release.migrate()"
 ```
 
-`Portfolio.Release.rollback/2` already exists at `lib/portfolio/release.ex:123` with arity `(repo, version)`. No new code needed for this decision.
+`Portfolio.Release.rollback/2` already exists in `lib/portfolio/release.ex` with
+arity `(repo, version)`. No new code was needed for this decision.
 
 ### Group C — Measurement
 
@@ -167,7 +174,9 @@ Locked rule per `~/.agents/skills/elixir-phoenix-style/`: migration round-trip i
 
 #### perf-budget-policy
 
-The 200ms p50 figure (`AGENTS.md:53`, sub-phase 3.3 frugality target) stays valid as the *production* target. Enforced as an absolute gate on `ubuntu-latest` it is structurally fragile: 2.66% CV (`[p105]`), CPU-SKU rotation 5–10% across runs (`[p106]`).
+The 200ms p50 production target stays valid. Enforced as an absolute gate on
+`ubuntu-latest` it is structurally fragile: 2.66% CV (`[p105]`), CPU-SKU
+rotation 5–10% across runs (`[p106]`).
 
 Current CI-side policy:
 
@@ -205,9 +214,11 @@ Route latency and browser performance outputs are generated evidence under
 gate does not read them back as state. Fixed budgets in `ci/contracts/routes.json`
 are the current performance authority.
 
-#### routes-known-broken
+#### Route exemptions
 
-`ci/routes-known-broken.txt`, one route per line, with a `# why:` comment per entry. Initial state: empty. New failures fix-or-revert; deferring requires explicit edit + justification commit. *Not* a ratchet — additions are allowed but require ceremony; the file is an exemption list, not a monotone-shrinking pile.
+The proposed `ci/routes-known-broken.txt` exemption file was not retained. The
+implemented gate keeps canonical route assertions and fixed public-page budgets
+in `ci/contracts/routes.json`; every current route must pass.
 
 ## Workflow shape (concrete)
 
@@ -265,7 +276,7 @@ jobs:
 | Deps resolution leaks dev-only deps to prod tree | deps-prod-only |
 | Slow regression below catastrophic floor (1000ms+) | perf-budget-policy floor |
 | Creeping regression (>20% drift over rolling-30 main median) | perf-budget-policy drift gate |
-| Newly-broken canonical route on a PR | latency-probe-tool + routes-known-broken (no entry → fail) |
+| Newly-broken canonical route on a PR | route probe against `ci/contracts/routes.json` |
 
 ## What this gate doesn't catch
 
@@ -322,17 +333,14 @@ Each `[pNNN]` resolves to a primary source. Inlined here so the ADR is self-cont
 
 ## Pointers
 
-- `AGENTS.md:9-23` — acceptance gates (this ADR's gates extend the family).
-- `AGENTS.md:38-42` — vision.
-- `AGENTS.md:53` — strategy #2 (CI gates).
-- `AGENTS.md:92` — ADR routing rule (amended same commit).
-- `_PROJECT_DOCS/2026-revival-todo.md:29` — sub-phase 3.2 row (links to this ADR).
-- `.github/workflows/ci.yml` — existing `MIX_ENV=test` pipeline.
+- `./run` — canonical local and CI command behavior.
+- `ci/README.md` — CI/deploy ownership and supported command map.
+- `_PROJECT_DOCS/BACKLOG.md` — current release, performance, and origin work.
+- `.github/workflows/ci.yml` — top-level CI gate wiring.
 - `.github/workflows/secret-scan.yml` (PR #51) — gitleaks gate; baseline-file pattern precedent.
-- `.gitleaks.baseline.json` — durable-baseline-file shape this ADR borrows.
-- `bin/docker-entrypoint-web:43-52` — current boot sequence (will honor `CI_SKIP_CONTENT_PULL`).
-- `lib/portfolio/release.ex:123` — `rollback/2` (already exists; no new code).
-- `lib/portfolio_web/endpoint.ex:18` — exposed HMAC literal (Task #4 op-side; rotation independent of this ADR).
+- `bin/docker-entrypoint-web` — current boot sequence and
+  `CI_SKIP_CONTENT_PULL` handling.
+- `lib/portfolio/release.ex` — migration and rollback functions.
 
 ## Implementation PR (follows ratification)
 
@@ -340,7 +348,6 @@ Each `[pNNN]` resolves to a primary source. Inlined here so the ADR is self-cont
 - `lib/portfolio_web/controllers/readiness_controller.ex` + route entry in `router.ex`
 - `bin/docker-entrypoint-web` patch (honor `CI_SKIP_CONTENT_PULL=1`)
 - `ci/gates/probe-routes.sh`, `ci/gates/browser-performance.mjs`
-- `ci/routes-known-broken.txt` (initial empty)
 - `ci/contracts/routes.json` (route assertions and public page budgets)
 
 No application-code changes outside `lib/portfolio_web/controllers/readiness_controller.ex` and the `router.ex` route.

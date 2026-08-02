@@ -50,7 +50,7 @@ Two reality checks during the build constrained it further:
 
 - A `tok-*` vocabulary change requires re-compiling stored content; a color change does not. The vocabulary is therefore the stable contract — extend it rather than renaming.
 - The capture→`tok-*` map in `Tokenizer.Lumis` is maintained against observed engine output. New languages may surface unmapped captures; they degrade to plain text until mapped (visible, not breaking).
-- The end-to-end test (compile → JSON round trip → render) is the template for component pipeline coverage — it caught the string-vs-atom type bug that broke every registered component coming out of storage. The exposed `figure.ex` gap (registered, but can't accept the pipeline shape) is recorded in the AGENTS.md backlog.
+- The end-to-end test (compile → JSON round trip → render) is the template for component pipeline coverage — it caught the string-vs-atom type bug that broke every registered component coming out of storage. The exposed `figure.ex` gap (registered, but can't accept the pipeline shape) is recorded in `_PROJECT_DOCS/BACKLOG.md`.
 - Remaining work, deliberately out of this ADR's scope: the `CodeBlock` JS hook (copy + scrim/expand on LiveView pages — behavior proven by the `/code-block` dev page's inline script), a Typography `font="mono"` variant consuming `--font-mono`, and the in-situ category→color tuning on `/code-block`.
 
 ## Do nots

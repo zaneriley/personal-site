@@ -59,7 +59,8 @@ Hard "do nots" for future maintainers:
 - **Do not add a lockfile or skip-unchanged logic.** Re-running and reproducing is the idempotency contract.
 - **Do not move the preload to `~p` while the CSS link is literal/non-digested** — it would double-download in production. Move both together (see backlog).
 
-Deferred to **AGENTS.md → Backlog → Fonts / performance** (each its own commit):
+Deferred to **`_PROJECT_DOCS/BACKLOG.md` → Typography, color, and font pipeline**
+(each its own commit):
 
 1. Instance + axis-trim the variable faces before launch (the single biggest byte win on the heaviest, highest-priority asset).
 2. Consolidate the two font pipelines into one `assets/fonts/` home.
@@ -73,7 +74,8 @@ If the measured cold-load result still misses the goal after axis-trimming and i
 ## References
 
 - Pipeline (durable source of truth): `assets/fonts/generate-fonts.mjs`; generated output `assets/css/_fontface.generated.css`; run target `./run assets:fonts`; preload in `lib/portfolio_web/components/layouts/root.html.heex`.
-- Deferred work: `AGENTS.md` → Backlog → Fonts / performance.
+- Deferred work: `_PROJECT_DOCS/BACKLOG.md` → Typography, color, and font
+  pipeline.
 - Audit trail (in `.tmp/`, may age out): font-loading literature brief `.tmp/2026-06-04-font-loading/literature/brief.md`; H1 gap analysis `.tmp/2026-06-04-font-loading/h1-gap-analysis.md`; peer review `.tmp/2026-06-04-font-loading/peer-review/{ia,ddd,subtractive,performance}.md`.
 - `subset-font` (harfbuzz `hb-subset`): `https://github.com/papandreou/subset-font`
 - web.dev font best practices (preload, `font-display`, metric overrides): `https://web.dev/articles/font-best-practices`

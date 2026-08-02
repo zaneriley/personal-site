@@ -9,7 +9,8 @@
  *
  * Variable faces (GT Flexa) keep their full axes for now — we expect to use the
  * wght/wdth axes later. Instancing/axis-trimming to shrink them is a tracked
- * pre-launch perf task (AGENTS.md Backlog); add `variationAxes` here when ready.
+ * pre-launch perf task (_PROJECT_DOCS/BACKLOG.md); add `variationAxes` here when
+ * ready.
  *
  * The fallback faces below are METRIC-OVERRIDE fallbacks (zero-CLS + stable
  * ch-grid). Their numbers are BROWSER-MEASURED (a-z avg advance + fontBoundingBox

@@ -84,7 +84,7 @@ defmodule PortfolioWeb.HomeLive do
         <% else %>
           <%!-- "Product designer" = callout (absolute white), 2xl. WEIGHT IS WRONG:
                mock wants 427, which is neither our 2xl regular (208) nor 2xl bold
-               (478) — the weight system needs a pass (see AGENTS.md backlog +
+               (478) — the weight system needs a pass (see _PROJECT_DOCS/BACKLOG.md +
                /weight-calibration). "at" + connective + body are one rung down
                (the soft tier); only the cities are main. G mark on the baseline. --%>
           <.typography locale={@user_locale} tag="p" size="2xl">

@@ -63,8 +63,8 @@ typography calculator trace.
 - `config/` — environment-specific application configuration.
 - `ci/` — checked-in contracts, fixtures, gates, preview implementation, and
   provider glue. Start with [ci/README.md](ci/README.md).
-- `_PROJECT_DOCS/` — durable contracts, accepted decisions, active plans, and
-  clearly labeled historical sketches. Start with
+- `_PROJECT_DOCS/` — current work, durable contracts, and decision records.
+  Start with
   [_PROJECT_DOCS/README.md](_PROJECT_DOCS/README.md).
 - `.tmp/` — ignored measurements, research, and unfinished working evidence.
 
@@ -84,9 +84,11 @@ ordinary local verification.
 
 ## Repository contracts
 
-- [AGENTS.md](AGENTS.md) — project-specific acceptance gates, safety rules, and
-  canonical backlog.
-- [_PROJECT_DOCS/adrs/](_PROJECT_DOCS/adrs/) — accepted architectural decisions.
+- [AGENTS.md](AGENTS.md) — concise repository map, command policy, and task
+  routing for coding agents.
+- [_PROJECT_DOCS/BACKLOG.md](_PROJECT_DOCS/BACKLOG.md) — canonical current work.
+- [_PROJECT_DOCS/adrs/](_PROJECT_DOCS/adrs/) — accepted and proposed
+  architectural decisions; each record's status is authoritative.
 - [.github/workflows/ci.yml](.github/workflows/ci.yml) — top-level CI wiring;
   executable gate behavior remains in `./run`.
 

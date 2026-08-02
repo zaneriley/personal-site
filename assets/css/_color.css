@@ -252,7 +252,7 @@ html[data-theme="light"] {
      dark rung above. (It was 60% L here, a lighter invention that read at only
      3.53:1 on the footer; the mock value gives 4.49:1 and also lifts the
      code-block folder it feeds.) 50 stays darker than the mock's #7892BD,
-     which measures 2.71:1 — see AGENTS.md backlog before matching it. */
+     which measures 2.71:1 — see _PROJECT_DOCS/BACKLOG.md before matching it. */
   --neutral-25: oklch(53.32% 0.0379 277.61deg);
   --neutral-50: oklch(45% 0.11 278deg);
 
