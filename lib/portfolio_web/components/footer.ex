@@ -12,8 +12,8 @@ defmodule PortfolioWeb.Components.Footer do
   """
   use PortfolioWeb, :html
 
-  # Static facts for the Server sheet + the Tokyo weather mark.
-  # TODO(footer-data): these are display-only for now; wire live sources later —
+  # Static facts for the Server sheet + the Tokyo weather mark. The live-data
+  # backlog item in AGENTS.md owns these future sources:
   #   * temp       -> Raspberry Pi thermal zone (/sys/class/thermal/thermal_zone*/temp)
   #   * deploy     -> real build/git short SHA (release stamp / compile_env)
   #   * node_up    -> healthcheck (we already serve /up)
@@ -34,7 +34,7 @@ defmodule PortfolioWeb.Components.Footer do
   Renders the site footer.
 
   `status` carries the (currently static) server/weather facts; see
-  `@default_status` and the TODO above for the live-data plan.
+  `@default_status` and the repository backlog for the live-data plan.
   """
   attr :user_locale, :string, default: "en"
   attr :current_year, :integer, required: true
@@ -184,11 +184,12 @@ defmodule PortfolioWeb.Components.Footer do
            label. --%>
         <section class="col-span-full lg:col-span-2 lg:col-start-11 lg:text-right">
           <p class="footer-eyebrow footer-muted">{gettext("Now in Tokyo")}</p>
-          <%!-- TODO(footer-data): wire to a live temp; the specialized persona mark
-             (each digit off-kilter) comes later. Cheee in BOTH locales — it's a
-             numeric mark, so it must NOT take the cheee->Noto JP substitution the
-             typography component applies to header text. Plain element with the
-             design-system tokens, matching the other footer data values. --%>
+          <%!-- A live temperature and the specialized persona mark (each digit
+             off-kilter) belong to the footer-data backlog item. Cheee in BOTH
+             locales — this numeric mark must NOT take the cheee->Noto JP
+             substitution that the typography component applies to header text.
+             Plain element with the design-system tokens, matching the other footer
+             data values. --%>
           <p class="font-cheee text-main text-2xl">
             {@status.tokyo_temp}°<span class="text-1xl">c</span>
           </p>

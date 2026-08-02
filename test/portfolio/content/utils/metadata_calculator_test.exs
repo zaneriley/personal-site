@@ -7,8 +7,6 @@ defmodule Portfolio.Content.Utils.MetadataCalculatorTest do
   @reading_speed_native_en 238
   # words per minute
   @reading_speed_non_native_en 80
-  # words per minute
-  @reading_speed_native_en_code 50.0
   # characters per minute
   @reading_speed_ja 600
   # words per minute

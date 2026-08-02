@@ -196,7 +196,6 @@ defmodule Portfolio.Content.Types do
         Portfolio.Content.Schemas.CaseStudy
 
       _ ->
-        Logger.error("No schema found for type: #{inspect(type)}")
         {:error, :invalid_content_type}
     end
   end

@@ -46,8 +46,6 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
       end
   """
 
-  require Logger
-
   alias Portfolio.Content.Markdown.Component.Registry
 
   @doc """
@@ -144,27 +142,14 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
   """
   @spec register_component(module(), atom(), atom()) :: :ok
   def register_component(module, type, function) do
-    Logger.debug(
-      "Registering component #{inspect(type)} from #{inspect(module)}"
-    )
-
     if Process.whereis(Registry) do
       try do
         _ = Registry.register(type, module, custom_function: function)
         :ok
       catch
-        :exit, _reason ->
-          Logger.debug(
-            "Registry not reachable for #{inspect(module)}; will register at runtime."
-          )
-
-          :ok
+        :exit, _reason -> :ok
       end
     else
-      Logger.debug(
-        "Registry not running for #{inspect(module)}; will register at runtime."
-      )
-
       :ok
     end
   end

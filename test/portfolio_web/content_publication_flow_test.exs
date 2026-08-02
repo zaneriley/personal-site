@@ -1,6 +1,8 @@
 defmodule PortfolioWeb.ContentPublicationFlowTest do
   use PortfolioWeb.ConnCase, async: false
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   import Phoenix.LiveViewTest
   import Portfolio.ContentRepoHelpers
   import Portfolio.GitHubWebhookHelpers
@@ -9,6 +11,7 @@ defmodule PortfolioWeb.ContentPublicationFlowTest do
   alias Portfolio.Content.Publishing
 
   describe "content publication flow" do
+    @tag capture_log: @capture_owned_logs
     test "merged content delivery publishes good content and preserves last-good on bad content",
          %{conn: conn} do
       source_repo = tmp_dir!("publication-flow-source")

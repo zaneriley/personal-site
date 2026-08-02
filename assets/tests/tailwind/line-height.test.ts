@@ -36,16 +36,7 @@ describe("calculateLineHeight", () => {
     });
 
     it("should calculate correct line-height for line-heights under 1", () => {
-      console.log(
-        "Test 'line-heights under 1' using config:",
-        JSON.stringify(latinConfig),
-      );
-      console.log("Test 'line-heights under 1' using fontSize:", 72);
       const lineHeight = calculateLineHeight(latinConfig, 72);
-      console.log(
-        "Test 'line-heights under 1' received lineHeight:",
-        lineHeight,
-      );
       expect(lineHeight).toBeCloseTo(0.7778, 3);
     });
 
@@ -88,10 +79,7 @@ describe("calculateLineHeight", () => {
   });
   describe("CJK Script", () => {
     it("should calculate baselineUnit as characterSize", () => {
-      console.log("Test 'CJK Script' using config:", JSON.stringify(cjkConfig));
-      console.log("Test 'CJK Script' using fontSize:", 42);
       const lineHeight = calculateLineHeight(cjkConfig, 42);
-      console.log("Test 'CJK Script' received lineHeight:", lineHeight);
       expect(lineHeight).toBeCloseTo(0.8571428572, 3);
     });
   });

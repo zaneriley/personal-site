@@ -106,6 +106,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
       DC: run
+      MIX_ENV: test
 
     steps:
       - uses: "actions/checkout@v6"

@@ -1,6 +1,8 @@
 defmodule Portfolio.Content.FileManagement.PromoterTest do
   use Portfolio.DataCase, async: true
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   alias Portfolio.Content.FileManagement.Promoter
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
@@ -171,6 +173,7 @@ defmodule Portfolio.Content.FileManagement.PromoterTest do
       refute Repo.get_by(Note, url: "plaintext-draft")
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects invalid content and keeps the previous database state" do
       content_path = tmp_dir!("reject-invalid")
       on_exit(fn -> File.rm_rf!(content_path) end)

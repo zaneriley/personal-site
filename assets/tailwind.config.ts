@@ -30,9 +30,12 @@ const config: Config = {
           "font-size-adjust": "ex-height from-font",
         },
         ".font-cheee": {
-          "font-family": ["Cheee", "Cheee Fallback", "Arial", "sans-serif"].join(
-            ", ",
-          ),
+          "font-family": [
+            "Cheee",
+            "Cheee Fallback",
+            "Arial",
+            "sans-serif",
+          ].join(", "),
           "font-size-adjust": "cap-height from-font",
         },
         ".font-gt-flexa": {

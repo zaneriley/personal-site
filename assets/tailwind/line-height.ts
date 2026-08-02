@@ -1,5 +1,11 @@
 import type { LineHeightConfig } from "./configs/type-config";
 
+const debugLog = (...args: unknown[]): void => {
+  if (process.env.TYPE_SCALE_DEBUG === "1") {
+    console.log(...args);
+  }
+};
+
 /**
  * Calculates unitless line-height value aligned to the baseline grid.
  * @param config LineHeightConfig
@@ -11,14 +17,14 @@ export const calculateLineHeight = (
   config: LineHeightConfig,
   fontSize: number,
 ): number => {
-  console.log("\nCalculating Line Height:");
-  console.log("Input Config:", {
+  debugLog("\nCalculating Line Height:");
+  debugLog("Input Config:", {
     baseFontSize: config.baseFontSize,
     baseLineHeight: config.baseLineHeight,
     scalingFactor: config.scalingFactor,
     incrementStep: config.incrementStep,
   });
-  console.log("Input Font Size:", fontSize, "px");
+  debugLog("Input Font Size:", fontSize, "px");
 
   if (fontSize <= 0) {
     throw new Error("Font size must be positive.");
@@ -26,14 +32,14 @@ export const calculateLineHeight = (
 
   // Step 1: Calculate and round base line-height in pixels
   const baseLineHeightPxRaw = config.baseLineHeight * config.baseFontSize;
-  console.log("\nStep 1: Base Line Height Raw");
-  console.log(
+  debugLog("\nStep 1: Base Line Height Raw");
+  debugLog(
     `baseLineHeightPxRaw = ${config.baseLineHeight} * ${config.baseFontSize} = ${baseLineHeightPxRaw}px`,
   );
 
   const baseLineHeightPx = Math.round(baseLineHeightPxRaw);
-  console.log("Step 1: Base Line Height Rounded");
-  console.log(
+  debugLog("Step 1: Base Line Height Rounded");
+  debugLog(
     `baseLineHeightPx = Math.round(${baseLineHeightPxRaw}) = ${baseLineHeightPx}px`,
   );
 
@@ -42,43 +48,43 @@ export const calculateLineHeight = (
   switch (config.incrementStep) {
     case "whole":
       baselineUnit = Math.round(baseLineHeightPx);
-      console.log("\nStep 2: Baseline Unit Calculation - Whole");
-      console.log(
+      debugLog("\nStep 2: Baseline Unit Calculation - Whole");
+      debugLog(
         `baselineUnit (whole) = Math.round(${baseLineHeightPx}) = ${baselineUnit}px`,
       );
       break;
     case "half":
       baselineUnit = Math.round(baseLineHeightPx) / 2;
-      console.log("\nStep 2: Baseline Unit Calculation - Half");
-      console.log(
+      debugLog("\nStep 2: Baseline Unit Calculation - Half");
+      debugLog(
         `baselineUnit (half) = Math.round(${baseLineHeightPx} * 2) / 2 = ${baselineUnit}px`,
       );
       break;
     case "quarter":
       baselineUnit = Math.round(baseLineHeightPx) / 4;
-      console.log("\nStep 2: Baseline Unit Calculation - Quarter");
-      console.log(
+      debugLog("\nStep 2: Baseline Unit Calculation - Quarter");
+      debugLog(
         `baselineUnit (quarter) = Math.round(${baseLineHeightPx} * 4) / 4 = ${baselineUnit}px`,
       );
       break;
     default:
       baselineUnit = Math.round(baseLineHeightPx);
-      console.log("\nStep 2: Baseline Unit Calculation - Default");
-      console.log(
+      debugLog("\nStep 2: Baseline Unit Calculation - Default");
+      debugLog(
         `baselineUnit (default) = Math.round(${baseLineHeightPx}) = ${baselineUnit}px`,
       );
       break;
   }
 
   // Log the exact value of baselineUnit
-  console.log("Step 2: Baseline Unit Value");
-  console.log(`baselineUnit = ${baselineUnit}`);
+  debugLog("Step 2: Baseline Unit Value");
+  debugLog(`baselineUnit = ${baselineUnit}`);
 
   // Step 3: Calculate the desired line height before scaling
   let desiredLineHeightPx = fontSize * config.baseLineHeight;
   desiredLineHeightPx = Number.parseFloat(desiredLineHeightPx.toFixed(4));
-  console.log("\nStep 3: Initial Desired Line Height");
-  console.log(
+  debugLog("\nStep 3: Initial Desired Line Height");
+  debugLog(
     `desiredLineHeightPx = ${fontSize} * ${config.baseLineHeight} = ${desiredLineHeightPx}px`,
   );
 
@@ -91,28 +97,26 @@ export const calculateLineHeight = (
       Number.parseFloat(scalingCalculation.toFixed(10)),
     );
 
-    console.log("\nStep 4: Scaling Adjustment");
-    console.log(`Font size difference: ${fontSizeDifference} px`);
-    console.log(
+    debugLog("\nStep 4: Scaling Adjustment");
+    debugLog(`Font size difference: ${fontSizeDifference} px`);
+    debugLog(
       `Scaling calculation: 1 - ${config.scalingFactor} * ((${fontSize} - ${config.baseFontSize}) / ${config.baseFontSize})`,
     );
-    console.log(`Scaling adjustment: ${scalingAdjustment}`);
+    debugLog(`Scaling adjustment: ${scalingAdjustment}`);
 
     const previousHeight = desiredLineHeightPx;
     desiredLineHeightPx = Number.parseFloat(
       (desiredLineHeightPx * scalingAdjustment).toFixed(4),
     );
-    console.log(
+    debugLog(
       `Adjusted line height: ${previousHeight}px → ${desiredLineHeightPx}px`,
     );
   }
 
   // Step 5: Calculate the number of baseline units
   const unitsRaw = desiredLineHeightPx / baselineUnit;
-  console.log("\nStep 5: Baseline Units Raw");
-  console.log(
-    `unitsRaw = ${desiredLineHeightPx} / ${baselineUnit} = ${unitsRaw}`,
-  );
+  debugLog("\nStep 5: Baseline Units Raw");
+  debugLog(`unitsRaw = ${desiredLineHeightPx} / ${baselineUnit} = ${unitsRaw}`);
 
   // Step 6: Round units to the nearest increment
   const incrementMultipliers: Record<string, number> = {
@@ -131,14 +135,14 @@ export const calculateLineHeight = (
   }
   let roundedUnits = Math.round(unitsRaw * multiplier) / multiplier;
   roundedUnits = Number.parseFloat(roundedUnits.toFixed(4));
-  console.log(`roundedUnits (${config.incrementStep}) = ${roundedUnits}`);
+  debugLog(`roundedUnits (${config.incrementStep}) = ${roundedUnits}`);
 
   // Step 7: Calculate the aligned line height in pixels
   const alignedLineHeightPx = Number.parseFloat(
     (roundedUnits * baselineUnit).toFixed(4),
   );
-  console.log("\nStep 7: Aligned Line Height");
-  console.log(
+  debugLog("\nStep 7: Aligned Line Height");
+  debugLog(
     `alignedLineHeightPx = ${roundedUnits} * ${baselineUnit} = ${alignedLineHeightPx}px`,
   );
 
@@ -146,8 +150,8 @@ export const calculateLineHeight = (
   const finalLineHeight = Number.parseFloat(
     (alignedLineHeightPx / fontSize).toFixed(10),
   );
-  console.log("\nStep 8: Final Line Height");
-  console.log(
+  debugLog("\nStep 8: Final Line Height");
+  debugLog(
     `finalLineHeight = ${alignedLineHeightPx} / ${fontSize} = ${finalLineHeight}`,
   );
 

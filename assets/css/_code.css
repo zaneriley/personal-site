@@ -34,18 +34,53 @@
 
 /* The classification classes the tokenizer emits. Default (unclassified) text
    takes the block's own color (--code-white) — no class needed. */
-.tok-keyword { color: var(--code-keyword); }
-.tok-atom { color: var(--code-atom); }
-.tok-module { color: var(--code-module); }
-.tok-function { color: var(--code-function); }
-.tok-type { color: var(--code-type); }
-.tok-call { color: var(--code-call); }
-.tok-attribute { color: var(--code-attribute); }
-.tok-string { color: var(--code-string); }
-.tok-comment { color: var(--code-comment); }
-.tok-operator { color: var(--code-operator); }
-.tok-punctuation { color: var(--code-punctuation); }
-.tok-number { color: var(--code-number); }
+.tok-keyword {
+  color: var(--code-keyword);
+}
+
+.tok-atom {
+  color: var(--code-atom);
+}
+
+.tok-module {
+  color: var(--code-module);
+}
+
+.tok-function {
+  color: var(--code-function);
+}
+
+.tok-type {
+  color: var(--code-type);
+}
+
+.tok-call {
+  color: var(--code-call);
+}
+
+.tok-attribute {
+  color: var(--code-attribute);
+}
+
+.tok-string {
+  color: var(--code-string);
+}
+
+.tok-comment {
+  color: var(--code-comment);
+}
+
+.tok-operator {
+  color: var(--code-operator);
+}
+
+.tok-punctuation {
+  color: var(--code-punctuation);
+}
+
+.tok-number {
+  color: var(--code-number);
+}
 
 /* ── code-block component chrome (PortfolioWeb.Components.CodeBlock) ──
    A framed listing: header (file path or language label + copy), line-number
@@ -60,7 +95,10 @@
   border-radius: var(--space-md);
   overflow: clip;
   font-family: var(--font-mono);
-  font-feature-settings: "salt" 1, "lnum" 1, "pnum" 1;
+  font-feature-settings:
+    "salt" 1,
+    "lnum" 1,
+    "pnum" 1;
 }
 
 .code-block-header {
@@ -78,8 +116,13 @@
   font-weight: var(--fw-flexa-2xs);
 }
 
-.code-block-dir { color: var(--code-folder); }
-.code-block-name { color: var(--code-filename); }
+.code-block-dir {
+  color: var(--code-folder);
+}
+
+.code-block-name {
+  color: var(--code-filename);
+}
 
 /* Language label (header fallback when there's no file path). Rendered via
    <.typography size="2xs">, whose flexa family/color this overrides into the

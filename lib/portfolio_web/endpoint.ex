@@ -1,10 +1,6 @@
 defmodule PortfolioWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :portfolio
 
-  require Logger
-
-  plug :log_request
-
   @session_options [
     store: :cookie,
     key: "_portfolio_key",
@@ -63,12 +59,4 @@ defmodule PortfolioWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
   plug PortfolioWeb.Router
-
-  defp log_request(conn, _opts) do
-    Logger.warning(
-      "Request received in Endpoint: #{inspect(conn.method)} #{inspect(conn.request_path)}"
-    )
-
-    conn
-  end
 end

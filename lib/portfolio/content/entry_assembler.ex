@@ -70,10 +70,6 @@ defmodule Portfolio.Content.EntryAssembler do
       end
     rescue
       Ecto.NoResultsError ->
-        Logger.warning(
-          "No #{content_type} found for identifier: #{inspect(id_or_url)}"
-        )
-
         {:error, :not_found}
     end
   end

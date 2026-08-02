@@ -18,7 +18,7 @@
  * 0.75). Re-measure in the browser if a face changes. size-adjust =
  * webfont.width / fallback.width; ascent/descent-override = metric / size-adjust.
  */
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import subsetFont from "subset-font";
@@ -114,7 +114,9 @@ const realFace = (f) =>
 const fallbackFace = (fb) =>
   `@font-face {\n  font-family: ${q(fb.family)};\n  src: ${fb.local
     .map((l) => `local("${l}")`)
-    .join(", ")};\n  size-adjust: ${fb.sizeAdjust};\n  ascent-override: ${fb.ascent};\n  descent-override: ${fb.descent};\n  line-gap-override: ${fb.lineGap};\n}\n`;
+    .join(
+      ", ",
+    )};\n  size-adjust: ${fb.sizeAdjust};\n  ascent-override: ${fb.ascent};\n  descent-override: ${fb.descent};\n  line-gap-override: ${fb.lineGap};\n}\n`;
 
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
@@ -144,7 +146,7 @@ async function main() {
     if (f.fallback) css += `${fallbackFace(f.fallback)}\n`;
   }
 
-  await writeFile(CSS_OUT, css);
+  await writeFile(CSS_OUT, `${css.trimEnd()}\n`);
   console.log(`wrote ${path.relative(path.join(here, ".."), CSS_OUT)}`);
 }
 

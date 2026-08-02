@@ -65,9 +65,12 @@ function cmd {
 
 function mix {
   # Run any mix commands
-  echo "Running mix as user: $(id)"
-  echo "From directory: $(pwd)"
-  echo "Command: mix $*"
+  if [[ "${RUN_VERBOSE:-0}" == "1" ]]; then
+    echo "Running mix as user: $(id)"
+    echo "From directory: $(pwd)"
+    echo "Command: mix $*"
+  fi
+
   cmd mix "${@}"
 }
 
@@ -148,12 +151,32 @@ function elixir:security-check {
 
 function elixir:test {
   # Run test suite
-  _dc -e "MIX_ENV=test" web mix test "${@}"
+  local arg
+  local args=()
+  local verbose=0
+
+  for arg in "${@}"; do
+    if [[ "${arg}" == "--verbose" ]]; then
+      verbose=1
+    else
+      args+=("${arg}")
+    fi
+  done
+
+  if [[ "${verbose}" == "1" ]]; then
+    _dc \
+      -e "MIX_ENV=test" \
+      -e "PORTFOLIO_TEST_LOG_LEVEL=debug" \
+      -e "PORTFOLIO_TEST_SQL_LOG=debug" \
+      web mix test "${args[@]}"
+  else
+    _dc -e "MIX_ENV=test" web mix test "${args[@]}"
+  fi
 }
 
 function elixir:test:file {
   # Run test suite and log to file
-  _dc -e "MIX_ENV=test" web mix test "${@}" > test_output.log 2>&1
+  elixir:test "${@}" > test_output.log 2>&1
 }
 
 function elixir:test:coverage {
@@ -242,7 +265,7 @@ function js:test {
 
 function js:test:run {
   # Run JavaScript tests once without watch mode
-  _dc js vitest run 
+  _dc -e "TYPE_SCALE_DEBUG=${TYPE_SCALE_DEBUG:-0}" js vitest run "${@}"
 }
 
 function js:test:browser {
@@ -489,6 +512,7 @@ function clean {
 function dev:setup {
     # Prepare local environment and dependencies needed to run the app
     ci:setup-env
+    ci:setup-db
 }
 
 function dev:start {
@@ -544,6 +568,16 @@ function dev:lint {
 function dev:test {
     # Run local Elixir and JS tests
     test:all "$@"
+}
+
+function dev:test:elixir {
+    # Run Elixir tests; accepts a test path and --verbose diagnostics
+    elixir:test "$@"
+}
+
+function dev:test:js {
+    # Run JavaScript tests once; accepts Vitest arguments
+    js:test:run "$@"
 }
 
 function dev:deps:install {
@@ -1081,7 +1115,7 @@ function format:all {
 
 function test:all {
     elixir:test "$@"
-    js:test
+    js:test:run
 }
 
 function help {
@@ -1101,6 +1135,8 @@ Dev: local app work
   dev:format            Format Elixir, JS, and CSS sources
   dev:lint              Run local lint fixers
   dev:test              Run local Elixir and JS tests
+  dev:test:elixir       Run Elixir tests; accepts a path and --verbose
+  dev:test:js           Run JavaScript tests once; accepts Vitest arguments
   dev:deps:install      Install Elixir and JS dependencies
   dev:deps:outdated     List outdated Elixir and JS dependencies
 
@@ -1150,6 +1186,10 @@ function help:all {
   compgen -A function | grep -v "^_" | sort | cat -n
 }
 
-# This idea is heavily inspired by: https://github.com/adriancooney/Taskfile
-TIMEFORMAT=$'\nTask completed in %3lR'
-time "${@:-help}"
+# Timing is useful evidence when requested, but it is not a default task result.
+if [[ "${RUN_TIMING:-0}" == "1" ]]; then
+  TIMEFORMAT=$'\nTask completed in %3lR'
+  time "${@:-help}"
+else
+  "${@:-help}"
+fi

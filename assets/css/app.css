@@ -33,14 +33,16 @@
 
 body {
   font-family:
-    "GT Flexa", "GT Flexa Fallback", "Noto Sans JP", "Trebuchet MS",
-    Avenir, "Fira Sans", -apple-system, system-ui, sans-serif;
+    "GT Flexa", "GT Flexa Fallback", "Noto Sans JP", "Trebuchet MS", Avenir,
+    "Fira Sans", -apple-system, system-ui, sans-serif;
   font-size: var(--fs-md);
+
   /* GT Flexa regular at the body size (= --fw-flexa-md, the md rung of the
      optical weight curve; see _type-tokens.generated.css). Weight is a free axis —
      per-size optical comp comes from the typography component's fw-flexa-*
      classes; emphasis from the -bold rungs. Was bundled into .font-gt-flexa. */
   font-weight: var(--fw-flexa-md);
+
   /* md rung of the baseline-grid leading (= 28px on the 7px grid). The root
      layout's body also carries .text-md which sets the same value; this is the
      grid-consistent fallback so body never falls back to an off-grid ratio. */
@@ -96,10 +98,6 @@ body {
   margin-bottom: calc(((var(--_lh) - 1) * -0.5em) + (var(--_db) * 1em));
 }
 
-html[lang="ja"] * {
-  line-height: var(--cjk-lh) !important;
-}
-
 /* Japanese (:lang(ja)) typographic foundation. The Latin-calibrated knobs (the
    ch-based measure, Latin OT features) don't fit Japanese; the font *faces* are
    already switched per-locale in typography_helpers.ex. Research:
@@ -115,6 +113,8 @@ html[lang="ja"] {
 /* The * Latin OT features (oldstyle figures, slashed zero) are wrong for the
    Latin/numerals embedded in JP ("+15", "Google"); reset to JP-relevant ones. */
 html[lang="ja"] * {
+  /* biome-ignore lint/complexity/noImportantStyles: locale-wide CJK leading must override per-component Latin line-height utilities */
+  line-height: var(--cjk-lh) !important;
   font-feature-settings:
     "kern" 1,
     "palt" 1;

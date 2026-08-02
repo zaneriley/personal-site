@@ -77,18 +77,18 @@
       "label": "root",
       "path": "/",
       "allowed_statuses": [200],
-      "required_body_text": ["Digital Product Designer", "Tokyo"],
+      "required_body_text": ["Product designer", "Tokyo"],
       "browser": {
-        "required_visible_text": ["Digital Product Designer", "Tokyo"]
+        "required_visible_text": ["Product designer", "Tokyo"]
       }
     },
     {
       "label": "english-home",
       "path": "/en",
       "allowed_statuses": [200],
-      "required_body_text": ["Digital Product Designer", "Tokyo"],
+      "required_body_text": ["Product designer", "Tokyo"],
       "browser": {
-        "required_visible_text": ["Digital Product Designer", "Tokyo"]
+        "required_visible_text": ["Product designer", "Tokyo"]
       }
     },
     {

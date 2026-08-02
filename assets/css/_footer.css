@@ -13,8 +13,16 @@
 
 :root {
   /* Hairline derived from the suppressed text colour so it tracks the theme. */
-  --footer-rule: color-mix(in oklch, var(--text-color-suppressed) 28%, transparent);
-  --footer-inset: color-mix(in oklch, var(--text-color-suppressed) 6%, transparent);
+  --footer-rule: color-mix(
+    in oklch,
+    var(--text-color-suppressed) 28%,
+    transparent
+  );
+  --footer-inset: color-mix(
+    in oklch,
+    var(--text-color-suppressed) 6%,
+    transparent
+  );
 
   /* Server datum colours ARE the code palette's green + blue (Figma reuses
      them here): the PASSING status and the metric values. Alias, don't copy —
@@ -90,7 +98,9 @@
 .spec-sheet-title {
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-color-main); /* bright (Figma neutral/100 → our brightest) */
+  color: var(
+    --text-color-main
+  ); /* bright (Figma neutral/100 → our brightest) */
 }
 
 .spec-sheet-dot {
@@ -103,7 +113,8 @@
 
 .spec-sheet-dot.is-up {
   background: var(--footer-ok);
-  box-shadow: 0 0 0 0.25em color-mix(in oklch, var(--footer-ok) 22%, transparent);
+  box-shadow: 0 0 0 0.25em
+    color-mix(in oklch, var(--footer-ok) 22%, transparent);
 }
 
 /* Rows: a description list. dt = label rail, dd = value.

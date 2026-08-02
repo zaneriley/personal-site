@@ -126,8 +126,14 @@ html[data-theme="dark"] {
      (decorative sub-floor, never body). callout/main are far brighter → comfortably AA.
      FOLLOW-UP: main→deemphasized is now a big jump (90.8%→76.3%); re-seating
      deemphasized/suppressed up the ramp (and the light-mode mirror) is its own task. */
-  --text-color-callout: var(--white-absolute); /* loudest text — the "for effect" white, above body */
-  --text-color-main: var(--dusk-000); /* body = white-point (the crushed white), brightest neutral */
+  --text-color-callout: var(
+    --white-absolute
+  ); /* loudest text — the "for effect" white, above body */
+
+  --text-color-main: var(
+    --dusk-000
+  ); /* body = white-point (the crushed white), brightest neutral */
+
   --text-color-deemphasized: var(--dusk-400); /* AA floor, 5.6:1 */
   --text-color-suppressed: var(--dusk-500); /* decorative sub-floor, 4.3:1 */
   --text-color-accent: var(--ochre-0);
@@ -205,10 +211,18 @@ html[data-theme="light"] {
      Check: --text-color-main now renders 8.86:1 on the hero surface vs the
      mock's measured 8.72:1. */
   --hue-warm-text: 6deg;
-  --text-color-callout: oklch(23% 0.05 var(--hue-warm-text)); /* ΔL58 emphasis */
+  --text-color-callout: oklch(
+    23% 0.05 var(--hue-warm-text)
+  ); /* ΔL58 emphasis */
+
   --text-color-main: oklch(33% 0.05 var(--hue-warm-text)); /* ΔL48 body */
-  --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text)); /* ΔL38 AA floor */
-  --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text)); /* ΔL28 sub-floor */
+  --text-color-deemphasized: oklch(
+    43% 0.04 var(--hue-warm-text)
+  ); /* ΔL38 AA floor */
+
+  --text-color-suppressed: oklch(
+    53% 0.03 var(--hue-warm-text)
+  ); /* ΔL28 sub-floor */
 
   /* Gold, NOT the warm-text anchor: --hue-warm-text anchors the neutral text
      ramp, while accent is the ochre. Hue matches --ochre-0 (75.85°) so light

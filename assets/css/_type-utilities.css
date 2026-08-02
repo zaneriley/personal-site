@@ -22,20 +22,61 @@
    regular rung automatically for the element's size, and the -bold rung when
    weight="bold". Hand-applied for inline emphasis spans too. Each references a
    generated --fw-flexa-* token (see _type-tokens.generated.css). */
-.fw-flexa-4xl { font-weight: var(--fw-flexa-4xl); }
-.fw-flexa-4xl-bold { font-weight: var(--fw-flexa-4xl-bold); }
-.fw-flexa-3xl { font-weight: var(--fw-flexa-3xl); }
-.fw-flexa-3xl-bold { font-weight: var(--fw-flexa-3xl-bold); }
-.fw-flexa-2xl { font-weight: var(--fw-flexa-2xl); }
-.fw-flexa-2xl-bold { font-weight: var(--fw-flexa-2xl-bold); }
-.fw-flexa-1xl { font-weight: var(--fw-flexa-1xl); }
-.fw-flexa-1xl-bold { font-weight: var(--fw-flexa-1xl-bold); }
-.fw-flexa-md { font-weight: var(--fw-flexa-md); }
-.fw-flexa-md-bold { font-weight: var(--fw-flexa-md-bold); }
-.fw-flexa-1xs { font-weight: var(--fw-flexa-1xs); }
-.fw-flexa-1xs-bold { font-weight: var(--fw-flexa-1xs-bold); }
-.fw-flexa-2xs { font-weight: var(--fw-flexa-2xs); }
-.fw-flexa-2xs-bold { font-weight: var(--fw-flexa-2xs-bold); }
+.fw-flexa-4xl {
+  font-weight: var(--fw-flexa-4xl);
+}
+
+.fw-flexa-4xl-bold {
+  font-weight: var(--fw-flexa-4xl-bold);
+}
+
+.fw-flexa-3xl {
+  font-weight: var(--fw-flexa-3xl);
+}
+
+.fw-flexa-3xl-bold {
+  font-weight: var(--fw-flexa-3xl-bold);
+}
+
+.fw-flexa-2xl {
+  font-weight: var(--fw-flexa-2xl);
+}
+
+.fw-flexa-2xl-bold {
+  font-weight: var(--fw-flexa-2xl-bold);
+}
+
+.fw-flexa-1xl {
+  font-weight: var(--fw-flexa-1xl);
+}
+
+.fw-flexa-1xl-bold {
+  font-weight: var(--fw-flexa-1xl-bold);
+}
+
+.fw-flexa-md {
+  font-weight: var(--fw-flexa-md);
+}
+
+.fw-flexa-md-bold {
+  font-weight: var(--fw-flexa-md-bold);
+}
+
+.fw-flexa-1xs {
+  font-weight: var(--fw-flexa-1xs);
+}
+
+.fw-flexa-1xs-bold {
+  font-weight: var(--fw-flexa-1xs-bold);
+}
+
+.fw-flexa-2xs {
+  font-weight: var(--fw-flexa-2xs);
+}
+
+.fw-flexa-2xs-bold {
+  font-weight: var(--fw-flexa-2xs-bold);
+}
 
 /* Caps: uppercase ALWAYS carries the caps tracking token — use this instead of a
    bare `uppercase` so the two never drift apart. (Cheee headers are caps via the

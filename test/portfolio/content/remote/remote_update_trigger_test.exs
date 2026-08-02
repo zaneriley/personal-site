@@ -1,6 +1,8 @@
 defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
   use Portfolio.DataCase, async: true
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   import Mox
   alias Portfolio.Content
   alias Portfolio.Content.Remote.GitCommand
@@ -119,6 +121,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                Content.get_publication_state()
     end
 
+    @tag capture_log: @capture_owned_logs
     test "failed first publish does not expose prepared generation rows" do
       source_repo = tmp_dir!("remote-first-invalid-content-source")
       clone_path = tmp_dir!("remote-first-invalid-content-clone")
@@ -151,6 +154,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
       refute Content.content_ready?()
     end
 
+    @tag capture_log: @capture_owned_logs
     test "records a rejected verdict without changing live content when promotion fails" do
       source_repo = tmp_dir!("remote-invalid-content-source")
       clone_path = tmp_dir!("remote-invalid-content-clone")
@@ -206,6 +210,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
                Content.get_publication_state()
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejected mixed updates keep serving old live rows" do
       source_repo = tmp_dir!("remote-partial-invalid-content-source")
       clone_path = tmp_dir!("remote-partial-invalid-content-clone")
@@ -278,6 +283,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
              } = Content.get_publication_state()
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects mixed delete and add updates that do not preserve deleted URLs" do
       source_repo = tmp_dir!("remote-rename-without-alias-source")
       clone_path = tmp_dir!("remote-rename-without-alias-clone")
@@ -420,6 +426,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
       assert Content.get_publication_state().live_content_sha == first_sha
     end
 
+    @tag capture_log: @capture_owned_logs
     test "returns an error for an invalid repository URL" do
       clone_path = tmp_dir!("remote-invalid-clone")
       target_sha = String.duplicate("a", 40)
@@ -439,6 +446,7 @@ defmodule Portfolio.Content.Remote.RemoteUpdateTriggerTest do
       assert String.starts_with?(reason, "Repository sync failed:")
     end
 
+    @tag capture_log: @capture_owned_logs
     test "redacts private auth tokens from sync failure verdicts" do
       token = "BOGUS_TOKEN_123"
       repo_url = "https://github.com/zaneriley/private-repo.git"

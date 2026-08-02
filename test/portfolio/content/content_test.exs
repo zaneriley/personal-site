@@ -1,5 +1,7 @@
 defmodule Portfolio.Content.ContentTest do
   use Portfolio.DataCase
+
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
   alias Portfolio.Content
   alias Portfolio.Content.PublicRead.Scope
   alias Portfolio.Content.Schemas.Note
@@ -270,6 +272,7 @@ defmodule Portfolio.Content.ContentTest do
       :ok
     end
 
+    @tag capture_log: @capture_owned_logs
     test "get_with_translations/3 returns content with specified locale translations" do
       # Create a note in the default locale (English)
       note =
@@ -486,6 +489,7 @@ defmodule Portfolio.Content.ContentTest do
       assert {:error, :invalid_file_path} = Content.extract_locale(file_path)
     end
 
+    @tag capture_log: @capture_owned_logs
     test "get_with_translations/3 returns content with specified locale translations" do
       # Create a note manually
       note =

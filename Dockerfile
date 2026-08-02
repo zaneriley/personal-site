@@ -10,7 +10,8 @@ ARG GID=1000
 
 # Install build dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential=12.9 \
+  && apt-get install -y --no-install-recommends \
+    build-essential=12.* \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Update node user and group IDs and set ownership
@@ -46,7 +47,12 @@ ARG GID=1000
 
 # Install development dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates=20230311+deb12u1 build-essential=12.9 curl=7.88.1-10+deb12u14 inotify-tools=3.22.6.0-4 git=1:2.39.5-0+deb12u3 \
+  && apt-get install -y --no-install-recommends \
+    build-essential=12.* \
+    ca-certificates=20230311+deb12u* \
+    curl=7.88.* \
+    git=1:2.39.* \
+    inotify-tools=3.22.* \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership
@@ -68,7 +74,7 @@ COPY --chown=elixir:elixir mix.* ./
 RUN if [ "${MIX_ENV}" = "dev" ]; then \
   mix deps.get --verbose; else mix deps.get --only "${MIX_ENV}"; fi
 
-# Copy config files and compile dependencies  
+# Copy dependency-affecting config and compile dependencies.
 COPY --chown=elixir:elixir config/config.exs config/"${MIX_ENV}".exs config/
 RUN mix deps.compile
 
@@ -77,13 +83,12 @@ COPY --chown=elixir:elixir --from=assets /app/priv/static /public
 COPY --chown=elixir:elixir . .
 
 # Conditionally digest assets, create a release, and clean up based on MIX_ENV
-RUN if [ "${MIX_ENV}" != "dev" ]; then \
+RUN if [ "${MIX_ENV}" = "prod" ]; then \
   mkdir -p /app/priv/static \
   && cp -r /public/* /app/priv/static/ \
   && mix compile --warnings-as-errors \
   && mix phx.digest && mix release; fi
 
-  
 ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
 
 EXPOSE 8000
@@ -92,7 +97,14 @@ CMD ["iex", "-S", "mix", "phx.server"]
 
 ###############################################################################
 
-# Stage 3: Production environment
+# Stage 3: Test environment. The dev builder is already parameterized by
+# MIX_ENV, so this alias gives CI a cacheable test-dependency image without a
+# second build implementation.
+FROM dev AS test
+
+###############################################################################
+
+# Stage 4: Production environment
 FROM elixir:1.17.2-slim AS prod
 LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
@@ -103,7 +115,11 @@ ARG GID=1000
 
 # Install production dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates=20230311+deb12u1 curl=7.88.1-10+deb12u14 inotify-tools=3.22.6.0-4 git=1:2.39.5-0+deb12u3 \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates=20230311+deb12u* \
+    curl=7.88.* \
+    git=1:2.39.* \
+    inotify-tools=3.22.* \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership
@@ -133,7 +149,7 @@ CMD ["bin/portfolio", "start"]
 
 ###############################################################################
 
-# Stage 4: Browser test/performance environment
+# Stage 5: Browser test/performance environment
 FROM assets AS browser
 
 USER root

@@ -11,7 +11,6 @@ defmodule Portfolio.Content.Entry.Source do
 
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.Records
-  alias Portfolio.Content.FileManagement.ValidationError
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.TranslationRepository
@@ -54,10 +53,6 @@ defmodule Portfolio.Content.Entry.Source do
       {:ok, updated_content}
     else
       {:error, reason} ->
-        Logger.error(
-          "Error in upsert_from_file: #{ValidationError.message(reason)}"
-        )
-
         {:error, reason}
     end
   end
@@ -86,7 +81,6 @@ defmodule Portfolio.Content.Entry.Source do
     )
 
     if is_nil(attrs["url"]) do
-      Logger.error("URL is nil in attrs: #{inspect(attrs)}")
       {:error, :nil_url}
     else
       case get_by_url_and_generation(
