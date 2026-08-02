@@ -1,5 +1,11 @@
 # Technical Documentation: Runtime AST to HEEx Conversion System
 
+> **Lifecycle: historical design sketch.** This proposal is superseded by the
+> shipped stored-AST compiler and safe renderer. Start with
+> `lib/portfolio/content/entry/compiler.ex`,
+> `lib/portfolio/content/markdown/renderer.ex`, and
+> `_PROJECT_DOCS/adrs/0005-publish-time-syntax-highlighting.md`.
+
 This document outlines the plan for implementing a runtime transformation system that converts a Markdown Abstract Syntax Tree (AST) into HEEx code on the fly. The approach focuses on dynamically generating HEEx templates from the content AST during application runtime, then caching the generated output. This ensures that end-user performance is comparable to SSR (Server-Side Rendered) HTML, while also supporting hot reload and fluid developer experience.
 
 ## Overview

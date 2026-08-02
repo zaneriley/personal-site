@@ -1,8 +1,8 @@
 # personal-site — repo contract
 
-Repo-scoped rules and shipped intent. Global agent contract lives in `~/.agents/AGENTS.md`; this file is what's specific to this project.
-
-This file was bootstrapped via `/grill-me` on 2026-05-06 against the deploy/ops scope. Other scopes (e.g. typography redesign) will extend it. Sections marked **partial** or **open** are explicit to-clarify items, not silent gaps.
+Repo-scoped stable rules and pointers. The global agent contract lives in
+`~/.agents/AGENTS.md`. Human orientation starts in `README.md`; durable project
+documents start in `_PROJECT_DOCS/README.md`.
 
 ---
 
@@ -15,19 +15,25 @@ and `deploy:*`. `dev:*` stands the app up locally; `ci:*` proves repo state;
 `deploy:*` handles private previews, publication rehearsals, content state, and
 release-shaped deploy proof.
 
-The canonical acceptance-gate surface is still `./run ci:*`. GitHub workflow YAML should call these canonical gate tasks, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same checks. If a gate changes, update `run` first, then call the `./run ci:*` task from CI.
+The supported acceptance-gate surface is `./run ci:*`: `ci:format`, `ci:lint`,
+`ci:compile`, `ci:test`, `ci:types`, `ci:security`, `ci:secrets`, `ci:workflow`,
+`ci:release`, and `ci:gate-integrity`. GitHub workflow YAML should call these
+tasks, not raw `mix`, `npx`, `yarn`, or one-off shell versions of the same
+checks. Existing workflows may still use compatibility aliases in `run`; those
+aliases delegate to the same implementation and are migration debt, not a
+second gate path. If a gate changes, update `run` first.
 
 GitHub CI must expose the real acceptance gates as legible top-level check jobs. Do not hide compile, lint, security, test, static analysis, workflow lint, or gate-integrity work as steps inside one generic `test` job. A PR reviewer should be able to identify the failing gate from the checks list without opening logs.
 
 - `./run ci:compile` produces zero compile warnings.
-- `./run ci:workflow-lint` is clean: actionlint accepts every GitHub workflow file.
+- `./run ci:workflow` is clean: actionlint accepts every GitHub workflow file.
 - `./run ci:acceptance-gate-bypass-check` is clean, and `./run ci:acceptance-gate-bypass-check:test` passes its fixture matrix: canonical workflow/run samples pass, and known fake-green patterns are rejected.
-- `./run ci:lint` is clean: ShellCheck, Hadolint, Credo, `mix format --check-formatted`, Biome check, and Stylelint check. The only allowed advisory is Biome `lint/complexity/noImportantStyles` for the intentional CJK line-height rule in `assets/css/app.css`; any other warning is red.
-- `./run ci:security-check` is clean: Sobelow with project config and nonzero exit on findings.
-- `./run ci:static-analysis` is clean: Dialyzer reports `Total errors: 0, Skipped: 0, Unnecessary Skips: 0`.
+- `./run ci:lint` is clean: ShellCheck, Hadolint, Credo, `mix format --check-formatted`, Biome check, and Stylelint check. The intentional CJK `!important` rule has a declaration-local Biome waiver in `assets/css/app.css`; any emitted warning is red.
+- `./run ci:security` is clean: Sobelow with project config and nonzero exit on findings.
+- `./run ci:types` is clean: Dialyzer reports `Total errors: 0, Skipped: 0, Unnecessary Skips: 0`.
 - `./run ci:test` is clean: Elixir tests and JS tests have 0 failures.
-- The secret-scan workflow runs `./run ci:secret-scan`; gitleaks current-tree scan has 0 findings.
-- `./run ci:prod-build` is clean: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, release RPC introspection, and public page budget checks all pass. GitHub branch protection must require the top-level `Prod build` check.
+- `./run ci:secrets` is clean: gitleaks current-tree scan has 0 findings.
+- `./run ci:release` is clean: prod image build, migration round-trip, release boot, `/readyz`, canonical route probes, release RPC introspection, and public page budget checks all pass. GitHub branch protection must require the top-level `Prod build` check.
 
 Route smoke is part of the production-build gate, not a separate placeholder job. Do not add another route-smoke gate just to make CI look broader; widen `./run ci:prod-build` only when the app has a stronger readiness/content contract.
 
@@ -69,7 +75,9 @@ When a gate fails, do this instead:
 
 If a gate cannot be fixed in the current slice, stop and report it as red. Do not downgrade it to advisory. Do not hide it behind a baseline. Do not merge it into an unrelated change.
 
-The Elixir-side prescriptions (writing-controllers, writing-liveviews, writing-otp, etc.) live in the `elixir-phoenix-style` skill at `.agents/skills/elixir-phoenix-style/`. Load `SKILL.md` early in any Elixir-editing session.
+The Elixir-side prescriptions (writing-controllers, writing-liveviews,
+writing-otp, etc.) live in the global `~/.agents/skills/elixir-phoenix-style/`
+skill. Load `SKILL.md` early in any Elixir-editing session.
 
 ---
 
@@ -85,65 +93,27 @@ Keep Conventional Commits for tooling, but make the subject after the prefix rea
 
 ---
 
-## Deploy / ops scope
+## Deploy / ops constraints
 
-### Objectives
+The durable objective is a site visitors do not see broken: strict CI before
+promotion, last-good content, explicit rollback, and the smallest origin that
+meets measured user-facing performance. DigitalOcean is the accepted interim
+substrate; see `_PROJECT_DOCS/adrs/0003-use-digitalocean-as-interim-origin-substrate.md`.
 
-- **Purpose:** Never ship errors to visitors at zaneriley.com; site always reachable. Iteration confidence via CI gates that catch LLM-authored mistakes before merge. Self-host on the smallest hardware that doesn't compromise users.
-- **Why now:** The repo just emerged from a multi-year "Backup from broken mac" state. Deps current, code clean, deps cleared GitHub vulnerabilities, branch merged. The infra layer is the next thing needed before design / typography rewrite work.
-- **Done looks like:** A push to main triggers CI gates; if green, an image is built and deployed via blue/green at the origin; smoke test runs; rollback is one command and tested. Visitors never see broken (CDN-cached front absorbs origin restarts and outages). Origin runs on the smallest hardware that meets the app's measured needs. Content-repo updates flow through the same loop. Observability emits metrics/logs Z can see; the next deploy reacts (auto-cancel rollout if error rate spikes).
-- **Out of scope:** No Grafana. No tool/stack prescription without `/literature` first (CDN, secrets, deploy substrate, observability all queued).
-- **Who else:** visitors (uptime + speed); future-Z (returning months later, expects deploy = forget nothing); LLMs working in this repo (CI is their guardrail); content-repo automation (`personal-site-content` webhook is a deploy "user"; earlier notes may call this `personal-website-content`).
+Current implementation status and unfinished planning live in
+`_PROJECT_DOCS/deploy-ops-status-plan.md`. Treat its dates and run evidence as a
+working record, not as always-current repository truth. The content authoring
+contract lives in `_PROJECT_DOCS/content-authoring-contract.md`; CI/deploy file
+ownership lives in `ci/README.md`.
 
-### Vision
-
-A portfolio visitors never see broken, served from cached edges so the origin can be tiny, hosted on hardware that fits in a drawer or in a breadboard frame, with a deploy pipeline that doesn't require remembering anything six months later. CI catches LLM-authored mistakes before they merge; rollback is one command and tested. Speed wins ties. Compute-per-watt and compute-per-cost are optimized, never at user expense.
-
-The breadboard-frame-as-painting is an aspiration, not a romantic floor. Owned hardware (Mac Studio, NUCs, the new NAS) is the honest fallback if breadboard-class can't meet measured app needs after resource-frugality work lands.
-
-### Architectural framing
-
-**CDN-fronted, tiny dynamic origin.** A highly-cached static front absorbs availability gaps so the origin can be Pi-class. The HA story is the cache layer, not origin redundancy. The origin can be slow and small; users don't see it directly. This is the framing that makes "five-nines" plausible alongside "single tiny server."
-
-### Strategies
-
-In approximate PM rank order. #1 anchors first because the site is meaningless without content flowing through. The adversarial check for #1 is **content deployability**, not mere repo sync: a fresher checkout does not count unless the site can keep serving last-good content, name the live content commit, reject bad content with a clear reason, and roll content back without guessing.
-
-1. **Content deployability.** Finish the content-repo publish path. The configured repo is `personal-site-content` in `.env.example`; earlier notes may call it `personal-website-content`. As of 2026-05-11, the app-side webhook path validates repo/ref/`after` SHA, syncs the local content clone to the exact commit, promotes changed Markdown transactionally, rejects bad content without moving the live generation, records accepted/rejected/ignored verdicts, falls back to last-good content on boot failures, supports generation-aware content-only rollback, and injects private content-repo auth without persisting credentials into Git remotes. The content-repo front door runs canonical CI commands for draft safety, app validation, and shell lint, and now emits a visible `Content publication verdict` status for accepted/would-publish, rejected/path+reason, and ignored/no-publishable-change outcomes. Renames use explicit `aliases:` frontmatter with 301 redirects; deletion-only changes keep hard-404 behavior. Mixed delete/add updates must preserve deleted live slugs through canonical URLs or aliases. The authoring contract lives in `_PROJECT_DOCS/content-authoring-contract.md`. Remaining work: share-image generation/rendering/validation. The DX target is Obsidian -> commit -> push -> accepted/rejected/ignored verdict, with no SSH, restart, DB poking, or "did the watcher notice?" uncertainty.
-2. **CI gates.** LLM-mistake catcher. Shipped 2026-05-07: existing compile/lint/security/test/static-analysis/workflow/secret gates are required, and `Prod build` is now a required branch-protection check. The gate builds the release image, runs migrations up/down/up, boots the release, checks `/readyz`, probes canonical routes, runs release RPC introspection, and records perf data.
-3. **Resource-frugality of the app itself.** Measure cold-start, p50 request latency, memory footprint, cache-hit rate. Reduce until "small enough." Cold-start audit at `.tmp/2026-05-05-upgrade-deep-dive/cold-start.md` is queued input. Hardware decision falls out of this measurement, not before.
-4. **Front-edge cache substrate.** CDN choice. Depends on #3 to know what's safely cacheable and TTL bounds. **Requires `/literature` before tool selection.**
-5. **Origin substrate + deploy pipeline.** DigitalOcean is the interim deploy/origin substrate until the app and deploy loop are boring enough to revisit self-hosting deliberately. Hardware/self-hosting still falls out of #3 later. See `_PROJECT_DOCS/adrs/0003-use-digitalocean-as-interim-origin-substrate.md`.
-6. **Observability + rollback loop.** Metrics, logs, the auto-cancel-on-spike loop. **Requires `/literature` before tool selection.** No Grafana.
-
-The order is not fully ratified beyond #1; #2 explicitly parallelizes with #1; #3 is prerequisite to #4–#5.
-
-### Round-trip deploy definition
-
-The "round-trip" is the full loop: **push → CI gates → image build → blue/green deploy → smoke test → notify → tested rollback path exercised on every deploy → content-repo updates flowing through the same loop → observability emits metrics/logs the next deploy reacts to (auto-cancel on error-rate spike).** All four pieces (the basic loop, rollback, content sync, observability feedback) are in scope; this is what success looks like.
-
-Current Phase 3 status and sequencing live in `_PROJECT_DOCS/deploy-ops-status-plan.md`. Keep that plan synchronized with `_PROJECT_DOCS/2026-revival-todo.md` when the active workstream changes.
-
-### Hard constraints (partial — Step 4 of `/grill-me` was cut short)
-
-Captured so far. Re-run `/grill-me --step 4` (constraints) when picking this up to fill in the rest.
+Locked constraints:
 
 - **No Co-Authored-By; no Claude/Anthropic mentions in commit messages.** Hook-enforced via `~/.agents/claude-code/hooks/block-co-author.sh`. Why: tool-attribution leaks tooling choice into history; commits are by Z regardless of who drafted the prose.
 - **No tool/stack prescription without `/literature` first.** Why: prevents unsourced lock-in. Z explicitly ratified this 2026-05-06 for CDN, secrets management, deploy substrate, and observability. Default to literature-first; "I think we should use X" is a yellow flag without a brief.
-- **No Grafana.** Explicit veto 2026-05-06. (Why not yet recorded; surface in next grill.)
+- **No Grafana.** Explicit veto 2026-05-06.
 - **Versioned + idempotent deploys.** Why: blast-radius-bounded, repeatable, recoverable.
 - **Speed wins ties.** Decision criterion *and* operational constraint: any tool that slows the user-visible path loses, full stop.
 - **Compute-per-watt floor; never at user expense.** Resource minimization is the goal until it costs visitors. User experience is the hard floor.
-
-Not yet captured: budget ceilings, telemetry-leaving-box policy, network rules (Tailscale?), key-management policy beyond `op://`, "reproducible solo in a year" rule, refusals on specific orgs.
-
-### Open / unfinished items from the grill
-
-- **Hard constraints** — only ~6 captured of probably 10–12. Re-run constraint elicitation.
-- **Taste seeding (Step 5 of `/grill-me`)** — not started. 3–5 representative past decisions in this scope with the why behind each.
-- **Strategy ordering** — beyond #1 anchored first, the rest is "approximately the order I sketched." Pin down before kicking off scope-by-scope work.
-- **Performance targets** — Z mentioned 200ms round-trip and 400ms cold-start in the same conversation. Confirm both are targets (boot ≤ 400ms; response p50 ≤ 200ms) and what "remote" means for the cold-start measurement.
-- **Why-no-Grafana.** Pure preference, past pain, ideological? Affects what an acceptable observability stack looks like.
 
 ---
 
@@ -160,6 +130,8 @@ These three surfaced during the light/dark theme + identity work and are explici
 - **`spec_sheet` primitive is close but off-mock — second pass.** The footer's Typefaces + Server cards (`PortfolioWeb.Components.Footer.spec_sheet/1`, styles in `assets/css/_footer.css`) are structurally right but don't match the Figma mock. Gaps: padding/proportions, border + inset treatment, header tag + status-dot placement (dot floats to the right edge / header wraps at narrow widths), and row label-column width (values wrap awkwardly). (The green "PASSING"/dot and metric colors now have real tokens — `--footer-ok`/`--footer-datum`, aliased to the code palette so they track theme.) **Also:** GT Flexa Mono isn't loaded — labels/values fall back to the system monospace stack (footer uses `--font-mono` directly); load the face or pick a deliberate substitute. Mock: `~/Downloads/Footer.{png,svg}` (TRANSIENT — archive into the repo/vault before it's lost; the `.svg` is a flat outlined export, a visual spec only). **Lint policy decision — RESOLVED (`bededc5`):** the spec_sheet's BEM `.spec-sheet__el` / `--mod` selectors were renamed to kebab (`.spec-sheet-el`), clearing the 14 `selector-class-pattern` errors and keeping the CSS single-convention (kebab throughout). No BEM-sanctioning `.stylelintrc.json` change was made.
 
 - **No design-system solution for click/tap affordances.** There's no consistent treatment for interactive elements (links, buttons, tap targets, and hover / active / focus-visible / visited states). Hard because the dusk/neutral palette **shifts both hue and chroma across the OKLCH lightness ramp**, so naive "darken on hover" or a single fixed accent doesn't read consistently — affordances must hold across the moving neutral ramp **and** both themes, on a textured surface. **Pass should:** define interactive-state tokens (hover/active/focus-visible/visited), a minimum tap-target size (44px), a focus-visible ring legible over the surface texture, and link underline/affordance conventions — wired into the existing `--text-color-*` / `--accent` token system, not ad-hoc per component.
+
+- **Replace the footer's display-only status with owned live data.** `PortfolioWeb.Components.Footer` currently defaults the server temperature, deploy SHA/status, node health, operating cost, and Tokyo temperature. Wire each value to a bounded, cached source (thermal zone, release stamp, health state, and weather provider) without moving data access into HEEx; preserve explicit assigns so tests and degraded operation stay deterministic.
 
 - **Revisit nav label/route naming (Case Studies, Self) — punted 2026-06-05.** Shortening the nav labels ("Case Studies"→"Work", "Self"→"About") would gain header width, but the quick win is outweighed by what it opens: (1) **taxonomy** — a single *case study* is a deliberately distinct content type from a *note*; "Work" blurs that distinction. (2) It's **unclear "Work" reads better** than "Case Studies" at all. (3) **Routes** — changing `/case-studies`, `/self` is an SEO call: it needs 301s once the site is indexed, but the site is currently `robots.txt: Disallow: /` (default Phoenix, pre-launch), so a route change would be **free right now** — argues for deciding *before* launch if ever. (4) **i18n** — slugs are currently English under a locale prefix (`/ja/case-studies`); a rename forces the choice to keep English slugs everywhere vs. localize per locale. (5) **Depth** — label-only vs. +route vs. +concept rename (`CaseStudyLive`/`:case_studies`/content-type). Decide the taxonomy and depth first when revisiting; don't do a partial swap.
 
@@ -201,7 +173,10 @@ Manual visual-diff findings vs the Figma mocks, caught while reworking type weig
 
 ## How this file gets updated
 
-- After the next `/grill-me` pass: append to or replace the partial sections above.
-- New scopes (typography redesign, etc.) get their own top-level sections following the same shape.
-- ADR-grade decisions land in `_PROJECT_DOCS/adrs/`; this file keeps only stable guidance, workflows, acceptance gates, and pointers.
-- This file is git-tracked and public-shaped per `~/.agents/AGENTS.md` §10. PII goes to the vault, not here.
+- Keep only stable repository rules, acceptance gates, durable pointers, and
+  the canonical backlog here.
+- Put accepted architectural decisions in `_PROJECT_DOCS/adrs/`, dated status
+  in the appropriate `_PROJECT_DOCS/` working record, and tactical evidence in
+  `.tmp/` until it earns a durable home.
+- Keep this public-shaped per `~/.agents/AGENTS.md` §10. PII goes to the vault,
+  not here.

@@ -1,187 +1,100 @@
-<p align="center">
-  <img src="https://github.com/zaneriley/personal-site/blob/main/logo.png" alt="Zane Riley Portfolio Logo" width="500"/>
-</p>
+# Zane Riley's portfolio
 
-# Zane Riley's Product Design Portfolio (WIP)
+The source for [zaneriley.com](https://zaneriley.com): a bilingual portfolio
+built with Elixir, Phoenix LiveView, PostgreSQL, and a separate Markdown content
+repository.
 
-<p align="left">
-    <img src="https://img.shields.io/website?url=https%3A%2F%2Fzaneriley.com&up_message=online&down_message=offline&label=portfolio" alt="Website Status" />
-    <img src="https://img.shields.io/github/actions/workflow/status/zaneriley/personal-site/ci.yml" alt="GitHub Actions Workflow Status" />
-    <a href='https://coveralls.io/github/zaneriley/personal-site?'><img src='https://coveralls.io/repos/github/zaneriley/personal-site/badge.svg?branch=main' alt='Coverage Status' /></a>
-</p>
+The application intentionally does more than a static portfolio. It exercises
+content publication, last-good rollback, private preview deployment, feeds,
+internationalization, and an optically aligned typography system while keeping
+the public pages fast.
 
-<p align="left">
-  <img src="https://img.shields.io/github/license/zaneriley/personal-site" alt="GitHub License" />
-  <img src="https://img.shields.io/github/stars/zaneriley/personal-site?style=social" alt="Github Stars" />
-</p>
+## Start here
 
-<p align="left">
-  <a href="#introduction">Introduction</a> •
-  <a href="#features">Features</a> •
-  <a href="#technical-details">Technical Details</a> •
-  <a href="#development-and-deployment">Development and Deployment</a> •
-  <a href="#future-improvements">Future Improvements</a> •
-  <a href="#acknowledgements-and-version-history">Acknowledgements & Version History</a> •
-  <a href="#using-this-project">Using This Project</a> •
-  <a href="#license">License</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#contact">Contact</a>
-</p>
+Local tooling runs through Docker Compose. Do not install or run a host Elixir,
+Node, or database toolchain for this repository.
 
-## My product design portfolio
-
-I'm product designer with +10 years of experience, based in Tokyo, Japan (prev in San Francisco). 
-
-**Why all this for a website?**
-- It's a personal website. It's one of the few times you can build what you want without compromises. 
-- I heard all of my eng friends saying how fast you can build features in elixir/phoenix, and I wanted to build something that automated the pain from my last portfolio, with more infra and a better DX (e.g. admin interface, metrics, gitops)
-- Maybe it'll be reusable for future app development
-- This is also a homelab project
-
-## Features
-
-### Dev tools
-
-- Hundreds of tests with good coverage
-- Security checks with Sobelow
-- Static code analysis with Dialyzer
-- Automated code formatting and linting for elixir, javascript, css & bash
-- Git hooks for pre-commit and pre-push checks
-
-You can read more in <a href="#development-and-deployment">Development and Deployment</a>
-
-### Internationalization
-
-The portfolio supports both English (/en) and Japanese (/ja) languages. It determines the locale, by in order:
-* Locale in URL
-* Accept-Language header to detect the user's preferred language.
-
-For application and landing page content, we use Gettext for translations. Case studies and other long form content have separate markdown files for each language.
-
-You can also add a new language in `/gettext/` for UI and `/priv/content/schema/` for whichever schema you want to translate.
-
-### Admin Interface
-
-An admin interface with a Markdown-based system allows for creating case studies with live reloading. This feature is only accessible in the development environment and is not exposed in production.
-
-### Optically-Aligned Typography System
-
-A optically-aligned typographic "engine"  that optically adjusts typgographic elements. The goal is to ensure that the container aligns precisely with the visible text content—from the ascender down to the bottom of the x-height—rather than encompassing the entire line-height box. This precise alignment makes it so all objects are equally spaced optically. 
-
-It requires specific integration for each typeface you use, so it's not practical for most teams. 
-
-In the future, you can get this for free if [CSS Inline Layout Module Level 3](https://www.w3.org/TR/css-inline-3/) is implemented.
-
-## Technical Details
-
-<p align="left">
-  <img src="https://img.shields.io/badge/Elixir-4B275F?style=flat&logo=elixir&logoColor=white" alt="Elixir" />
-  <img src="https://img.shields.io/badge/Phoenix-FD4F00?style=flat&logo=phoenix-framework&logoColor=white" alt="Phoenix Framework" />
-  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white" alt="TailwindCSS" />
-</p>
-
-### Backend
-
-The backend is built with Elixir and Phoenix. PostgreSQL is used as the database for storing project data and user interactions. Obviously overkill for what's basically a website, but I hope to use the infra for other projects.
-
-### Frontend
-
-On the frontend, we use:
-- esbuild: An extremely fast JavaScript bundler and minifier
-- TailwindCSS: A utility-first CSS framework
-- Heroicons: For SVG icons
-
-
-### Database and Content Management
-
-PostgreSQL is used for data storage. A file watcher looks for markdown files with the correct frontmatter key-value pairs to update records in the database.
-
-## Development and Deployment
-
-### Local Development
-
-To set up the project locally:
-
-1. Clone the repository
-2. Ensure you have Docker installed
-3. Run `docker-compose up -d` to start the application
-4. Run `./run mix ecto.setup` to initially set up the db
-4. Visit `localhost:8000` in your browser
-
-### Code Quality and Git Hooks
-
-This project uses Lefthook for managing Git hooks to ensure code quality and consistency. The configuration can be found in `.lefthook.yml`. Here's a brief overview of what's included:
-
-- **Pre-commit hooks**: Format Elixir files and ensure containers are running.
-- **Pre-push hooks**: Run format checks, linting (Credo), and tests for Elixir code.
-
-To use these hooks, install Lefthook by following the instructions at [Lefthook's GitHub repository](https://github.com/evilmartians/lefthook).
-
-These hooks help maintain code quality, but you bypass the checks easily if you want to do it all in CI workflows.
-
-### Deployment
-
-Deployment details are still being finalized. The project uses GitHub Actions for CI/CD, as indicated by the workflow status badge at the top of this README. Below is a WIP:
-
-You'll need to make sure the env variables are set to production, namely:
 ```bash
-export DOCKER_WEB_VOLUME=./priv/static:/app/priv/static # Use this for production
-#export DOCKER_WEB_VOLUME=.:/app  # use this for dev 
+./run help
+./run dev:setup
+./run dev:start
 ```
 
-### Troubleshooting
+Then open [localhost:8000](http://localhost:8000). `dev:setup` creates `.env`
+from `.env.example` when needed, builds the containers, starts PostgreSQL, and
+waits for it to become ready, then initializes the database. Stop the stack
+with:
 
-If you encounter issues running `mix ecto.drop` while the app is running, try stopping the web app first:
 ```bash
-docker compose stop web
+./run dev:stop
 ```
-If that doesn't work:
+
+Common development checks:
+
 ```bash
-docker exec -it YOURAPP-postgres-1 psql -U YOURUSER -d YOURDATABASE -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'YOURDATABASE' AND pid <> pg_backend_pid();"
+./run dev:format
+./run dev:test
+./run ci:lint
+./run ci:test
+./run ci:all
 ```
-Then drop your database:
+
+Run a focused Elixir test with:
+
 ```bash
-docker exec -it YOURAPP-postgres-1 psql -U YOURAPP -d postgres -c "DROP DATABASE YOURDATABASE;"
-```
-and the test database as well (otherwise they'll be out of sync)
-```bash
-docker exec -it YOURAPP-postgres-1 psql -U YOURAPP -d postgres -c "DROP DATABASE YOURDATABASE_test;"
+./run dev:test:elixir test/portfolio_web/router_test.exs
 ```
 
-After that, run your app again with `docker compose up -d` and then do `./run mix ecto.setup`.
+Add `--verbose` to the focused Elixir command when application and Ecto SQL
+debug logs are part of the investigation. Set `RUN_TIMING=1` for wrapper timing
+or `RUN_VERBOSE=1` for wrapper/Mix invocation detail. Use
+`TYPE_SCALE_DEBUG=1 ./run dev:test:js tests/tailwind/line-height.test.ts` for the
+typography calculator trace.
 
-## Future Improvements
+## Project map
 
-Planned enhancements include:
-- Image optimization and minification
-- OG graph image generation
-- Performance optimizations
-- Full implementation of telemetry
+- `lib/portfolio/` — content, publication, persistence, and application logic.
+- `lib/portfolio_web/` — Phoenix endpoint, routes, LiveViews, controllers, and
+  components.
+- `assets/` — JavaScript, CSS, typography generation, font tooling, and Vitest
+  tests.
+- `priv/repo/` — Ecto migrations and seed data.
+- `test/` — ExUnit tests and shared test support.
+- `config/` — environment-specific application configuration.
+- `ci/` — checked-in contracts, fixtures, gates, preview implementation, and
+  provider glue. Start with [ci/README.md](ci/README.md).
+- `_PROJECT_DOCS/` — durable contracts, accepted decisions, active plans, and
+  clearly labeled historical sketches. Start with
+  [_PROJECT_DOCS/README.md](_PROJECT_DOCS/README.md).
+- `.tmp/` — ignored measurements, research, and unfinished working evidence.
 
-## Acknowledgements and Version History
+## Content and delivery
 
-A special thanks to [Nick Janetakis](https://nickjanetakis.com) for creating the docker-phoenix-example, which served as the foundation for this portfolio.
+Authored Markdown lives in the separate `personal-site-content` repository.
+This application validates and promotes content, records accepted/rejected/
+ignored publication outcomes, preserves the last-good generation, and supports
+content-only rollback. The author-facing contract is
+[_PROJECT_DOCS/content-authoring-contract.md](_PROJECT_DOCS/content-authoring-contract.md).
 
-Previous portfolio versions:
-- 2016 – 2024: Built using React, NextJS, and Styled-Components. [Code available here](https://github.com/zaneriley/personal-site/tree/Portfolio).
-- 2014 – 2016: Built using Vanilla JS. [View on Wayback Machine](https://web.archive.org/web/20150711234633/http://zaneriley.com/).
-- 2010: Built using Flash.
+The deploy and preview implementation is intentionally separated from the
+content author workflow. Use `./run help` for the supported `deploy:*` commands
+and [ci/README.md](ci/README.md) for their ownership and artifact paths. Some
+preview/provider commands allocate paid infrastructure; do not run them as
+ordinary local verification.
 
-## License
+## Repository contracts
 
-This project is licensed under AGPL-3.0. See the [LICENSE](LICENSE) file for details.
+- [AGENTS.md](AGENTS.md) — project-specific acceptance gates, safety rules, and
+  canonical backlog.
+- [_PROJECT_DOCS/adrs/](_PROJECT_DOCS/adrs/) — accepted architectural decisions.
+- [.github/workflows/ci.yml](.github/workflows/ci.yml) — top-level CI wiring;
+  executable gate behavior remains in `./run`.
 
-### Using this for your own portfolio
+## License and history
 
-If you're using this project as a base for your own portfolio website, I ask that you provide credit for the original work. Here's how you can do that:
+The project is licensed under [AGPL-3.0](LICENSE).
 
-1. Include a comment in your main layout file (e.g., `root.html.heex`) that says:
-```
-<!-- Based on Zane Riley's Portfolio: https://github.com/zaneriley/personal-site -->
-```
-2. Add a line to your README.md file:
-```markdown
-This project is based on [Zane Riley's Portfolio](https://github.com/zaneriley/personal-site).
-```
-By providing credit, you help support open-source projects and allow others to discover and learn from the original work. Thank you for your consideration!
+Earlier portfolio versions used React/Next.js (2016–2024), vanilla JavaScript
+(2014–2016), and Flash (2010). The Phoenix version began from Nick Janetakis's
+Docker Phoenix example and has since grown its own content and deployment
+architecture.

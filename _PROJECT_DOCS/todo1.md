@@ -1,5 +1,10 @@
 # Two-Phase Markdown Rendering Implementation Plan
 
+> **Lifecycle: historical implementation plan.** Completed and unchecked items
+> below are retained for archaeology, not as the canonical backlog. Start with
+> `_PROJECT_DOCS/README.md`, current compiler/renderer source, and the Backlog in
+> `AGENTS.md`.
+
 Core Problem: Currently, markdown content and Phoenix components live in separate worlds. Your markdown gets rendered to static HTML, which means you can't embed interactive components (like carousels or image galleries) directly in your content.
 
 YOU WILL FOLLOW TDD PRINCIPLES.

@@ -1,5 +1,10 @@
 # Markdown Processing Pipeline
 
+> **Lifecycle: historical orientation; partially stale.** Module names,
+> component syntax, cache behavior, and TODOs below may not describe the shipped
+> system. Start with `_PROJECT_DOCS/README.md` and the current compiler/renderer
+> source and tests.
+
 ## Goal
 
 This document explains the process by which Markdown (`.md`) files within this project are parsed, transformed, and ultimately rendered as rich content, potentially including interactive Phoenix LiveView components, within the application.

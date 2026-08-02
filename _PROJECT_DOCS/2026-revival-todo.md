@@ -1,5 +1,10 @@
 # Portfolio revival — running TODO
 
+> **Lifecycle: historical ledger.** Archived when the theme and typography
+> workstream began. This file preserves revival-era evidence; it is not the
+> current status, backlog, or deploy contract. Use `AGENTS.md` for the canonical
+> backlog and `_PROJECT_DOCS/deploy-ops-status-plan.md` for dated deploy status.
+
 Started 2026-05-05 with the branch `frontend-infra` ("Backup from broken mac"). This doc tracks where we are in the bigger arc: get the repo working → clean it up → upgrade deps → merge to main → cold-start hardening → typography redesign.
 
 **Updated:** 2026-05-18 (DigitalOcean is now the interim origin/deploy substrate until the app and deploy loop are done enough to revisit self-hosting. Real bug-bash evidence proved local Mac cross-arch Docker builds are not trustworthy without Buildx and the 1 GiB DO host cannot build the app without OOM. Deploy work must use prebuilt image digests. The private preview lane has passed repeatedly on real PR and candidate SHAs: validated PR SHA → candidate app image digest → disposable host → runtime viability → preview page acceptance → content publication rehearsal → default destroy.)
