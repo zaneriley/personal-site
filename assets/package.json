@@ -19,7 +19,7 @@
     "fontkit": "^2.0.4",
     "jsdom": "^29.0.0",
     "playwright": "^1.59.0",
-    "postcss": "^8.5.0",
+    "postcss": "^8.5.18",
     "postcss-import": "^16.1.1",
     "prettier": "^3.8.0",
     "stylelint": "^17.0.0",
