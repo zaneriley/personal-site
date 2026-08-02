@@ -135,14 +135,14 @@ defmodule PortfolioWeb.Plugs.SetLocale do
   # assigns it to the connection, and sets the Content-Language header.
 
   @spec set_locale(Plug.Conn.t(), {locale(), path()}) :: Plug.Conn.t()
-  defp set_locale(conn, {user_locale, remaining_path}) do
+  defp set_locale(conn, {user_locale, _remaining_path}) do
     start_time = System.monotonic_time()
 
     result =
       case Phoenix.Router.route_info(
              PortfolioWeb.Router,
              conn.method,
-             remaining_path,
+             conn.request_path,
              conn.host
            ) do
         %{} ->
@@ -161,7 +161,7 @@ defmodule PortfolioWeb.Plugs.SetLocale do
 
         :error ->
           log(:warning, "Invalid route after setting locale",
-            path: remaining_path
+            path: conn.request_path
           )
 
           conn
