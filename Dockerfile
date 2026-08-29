@@ -18,6 +18,9 @@ RUN apt-get update \
   && groupmod -g "${GID}" node && usermod -u "${UID}" -g "${GID}" node \
   && mkdir -p /node_modules && chown node:node -R /node_modules /app
 
+# Named USER is intentional: users are created from the UID/GID build args
+# above, so the name resolves in-container. DL3066 prefers numeric ids.
+# hadolint ignore=DL3066
 USER node
 
 # Copy package.json and yarn files and install dependencies
@@ -60,6 +63,7 @@ RUN apt-get update \
   && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" elixir \
   && mkdir -p /mix && chown elixir:elixir -R /mix /app
 
+# hadolint ignore=DL3066
 USER elixir
 
 # Install Hex and Rebar
@@ -127,6 +131,7 @@ RUN apt-get update \
   && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" elixir \
   && chown elixir:elixir -R /app
 
+# hadolint ignore=DL3066
 USER elixir
 
 ENV USER=elixir
@@ -152,9 +157,11 @@ CMD ["bin/portfolio", "start"]
 # Stage 5: Browser test/performance environment
 FROM assets AS browser
 
+# hadolint ignore=DL3066
 USER root
 RUN npx playwright install-deps chromium
 
+# hadolint ignore=DL3066
 USER node
 RUN npx playwright install chromium
 
@@ -163,9 +170,11 @@ RUN npx playwright install chromium
 # Stage 5: One-shot preview page acceptance runner
 FROM browser AS preview-page-acceptance
 
+# hadolint ignore=DL3066
 USER root
 RUN mkdir -p /opt/preview-page-acceptance && chown node:node /opt/preview-page-acceptance
 
+# hadolint ignore=DL3066
 USER node
 WORKDIR /opt/preview-page-acceptance
 ENV PREVIEW_PAGE_ACCEPTANCE_ROOT=/opt/preview-page-acceptance
