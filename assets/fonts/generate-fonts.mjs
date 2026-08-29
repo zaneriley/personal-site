@@ -8,7 +8,7 @@
  * Subsetter: subset-font = harfbuzz hb-subset, woff2 out.
  *
  * Variable faces keep their weight axis in full and pin the axes the site never
- * uses. See the axis policy above FACES, and _PROJECT_DOCS/font-trim-spec.md for
+ * uses. See the axis policy above FACES, and _PROJECT_DOCS/page-weight.md for
  * the measured outcome and the checks that prove nothing moved.
  *
  * The fallback faces below are METRIC-OVERRIDE fallbacks (zero-CLS + stable
@@ -57,7 +57,7 @@ for (const [a, b] of ranges) {
 // --fw-flexa-* rung from tailwind/configs/type-config.ts must stay reachable,
 // and its minimum IS its default (100), so raising it would move the default
 // instance and void the browser-measured fallbacks below (ADR 0004).
-// Re-verify any change here with the render-parity check in font-trim-spec.md.
+// Re-verify any change here with the render-parity check in page-weight.md.
 const FACES = [
   {
     src: "src/gt-flexa-gx.ttf",

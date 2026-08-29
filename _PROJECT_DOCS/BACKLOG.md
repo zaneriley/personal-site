@@ -12,9 +12,12 @@ The private vault read-view and scratch area is
 
 - **Bring `./run ci:release` back inside its public-page budgets.** The
   2026-08-02 local release proof built the image, ran migrations, booted, and
-  passed route probes, but failed the checked-in page budgets. Locally available
-  production fonts alone shipped 481,525 bytes against a 100,000-byte route
-  budget, with related HTML and request-count overruns. Fix delivery/weight; do
+  passed route probes, but failed the checked-in page budgets. Fonts shipped
+  481,525 bytes against a 100,000-byte route budget. The same run also failed on
+  a 574,227-byte hero photograph, uncompressed HTML, request count, and the
+  live-page connection — originally summarised here as "related overruns," which
+  hid the largest single item. See **Page weight** below for each one measured
+  separately, and `page-weight.md` for the numbers. Fix delivery and weight; do
   not raise budgets to make the gate green.
 - **Upgrade audited dependencies in a compatibility-focused slice.** The
   2026-08-02 audit found available Hex and JavaScript updates, advisories across
@@ -25,6 +28,124 @@ The private vault read-view and scratch area is
   source faces and generated woff2 files are intentionally gitignored, so a
   clean checkout cannot assemble them. Choose an authenticated build-time fetch,
   private artifact, or other explicit delivery path before launch.
+
+## Page weight
+
+Measured 2026-08-29. Full numbers, method, and the checks that prove a change
+did not alter the design are in `page-weight.md`. Work top to bottom: each item
+below is ordered by bytes saved per unit of effort.
+
+- **Turn on compression for pages the app renders.** The server sends every
+  HTML page uncompressed. `Plug.Static` has `gzip: true`, but that setting only
+  serves already-compressed copies of *static files* (CSS, JavaScript, fonts) —
+  it does nothing for pages Phoenix renders on the fly. Cowboy, the web server,
+  does not compress anything unless told to. Measured on `/en`: 70,225 bytes
+  sent, 12,338 bytes if compressed — 82% smaller. This is the largest saving
+  available on the site and it is a few lines of configuration. Turn it on,
+  then re-measure; `html_bytes` should drop from 52,658 to roughly 12,000 and
+  land under its 30,000 budget.
+- **Turn on compression for the live-page connection too.** The `socket "/live"`
+  declaration in `endpoint.ex` has no compression option, and the running page
+  sends 33,404 bytes over that connection against a 20,000 budget. LiveView
+  supports compressing this; it is one flag. Measure before and after — the
+  saving is unverified.
+- **Re-encode the draft hero photograph.** `assets/static/images/portrait-draft.jpg`
+  is 574,227 bytes for a 468×714 image. That works out to 13.75 bits per pixel,
+  where a normal web photograph is about 2. It is not too large in dimensions —
+  468 pixels wide is correct for a 240-pixel slot on a high-resolution screen —
+  it was simply exported at near-maximum quality. Re-encoding at sensible
+  quality gives roughly 40,000 bytes and no visible difference, which takes
+  `image_bytes` from 577,161 to under its 150,000 budget. This is a draft asset;
+  do not build the responsive-image work around it (see the media item below).
+- **Shrink the inline SVG in the page markup.** Ten SVG images are written
+  directly into the HTML and total 26,850 bytes — 38% of the page markup. The
+  largest is the signature wordmark at 13,771 bytes
+  (`lib/portfolio_web/components/identity/signature.svg`), and it has never been
+  run through SVGO: its path coordinates still carry full decimal precision.
+  The repository already has a tuned SVGO configuration; it is simply pointed at
+  `assets/static/` and does not reach this file.
+- **Decide what the site is willing to ship, then set the budgets to match.**
+  After the items above, fonts are the only measurement still over budget:
+  roughly 372,100 bytes against 100,000. Two facts make this a decision rather
+  than a task. First, five custom typefaces cannot fit a 100,000-byte font
+  budget without either dropping a typeface from the home page or cutting the
+  display faces down to only the characters they actually use. Second, the
+  contract in `ci/contracts/routes.json` cannot be satisfied as written — the
+  whole-page budget (88,000 bytes) is smaller than the font budget alone
+  (100,000). Pick the design you want, then write budgets that describe it.
+  This is ADR-shaped work; do not quietly raise a number to get a green run.
+- **Settled, do not re-investigate: the JavaScript is not a problem.** The
+  built file is 345,021 bytes during development, but that version is
+  unminified and carries a source map. What ships is 156,669 bytes minified and
+  **48,931 bytes compressed**, against a 60,000 budget — already passing, which
+  is why `js_bytes` has never appeared in a failure list. Of the minified code,
+  92.5% is the Phoenix and LiveView framework itself (LiveView alone is 78%);
+  code written for this site totals about 7.5 KB. There is no meaningful saving
+  here that does not mean abandoning LiveView, which is ADR 0002's separate and
+  unratified question.
+
+## Asset handling and regression checks
+
+- **Give images the same treatment fonts already have.** Fonts have a generator
+  (`assets/fonts/generate-fonts.mjs`), a command (`./run assets:fonts`), and a
+  place for original files (`assets/fonts/src/`). Images have none of these —
+  `assets/static/images/` is a folder that files get dropped into, which is why
+  an unoptimized draft shipped. Add `./run assets:images` following the same
+  shape: original files in `assets/images/src/`, never modified; generated files
+  written to `assets/static/images/`. Use `sharp`. Research conclusions, so this
+  does not need re-deciding: produce AVIF with a JPEG fallback and skip WebP
+  entirely (WebP now serves about 1.5% of visitors that AVIF does not); put a
+  hash of the original file plus the encoding settings into the output filename
+  so "does this file already exist" is the entire staleness check, with no
+  separate record to keep in sync; do not generate a ladder of widths yet — one
+  double-resolution copy per image, and three only for the single largest image
+  on a page. Never re-compress an image in place: compressing an
+  already-compressed photograph degrades it a little more each time, which is
+  also why automatic image-compressing bots were rejected.
+- **Expose the SVG optimizer as a command.** `assets/svgo.config.js` and the
+  `svg:optimize` script already exist but are only reachable through yarn, so
+  they are not in `./run`'s list and effectively invisible. Add
+  `./run assets:svg` alongside `assets:fonts`.
+- **Add a size check that runs before a commit is made.** Nothing in this
+  repository measures asset weight until a push triggers a four-minute build in
+  CI, so an oversized file can sit on a local branch indefinitely — which is
+  exactly what happened: the photograph was committed 2026-06-05 and first
+  measured 2026-08-29. Add a check on files being committed that computes bits
+  per pixel (file size divided by pixel count) and fails above roughly 4, plus a
+  plain size ceiling. The photograph is 13.75; every other image in the
+  repository is under 0.18, so a single threshold catches it and nothing else.
+  It must run in well under a second and must not need Docker, or it will be
+  bypassed. Report the file, the numbers, and the command that fixes it.
+- **Fix or delete the pre-push hook.** `.lefthook.yml` ends its push checks with
+  `|| echo "Checks failed, but push will proceed."`, so the hook cannot fail no
+  matter what it finds. Separately, `.git/hooks/` is empty — lefthook was never
+  installed on this machine, so none of it runs at all. A check that always
+  passes is worse than no check, because it occupies the place where a real one
+  would go.
+- **Record accepted budget failures with an expiry date.** `routes.json` has an
+  `exceptions` list that has never been used. While fonts are knowingly over
+  budget, the gate fails on every single run, which trains you to ignore it —
+  that is how the photograph's failure got summarised away as "related
+  overruns" in this file's own release-blocker entry. Put the font overrun in
+  `exceptions` with the observed number, the reason, and a date. Make the gate
+  pass on a recorded exception, but fail if the number grows or the date passes.
+  Then a red run means something new is wrong.
+- **Fix what CI measures before trusting it.** Font files are deliberately not
+  committed, so a CI checkout has none and all five requests return 404. CI
+  therefore reports `font_bytes: 0` and undercounts total page weight by 42–80%
+  on every route. It happens to fail today only because those 404s trip
+  unrelated checks. When the font delivery item above is finished, those
+  failures disappear and the font budget will start being enforced for the
+  first time — expect the gate to appear to "newly break" on something that was
+  always true.
+- **Protect the performance gate from being quietly weakened.**
+  `bin/ci/acceptance-gate-bypass-check` keeps a list of gates that cannot be
+  narrowed or removed without failing. `ci:prod-build` and
+  `ci:performance-browser` are not in it. One-line addition; the test fixtures
+  already exist.
+- **List the `assets:` commands in `./run help`.** `assets:fonts` and
+  `assets:font-metrics` exist but appear in no section of the help menu, so
+  neither is discoverable without reading the script.
 
 ## Deploy, origin, and operations
 
@@ -97,6 +218,26 @@ The private vault read-view and scratch area is
   `Work`/`About` affects labels, routes, SEO redirects, locale slugs, modules,
   and content types. Because robots currently disallow indexing, a route change
   is cheapest before launch; do not make a label-only partial rename.
+- **Stop shipping the design sketch pages to visitors.** The router scope
+  holding `/weight-calibration`, `/color-tokens`, `/code-block`, `/hdr-lab`,
+  `/color-sketch`, `/shader-scale-sketch`, `/palette-comparison`, and
+  `/dark-background-sketch` has no development-only guard, so all of them are
+  reachable in production. Decide whether to guard them by environment or keep
+  them deliberately public; do not leave it accidental.
+- **Route the hero image through a component instead of a bare tag.** The
+  portrait in `home_live.ex` is a hand-written `<img>` with a TODO on it, so it
+  gets none of the shared handling. Note that `image.ex` is currently two things
+  at once: it describes itself as a general-purpose image primitive, and it is
+  also registered as a Markdown component for images inside written content.
+  Page furniture and article images are different callers; decide whether they
+  should share one component before wiring the hero into it.
+- **Add the two characters that currently fall back to a system font.** The
+  subset built into the web fonts covers Latin plus common punctuation and
+  arrows, but misses `⧉` (the copy button on code blocks,
+  `lib/portfolio_web/components/code_block.ex`) and `≺` `≻` (the error pages).
+  Both render today in whatever font the visitor's device supplies. Either add
+  them to the character set in `assets/fonts/generate-fonts.mjs` or replace them
+  with characters already covered.
 
 ## Typography, color, and font pipeline
 
@@ -112,7 +253,7 @@ The private vault read-view and scratch area is
 - **Instance and axis-trim variable faces before launch.** GT Flexa currently
   ships the full weight range plus unused width and italic axes. Predictions,
   phased levers, and the must-not-move verification contract are ratified in
-  `font-trim-spec.md`; preserve the browser-measured fallback metrics from
+  `page-weight.md`; preserve the browser-measured fallback metrics from
   ADR 0004.
 - **Consolidate font generation under `assets/fonts/`.** The subsetting/
   `@font-face` generator and typography-metric pipeline share source faces but

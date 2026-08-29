@@ -1,4 +1,44 @@
-# Font axis-trim: expected outcomes and backstop verification
+# Page weight: measurements, decisions, and how we prove nothing broke
+
+This file owns one question: why the pages are heavier than the budgets allow,
+and what we are doing about it. The work items live in `BACKLOG.md` under
+**Page weight** and **Asset handling and regression checks**; this file holds
+the numbers behind them, the reasoning that has already been settled, and the
+checks that prove a weight change did not alter the design.
+
+## Where the bytes are (home page, measured 2026-08-29)
+
+The budgets live in `ci/contracts/routes.json` and are enforced by
+`ci/gates/browser-performance.mjs`, which loads each page in a real browser on
+a simulated mid-range phone and counts what came over the network.
+
+| What | Measured | Budget | Note |
+|---|---|---|---|
+| Images | 577,161 | 150,000 | One draft photograph, 574,227 of it |
+| Fonts | 372,100 | 100,000 | Five typefaces. Was 536,667 before the axis trim below |
+| HTML | 52,658 | 30,000 | Sent uncompressed; would be ~12,000 compressed |
+| Live-page connection | 33,404 | 20,000 | Not compressed either |
+| JavaScript | 48,931 | 60,000 | Already passing; 92.5% is the framework |
+| Requests | 11 | 6 | Five fonts plus the photograph |
+| **Whole page** | **~1,219,051** | **88,000** | See the contract problem below |
+
+**The contract cannot be satisfied as written.** The whole-page budget (88,000)
+is smaller than the font budget alone (100,000), so no combination of passing
+sub-budgets adds up to a passing page. That is a decision waiting to be made,
+not a number to tune — see the BACKLOG item about deciding what the site is
+willing to ship.
+
+**What CI measures is not what visitors get.** The font files are deliberately
+not committed to the repository, so a CI checkout has none of them and all five
+requests fail with a 404. CI therefore reports zero font bytes and undercounts
+the total page by 42–80% on every route. Only a local `./run ci:release` run
+measures fonts honestly. This also means that when font delivery is fixed, the
+font budget will begin being enforced for the first time and the gate will look
+like it newly broke.
+
+---
+
+# Phase 1 (done): font axis trim
 
 **Status:** planned. Executes deferred consequence #1 of ADR 0004 ("instance +
 axis-trim the variable faces before launch"). This document is the measuring
