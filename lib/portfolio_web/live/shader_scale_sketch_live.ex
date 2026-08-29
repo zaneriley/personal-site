@@ -652,8 +652,7 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
                     :for={chip <- grade.chips}
                     class="shader-sketch__mini-ramp-chip"
                     style={chip.style}
-                  >
-                  </span>
+                  ></span>
                 </div>
                 <div class="shader-sketch__grade-sample" style={grade.style}>
                   <p class="shader-sketch__grade-title">The quiet page</p>

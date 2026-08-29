@@ -218,7 +218,8 @@
           <p class="note">
             Live — re-checks when you drag the window to another display or the OS
             changes headroom (brightness slider, low-power mode). If
-            <strong>PQ PNG decode</strong> fails the HDR tiles below render as flat
+            <strong>PQ PNG decode</strong>
+            fails the HDR tiles below render as flat
             grey and nothing on this page means anything.
           </p>
         </section>
@@ -235,17 +236,23 @@
               <figcaption>absolute white<br />break the grade (SDR)</figcaption>
             </figure>
             <figure :for={nits <- @ladder_nits}>
-              <img class="sw" src={"/images/hdr-lab/white-#{nits}.png"} alt={"flat field at #{nits} nits"} />
-              <figcaption><%= nits %> nits<br />break the display</figcaption>
+              <img
+                class="sw"
+                src={"/images/hdr-lab/white-#{nits}.png"}
+                alt={"flat field at #{nits} nits"}
+              />
+              <figcaption>{nits} nits<br />break the display</figcaption>
             </figure>
           </div>
           <p class="note" style="margin-block-start: var(--space-md)">
             Without display headroom the browser tone-maps rather than clips —
             measured in SDR Chromium: 203&nbsp;→&nbsp;187, 400&nbsp;→&nbsp;223,
             800&nbsp;→&nbsp;248, 1300&nbsp;→&nbsp;255 (of 255). A highlight rolloff
-            keeps the rungs distinguishable but pushes them <strong>at or below</strong>
+            keeps the rungs distinguishable but pushes them
+            <strong>at or below</strong>
             absolute white — the 203-nit tile (the PQ reference white) lands
-            <em>below</em> CSS white. Consequence: keep effect cores well over-range
+            <em>below</em>
+            CSS white. Consequence: keep effect cores well over-range
             (≥&nbsp;2× reference white) so the fallback still reads as a bloom, and
             serve the SDR file where exact whites matter.
           </p>
@@ -273,13 +280,12 @@
             alt="stepped luminance bands from 203 to 1600 nits"
           />
           <div class="ramp-labels">
-            <span :for={nits <- @ramp_bands}><%= nits %></span>
+            <span :for={nits <- @ramp_bands}>{nits}</span>
           </div>
           <p class="note" style="margin-block-start: var(--space-2xs)">
             Count the distinct bands: the last visible step ≈ this display's current
             headroom. Drag the window between displays or move the brightness slider
-            and watch bands appear and disappear — the reason the grammar rule is
-            <strong>HDR is amplitude, never information</strong>.
+            and watch bands appear and disappear — the reason the grammar rule is <strong>HDR is amplitude, never information</strong>.
           </p>
         </section>
 
@@ -287,40 +293,73 @@
           <h2>3 · The orbs — dynamic-range-limit tiers</h2>
           <div class="orb-row">
             <figure>
-              <img src="/images/hdr-lab/orb-light-sdr.png" alt="SDR fallback orb" />
+              <img
+                src="/images/hdr-lab/orb-light-sdr.png"
+                alt="SDR fallback orb"
+              />
               <figcaption>SDR file<br />the fallback everyone gets</figcaption>
             </figure>
             <figure>
-              <img class="drl-standard" src="/images/hdr-lab/orb-light.png" alt="HDR orb clamped to standard" />
-              <figcaption>HDR · standard<br />clamped to SDR — should match the fallback</figcaption>
+              <img
+                class="drl-standard"
+                src="/images/hdr-lab/orb-light.png"
+                alt="HDR orb clamped to standard"
+              />
+              <figcaption>
+                HDR · standard<br />clamped to SDR — should match the fallback
+              </figcaption>
             </figure>
             <figure>
-              <img class="drl-constrained" src="/images/hdr-lab/orb-light.png" alt="HDR orb at constrained" />
+              <img
+                class="drl-constrained"
+                src="/images/hdr-lab/orb-light.png"
+                alt="HDR orb at constrained"
+              />
               <figcaption>HDR · constrained<br />the candle tier</figcaption>
             </figure>
             <figure>
-              <img class="drl-nolimit" src="/images/hdr-lab/orb-light.png" alt="HDR orb at full headroom" />
-              <figcaption>HDR · no-limit<br />the cast tier — core at 1000 nits</figcaption>
+              <img
+                class="drl-nolimit"
+                src="/images/hdr-lab/orb-light.png"
+                alt="HDR orb at full headroom"
+              />
+              <figcaption>
+                HDR · no-limit<br />the cast tier — core at 1000 nits
+              </figcaption>
             </figure>
             <figure>
-              <button class="cast" type="button" aria-label="hover or focus to release full headroom">
+              <button
+                class="cast"
+                type="button"
+                aria-label="hover or focus to release full headroom"
+              >
                 <img src="/images/hdr-lab/orb-light.png" alt="" />
               </button>
-              <figcaption>hover / focus to cast<br />one transition of dynamic-range-limit</figcaption>
+              <figcaption>
+                hover / focus to cast<br />one transition of dynamic-range-limit
+              </figcaption>
             </figure>
             <figure>
-              <img src="/images/hdr-lab/orb-dark.png" alt="dark orb — black core with violet rim" />
-              <figcaption>the dark orb<br />faithful comp render — SDR by nature</figcaption>
+              <img
+                src="/images/hdr-lab/orb-dark.png"
+                alt="dark orb — black core with violet rim"
+              />
+              <figcaption>
+                the dark orb<br />faithful comp render — SDR by nature
+              </figcaption>
             </figure>
             <figure>
               <div class="eclipse"></div>
-              <figcaption>CSS eclipse sketch<br />DOM-only — blends live with the surface</figcaption>
+              <figcaption>
+                CSS eclipse sketch<br />DOM-only — blends live with the surface
+              </figcaption>
             </figure>
           </div>
           <p class="note" style="margin-block-start: var(--space-md)">
             Toggle the theme: in dark the light orb carries even in SDR (the crush
             leaves 9% under absolute white); in light the surface already grazes the
-            ceiling, so the light orb <strong>needs</strong> headroom — while the
+            ceiling, so the light orb <strong>needs</strong>
+            headroom — while the
             eclipse reads best exactly there. Theme-reciprocal, not duplicated.
           </p>
         </section>
@@ -330,7 +369,11 @@
           <div class="applied">
             <div class="card">
               <h3>The seal casts</h3>
-              <button class="cast-hanko" type="button" aria-label="hanko with glow on hover">
+              <button
+                class="cast-hanko"
+                type="button"
+                aria-label="hanko with glow on hover"
+              >
                 <img class="glow" src="/images/hdr-lab/orb-light.png" alt="" />
                 <PortfolioWeb.Components.Identity.hanko id="hdr-cast" />
               </button>
@@ -346,13 +389,18 @@
               <nav class="fake-nav" aria-label="demo navigation">
                 <a href="#" aria-current="page">
                   Work
-                  <img class="candle" src="/images/hdr-lab/orb-light.png" alt="" />
+                  <img
+                    class="candle"
+                    src="/images/hdr-lab/orb-light.png"
+                    alt=""
+                  />
                 </a>
                 <a href="#">Notes</a>
                 <a href="#">Self</a>
               </nav>
               <p class="note">
-                The one sanctioned <em>standing</em> use: constrained tier only —
+                The one sanctioned <em>standing</em>
+                use: constrained tier only —
                 barely beyond white, never the full cast.
               </p>
             </div>
@@ -360,11 +408,16 @@
             <div class="card">
               <h3>Arrival</h3>
               <p class="note">
-                <a href="#arrival">Jump to #arrival ↓</a> — a fragment landing blooms
+                <a href="#arrival">Jump to #arrival ↓</a>
+                — a fragment landing blooms
                 once, then settles to a faint standing glow.
               </p>
               <div class="arrival" id="arrival">
-                <img class="glow drl-nolimit" src="/images/hdr-lab/orb-light.png" alt="" />
+                <img
+                  class="glow drl-nolimit"
+                  src="/images/hdr-lab/orb-light.png"
+                  alt=""
+                />
                 <h3>You were sent here</h3>
                 <p class="note"><a href="#">reset</a></p>
               </div>
@@ -376,16 +429,19 @@
           <h2>5 · Notes</h2>
           <p class="note">
             These assets are PQ-encoded PNGs with a cICP chunk — real HDR in
-            Chromium, authored by <code>hdr-prototype/generate_assets.py</code> with
+            Chromium, authored by <code>hdr-prototype/generate_assets.py</code>
+            with
             no external tooling. The orbs reproduce the Figma comp (node
             3390-3684) layer for layer: four ellipses each with its own
             rotation/skew (76.9° / 80.92° / 86.24° / 79.95°, skewX ≈ 8°), violet
             #B19FF2 drop shadows composited outside the shapes, the top three on
             overlay blend — baked against the asset's own stack, since a floating
-            PNG has no page backdrop (live <code>mix-blend-mode</code> against the
+            PNG has no page backdrop (live <code>mix-blend-mode</code>
+            against the
             surface is the follow-up experiment). Grain is re-added procedurally;
             Figma noise effects don't survive SVG export. The comp names these
-            layers <code>hover-*-fx</code> — the design itself specifies a hover
+            layers <code>hover-*-fx</code>
+            — the design itself specifies a hover
             treatment. The SDR file is the untouched comp look; HDR expansion
             starts only above 85% luminance, so the fringe keeps its chroma in SDR
             range. Production assets should become gain-map AVIF (SDR base + gain

@@ -214,9 +214,7 @@ defmodule PortfolioWeb.Components.Footer do
                suffix is a secondary annotation, so it sits one colour down from the
                link label. Leading space lives in the EN msgid; JP uses fullwidth （）. --%>
             <.link href="#" class="footer-eyebrow">
-              {gettext("Resume")}<span class="footer-muted">{gettext(
-              " (PDF)"
-            )}</span>
+              {gettext("Resume")}<span class="footer-muted">{gettext(" (PDF)")}</span>
             </.link>
             <.link href="mailto:hello@zaneriley.com" class="footer-eyebrow">
               {gettext("Email")}
@@ -301,8 +299,7 @@ defmodule PortfolioWeb.Components.Footer do
           :if={@status}
           class={["spec-sheet-dot", @status == :up && "is-up"]}
           aria-hidden="true"
-        >
-        </span>
+        ></span>
       </header>
       <dl class="spec-sheet-rows">
         <div :for={row <- @row} class="spec-sheet-row">
