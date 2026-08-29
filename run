@@ -101,9 +101,10 @@ function secret {
 }
 
 function lint:dockerfile {
-  # Lint Dockerfile
+  # Lint Dockerfile. DL3066 (info) wants numeric USER ids; our users are
+  # created from ${UID}/${GID} build args, so the named USER is intentional.
   docker container run --rm -i \
-    hadolint/hadolint hadolint -t style "${@}" - < Dockerfile
+    hadolint/hadolint hadolint -t style --ignore DL3066 "${@}" - < Dockerfile
 }
 
 function lint:shell {
