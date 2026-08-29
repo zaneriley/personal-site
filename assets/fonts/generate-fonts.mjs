@@ -7,10 +7,9 @@
  * Plain Node ESM (NOT ts-node — the ts-node type-token scripts are broken).
  * Subsetter: subset-font = harfbuzz hb-subset, woff2 out.
  *
- * Variable faces (GT Flexa) keep their full axes for now — we expect to use the
- * wght/wdth axes later. Instancing/axis-trimming to shrink them is a tracked
- * pre-launch perf task (_PROJECT_DOCS/BACKLOG.md); add `variationAxes` here when
- * ready.
+ * Variable faces keep their weight axis in full and pin the axes the site never
+ * uses. See the axis policy above FACES, and _PROJECT_DOCS/font-trim-spec.md for
+ * the measured outcome and the checks that prove nothing moved.
  *
  * The fallback faces below are METRIC-OVERRIDE fallbacks (zero-CLS + stable
  * ch-grid). Their numbers are BROWSER-MEASURED (a-z avg advance + fontBoundingBox
@@ -48,12 +47,24 @@ for (const [a, b] of ranges) {
 // This array IS the manifest — co-located with the loop that reads it. A face:
 // the source file in ./src, the output basename, the @font-face family/weight,
 // and (optionally) a metric-override fallback face generated alongside it.
+//
+// Axis policy: only pin an axis whose CSS-requested value equals its fvar
+// default. Then the pin drops delta data and moves no rendered pixel.
+// ital qualifies (`font-style: normal` requests 0 = its default) — pinned.
+// wdth does NOT: `font-stretch: normal` requests 100 but GT Flexa defaults to 0,
+// so pinning at 0 condenses the site and pinning at 100 re-rounds deltas; both
+// changed 28 of 32 surfaces. Left variable. wght stays whole — every
+// --fw-flexa-* rung from tailwind/configs/type-config.ts must stay reachable,
+// and its minimum IS its default (100), so raising it would move the default
+// instance and void the browser-measured fallbacks below (ADR 0004).
+// Re-verify any change here with the render-parity check in font-trim-spec.md.
 const FACES = [
   {
     src: "src/gt-flexa-gx.ttf",
     out: "gt-flexa",
     family: "GT Flexa",
     weight: "100 900",
+    variationAxes: { ital: 0 },
     fallback: {
       family: "GT Flexa Fallback",
       local: ["Arial", "Liberation Sans"],
@@ -68,6 +79,7 @@ const FACES = [
     out: "gt-flexa-mono",
     family: "GT Flexa Mono",
     weight: "100 900",
+    variationAxes: { ital: 0 },
   },
   {
     src: "src/cardinal-fruit-regular.ttf",
@@ -130,7 +142,10 @@ async function main() {
 
   for (const f of FACES) {
     const input = await readFile(path.join(SRC_DIR, f.src));
-    const out = await subsetFont(input, CHARSET, { targetFormat: "woff2" });
+    const out = await subsetFont(input, CHARSET, {
+      targetFormat: "woff2",
+      ...(f.variationAxes && { variationAxes: f.variationAxes }),
+    });
     await writeFile(path.join(OUT_DIR, `${f.out}.woff2`), out);
     console.log(
       `  ${f.out}.woff2  ${Math.round(out.length / 1024)}KB  (from ${Math.round(input.length / 1024)}KB)`,

@@ -110,8 +110,10 @@ The private vault read-view and scratch area is
   text sizes, city letter spacing and real 700 face, and footer muted/emphasis
   relationship against archived mocks.
 - **Instance and axis-trim variable faces before launch.** GT Flexa currently
-  ships the full weight range plus an unused width axis. Preserve the browser-
-  measured fallback metrics from ADR 0004.
+  ships the full weight range plus unused width and italic axes. Predictions,
+  phased levers, and the must-not-move verification contract are ratified in
+  `font-trim-spec.md`; preserve the browser-measured fallback metrics from
+  ADR 0004.
 - **Consolidate font generation under `assets/fonts/`.** The subsetting/
   `@font-face` generator and typography-metric pipeline share source faces but
   live in separate homes. Move toward one source-oriented pipeline without
