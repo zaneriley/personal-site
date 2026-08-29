@@ -49,21 +49,31 @@ below is ordered by bytes saved per unit of effort.
   sends 33,404 bytes over that connection against a 20,000 budget. LiveView
   supports compressing this; it is one flag. Measure before and after — the
   saving is unverified.
-- **Re-encode the draft hero photograph.** `assets/static/images/portrait-draft.jpg`
-  is 574,227 bytes for a 468×714 image. That works out to 13.75 bits per pixel,
-  where a normal web photograph is about 2. It is not too large in dimensions —
-  468 pixels wide is correct for a 240-pixel slot on a high-resolution screen —
-  it was simply exported at near-maximum quality. Re-encoding at sensible
-  quality gives roughly 40,000 bytes and no visible difference, which takes
-  `image_bytes` from 577,161 to under its 150,000 budget. This is a draft asset;
-  do not build the responsive-image work around it (see the media item below).
-- **Shrink the inline SVG in the page markup.** Ten SVG images are written
-  directly into the HTML and total 26,850 bytes — 38% of the page markup. The
-  largest is the signature wordmark at 13,771 bytes
-  (`lib/portfolio_web/components/identity/signature.svg`), and it has never been
-  run through SVGO: its path coordinates still carry full decimal precision.
-  The repository already has a tuned SVGO configuration; it is simply pointed at
-  `assets/static/` and does not reach this file.
+- **Done 2026-08-29: re-encoded the draft hero photograph.** Was 574,227 bytes
+  at 468×714 — 13.75 bits per pixel, where a normal web photograph is about 2.
+  The dimensions were always right (468 pixels suits a 240-pixel slot on a
+  high-resolution screen); it had simply been exported at near-maximum quality.
+  Re-encoded at quality 82 with mozjpeg and progressive scan: **69,505 bytes,
+  1.66 bits per pixel, an 88% reduction**, dimensions unchanged. `image_bytes`
+  goes from 577,161 to about 73,000, under its 150,000 budget. The pristine
+  574 KB original is recoverable from commit `16f3b25` if a different encoding
+  is ever wanted; it was not kept in the working tree because this is a draft
+  asset expected to be replaced, possibly by video.
+- **Settled, do not re-investigate: SVGO has nothing left to give.** An earlier
+  version of this entry claimed roughly 10,000 bytes were available by running
+  SVGO over the signature wordmark. That was inferred from seeing decimal
+  coordinates in the file and **it was wrong.** Measured 2026-08-29: the
+  signature and all four logo files come back byte-identical, 0% saved. They are
+  already at the configured precision. The signature is 13,771 bytes because the
+  artwork contains that much path data, so reducing it means simplifying the
+  drawing — a design decision, not an optimisation task.
+- **Watch out: compression now hides the size of the markup.** The HTML document
+  is 70,208 bytes, of which 26,850 is inline SVG and 42,681 is tags and class
+  attributes wrapping only 12,334 bytes of visible text. None of that changed;
+  it is simply compressed on the way out, so `html_bytes` reads 28,912 and
+  passes its budget. Do not read a green `html_bytes` as "the markup is fine."
+  If markup weight is worth attacking later, measure the uncompressed document,
+  because the budget no longer will.
 - **Decide what the site is willing to ship, then set the budgets to match.**
   After the items above, fonts are the only measurement still over budget:
   roughly 372,100 bytes against 100,000. Two facts make this a decision rather

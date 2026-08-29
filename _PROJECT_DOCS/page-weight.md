@@ -338,6 +338,57 @@ directly will always fail, because LiveView embeds a fresh CSRF token and
 session token in every response. Normalise those out first, or the check reports
 a mismatch that has nothing to do with what changed.
 
+## Phase 2 results: hero photograph (done)
+
+Re-encoded at quality 82, mozjpeg, progressive, via `npx sharp-cli` as a one-off
+— no permanent dependency added.
+
+| | Before | After |
+|---|---|---|
+| Bytes | 574,227 | **69,505** (−88%) |
+| Bits per pixel | 13.75 | **1.66** (normal is ~2) |
+| Dimensions | 468×714 | 468×714 (unchanged) |
+
+Verified as specified: 20 of 32 screenshots byte-identical, and the 12 that
+changed are exactly the pages showing the portrait. On those, the differing
+pixels form **one solid region measuring 272×415 on desktop and 240×366 on
+mobile at 99.3% density** — precisely the CSS display sizes. No page changed
+height, so nothing reflowed. 501 Elixir and 52 JS tests green.
+
+**Cost: 0 lines of code.** One file replaced.
+
+The 574 KB original stays recoverable from commit `16f3b25`. It was not kept in
+the working tree because this is a draft expected to be replaced; when the real
+asset lands, `assets/images/src/` becomes its home and the generator encodes
+from it.
+
+## Correction: SVGO was not worth doing
+
+An earlier version of this plan estimated ~10,000 bytes from running SVGO over
+the inline SVG. **Measured, it is zero.** The signature wordmark and all four
+logos come back byte-identical — they were already at the configured precision.
+The claim came from seeing decimal coordinates in the file and inferring the
+tool had never run, without running it. Deleted from the backlog rather than
+scheduled.
+
+## What compression is now hiding
+
+Worth stating plainly, because it is the cost of the compression win. The HTML
+document is still **70,208 bytes**:
+
+| | bytes |
+|---|---|
+| Inline SVG | 26,850 (38%) |
+| Tags, classes, attributes | 42,681 |
+| — wrapping visible text of | 12,334 |
+| Inline script and style | 677 |
+| LiveView data attributes | 771 |
+
+Roughly 3.5 bytes of markup per byte of text. None of that improved; it is
+compressed on the way out and now passes its budget at 28,912. The gate will not
+raise it again, so if markup weight is ever worth attacking, measure the
+uncompressed document deliberately.
+
 ## Line budgets, written down before building
 
 Predictions, so the count afterwards is a measurement and not an excuse. Code
