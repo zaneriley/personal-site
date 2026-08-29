@@ -19,7 +19,7 @@ defmodule PortfolioWeb.Endpoint do
     longpoll: false
 
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]]
+    websocket: [connect_info: [session: @session_options], compress: true]
 
   plug Plug.Static,
     at: "/",

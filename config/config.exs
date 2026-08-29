@@ -39,7 +39,14 @@ config :portfolio,
 config :portfolio, PortfolioWeb.Endpoint,
   # Enable both ipv4 and ipv6 on all interfaces. By the way, the port is
   # configured with an environment variable and it's in the runtime.exs config.
-  http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}],
+  #
+  # `compress: true` gzips responses the app renders. Plug.Static's `gzip: true`
+  # only serves pre-compressed copies of files already on disk, so without this
+  # every page ships uncompressed — measured 70,225 bytes vs 12,338 on /en.
+  # Must be a top-level http option: Plug.Cowboy reads :compress and
+  # :stream_handlers from here, and its defaults silently override anything
+  # nested under :protocol_options.
+  http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, compress: true],
   adapter: Phoenix.Endpoint.Cowboy2Adapter,
   render_errors: [
     formats: [html: PortfolioWeb.ErrorHTML, json: PortfolioWeb.ErrorJSON],

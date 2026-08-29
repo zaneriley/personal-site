@@ -274,6 +274,92 @@ If the source count lands over budget, the ledger says so plainly and the
 overage is justified in the PR or the change is reworked. "Slightly over
 but it's fine" is not an outcome — the number is stated and adjudicated.
 
+---
+
+# Phase 2: how each remaining item proves it broke nothing
+
+The phase-1 check was "zero pixels changed," which was right because pinning a
+font axis is an identity operation. **That check does not transfer.** Applied to
+everything it fails twice over: re-encoding a photograph must change pixels by
+definition, and compression would pass a pixel test while missing the only
+thing that could actually break. So each item gets the assertion that matches
+what it actually changes.
+
+| Item | What changes | What must not change | Check |
+|---|---|---|---|
+| HTTP compression | Bytes sent over the network | The bytes after decompressing | Fetch each route twice, once asking for compression and once not; the decompressed result must be byte-identical |
+| Live-connection compression | Bytes over the socket | The page still connecting | Already covered — the contract sets `require_live_view: true` and the gate fails on browser console errors |
+| Re-encoding the photograph | The photograph's own pixels, deliberately | Page height, and every pixel outside the photograph | Screenshot comparison, expecting differences only inside the image's rectangle; identical page height proves nothing reflowed |
+| Shrinking the signature SVG | Coordinate precision in the file | What is drawn | Screenshot comparison, expecting zero. The SVGO settings claim visual identity; anything above zero is a finding, not a tolerance |
+| The size check | Nothing visible | — | Fixture test: must reject the 574 KB photograph, must accept the twelve other images in the repository. Also timed — over a second and it will get bypassed |
+| `assets:images` | Nothing visible | — | Output matches the hand-optimised file; running it twice produces identical bytes |
+
+The screenshot harness stays in `.tmp/render-parity/` and its meter is
+calibrated (32 of 32 surfaces reproduce byte-identically against themselves).
+Re-capture a baseline at the current commit before each change; the sets on
+disk go stale as soon as anything ships.
+
+## Phase 2 results: response compression (done)
+
+`compress: true` as a top-level `http:` option in `config/config.exs`, plus
+`compress: true` on the `/live` socket in `endpoint.ex`.
+
+| Route | Before | After | Saved |
+|---|---|---|---|
+| `/en` | 70,225 | 12,459 | 83% |
+| `/ja` | 67,153 | 12,678 | 82% |
+| `/en/notes` | 53,248 | 8,846 | 84% |
+| `/en/case-studies` | 53,110 | 8,740 | 84% |
+| `/weight-calibration` | 26,715 | 5,190 | 81% |
+| `/color-tokens` | 11,949 | 4,151 | 66% |
+
+`html_bytes` on `/en` now measures **28,912 against a 30,000 budget** — under,
+for the first time. Every route decompresses to byte-identical content, 32 of 32
+screenshots are unchanged, and the suites stay green (501 Elixir, 52 JS).
+
+**Cost: 2 lines of code** (7 lines of comment) against a 13-line budget.
+
+Two things worth knowing for next time:
+
+- **The option is `compress: true`, and it must sit at the top level of `http:`.**
+  Putting `stream_handlers` under `:protocol_options` looks right and does
+  nothing: `Plug.Cowboy` reads `:compress` and `:stream_handlers` from the outer
+  options and applies its own defaults afterwards, so the nested value is
+  silently overridden. There is also no `Plug.Cowboy.Stream` module — the
+  default handler chain is `[:cowboy_telemetry_h, :cowboy_stream_h]`, and
+  `compress: true` prepends `:cowboy_compress_h` to it.
+- **Socket compression is configured but NOT yet verified.** The development
+  server also runs a live-reload socket, so its socket byte count is not
+  comparable to a production measurement. Confirm the saving during the next
+  `./run ci:release`, and treat the number as unknown until then.
+
+A note on checking a dynamic page for byte-identity: comparing two requests
+directly will always fail, because LiveView embeds a fresh CSRF token and
+session token in every response. Normalise those out first, or the check reports
+a mismatch that has nothing to do with what changed.
+
+## Line budgets, written down before building
+
+Predictions, so the count afterwards is a measurement and not an excuse. Code
+lines are counted separately from comments; generated files must be zero; docs
+are reported but not charged against the budget.
+
+| Item | Code budget |
+|---|---|
+| HTTP compression | ≤10 |
+| Live-connection compression | ≤3 |
+| `./run assets:svg` | ≤6 |
+| Re-encoding the photograph | 0 — one file replaced, no code |
+| Size check | ≤40 |
+| `assets:images` | ≤70 |
+| **Total** | **≤129, plus one dependency (`sharp`)** |
+
+Two tripwires. If HTTP compression needs more than about ten lines, the
+configuration has been misread — stop and re-read rather than pushing on. And
+the size check is where scope will try to grow: every extra format and edge
+case is a few more lines, and past roughly forty it stops being a cheap check
+and becomes something to maintain.
+
 ## Out of scope, noted during the audit (backlog, not this slice)
 
 - Sketch/dev routes (`/weight-calibration`, `/color-sketch`, `/hdr-lab`, …)
