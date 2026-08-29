@@ -2,9 +2,9 @@
   "name": "portfolio",
   "private": true,
   "dependencies": {
-    "phoenix": "1.8.6",
+    "phoenix": "1.8.13",
     "phoenix_html": "4.3.0",
-    "phoenix_live_view": "1.1.30",
+    "phoenix_live_view": "1.2.11",
     "topbar": "^3.0.1"
   },
   "devDependencies": {
