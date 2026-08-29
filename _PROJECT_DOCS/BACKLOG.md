@@ -115,7 +115,23 @@ below is ordered by bytes saved per unit of effort.
   plain size ceiling. The photograph is 13.75; every other image in the
   repository is under 0.18, so a single threshold catches it and nothing else.
   It must run in well under a second and must not need Docker, or it will be
-  bypassed. Report the file, the numbers, and the command that fixes it.
+  bypassed. **The message must contain the fix, not just the complaint.** In a
+  1,470-developer study, people preferred a worse-written error message that
+  told them how to fix the problem over a better-written one that did not, and
+  the effect was statistically significant. So: name the file, give the numbers,
+  and print the exact command to run.
+- **Rejected, do not re-propose: writing measured page weights into a committed
+  file.** The idea is that a weight change would then show up as a line in the
+  diff you are already reading. It is appealing and it does not last. React
+  adopted exactly this in 2017 and deleted it in 2019; MUI adopted it in 2018
+  and deleted it in 2019. Both hit the same two problems: the file causes merge
+  conflicts, and nothing forces it to be updated, so it goes stale and CI ends
+  up comparing against a number a human typed. The pattern that *does* survive
+  in the wild — API signature files, lock files — works because it records a
+  contract that only changes when the contract changes. Page weight is a
+  continuous measurement that legitimately changes on almost every commit, which
+  is the case that gets abandoned. The check-before-commit item above solves the
+  same problem without a file to maintain.
 - **Fix or delete the pre-push hook.** `.lefthook.yml` ends its push checks with
   `|| echo "Checks failed, but push will proceed."`, so the hook cannot fail no
   matter what it finds. Separately, `.git/hooks/` is empty — lefthook was never
