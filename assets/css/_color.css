@@ -343,7 +343,11 @@ html[data-theme="light"] .surface-fill-dark {
   opacity: 0;
 }
 
-html[data-theme="light"] .surface-fill-light {
+/* Fallback gating: when JS has armed the cloud canvas (pre-paint, see the
+   inline script in root.html.heex), the static light fill + turbulence clouds
+   stay hidden so they can never flash ahead of the shader. cloud-surface.ts
+   removes .clouds-armed if WebGL init fails, restoring these. */
+html[data-theme="light"]:not(.clouds-armed) .surface-fill-light {
   opacity: 1;
 }
 
@@ -378,15 +382,34 @@ html[data-theme="light"] .surface-fill-light {
   opacity: 0;
 } /* light only */
 
+/* Animated cloud canvas — light mode only, and only once cloud-surface.ts has
+   drawn its first frame (.ready): the WebGL context is opaque black before the
+   first draw, so without .ready gating it would flash on load. Cross-fades
+   with the same 0.6s dusk transition as the other surface layers. */
+.surface-clouds {
+  opacity: 0;
+}
+
+html[data-theme="light"] .surface-clouds.ready {
+  opacity: 1;
+}
+
+/* While the cloud canvas is armed, .surface itself carries the shader's
+   sky-bottom tone, so first paint and the canvas's fade-in start from sky
+   instead of page white. */
+html.clouds-armed[data-theme="light"] .surface {
+  background: #f2f6fa;
+}
+
 html[data-theme="light"] .surface-grain-dark {
   opacity: 0;
 }
 
-html[data-theme="light"] .surface-highlight {
+html[data-theme="light"]:not(.clouds-armed) .surface-highlight {
   opacity: 0.8;
 }
 
-html[data-theme="light"] .surface-shadow {
+html[data-theme="light"]:not(.clouds-armed) .surface-shadow {
   opacity: 0.22;
 }
 
@@ -399,7 +422,7 @@ html[data-theme="light"] .surface-grain-light {
     opacity: 0;
   }
 
-  html:not([data-theme]) .surface-fill-light {
+  html:not([data-theme], .clouds-armed) .surface-fill-light {
     opacity: 1;
   }
 
@@ -407,16 +430,24 @@ html[data-theme="light"] .surface-grain-light {
     opacity: 0;
   }
 
-  html:not([data-theme]) .surface-highlight {
+  html:not([data-theme], .clouds-armed) .surface-highlight {
     opacity: 0.8;
   }
 
-  html:not([data-theme]) .surface-shadow {
+  html:not([data-theme], .clouds-armed) .surface-shadow {
     opacity: 0.22;
   }
 
   html:not([data-theme]) .surface-grain-light {
     opacity: 0.32;
+  }
+
+  html:not([data-theme]) .surface-clouds.ready {
+    opacity: 1;
+  }
+
+  html.clouds-armed:not([data-theme]) .surface {
+    background: #f2f6fa;
   }
 }
 

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>HDR lab</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <style>
+      /* Lab chrome follows the /code-block harness. The subjects here are the
+         luminance registers: the crushed grade (all normal UI), absolute
+         white/black (break the grade), and HDR headroom (break the display —
+         media assets only, authored by hdr-prototype/generate_assets.py). */
+      body { margin: 0; color: var(--text-color-main); }
+      .lab {
+        min-block-size: 100vb;
+        background: var(--surface-grad-dark);
+        font-family: "GT Flexa", system-ui, sans-serif;
+        padding-block-end: var(--space-4xl);
+      }
+      html[data-theme="light"] .lab { background: var(--surface-grad-light); }
+
+      /* ── control bar ── */
+      .bar {
+        position: sticky; inset-block-start: 0; z-index: 20; display: flex; gap: var(--space-md);
+        align-items: center; flex-wrap: wrap;
+        padding-block: var(--space-3xs); padding-inline: var(--space-md);
+        background: color-mix(in oklch, black 55%, transparent);
+        backdrop-filter: blur(8px);
+        border-block-end: 1px solid color-mix(in oklch, white 15%, transparent);
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs); color: #cbd0dd;
+      }
+      html[data-theme="light"] .bar { background: color-mix(in oklch, white 65%, transparent); color: #444; }
+      .bar strong { letter-spacing: .12em; }
+      .seg button {
+        font: inherit; color: inherit; background: transparent;
+        border: 1px solid color-mix(in oklch, currentColor 40%, transparent);
+        border-radius: var(--space-3xs); padding-block: var(--space-3xs); padding-inline: var(--space-2xs); cursor: pointer;
+      }
+      .seg button[aria-pressed="true"] { border-color: currentColor; font-weight: 700; }
+
+      /* ── layout ── */
+      main {
+        max-inline-size: 72rem; margin-inline: auto;
+        padding-inline: var(--space-md); padding-block: var(--space-1xl);
+        display: grid; gap: var(--space-3xl);
+      }
+      section > h2 {
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs);
+        letter-spacing: .14em; text-transform: uppercase;
+        color: var(--text-color-deemphasized);
+        margin-block: 0 var(--space-md);
+      }
+      .note { max-inline-size: 62ch; color: var(--text-color-deemphasized); font-size: var(--fs-1xs); }
+      .note strong { color: var(--text-color-main); font-weight: 600; }
+
+      /* ── capability readout ── */
+      .chips { display: flex; flex-wrap: wrap; gap: var(--space-2xs); margin-block-end: var(--space-2xs); }
+      .chip {
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs);
+        padding-block: var(--space-3xs); padding-inline: var(--space-2xs);
+        border-radius: var(--space-3xs);
+        border: 1px solid color-mix(in oklch, currentColor 30%, transparent);
+        color: var(--text-color-deemphasized);
+      }
+      .chip[data-ok="true"]  { color: var(--text-color-main); border-color: color-mix(in oklch, currentColor 60%, transparent); }
+      .chip[data-ok="true"]::before  { content: "✓ "; }
+      .chip[data-ok="false"]::before { content: "✗ "; }
+
+      /* ── swatch rows (the ladder) ── */
+      .row { display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: flex-start; }
+      .row figure { margin: 0; display: grid; gap: var(--space-3xs); inline-size: 6.5rem; }
+      .row .sw {
+        inline-size: 6.5rem; block-size: 6.5rem; border-radius: var(--space-3xs);
+        border: 1px solid color-mix(in oklch, currentColor 25%, transparent);
+        display: block; object-fit: cover;
+      }
+      .row figcaption {
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs);
+        color: var(--text-color-deemphasized); line-height: 1.35;
+      }
+      .sw-void {
+        border-style: dashed; opacity: .5;
+        display: grid; place-items: center;
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs);
+        color: var(--text-color-suppressed);
+      }
+
+      /* ── headroom probe ── */
+      .ramp { inline-size: 100%; max-inline-size: 67.5rem; display: block; border-radius: var(--space-3xs);
+              border: 1px solid color-mix(in oklch, currentColor 25%, transparent); }
+      .ramp-labels {
+        display: grid; grid-template-columns: repeat(9, 1fr);
+        max-inline-size: 67.5rem; text-align: center;
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs);
+        color: var(--text-color-deemphasized); margin-block-start: var(--space-3xs);
+      }
+
+      /* ── the orb at each dynamic-range-limit tier ── */
+      .orb-row { display: flex; flex-wrap: wrap; gap: var(--space-1xl); align-items: flex-start; }
+      .orb-row figure { margin: 0; display: grid; gap: var(--space-3xs); inline-size: 11rem; }
+      .orb-row img, .orb-row .eclipse { inline-size: 11rem; block-size: 11rem; display: block; }
+      .orb-row figcaption {
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs);
+        color: var(--text-color-deemphasized); line-height: 1.35;
+      }
+      .drl-standard    { dynamic-range-limit: standard; }
+      .drl-constrained { dynamic-range-limit: constrained; }
+      .drl-nolimit     { dynamic-range-limit: no-limit; }
+
+      /* hover-to-cast: the bloom is ONE transition of dynamic-range-limit —
+         same asset, luminance released then re-graded. */
+      .cast { cursor: pointer; border-radius: var(--space-3xs); }
+      .cast img { dynamic-range-limit: standard; transition: dynamic-range-limit .6s ease; }
+      .cast:hover img, .cast:focus-visible img { dynamic-range-limit: no-limit; }
+
+      /* the eclipse — the dark register needs no HDR: absolute-black core,
+         dusk-violet rim, done entirely in DOM. OLED makes the core a true void. */
+      .eclipse {
+        border-radius: 50%;
+        background: radial-gradient(closest-side,
+          var(--black-absolute) 0 58%,
+          oklch(16% 0.05 300deg) 63%,
+          oklch(40% 0.16 292deg) 70%,
+          oklch(62% 0.14 286deg / 0.35) 76%,
+          transparent 82%);
+        box-shadow: 0 0 3rem 0.4rem oklch(50% 0.15 290deg / 0.35);
+      }
+
+      /* ── applied sketches ── */
+      .applied { display: flex; flex-wrap: wrap; gap: var(--space-1xl); }
+      .card {
+        border: 1px solid color-mix(in oklch, currentColor 20%, transparent);
+        border-radius: var(--space-2xs); padding: var(--space-md);
+        display: grid; gap: var(--space-md); align-content: start;
+        inline-size: 18rem;
+      }
+      .card h3 { margin: 0; font-size: var(--fs-1xs); font-weight: 600; }
+
+      /* hanko cast: glow sits behind the real mark; hover/focus releases it */
+      .cast-hanko {
+        position: relative; display: grid; place-items: center;
+        inline-size: 100%; block-size: 9rem;
+        background: none; border: none; cursor: pointer; border-radius: var(--space-2xs);
+      }
+      .cast-hanko .glow {
+        position: absolute; inset-block-start: 50%; inset-inline-start: 50%;
+        translate: -50% -50%;
+        inline-size: 8.5rem; block-size: 8.5rem;
+        opacity: 0;
+        dynamic-range-limit: standard;
+        transition: opacity .45s ease, dynamic-range-limit .45s ease;
+        pointer-events: none;
+      }
+      .cast-hanko:hover .glow, .cast-hanko:focus-visible .glow {
+        opacity: 1; dynamic-range-limit: no-limit;
+      }
+      .cast-hanko svg { position: relative; }
+
+      /* nav candle: the one standing use — constrained, never no-limit */
+      .fake-nav { display: flex; gap: var(--space-1xl); align-items: center; font-size: var(--fs-1xs); }
+      .fake-nav a { color: var(--text-color-deemphasized); text-decoration: none; position: relative; }
+      .fake-nav a[aria-current="page"] { color: var(--text-color-main); }
+      .fake-nav .candle {
+        position: absolute; inset-block-start: 100%; inset-inline-start: 50%;
+        translate: -50% -35%;
+        inline-size: 2rem; block-size: 2rem;
+        dynamic-range-limit: constrained;
+        opacity: .85; pointer-events: none;
+      }
+
+      /* arrival: :target releases the glow once, then it settles */
+      .arrival { position: relative; padding: var(--space-md); scroll-margin-block-start: 6rem; }
+      .arrival .glow {
+        position: absolute; inset-block-start: 50%; inset-inline-start: 2.5rem;
+        translate: -50% -50%;
+        inline-size: 9rem; block-size: 9rem;
+        opacity: 0; pointer-events: none;
+      }
+      .arrival:target .glow { animation: arrive 1.6s ease-out forwards; }
+      @keyframes arrive {
+        0%   { opacity: 0; }
+        20%  { opacity: 1; }
+        100% { opacity: .25; }
+      }
+      .arrival h3 { margin: 0; position: relative; }
+      .arrival p { position: relative; }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cast img, .cast-hanko .glow { transition: none; }
+        .arrival:target .glow { animation: none; opacity: .25; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="lab">
+      <div class="bar">
+        <strong>HDR LAB</strong>
+        <span class="seg" id="seg-theme">
+          theme
+          <button type="button" data-theme="dark" aria-pressed="true">dark</button>
+          <button type="button" data-theme="light" aria-pressed="false">light</button>
+        </span>
+        <span style="opacity:.6">judge on-display only — screenshots and recordings clip to SDR</span>
+      </div>
+
+      <main>
+        <section>
+          <h2>0 · This display, right now</h2>
+          <div class="chips" id="chips">
+            <span class="chip" id="chip-dr">dynamic-range: high</span>
+            <span class="chip" id="chip-vdr">video-dynamic-range: high</span>
+            <span class="chip" id="chip-p3">color-gamut: p3</span>
+            <span class="chip" id="chip-2020">color-gamut: rec2020</span>
+            <span class="chip" id="chip-drl">CSS dynamic-range-limit</span>
+            <span class="chip" id="chip-decode">PQ PNG decode</span>
+          </div>
+          <p class="note">
+            Live — re-checks when you drag the window to another display or the OS
+            changes headroom (brightness slider, low-power mode). If
+            <strong>PQ PNG decode</strong> fails the HDR tiles below render as flat
+            grey and nothing on this page means anything.
+          </p>
+        </section>
+
+        <section>
+          <h2>1 · The ladder — three registers of white, two of black</h2>
+          <div class="row">
+            <figure>
+              <div class="sw" style="background: var(--white-point)"></div>
+              <figcaption>graded white<br />the site's ceiling</figcaption>
+            </figure>
+            <figure>
+              <div class="sw" style="background: var(--white-absolute)"></div>
+              <figcaption>absolute white<br />break the grade (SDR)</figcaption>
+            </figure>
+            <figure :for={nits <- @ladder_nits}>
+              <img class="sw" src={"/images/hdr-lab/white-#{nits}.png"} alt={"flat field at #{nits} nits"} />
+              <figcaption><%= nits %> nits<br />break the display</figcaption>
+            </figure>
+          </div>
+          <p class="note" style="margin-block-start: var(--space-md)">
+            Without display headroom the browser tone-maps rather than clips —
+            measured in SDR Chromium: 203&nbsp;→&nbsp;187, 400&nbsp;→&nbsp;223,
+            800&nbsp;→&nbsp;248, 1300&nbsp;→&nbsp;255 (of 255). A highlight rolloff
+            keeps the rungs distinguishable but pushes them <strong>at or below</strong>
+            absolute white — the 203-nit tile (the PQ reference white) lands
+            <em>below</em> CSS white. Consequence: keep effect cores well over-range
+            (≥&nbsp;2× reference white) so the fallback still reads as a bloom, and
+            serve the SDR file where exact whites matter.
+          </p>
+          <div class="row" style="margin-block-start: var(--space-md)">
+            <figure>
+              <div class="sw" style="background: var(--black-point)"></div>
+              <figcaption>graded black<br />the site's floor</figcaption>
+            </figure>
+            <figure>
+              <div class="sw" style="background: var(--black-absolute)"></div>
+              <figcaption>absolute black<br />break the grade</figcaption>
+            </figure>
+            <figure>
+              <div class="sw sw-void">∅</div>
+              <figcaption>below black<br />no such register</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section>
+          <h2>2 · Headroom probe</h2>
+          <img
+            class="ramp"
+            src="/images/hdr-lab/ramp-nits.png"
+            alt="stepped luminance bands from 203 to 1600 nits"
+          />
+          <div class="ramp-labels">
+            <span :for={nits <- @ramp_bands}><%= nits %></span>
+          </div>
+          <p class="note" style="margin-block-start: var(--space-2xs)">
+            Count the distinct bands: the last visible step ≈ this display's current
+            headroom. Drag the window between displays or move the brightness slider
+            and watch bands appear and disappear — the reason the grammar rule is
+            <strong>HDR is amplitude, never information</strong>.
+          </p>
+        </section>
+
+        <section>
+          <h2>3 · The orbs — dynamic-range-limit tiers</h2>
+          <div class="orb-row">
+            <figure>
+              <img src="/images/hdr-lab/orb-light-sdr.png" alt="SDR fallback orb" />
+              <figcaption>SDR file<br />the fallback everyone gets</figcaption>
+            </figure>
+            <figure>
+              <img class="drl-standard" src="/images/hdr-lab/orb-light.png" alt="HDR orb clamped to standard" />
+              <figcaption>HDR · standard<br />clamped to SDR — should match the fallback</figcaption>
+            </figure>
+            <figure>
+              <img class="drl-constrained" src="/images/hdr-lab/orb-light.png" alt="HDR orb at constrained" />
+              <figcaption>HDR · constrained<br />the candle tier</figcaption>
+            </figure>
+            <figure>
+              <img class="drl-nolimit" src="/images/hdr-lab/orb-light.png" alt="HDR orb at full headroom" />
+              <figcaption>HDR · no-limit<br />the cast tier — core at 1000 nits</figcaption>
+            </figure>
+            <figure>
+              <button class="cast" type="button" aria-label="hover or focus to release full headroom">
+                <img src="/images/hdr-lab/orb-light.png" alt="" />
+              </button>
+              <figcaption>hover / focus to cast<br />one transition of dynamic-range-limit</figcaption>
+            </figure>
+            <figure>
+              <img src="/images/hdr-lab/orb-dark.png" alt="dark orb — black core with violet rim" />
+              <figcaption>the dark orb<br />faithful comp render — SDR by nature</figcaption>
+            </figure>
+            <figure>
+              <div class="eclipse"></div>
+              <figcaption>CSS eclipse sketch<br />DOM-only — blends live with the surface</figcaption>
+            </figure>
+          </div>
+          <p class="note" style="margin-block-start: var(--space-md)">
+            Toggle the theme: in dark the light orb carries even in SDR (the crush
+            leaves 9% under absolute white); in light the surface already grazes the
+            ceiling, so the light orb <strong>needs</strong> headroom — while the
+            eclipse reads best exactly there. Theme-reciprocal, not duplicated.
+          </p>
+        </section>
+
+        <section>
+          <h2>4 · Applied sketches</h2>
+          <div class="applied">
+            <div class="card">
+              <h3>The seal casts</h3>
+              <button class="cast-hanko" type="button" aria-label="hanko with glow on hover">
+                <img class="glow" src="/images/hdr-lab/orb-light.png" alt="" />
+                <PortfolioWeb.Components.Identity.hanko id="hdr-cast" />
+              </button>
+              <p class="note">
+                Hover / focus the hanko: opacity and dynamic-range-limit transition
+                together. Tiny area, event-driven, settles back — the signature
+                spell.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>Current page — a candle, standing</h3>
+              <nav class="fake-nav" aria-label="demo navigation">
+                <a href="#" aria-current="page">
+                  Work
+                  <img class="candle" src="/images/hdr-lab/orb-light.png" alt="" />
+                </a>
+                <a href="#">Notes</a>
+                <a href="#">Self</a>
+              </nav>
+              <p class="note">
+                The one sanctioned <em>standing</em> use: constrained tier only —
+                barely beyond white, never the full cast.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>Arrival</h3>
+              <p class="note">
+                <a href="#arrival">Jump to #arrival ↓</a> — a fragment landing blooms
+                once, then settles to a faint standing glow.
+              </p>
+              <div class="arrival" id="arrival">
+                <img class="glow drl-nolimit" src="/images/hdr-lab/orb-light.png" alt="" />
+                <h3>You were sent here</h3>
+                <p class="note"><a href="#">reset</a></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>5 · Notes</h2>
+          <p class="note">
+            These assets are PQ-encoded PNGs with a cICP chunk — real HDR in
+            Chromium, authored by <code>hdr-prototype/generate_assets.py</code> with
+            no external tooling. The orbs reproduce the Figma comp (node
+            3390-3684) layer for layer: four ellipses each with its own
+            rotation/skew (76.9° / 80.92° / 86.24° / 79.95°, skewX ≈ 8°), violet
+            #B19FF2 drop shadows composited outside the shapes, the top three on
+            overlay blend — baked against the asset's own stack, since a floating
+            PNG has no page backdrop (live <code>mix-blend-mode</code> against the
+            surface is the follow-up experiment). Grain is re-added procedurally;
+            Figma noise effects don't survive SVG export. The comp names these
+            layers <code>hover-*-fx</code> — the design itself specifies a hover
+            treatment. The SDR file is the untouched comp look; HDR expansion
+            starts only above 85% luminance, so the fringe keeps its chroma in SDR
+            range. Production assets should become gain-map AVIF (SDR base + gain
+            map: fallback baked in, Safari 26+ coverage). Grammar under test:
+            <strong>one cast at a time · earned by an event, never ambient ·
+            over-range luminance carries no chroma · HDR is amplitude, never
+            information.</strong>
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      // ── theme seg (same pattern as /code-block) ──
+      const seg = document.getElementById("seg-theme");
+      seg.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.documentElement.dataset.theme = btn.dataset.theme;
+          seg.querySelectorAll("button").forEach((b) =>
+            b.setAttribute("aria-pressed", String(b === btn))
+          );
+        });
+      });
+
+      // ── capability readout, live ──
+      function setChip(id, ok) {
+        document.getElementById(id).dataset.ok = String(ok);
+      }
+      const QUERIES = [
+        ["chip-dr", "(dynamic-range: high)"],
+        ["chip-vdr", "(video-dynamic-range: high)"],
+        ["chip-p3", "(color-gamut: p3)"],
+        ["chip-2020", "(color-gamut: rec2020)"],
+      ];
+      QUERIES.forEach(([id, q]) => {
+        const mq = window.matchMedia(q);
+        setChip(id, mq.matches);
+        mq.addEventListener("change", () => setChip(id, mq.matches));
+      });
+      setChip("chip-drl", CSS.supports("dynamic-range-limit", "no-limit"));
+
+      // ── decode check: draw the 800-nit tile into an SDR canvas. Honored PQ
+      // tone-maps to ~white; ignored cICP reads the raw PQ value (~0.70) as
+      // sRGB and lands near 179/255 grey. Threshold between the two. ──
+      const probe = new Image();
+      probe.src = "/images/hdr-lab/white-800.png";
+      probe
+        .decode()
+        .then(() => {
+          const cv = document.createElement("canvas");
+          cv.width = cv.height = 8;
+          const ctx = cv.getContext("2d");
+          ctx.drawImage(probe, 0, 0, 8, 8);
+          const [r, g, b] = ctx.getImageData(4, 4, 1, 1).data;
+          setChip("chip-decode", r > 220 && g > 220 && b > 220);
+        })
+        .catch(() => setChip("chip-decode", false));
+    </script>
+  </body>
+</html>

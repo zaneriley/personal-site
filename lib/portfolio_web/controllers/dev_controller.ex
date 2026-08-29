@@ -126,4 +126,21 @@ defmodule PortfolioWeb.DevController do
     |> put_layout(false)
     |> render(:code_block, code_sample: @code_block_sample)
   end
+
+  # HDR lab: the luminance registers above the crushed grade — graded white →
+  # absolute white → HDR headroom. The PQ/cICP assets under /images/hdr-lab
+  # are authored by hdr-prototype/generate_assets.py; these lists mirror its
+  # LADDER_NITS / RAMP_BANDS (filenames encode nits, so drift 404s loudly).
+  @hdr_ladder_nits [203, 400, 800, 1300]
+  @hdr_ramp_bands [203, 300, 400, 500, 600, 800, 1000, 1300, 1600]
+
+  def hdr_lab(conn, _params) do
+    conn
+    |> put_root_layout(false)
+    |> put_layout(false)
+    |> render(:hdr_lab,
+      ladder_nits: @hdr_ladder_nits,
+      ramp_bands: @hdr_ramp_bands
+    )
+  end
 end

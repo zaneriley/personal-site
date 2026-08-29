@@ -121,6 +121,7 @@ defmodule PortfolioWeb.Router do
     get "/weight-calibration", DevController, :weight_calibration
     get "/color-tokens", DevController, :color_tokens
     get "/code-block", DevController, :code_block
+    get "/hdr-lab", DevController, :hdr_lab
   end
 
   scope "/:locale", PortfolioWeb do

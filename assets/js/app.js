@@ -3,6 +3,7 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "topbar";
 
+import { initCloudSurface } from "./cloud-surface";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
 
 // Define hooks before using them
@@ -53,6 +54,10 @@ window.addEventListener("phx:page-loading-stop", () => {
 });
 
 liveSocket.connect();
+
+// Light-mode cloud surface. Static markup in the root layout, outside the
+// LiveView tree — initializes once here, not via a hook.
+initCloudSurface();
 
 window.liveSocket = liveSocket;
 

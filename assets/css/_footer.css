@@ -38,6 +38,31 @@
   background: var(--footer-bg);
 }
 
+/* Light mode: the panel fades in over its first 12rem and stays translucent
+   (70%) below that, so the animated cloud surface (canvas.surface-clouds)
+   drifts behind the footer with no hard seam at the top edge. 70% keeps the
+   panel's separation and the measured text contrast (neutral-25 was measured
+   at 4.49:1 on the solid bg; behind 70% sits the sky gradient at 82-98% L,
+   same family, so contrast holds). Dark mode keeps the solid panel — there is
+   no cloud layer there. */
+html[data-theme="light"] .footer-surface {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklch, var(--footer-bg) 70%, transparent) 12rem
+  );
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .footer-surface {
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in oklch, var(--footer-bg) 70%, transparent) 12rem
+    );
+  }
+}
+
 /* Action eyebrow — section headers, links, go-to-top. The cool emphasis grey
    (Figma neutral/50), set at the smallest mono rung. */
 .footer-eyebrow {

@@ -8,11 +8,15 @@
          light-preferring user never sees a flash of the server-default dark.
          Mirrors the decision logic in assets/js/theme-switcher.ts; that file
          remains the source of truth for runtime toggling. Inline is required
-         (must run pre-paint); CSP allows script-src 'unsafe-inline'. --%>
+         (must run pre-paint); CSP allows script-src 'unsafe-inline'.
+         Also arms the cloud surface: with JS on, the static light layers stay
+         hidden from first paint so they never flash ahead of the shader.
+         assets/js/cloud-surface.ts disarms (restoring them) if WebGL fails. --%>
     <script>
       (function () {
         try {
           var d = document.documentElement;
+          d.classList.add("clouds-armed");
           var t = localStorage.getItem("theme");
           if (t === "light" || t === "dark") {
             d.setAttribute("data-theme", t);
@@ -149,8 +153,9 @@
   </head>
   <body class="min-h-screen flex flex-col text-md py-2xl">
     <%!-- Fixed full-viewport background behind all content. Two gradient fills
-         cross-fade on theme toggle (dusk transition). Turbulence layers will be
-         added here next. Static markup — not LiveView-driven. --%>
+         cross-fade on theme toggle (dusk transition), turbulence textures blend
+         per theme, and an animated cloud canvas covers them in light mode (see
+         below). Static markup — not LiveView-driven. --%>
     <div class="surface" aria-hidden="true">
       <div class="surface-fill surface-fill-dark"></div>
       <div class="surface-fill surface-fill-light"></div>
@@ -227,6 +232,13 @@
         </filter>
         <rect width="100%" height="100%" filter="url(#surface-shadow)" />
       </svg>
+
+      <%!-- Animated cloud shader (assets/js/cloud-surface.ts) — light mode's
+           live surface. Opaque: in light mode it visually replaces the static
+           gradient + highlight/shadow clouds beneath it, which remain as the
+           no-WebGL fallback. CSS keeps it at opacity 0 until the module adds
+           .ready after its first frame. Grain still blends over it. --%>
+      <canvas class="surface-layer surface-clouds"></canvas>
 
       <svg
         class="surface-layer surface-grain-light"
