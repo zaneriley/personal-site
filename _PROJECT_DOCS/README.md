@@ -8,6 +8,9 @@ history owns deleted plans and completion ledgers.
 
 - [BACKLOG.md](BACKLOG.md) — canonical index of known work. Verify each item
   against current code and tests before starting it.
+- [page-weight.md](page-weight.md) — page-weight measurements, settled
+  reasoning, and the verification methods that prove a weight change did not
+  alter the design. Companion to ADR 0006.
 
 ## Current contracts
 
@@ -28,6 +31,7 @@ successor ADR rather than silently rewriting history.
 - [0003-use-digitalocean-as-interim-origin-substrate.md](adrs/0003-use-digitalocean-as-interim-origin-substrate.md)
 - [0004-font-subsetting-and-delivery-pipeline.md](adrs/0004-font-subsetting-and-delivery-pipeline.md)
 - [0005-publish-time-syntax-highlighting.md](adrs/0005-publish-time-syntax-highlighting.md)
+- [0006-time-first-performance-contract.md](adrs/0006-time-first-performance-contract.md)
 - [0002-keep-liveview-for-app-like-page-transitions.md](adrs/0002-keep-liveview-for-app-like-page-transitions.md)
   — proposed; awaiting ratification.
 

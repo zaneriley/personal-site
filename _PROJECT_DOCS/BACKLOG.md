@@ -10,15 +10,15 @@ The private vault read-view and scratch area is
 
 ## Release and dependency blockers
 
-- **Bring `./run ci:release` back inside its public-page budgets.** The
-  2026-08-02 local release proof built the image, ran migrations, booted, and
-  passed route probes, but failed the checked-in page budgets. Fonts shipped
-  481,525 bytes against a 100,000-byte route budget. The same run also failed on
-  a 574,227-byte hero photograph, uncompressed HTML, request count, and the
-  live-page connection — originally summarised here as "related overruns," which
-  hid the largest single item. See **Page weight** below for each one measured
-  separately, and `page-weight.md` for the numbers. Fix delivery and weight; do
-  not raise budgets to make the gate green.
+- **Resolved 2026-08-30: `./run ci:prod-build` passes.** The 2026-08-02 failure
+  (fonts at 481 KB, a 574 KB photograph, uncompressed HTML) was worked down
+  item by item — see **Page weight** below and `page-weight.md` — and the
+  contract itself was restructured by ADR 0006 (time-first goal, byte budgets
+  as never-worse-than-now ratchets; the old contract was unsatisfiable). The
+  budgets were not raised to force green; they were rewritten under a ratified
+  ADR, which is the sanctioned path this entry always demanded. The remaining
+  launch-critical path is: font delivery (next item), the deploy promotion, and
+  content.
 - **Upgrade audited dependencies in a compatibility-focused slice.** The
   2026-08-02 audit found available Hex and JavaScript updates, advisories across
   the HTTP/Phoenix/PostgreSQL dependency surface, and retired `earmark` usage.
@@ -31,19 +31,18 @@ The private vault read-view and scratch area is
 
 ## Page weight
 
-Measured 2026-08-29. Full numbers, method, and the checks that prove a change
-did not alter the design are in `page-weight.md`. Work top to bottom: each item
-below is ordered by bytes saved per unit of effort.
+This section is mostly a settled record now: the 2026-08-29/30 pass cut the
+home page from 1.22 MB to 517 KB and the gate is green under ADR 0006. Full
+numbers and the verification method are in `page-weight.md`. Open work that
+tightens ratchets further lives in the ADR 0006 entry below and in **Asset
+handling and regression checks**.
 
-- **Turn on compression for pages the app renders.** The server sends every
-  HTML page uncompressed. `Plug.Static` has `gzip: true`, but that setting only
-  serves already-compressed copies of *static files* (CSS, JavaScript, fonts) —
-  it does nothing for pages Phoenix renders on the fly. Cowboy, the web server,
-  does not compress anything unless told to. Measured on `/en`: 70,225 bytes
-  sent, 12,338 bytes if compressed — 82% smaller. This is the largest saving
-  available on the site and it is a few lines of configuration. Turn it on,
-  then re-measure; `html_bytes` should drop from 52,658 to roughly 12,000 and
-  land under its 30,000 budget.
+- **Done 2026-08-30 (`4f916a4`): compression for pages the app renders.**
+  Every rendered page was sent uncompressed — `Plug.Static`'s `gzip: true`
+  only serves pre-compressed copies of static files. One config line
+  (`compress: true`, top-level `http:` option) took `/en` from 70,225 to
+  12,459 wire bytes (83%). Verified byte-identical after decompression and
+  pixel-identical on 32 screenshots.
 - **Closed 2026-08-30: the live-connection budget was unactionable and is
   gone.** A compression flag was added, then removed: the gate counts
   decompressed frame contents, so no compression setting can ever move that
@@ -73,8 +72,9 @@ below is ordered by bytes saved per unit of effort.
 - **Watch out: compression now hides the size of the markup.** The HTML document
   is 70,208 bytes, of which 26,850 is inline SVG and 42,681 is tags and class
   attributes wrapping only 12,334 bytes of visible text. None of that changed;
-  it is simply compressed on the way out, so `html_bytes` reads 28,912 and
-  passes its budget. Do not read a green `html_bytes` as "the markup is fine."
+  it is simply compressed on the way out, so `html_bytes` reads roughly 12,600
+  and passes its ratchet. Do not read a green `html_bytes` as "the markup is
+  fine."
   If markup weight is worth attacking later, measure the uncompressed document,
   because the budget no longer will.
 - **Decided 2026-08-30 — ADR 0006.** The contract is now time-first: the
@@ -91,8 +91,8 @@ below is ordered by bytes saved per unit of effort.
 - **Settled, do not re-investigate: the JavaScript is not a problem.** The
   built file is 345,021 bytes during development, but that version is
   unminified and carries a source map. What ships is 156,669 bytes minified and
-  **48,931 bytes compressed**, against a 60,000 budget — already passing, which
-  is why `js_bytes` has never appeared in a failure list. Of the minified code,
+  **~49,400 bytes compressed**, under its 52,000 ratchet — already passing,
+  which is why `js_bytes` has never appeared in a failure list. Of the minified code,
   92.5% is the Phoenix and LiveView framework itself (LiveView alone is 78%);
   code written for this site totals about 7.5 KB. There is no meaningful saving
   here that does not mean abandoning LiveView, which is ADR 0002's separate and
@@ -196,10 +196,22 @@ below is ordered by bytes saved per unit of effort.
   Decide telemetry egress, notifications, budget, network access, and key
   management before choosing tooling. The repository-wide literature-first and
   no-Grafana constraints remain in `AGENTS.md`.
-- **Measure before revisiting self-hosting or a CDN.** Capture time-to-ready,
-  cold-first response, warm p50/p95, memory, CPU, cacheability, and power where
-  available. Visitor speed and rollback reliability are the floor; compute per
-  watt breaks ties only after the user experience is sound.
+- **Edge caching: direction chosen 2026-08-30, sequenced for deploy time.**
+  The ratified lean is a CDN in front of the origin, on the honest framing
+  "origin in Tokyo, cached near you" — the footer may show the delivery chain
+  (which edge city served the copy, plus origin telemetry) but must never
+  claim more than is deployed. Two hard constraints: (1) the "hosted in Tokyo"
+  line waits until the origin is actually in Tokyo — verify the interim
+  provider's regions before writing any footer copy, since ADR 0003's interim
+  origin may not offer Tokyo; (2) the repo prerequisite is the digested
+  asset-path item in **Typography** below, because edge caches need immutable
+  URLs. The measured math: assets-at-edge takes a US cold visit from ~1.05 s
+  to ~0.5 s readable; making the HTML itself edge-cacheable (~0.3 s from
+  anywhere) is real architecture touching the LiveView/session design and
+  needs its own ADR — do not attempt it as an opportunistic change. Before
+  committing to self-hosting long-term, still capture time-to-ready,
+  cold-first response, warm p50/p95, memory, CPU, and power; visitor speed and
+  rollback reliability are the floor.
 
 ## Content publication
 
@@ -237,9 +249,13 @@ below is ordered by bytes saved per unit of effort.
   works across both OKLCH theme ramps. Preserve a 44px minimum target and a
   visible focus ring.
 - **Adjudicate the proposed app-like motion direction.** ADR 0002 is not
-  ratified. Before implementation, finish nonessential-JS attribution and
-  compression work; then decide whether a measured one-route-pair
-  `onDocumentPatch` View Transition spike should proceed.
+  ratified. The compression precondition is done (2026-08-30) and the
+  JavaScript question is settled (92.5% of the bundle is the framework; see
+  **Page weight**); the remaining precondition is nonessential-JS attribution.
+  Then decide whether a measured one-route-pair `onDocumentPatch` View
+  Transition spike should proceed. Note ADR 0006's future "edge-cacheable
+  HTML" question touches the same LiveView/session design — adjudicate them
+  with each other in view, not separately.
 - **Replace display-only footer status with owned live data.** Give temperature,
   deploy identity/status, node health, operating cost, and Tokyo weather bounded
   cached owners while retaining explicit assigns for deterministic tests and
@@ -280,11 +296,14 @@ below is ordered by bytes saved per unit of effort.
   chroma, the hero's semantic text ladder, optical weight mapping, connective
   text sizes, city letter spacing and real 700 face, and footer muted/emphasis
   relationship against archived mocks.
-- **Instance and axis-trim variable faces before launch.** GT Flexa currently
-  ships the full weight range plus unused width and italic axes. Predictions,
-  phased levers, and the must-not-move verification contract are ratified in
-  `page-weight.md`; preserve the browser-measured fallback metrics from
-  ADR 0004.
+- **Done 2026-08-29 (`90d09b3`): axis-trim of the variable faces.** The italic
+  axis is pinned on both GT Flexa faces (−163 KB, proven pixel-identical on 32
+  surfaces). The width axis **cannot** be pinned safely — the value CSS
+  requests (100) differs from the font's own default (0), and both candidate
+  pins visibly changed 28 of 32 surfaces; the rule is recorded in the
+  generator's axis-policy comment and `page-weight.md`. Remaining font-ratchet
+  levers (Latin Extended-A, display-face subsetting) are listed under the
+  ADR 0006 entry in **Page weight**.
 - **Consolidate font generation under `assets/fonts/`.** The subsetting/
   `@font-face` generator and typography-metric pipeline share source faces but
   live in separate homes. Move toward one source-oriented pipeline without
@@ -292,7 +311,9 @@ below is ordered by bytes saved per unit of effort.
 - **Emit font preload data from the font pipeline.** The layout and generated
   `@font-face` output currently duplicate the critical face path. Move both the
   CSS link and preload to digested paths together so production cannot
-  double-fetch.
+  double-fetch. **Raised in priority 2026-08-30:** this is the repo-side
+  prerequisite for edge caching (see the edge item under **Deploy**) — edge
+  caches need immutable URLs before they can cache aggressively.
 - **Repair the remaining font-metrics command.** `assets:font-metrics` still
   relies on `ts-node` without its TypeScript peer. Use the already-available
   bundled execution shape when consolidating the pipeline.

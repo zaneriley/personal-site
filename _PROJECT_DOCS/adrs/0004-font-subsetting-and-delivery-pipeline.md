@@ -1,6 +1,6 @@
 # ADR 0004 — Self-hosted font subsetting and delivery pipeline
 
-**Status:** accepted 2026-06-04; implemented in commits 5001ca5 (H1 metric-override fallbacks), 8a136e8 (self-host the real faces), 9984df6 (the generator), 23f1bb9 (critical-face preload).
+**Status:** accepted 2026-06-04; implemented in commits 5001ca5 (H1 metric-override fallbacks), 8a136e8 (self-host the real faces), 9984df6 (the generator), 23f1bb9 (critical-face preload). Deferred consequence #1 (axis trim) executed 2026-08-29 in 90d09b3 — italic axis pinned; the width axis measurably cannot be pinned safely (its CSS-requested value differs from its fvar default; evidence in `_PROJECT_DOCS/page-weight.md`).
 **Supersedes:** none.
 **Superseded by:** none.
 

@@ -1,12 +1,32 @@
 # Page weight: measurements, decisions, and how we prove nothing broke
 
-This file owns one question: why the pages are heavier than the budgets allow,
-and what we are doing about it. The work items live in `BACKLOG.md` under
-**Page weight** and **Asset handling and regression checks**; this file holds
-the numbers behind them, the reasoning that has already been settled, and the
-checks that prove a weight change did not alter the design.
+This file owns one question: what the pages weigh, why, and how we prove a
+weight change did not alter the design. The work items live in `BACKLOG.md`
+under **Page weight** and **Asset handling and regression checks**; this file
+holds the numbers and the reasoning that has already been settled.
 
-## Where the bytes are (home page, measured 2026-08-29)
+## State as of 2026-08-30: the gate is green
+
+After the work recorded below and ADR 0006, `./run ci:prod-build` passes with
+zero failures — the first green runs in the gate's history with fonts present.
+The enforced goal is time (readable under a second, cold, on a throttled
+75th-percentile mobile profile) and the byte budgets are never-worse-than-now
+ratchets.
+
+| What | 2026-08-29 start | Now | Ratchet |
+|---|---|---|---|
+| Images | 577,161 | 72,438 | 76,000 |
+| Fonts | 536,667 | 373,191 | 380,000 |
+| HTML (wire) | 52,658 | 12,617 | 15,000 |
+| JavaScript | 49,362 | 49,362 | 52,000 |
+| Whole page | 1,219,051 | 516,933 | 525,000 |
+| Readable, throttled | not measured honestly | 666–847 ms | 1,000 ms goal |
+
+Everything below is the measurement record of how each change was made and
+proven. The starting-point table that follows is the 2026-08-29 snapshot,
+against the **old** contract's budgets, kept for the before/after story.
+
+## Where the bytes were (home page, measured 2026-08-29)
 
 The budgets live in `ci/contracts/routes.json` and are enforced by
 `ci/gates/browser-performance.mjs`, which loads each page in a real browser on
@@ -41,12 +61,9 @@ like it newly broke.
 
 # Phase 1 (done): font axis trim
 
-**Status:** planned. Executes deferred consequence #1 of ADR 0004 ("instance +
-axis-trim the variable faces before launch"). This document is the measuring
-stick for that slice: what we predict, what must not move, and how we'll know
-the outcome. When the slice ships, record the actuals in the tables below and
-append the commit hash to ADR 0004's status line; this file then stays as the
-measurement record.
+**Status:** shipped 2026-08-29 in `90d09b3`; ADR 0004's status line records it.
+Executed deferred consequence #1 of ADR 0004. The predictions below were
+written before running the generator; the actuals column records what happened.
 
 ## What we found (2026-08-29 audit, three-agent pass)
 
@@ -286,14 +303,14 @@ definition, and compression would pass a pixel test while missing the only
 thing that could actually break. So each item gets the assertion that matches
 what it actually changes.
 
-| Item | What changes | What must not change | Check |
+| Item | Outcome | What must not change | Check |
 |---|---|---|---|
-| HTTP compression | Bytes sent over the network | The bytes after decompressing | Fetch each route twice, once asking for compression and once not; the decompressed result must be byte-identical |
-| Live-connection compression | Bytes over the socket | The page still connecting | Already covered — the contract sets `require_live_view: true` and the gate fails on browser console errors |
-| Re-encoding the photograph | The photograph's own pixels, deliberately | Page height, and every pixel outside the photograph | Screenshot comparison, expecting differences only inside the image's rectangle; identical page height proves nothing reflowed |
-| Shrinking the signature SVG | Coordinate precision in the file | What is drawn | Screenshot comparison, expecting zero. The SVGO settings claim visual identity; anything above zero is a finding, not a tolerance |
-| The size check | Nothing visible | — | Fixture test: must reject the 574 KB photograph, must accept the twelve other images in the repository. Also timed — over a second and it will get bypassed |
-| `assets:images` | Nothing visible | — | Output matches the hand-optimised file; running it twice produces identical bytes |
+| HTTP compression | **Done** (`4f916a4`) | The bytes after decompressing | Fetched each route both ways; decompressed results byte-identical (after normalising per-request tokens) |
+| Live-connection compression | **Withdrawn** (`4a0499f`) | — | The gate counts decompressed frames, so no compression setting can move the number; the flag was removed and ADR 0006 deleted the budget |
+| Re-encoding the photograph | **Done** (`bc53f43`) | Page height, and every pixel outside the photograph | 12 changed screenshots, differences one solid region at the CSS display size, 99.3% density; no page changed height |
+| Shrinking the signature SVG | **Dropped** — measured zero savings | — | SVGO returns every SVG byte-identical; see the correction section below |
+| The size check | Pending | — | Fixture test: must reject the original 574 KB photograph, must accept every current image. Timed — over a second and it will get bypassed |
+| `assets:images` | Pending | — | Output matches the hand-optimised file; running it twice produces identical bytes |
 
 The screenshot harness stays in `.tmp/render-parity/` and its meter is
 calibrated (32 of 32 surfaces reproduce byte-identically against themselves).
@@ -396,15 +413,16 @@ Predictions, so the count afterwards is a measurement and not an excuse. Code
 lines are counted separately from comments; generated files must be zero; docs
 are reported but not charged against the budget.
 
-| Item | Code budget |
-|---|---|
-| HTTP compression | ≤10 |
-| Live-connection compression | ≤3 |
-| `./run assets:svg` | ≤6 |
-| Re-encoding the photograph | 0 — one file replaced, no code |
-| Size check | ≤40 |
-| `assets:images` | ≤70 |
-| **Total** | **≤129, plus one dependency (`sharp`)** |
+| Item | Code budget | Actual |
+|---|---|---|
+| HTTP compression | ≤10 | **2** ✓ |
+| Live-connection compression | ≤3 | withdrawn |
+| `./run assets:svg` | ≤6 | dropped (zero savings measured) |
+| Re-encoding the photograph | 0 — one file replaced, no code | **0** ✓ |
+| Time-first gate (ADR 0006, budgeted separately) | ≤35 | **27** ✓ |
+| Size check | ≤40 | pending |
+| `assets:images` | ≤70 | pending |
+| **Session total so far** | | **35 code lines, 0 new dependencies** |
 
 Two tripwires. If HTTP compression needs more than about ten lines, the
 configuration has been misread — stop and re-read rather than pushing on. And
