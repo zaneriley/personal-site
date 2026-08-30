@@ -35,9 +35,16 @@ ENV NODE_ENV="${NODE_ENV}" \
 # Copy application code
 COPY --chown=node:node . ..
 
-# Conditionally build assets based on NODE_ENV
+# Production builds regenerate the licensed fonts from sources (private repo,
+# checked out to fonts/src pre-build) and assert the committed @font-face CSS
+# matches what the generator produces. Missing sources FAIL the build - a
+# fontless "success" is the failure mode this exists to prevent (ADR 0004,
+# font-delivery-spec.md). Dev builds bind-mount the working tree instead.
 RUN if [ "${NODE_ENV}" != "development" ]; then \
-  ../run yarn:build:js && ../run yarn:build:css; else mkdir -p /app/priv/static; fi
+  cp css/_fontface.generated.css /tmp/fontface.committed.css \
+  && node fonts/generate-fonts.mjs \
+  && cmp css/_fontface.generated.css /tmp/fontface.committed.css \
+  && ../run yarn:build:js && ../run yarn:build:css; else mkdir -p /app/priv/static; fi
 
 # Stage 2: Development environment
 FROM elixir:1.17.2-slim AS dev
