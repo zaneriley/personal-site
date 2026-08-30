@@ -3,6 +3,85 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.11](https://github.com/zaneriley/personal-site/compare/v0.4.10...v0.4.11) (2026-08-30)
+
+
+### Features
+
+* add surface turbulence layers (dark grain, light clouds + grain) ([438988a](https://github.com/zaneriley/personal-site/commit/438988ac369a1de7d9247d9f74c14d5ca85f3b99))
+* **ci:** deliver licensed fonts to builds from the private repo ([2b80581](https://github.com/zaneriley/personal-site/commit/2b80581105f94950261df87702253bacbf98364d))
+* **color:** add the cool neutral grey ramp, retire the vestigial one ([00c293f](https://github.com/zaneriley/personal-site/commit/00c293fcc8dd48d8878cc53ff2f42607f528bb65))
+* **color:** brighten dark-mode text and add a supporting-text shade ([1048406](https://github.com/zaneriley/personal-site/commit/104840668b62c454e138f2284335e59bcbb5bc4f))
+* **content:** Atom feeds — subscribe to the work without the firehose ([d2ddb7d](https://github.com/zaneriley/personal-site/commit/d2ddb7ddb12b1b437e2c99ac5c2a2ead1019f83b))
+* **content:** catch broken posts before they break the site ([70ac22a](https://github.com/zaneriley/personal-site/commit/70ac22a76428244e55285ca07d30235fbabf722e))
+* **content:** syntax-highlight fenced code at publish time ([7b4469e](https://github.com/zaneriley/personal-site/commit/7b4469e8636d05f866f7d3a3730ef5eeed14075d))
+* **fonts:** metric-override fallback faces for zero-CLS + stable grid (H1) ([5001ca5](https://github.com/zaneriley/personal-site/commit/5001ca53061105e4f01abaccb7f8c9709f592d89))
+* **fonts:** scalable idempotent subsetting pipeline (generate-fonts.mjs) ([9984df6](https://github.com/zaneriley/personal-site/commit/9984df6bb3050653df24dc6c036ae067200961e3))
+* **fonts:** self-host the real typefaces (GT Flexa, Cardinal Fruit, Cheee) ([8a136e8](https://github.com/zaneriley/personal-site/commit/8a136e85b5f66570b021506ac32a064b2344e7e1))
+* **footer:** rebuild footer as a component with the spec_sheet primitive ([f28665d](https://github.com/zaneriley/personal-site/commit/f28665d8da830314ae1b4a0540ecea8f554cff3f))
+* **footer:** set the Tokyo temp in Cheee and dim the secondary text ([3f2d4d4](https://github.com/zaneriley/personal-site/commit/3f2d4d40b4edb5d0ef6c8a42f5b9b69b90312b9b))
+* **gate:** throttle the browser gate and enforce the time-first contract ([d7c092c](https://github.com/zaneriley/personal-site/commit/d7c092c53b2365a7ed24a5fcf41baf3c997e1524))
+* **grid:** derived reading-grid token layer + grid/prose/bleed primitives ([301d1dc](https://github.com/zaneriley/personal-site/commit/301d1dc8ca07d83fb4fda1b7bd60835a0f3d4274))
+* **grid:** route header, main, and footer through .reading-grid ([74815a9](https://github.com/zaneriley/personal-site/commit/74815a93f88764f74affacf7755afd1a38703398))
+* **hero:** match the mock's color tiers and sizes in the intro ([efabc87](https://github.com/zaneriley/personal-site/commit/efabc87c8f6e163cdc29b85cc7f6b4c9fad4fa8e))
+* **i18n:** translate the footer and other UI strings into Japanese ([087203a](https://github.com/zaneriley/personal-site/commit/087203a219766fd52fa84ecbcb031bfcad3b7eef))
+* **identity:** bump dark signature correction x1.31 -&gt; x1.40 (punchier) ([2c3e9e0](https://github.com/zaneriley/personal-site/commit/2c3e9e03123a268f2ca687cdbbd12bf53af04c7f))
+* **identity:** clip hanko letters to the circle, ring stays whole ([cea1d80](https://github.com/zaneriley/personal-site/commit/cea1d806e95fcf94477bf8776da423a99d28fdfe))
+* **identity:** hanko component + adaptive favicon ([12b452a](https://github.com/zaneriley/personal-site/commit/12b452ac87aaecc7614ddc95dbd61db7f274c566))
+* **identity:** let any employer mark render in a site color instead of brand color ([db45d28](https://github.com/zaneriley/personal-site/commit/db45d288089092b1f1a004707bd0e89189ca5a8e))
+* **identity:** ring-less favicon variant for small-size legibility ([39eb90f](https://github.com/zaneriley/personal-site/commit/39eb90fbf0cf0662ceba21deec9dff76e7862309))
+* **identity:** signature wordmark on / hero, with optical noise correction ([39ddc51](https://github.com/zaneriley/personal-site/commit/39ddc514f49bba53547354ab856eac0a6c33067b))
+* **identity:** square favicon + regenerate tab rasters from the mark ([dc7e18a](https://github.com/zaneriley/personal-site/commit/dc7e18a482c418f9cb5cdb1052638690ce42b466))
+* **identity:** unified token-driven signature wordmark SVG (artifact) ([f6047ba](https://github.com/zaneriley/personal-site/commit/f6047bae4bc48a1732a46c5165b763954ee62261))
+* light/dark theme system — tokens, dual surface, flash fix ([c4d11ce](https://github.com/zaneriley/personal-site/commit/c4d11ce37dbf9f12fefb7288875556a1a7b0e3ef))
+* **seo:** emit share cards and keep previews out of search ([6100143](https://github.com/zaneriley/personal-site/commit/61001437c5db5edafe67de0ce06f0849b5540e3a))
+* **type:** bigger type, per-size weights, and richer dark-mode text colors ([9a0eade](https://github.com/zaneriley/personal-site/commit/9a0eadebcf98adcc38f0b09367b17cbfc665b673))
+* **type:** divide sub-md text by the max ratio to match the mocks ([c91a853](https://github.com/zaneriley/personal-site/commit/c91a8533e6f13f907bbe0982031d328457612845))
+
+
+### Bug Fixes
+
+* **ci:** fonts for the fifth build site; calibrate timing ceilings to CI hardware ([9017e42](https://github.com/zaneriley/personal-site/commit/9017e4266fd5ffe59a93804fda7741a28f9b49a4))
+* **color:** re-anchor the light text hue and give the hero soft tier a real token ([de97a99](https://github.com/zaneriley/personal-site/commit/de97a997a0744cbc26a6750c22644510d936ac55))
+* **color:** seat the light footer tokens on measured mock values ([57c86fd](https://github.com/zaneriley/personal-site/commit/57c86fdec0496aeaae88b8c4cf88452158abb1f8))
+* **content:** close the feeds peer-review findings ([6608fa9](https://github.com/zaneriley/personal-site/commit/6608fa9fa6c2bcd45a31933ee98d20b66c36cbc3))
+* **content:** register markdown components at startup, not only on recompile ([04cd799](https://github.com/zaneriley/personal-site/commit/04cd7997a655a9b94d4c61c880ec104472872146))
+* **content:** remove a dead error branch the type system can't reach ([7594d6c](https://github.com/zaneriley/personal-site/commit/7594d6c646712cd899e9010815e09f5651b77c56))
+* **content:** show notes and case studies instead of error messages ([ea17221](https://github.com/zaneriley/personal-site/commit/ea17221501088574f14d97608c36658d284064fe))
+* **deploy:** derive csp from the request, not env vars ([d2ac1c7](https://github.com/zaneriley/personal-site/commit/d2ac1c7f509d26b4ad00d6c739968bc4d92b129b))
+* **deploy:** fail the route probe when page checks fail ([722682b](https://github.com/zaneriley/personal-site/commit/722682be87db379d8e5c69a607487e09b765c209))
+* **deploy:** stop preview assets from pointing at the wrong host ([fdf0ab2](https://github.com/zaneriley/personal-site/commit/fdf0ab29c15315cc8a18de1c50b70cc4c1c7ccb6))
+* **deploy:** stop upgrading insecure requests on http previews ([dcd6197](https://github.com/zaneriley/personal-site/commit/dcd6197d525990c69cc356427bf7c471cd158b89))
+* **dev:** serve dev on the port Docker actually publishes ([9f2bc8c](https://github.com/zaneriley/personal-site/commit/9f2bc8c808276fd179cfece2440db8838dba43f1))
+* **footer:** align bottom bar to the grid via subgrid ([b6165fb](https://github.com/zaneriley/personal-site/commit/b6165fb4f53617164ad16475e081d0539a33b2d6))
+* **footer:** drop the double ring around the logo ([f4528c4](https://github.com/zaneriley/personal-site/commit/f4528c479d91ece23793e9a3f17a479b9c91b880))
+* **footer:** match the Figma footer — solid panel, neutral greys, teal data ([bededc5](https://github.com/zaneriley/personal-site/commit/bededc533de835594d6d5db9f9bdcdacce2607d8))
+* **footer:** track theme for status colors; drop dead + redundant tokens ([96d6da3](https://github.com/zaneriley/personal-site/commit/96d6da3f4ace9c139b908d83f24e76ce55a8d003))
+* **grid:** rename .grid/.prose -&gt; .reading-grid/.measure (Tailwind collision) ([12343a2](https://github.com/zaneriley/personal-site/commit/12343a24b045ecfa127ae656b506150684a480f4))
+* **identity:** cache-bust favicon URLs (?v=2) ([c434445](https://github.com/zaneriley/personal-site/commit/c434445cfbb488c510d4387d1719c57a15a3e6c5))
+* **identity:** canonical hanko size 2xl -&gt; 1xl ([2b55335](https://github.com/zaneriley/personal-site/commit/2b55335e5ee41310831a46108df7bd469c87f1ee))
+* **identity:** drop the clipPath — render the hanko art faithfully ([8fa6474](https://github.com/zaneriley/personal-site/commit/8fa6474f9d38750af5541d51dcf50c5422584711))
+* **identity:** expand hanko viewBox so the ring isn't clipped ([4b4db59](https://github.com/zaneriley/personal-site/commit/4b4db59f290a96835b6d787fc69e4790a6b402ca))
+* **identity:** intrinsic hanko size + --accent color token ([cb7c653](https://github.com/zaneriley/personal-site/commit/cb7c653c603508d92920997c7dfd20ce56899150))
+* **identity:** make the hanko one canonical colour + size everywhere ([b07dc3e](https://github.com/zaneriley/personal-site/commit/b07dc3eb8f01574f57efe38cb32284156fa8ac39))
+* **identity:** size hanko from spacing scale + clip letters to seal ([b911f8a](https://github.com/zaneriley/personal-site/commit/b911f8ae69a279e73ead5d38d3b9694c2d70478d))
+* **layout:** even page framing, header aligned to footer, no collapsing mobile gaps ([d8490ea](https://github.com/zaneriley/personal-site/commit/d8490eaff1fe52f3b522232a58d0741b4886db14))
+* **layout:** give main a mobile base placement (was sm:-only -&gt; collapsed) ([1044215](https://github.com/zaneriley/personal-site/commit/1044215d0e57ab121b766c8c622d7485eb06ac23))
+* **locale:** recognize valid nested localized routes ([fc7cccf](https://github.com/zaneriley/personal-site/commit/fc7cccfbc3ad1745c7aed87c055bf7dcf5ab7d06))
+* **performance:** keep first-load JavaScript under budget ([b451640](https://github.com/zaneriley/personal-site/commit/b4516406dbee958ceb7acf729d55fa4f4272ba0e))
+* **preview:** stop error pages from pointing at localhost ([390ea29](https://github.com/zaneriley/personal-site/commit/390ea298836254d5687e8c3c6d59695f12babe24))
+* remove dead branches caught by Dialyzer ([0c806bf](https://github.com/zaneriley/personal-site/commit/0c806bf0af6a204db310718e4924fc8d2f88efd4))
+* **type:** derive small-text line-height from the size that renders ([814c485](https://github.com/zaneriley/personal-site/commit/814c4857a3dd4d825ccefe937b8cf7cbdc562bb6))
+
+
+### Performance
+
+* **assets:** digest the CSS link + font preload for immutable caching ([cbbeeee](https://github.com/zaneriley/personal-site/commit/cbbeeee56c9b89b744b25c7ced477fa5b1b3b066))
+* **fonts:** pin the unused italic axis; keep width variable ([90d09b3](https://github.com/zaneriley/personal-site/commit/90d09b3e1a62257b84655e3f817b8e6c69ab66f1))
+* **fonts:** preload the critical face (GT Flexa) in the document head ([23f1bb9](https://github.com/zaneriley/personal-site/commit/23f1bb933af4229fca356b2553abcd4ebbd22d09))
+* **images:** re-encode the draft hero photograph ([bc53f43](https://github.com/zaneriley/personal-site/commit/bc53f43ba716006f68ce591b4288469659a50500))
+* **web:** compress responses the app renders ([4f916a4](https://github.com/zaneriley/personal-site/commit/4f916a48f71635a4ba9f3d2c1e77355d3cf9691b))
+
 ## [0.4.10](https://github.com/zaneriley/personal-site/compare/v0.4.9...v0.4.10) (2026-05-08)
 
 
