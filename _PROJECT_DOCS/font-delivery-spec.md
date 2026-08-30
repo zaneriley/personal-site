@@ -1,9 +1,28 @@
 # Font delivery: private sources, honest CI
 
-**Status:** direction ratified 2026-08-30 (private repository + build-time
-generation); not yet implemented. This file is the plan, the impact-site
-inventory, and the verification contract. Record actuals here when the slice
-ships.
+**Status:** shipped 2026-08-30 (`2b80581`, `9017e42`; merged in PR #106).
+Verification results are recorded in the table at the bottom. Two inventory
+corrections surfaced during implementation — read them before trusting the
+site list below:
+
+1. **Five checkout sites, not three.** `release-please.yml` builds images in
+   *two* jobs (`prod-build-gate` and `build-and-push`), and the
+   disposable-host job in `ci.yml` builds the preview-acceptance image, which
+   passes through the production assets stage. The fifth site was found by
+   the fail-loudly design itself: that job went red at the generator on the
+   first CI run instead of silently building fontless.
+2. **The preview workflow's fonts land inside `.tmp/preview-candidate/`**,
+   not the repo root, because that is its Docker build context.
+
+Line ledger: **33 code lines against the ≤24 budget — 9 over**, entirely from
+the two missed sites (each costs a six-line checkout stanza). The tripwire
+held: no skip flag, no fallback path anywhere.
+
+One calibration fell out of the first honest run: shared CI runners are ~2×
+slower than the reference machine under the CPU throttle, so the contract's
+timing ceilings were recalibrated and the goal/ceiling split documented
+(ADR 0006 calibration note, 2026-08-30). Bytes were identical to local within
+1 byte — the timing gap is hardware, not the site.
 
 ## Decisions already made — do not reopen
 
@@ -77,7 +96,16 @@ docker .github/workflows/*.yml`, `grep -n woff .gitignore .dockerignore`.
 ## Verification: how we know it worked
 
 Run after the slice, in order. Expected values are from the 2026-08-30
-measured baseline.
+measured baseline. **Results (2026-08-30):**
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Build without fonts fails at the generator | ✅ locally, and again in CI when the fifth site was missing |
+| 2 | CI stops lying | ✅ `/` measured 518,028 in CI vs 518,027 locally; zero font 404s; the three 404-driven failure classes gone |
+| 3 | Reproduction across machines | ✅ all five woff2 sha256 hashes identical, in-image vs local |
+| 4 | Digest manifest carries the faces | ✅ all five in `priv/static/fonts` of the built image |
+| 5 | Dependabot PR passes with mirrored secret | ⏳ pending the next Dependabot rebase — check its Prod build result before trusting this |
+| 6 | PR merges without the admin bypass | ✅ PR #106, `mergeStateStatus: CLEAN`, all ten checks green — first in the repo's history |
 
 1. **The build fails without fonts (negative test, run first).** On a scratch
    branch with the checkout step deleted, the workflow must go red at the
