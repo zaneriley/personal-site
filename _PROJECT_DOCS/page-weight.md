@@ -22,11 +22,12 @@ a simulated mid-range phone and counts what came over the network.
 | Requests | 11 | 6 | Five fonts plus the photograph |
 | **Whole page** | **~1,219,051** | **88,000** | See the contract problem below |
 
-**The contract cannot be satisfied as written.** The whole-page budget (88,000)
-is smaller than the font budget alone (100,000), so no combination of passing
-sub-budgets adds up to a passing page. That is a decision waiting to be made,
-not a number to tune — see the BACKLOG item about deciding what the site is
-willing to ship.
+**The contract could not be satisfied as written** — the whole-page budget
+(88,000) was smaller than the font budget alone (100,000). **Resolved
+2026-08-30 by ADR 0006:** the enforced goal is now readable-in-under-a-second
+cold on a throttled mobile profile, with the byte budgets reset to
+never-worse-than-now ratchets. Timing measurements from before that ADR were
+taken with no throttling at all and are not comparable to anything after it.
 
 **What CI measures is not what visitors get.** The font files are deliberately
 not committed to the repository, so a CI checkout has none of them and all five

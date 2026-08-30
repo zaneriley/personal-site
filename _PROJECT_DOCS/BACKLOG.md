@@ -44,11 +44,14 @@ below is ordered by bytes saved per unit of effort.
   available on the site and it is a few lines of configuration. Turn it on,
   then re-measure; `html_bytes` should drop from 52,658 to roughly 12,000 and
   land under its 30,000 budget.
-- **Turn on compression for the live-page connection too.** The `socket "/live"`
-  declaration in `endpoint.ex` has no compression option, and the running page
-  sends 33,404 bytes over that connection against a 20,000 budget. LiveView
-  supports compressing this; it is one flag. Measure before and after — the
-  saving is unverified.
+- **Closed 2026-08-30: the live-connection budget was unactionable and is
+  gone.** A compression flag was added, then removed: the gate counts
+  decompressed frame contents, so no compression setting can ever move that
+  number, and its wire-level effect could not be verified in development
+  (the live-reload socket pollutes the measurement). ADR 0006 deleted the
+  budget; the gate still reports the number in its artifact. If LiveView
+  chatter ever matters, the fix is sending less data, and the artifact is
+  where to watch it.
 - **Done 2026-08-29: re-encoded the draft hero photograph.** Was 574,227 bytes
   at 468×714 — 13.75 bits per pixel, where a normal web photograph is about 2.
   The dimensions were always right (468 pixels suits a 240-pixel slot on a
@@ -74,16 +77,17 @@ below is ordered by bytes saved per unit of effort.
   passes its budget. Do not read a green `html_bytes` as "the markup is fine."
   If markup weight is worth attacking later, measure the uncompressed document,
   because the budget no longer will.
-- **Decide what the site is willing to ship, then set the budgets to match.**
-  After the items above, fonts are the only measurement still over budget:
-  roughly 372,100 bytes against 100,000. Two facts make this a decision rather
-  than a task. First, five custom typefaces cannot fit a 100,000-byte font
-  budget without either dropping a typeface from the home page or cutting the
-  display faces down to only the characters they actually use. Second, the
-  contract in `ci/contracts/routes.json` cannot be satisfied as written — the
-  whole-page budget (88,000 bytes) is smaller than the font budget alone
-  (100,000). Pick the design you want, then write budgets that describe it.
-  This is ADR-shaped work; do not quietly raise a number to get a green run.
+- **Decided 2026-08-30 — ADR 0006.** The contract is now time-first: the
+  enforced goal is readable-in-under-a-second cold on a throttled mobile
+  profile, and the byte budgets became never-worse-than-now ratchets. The old
+  contract was unsatisfiable (whole-page budget smaller than the font budget
+  alone) and its timing numbers were measured without any throttling. Follow-on
+  work that tightens the font ratchet, in order of safety: drop Latin
+  Extended-A from the subsetter's character set (128 characters, almost
+  certainly all unused, carried by all five faces); subset the display faces
+  (Cheee, Cardinal) to the fixed interface strings they actually render —
+  display faces set headings and city names, which do not change when blog
+  posts are written, so this is safe where body-text subsetting is not.
 - **Settled, do not re-investigate: the JavaScript is not a problem.** The
   built file is 345,021 bytes during development, but that version is
   unminified and carries a source map. What ships is 156,669 bytes minified and
@@ -148,14 +152,14 @@ below is ordered by bytes saved per unit of effort.
   installed on this machine, so none of it runs at all. A check that always
   passes is worse than no check, because it occupies the place where a real one
   would go.
-- **Record accepted budget failures with an expiry date.** `routes.json` has an
-  `exceptions` list that has never been used. While fonts are knowingly over
-  budget, the gate fails on every single run, which trains you to ignore it —
-  that is how the photograph's failure got summarised away as "related
-  overruns" in this file's own release-blocker entry. Put the font overrun in
-  `exceptions` with the observed number, the reason, and a date. Make the gate
-  pass on a recorded exception, but fail if the number grows or the date passes.
-  Then a red run means something new is wrong.
+- **Make the gate enforce expiry dates on recorded exceptions.** ADR 0006's
+  ratchets made the gate green by construction, so the original urgency here is
+  gone — but the `exceptions` list in `routes.json` is still the sanctioned way
+  to carry a deliberate overrun, and the gate does not yet read a date from an
+  entry or fail when one expires or its number drifts upward. Until it does, an
+  exception is a permanent amnesty, which is the failure mode that lets
+  quarantine lists grow forever. Small gate change; do it before the first real
+  exception is ever added.
 - **Fix what CI measures before trusting it.** Font files are deliberately not
   committed, so a CI checkout has none and all five requests return 404. CI
   therefore reports `font_bytes: 0` and undercounts total page weight by 42–80%
