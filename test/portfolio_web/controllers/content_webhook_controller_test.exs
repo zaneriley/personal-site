@@ -1,6 +1,8 @@
 defmodule PortfolioWeb.ContentWebhookControllerTest do
   use PortfolioWeb.ConnCase, async: false
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   import Mox
   import Portfolio.ContentRepoHelpers
   import Portfolio.GitHubWebhookHelpers
@@ -13,6 +15,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
   setup :verify_on_exit!
 
   describe "POST /api/v1/content/push" do
+    @tag capture_log: @capture_owned_logs
     test "reports rejected content with a signed debug status URL", %{
       conn: conn
     } do
@@ -203,6 +206,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
              } = Content.get_publication_verdict(target_sha)
     end
 
+    @tag capture_log: @capture_owned_logs
     test "reports a failed status for rejected content pushes", %{conn: conn} do
       source_repo = tmp_dir!("webhook-rejected-source")
       clone_path = tmp_dir!("webhook-rejected-clone")
@@ -264,6 +268,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                verdict.structured_errors["errors"]
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects non-push event", %{conn: conn} do
       payload = %{
         "action" => "opened",
@@ -280,6 +285,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                )
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects push-shaped payloads without a push event header", %{
       conn: conn
     } do
@@ -304,6 +310,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                )
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects invalid payload", %{conn: conn} do
       invalid_payload = %{"invalid" => "data"}
 
@@ -315,6 +322,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                )
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects pushes from unexpected refs", %{conn: conn} do
       payload =
         github_push_payload(
@@ -337,6 +345,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                )
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects pushes from unexpected repositories", %{conn: conn} do
       payload =
         github_push_payload(
@@ -358,6 +367,7 @@ defmodule PortfolioWeb.ContentWebhookControllerTest do
                )
     end
 
+    @tag capture_log: @capture_owned_logs
     test "rejects non-hex after shas", %{conn: conn} do
       payload =
         github_push_payload(

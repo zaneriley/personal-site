@@ -4,7 +4,7 @@ const config: Config = {
   content: [
     "/app/assets/js/**/*.js",
     "/app/assets/css/**/*.css",
-    "!/app/assets/css/_typography.css", // Exclude the generated file
+    "!/app/assets/css/_type-tokens.generated.css", // Exclude the generated file
     "/app/lib/portfolio_web/**/*.*ex",
   ],
   corePlugins: {},
@@ -20,6 +20,7 @@ const config: Config = {
         ".font-cardinal-fruit": {
           "font-family": [
             "Cardinal Fruit",
+            "Cardinal Fruit Fallback",
             "Times New Roman",
             "Garamond",
             "Palatino",
@@ -29,12 +30,22 @@ const config: Config = {
           "font-size-adjust": "ex-height from-font",
         },
         ".font-cheee": {
-          "font-family": ["Cheee", "Arial", "sans-serif"].join(", "),
+          "font-family": [
+            "Cheee",
+            "Cheee Fallback",
+            "Arial",
+            "sans-serif",
+          ].join(", "),
           "font-size-adjust": "cap-height from-font",
         },
         ".font-gt-flexa": {
+          // Family only. Weight is a separate axis — the document default (350)
+          // lives on `body`, and overrides come from the fontWeight tokens
+          // (font-body / font-display) so weight is set at the design-system
+          // level, never bundled into the family utility.
           "font-family": [
             "GT Flexa",
+            "GT Flexa Fallback",
             "Noto Sans JP",
             "Trebuchet MS",
             "Avenir",
@@ -43,7 +54,6 @@ const config: Config = {
             "system-ui",
             "sans-serif",
           ].join(", "),
-          "font-weight": "350",
         },
         ".font-noto-serif-jp": {
           "font-family": [
@@ -68,19 +78,33 @@ const config: Config = {
           "font-size-adjust": "ic-height from-font",
           "font-weight": "480",
         },
+        ".font-gt-flexa-mono": {
+          "font-family": [
+            "GT Flexa Mono",
+            "ui-monospace",
+            "SF Mono",
+            "Menlo",
+            "monospace",
+          ].join(", "),
+        },
       };
       addUtilities(newUtilities, ["responsive"]);
     },
   ],
   theme: {
+    // Line-height comes from the generated baseline-grid values (--lh-en-*, see
+    // generate-type-tokens.ts / line-height.ts) — one leading relationship, snapped
+    // to the 7px grid — NOT flat per-size ratios. The optical-adjustment margins
+    // read the same --lh-en-*, so rendered leading and the trim math agree.
+    // CJK overrides line-height via html[lang="ja"] * (app.css).
     fontSize: {
-      "2xs": ["var(--fs-2xs)", { lineHeight: "1.2" }],
-      "1xs": ["var(--fs-1xs)", { lineHeight: "1.2" }],
-      md: ["var(--fs-md)", { lineHeight: "1.5" }],
-      "1xl": ["var(--fs-1xl)", { lineHeight: "1.3" }],
-      "2xl": ["var(--fs-2xl)", { lineHeight: "1" }],
-      "3xl": ["var(--fs-3xl)", { lineHeight: "1" }],
-      "4xl": ["var(--fs-4xl)", { lineHeight: "1" }],
+      "2xs": ["var(--fs-2xs)", { lineHeight: "var(--lh-en-2xs)" }],
+      "1xs": ["var(--fs-1xs)", { lineHeight: "var(--lh-en-1xs)" }],
+      md: ["var(--fs-md)", { lineHeight: "var(--lh-en-md)" }],
+      "1xl": ["var(--fs-1xl)", { lineHeight: "var(--lh-en-1xl)" }],
+      "2xl": ["var(--fs-2xl)", { lineHeight: "var(--lh-en-2xl)" }],
+      "3xl": ["var(--fs-3xl)", { lineHeight: "var(--lh-en-3xl)" }],
+      "4xl": ["var(--fs-4xl)", { lineHeight: "var(--lh-en-4xl)" }],
     },
     spacing: {
       "3xs": "var(--space-3xs)",

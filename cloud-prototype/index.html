@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passing Clouds</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #eef3f9;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  #fallback {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    color: #6a7f95;
+    font-family: system-ui, sans-serif;
+  }
+  /* --- playback controls --- */
+  #ui {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 12px rgba(90, 120, 150, 0.15);
+    font-family: system-ui, sans-serif;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    user-select: none;
+  }
+  #ui.visible { opacity: 1; }
+  #ui button {
+    border: none;
+    background: transparent;
+    color: #5a7288;
+    font: 500 12px/1 system-ui, sans-serif;
+    padding: 6px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  #ui button:hover { background: rgba(120, 155, 190, 0.15); }
+  #ui button.active {
+    background: rgba(96, 138, 180, 0.22);
+    color: #2e4a63;
+  }
+  #ui .sep {
+    width: 1px;
+    height: 14px;
+    background: rgba(90, 114, 136, 0.25);
+    margin: 0 3px;
+  }
+  #ui .clock {
+    font: 500 11px/1 ui-monospace, monospace;
+    color: #7b8fa3;
+    padding: 0 6px 0 2px;
+    min-width: 52px;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="fallback">WebGL is not available in this browser.</div>
+<div id="ui">
+  <button data-style="0" class="active">Original</button>
+  <button data-style="1">Cumulus</button>
+  <span class="sep"></span>
+  <span class="clock" id="clock">0:00</span>
+  <span class="sep"></span>
+  <button data-speed="0.5">0.5×</button>
+  <button data-speed="1" class="active">1×</button>
+  <button data-speed="2">2×</button>
+  <button data-speed="4">4×</button>
+</div>
+<script>
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl', { antialias: false, alpha: false });
+if (!gl) {
+  document.getElementById('fallback').style.display = 'flex';
+  throw new Error('WebGL unavailable');
+}
+
+const vsSrc = `
+attribute vec2 p;
+void main() { gl_Position = vec4(p, 0.0, 1.0); }
+`;
+
+const fsSrc = `
+precision highp float;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_style;  // 0 = original, 1 = polished
+
+// ---------- value noise + fbm ----------
+float hash(vec2 p) {
+  p = fract(p * vec2(234.34, 435.345));
+  p += dot(p, p + 34.23);
+  return fract(p.x * p.y);
+}
+
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p) {
+  float v = 0.0;
+  float amp = 0.5;
+  mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+  for (int i = 0; i < 6; i++) {
+    v += amp * noise(p);
+    p = rot * p * 2.02 + vec2(13.7, 9.2);
+    amp *= 0.5;
+  }
+  return v;
+}
+
+// Amplitude-weighted fbm for the polished style: the two lowest octaves are
+// heavily suppressed, so cloud *mass* lives at puff scale (~1/5 screen)
+// instead of drifting continents. This pins the field's spatial mean, which
+// keeps coverage bounded at every moment — blue sky always shows through.
+// Amplitudes sum to 1.0.
+float fbmPuff(vec2 p) {
+  mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+  float v = 0.14 * noise(p); p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.28 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.26 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.17 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.10 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.05 * noise(p);
+  return v;
+}
+
+// Original-spectrum fbm with octaves 0-1 damped to 50%/70%.
+// Keeps the first version's large soft diffusion, but removes just enough
+// continent-scale energy that the drift can never white out the screen
+// (verified: worst case ~48% hazy coverage over 40 min, vs 85%+ blowout).
+// Amplitudes sum to 1.0.
+float fbmSoft(vec2 p) {
+  mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+  float v = 0.37915 * noise(p); p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.26540 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.18957 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.09479 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.04739 * noise(p);      p = rot * p * 2.02 + vec2(13.7, 9.2);
+  v += 0.02370 * noise(p);
+  return v;
+}
+
+// standard fbm normalized to the same mean level (amp sum 0.984375)
+float fbmN(vec2 p) { return fbm(p) * 1.0159; }
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_res;
+  // aspect-corrected coordinates so clouds don't stretch
+  vec2 st = uv;
+  st.x *= u_res.x / u_res.y;
+
+  float t = u_time * 0.012;  // slow drift
+
+  // --- sky: very light blue gradient, subtle enough to sit behind content ---
+  vec3 skyTop    = vec3(0.825, 0.880, 0.945); // #d2e0f1
+  vec3 skyBottom = vec3(0.950, 0.965, 0.982); // #f2f6fa
+  vec3 col = mix(skyBottom, skyTop, pow(uv.y, 0.9));
+
+  float cover;
+  vec3 cloudCol;
+  float vmax;
+
+  if (u_style > 0.5) {
+    // ================= CUMULUS (experimental) =================
+    // Spectrally-shaped puff field: coverage bounded (~10-30% of sky).
+    vec2 p1 = st * 1.35 + vec2(t * 1.0 + 17.0, t * 0.10);
+    vec2 warpOff = vec2(t * 0.45, -t * 0.3);
+    vec2 warp = vec2(fbmPuff(p1 + warpOff + vec2(5.2, 1.3)),
+                     fbmPuff(p1 + warpOff + vec2(8.3, 2.8)));
+    vec2 q = p1 + warp * 0.7;
+    float c1 = fbmPuff(q);
+
+    vec2 p2 = st * 2.62 + vec2(t * 1.7 + 40.0, -t * 0.25);
+    float c2 = fbmN(p2 + vec2(2.7, 6.1));
+
+    float clouds = c1 * 0.75 + c2 * 0.25;
+
+    cover = smoothstep(0.485, 0.665, clouds);
+    cover = cover * cover * (3.0 - 2.0 * cover);
+    cover *= mix(0.5, 1.0, smoothstep(0.0, 0.45, uv.y));
+
+    // top-lit volume: bright tops, soft grey-blue undersides
+    float core = smoothstep(0.51, 0.665, clouds);
+    vec3 base = mix(vec3(0.800, 0.845, 0.905), vec3(1.0), core);
+    float detail = fbmN(st * 5.2 + vec2(t * 1.15 + 9.0, 3.3));
+    base -= (1.0 - (0.45 + 0.55 * detail)) * 0.04;
+    float grad = fbmPuff(q + vec2(0.0, 0.07)) - c1;
+    float lit = clamp(0.55 - grad * 4.5, 0.0, 1.0);
+    cloudCol = base * (0.42 + 0.58 * lit)
+             + vec3(0.860, 0.890, 0.930) * ((1.0 - lit) * 0.22);
+    vmax = 0.88;
+  } else {
+    // ================= ORIGINAL =================
+    // The first version's exact character: big soft diffuse masses, static
+    // warp, flat hazy shading — with octaves 0-1 damped just enough that
+    // the drift can never white out, and the trajectory offset baked +8
+    // units ahead so the page opens on a pleasant stretch.
+    vec2 p1 = st * 1.6 + vec2(t + 25.0, t * 0.10 + 0.8);
+    vec2 warp = vec2(fbmSoft(p1 + vec2(5.2, 1.3)),
+                     fbmSoft(p1 + vec2(8.3, 2.8)));
+    float c1 = fbmSoft(p1 + warp * 0.7);
+
+    vec2 p2 = st * 3.1 + vec2(t * 1.7 + 53.6, -t * 0.25 - 2.0);
+    float c2 = fbmN(p2 + vec2(2.7, 6.1));
+
+    float clouds = c1 * 0.75 + c2 * 0.25;
+
+    cover = smoothstep(0.492, 0.652, clouds);
+    cover = cover * cover * (3.0 - 2.0 * cover);
+    cover *= mix(0.5, 1.0, smoothstep(0.0, 0.45, uv.y));
+
+    // flat soft shading: edges tinted barely darker than sky, cores white —
+    // a grey edge tone reads as smoke swirls at partial opacity
+    float core = smoothstep(0.545, 0.635, clouds);
+    cloudCol = mix(vec3(0.820, 0.870, 0.930), vec3(1.0), core);
+    vmax = 0.95;
+  }
+
+  col = mix(col, cloudCol, cover * vmax);
+
+  // faint warm glow, upper left
+  float sun = exp(-distance(uv, vec2(0.28, 0.85)) * 3.0) * 0.07;
+  col += vec3(1.0, 0.97, 0.92) * sun;
+
+  // soft vignette
+  float vig = smoothstep(1.3, 0.4, distance(uv, vec2(0.5)));
+  col = mix(col * 0.99, col, vig);
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+function compile(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s));
+  }
+  return s;
+}
+
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSrc));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSrc));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const uRes   = gl.getUniformLocation(prog, 'u_res');
+const uTime  = gl.getUniformLocation(prog, 'u_time');
+const uStyle = gl.getUniformLocation(prog, 'u_style');
+
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width  = Math.floor(innerWidth  * dpr);
+  canvas.height = Math.floor(innerHeight * dpr);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+}
+addEventListener('resize', resize);
+resize();
+
+// --- playback: accumulate scene time so speed changes never cause jumps ---
+// URL params for deep-linking a moment: ?style=original|cumulus&t=SECONDS&speed=2
+const params = new URLSearchParams(location.search);
+let speed = parseFloat(params.get('speed')) || 1;
+let style = params.get('style') === 'cumulus' ? 1 : 0;
+let simTime = Math.max(0, parseFloat(params.get('t')) || 0);
+let last = performance.now();
+
+const ui = document.getElementById('ui');
+const clock = document.getElementById('clock');
+
+function setActive(group, attr, val) {
+  ui.querySelectorAll(`button[data-${group}]`).forEach(b =>
+    b.classList.toggle('active', b.dataset[attr] === String(val)));
+}
+setActive('speed', 'speed', speed);
+setActive('style', 'style', style);
+
+ui.querySelectorAll('button[data-speed]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    speed = parseFloat(btn.dataset.speed);
+    setActive('speed', 'speed', speed);
+  });
+});
+ui.querySelectorAll('button[data-style]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    style = parseFloat(btn.dataset.style);
+    setActive('style', 'style', style);
+  });
+});
+// keyboard: 1/2/3/4 map to the speeds, o = original, c = cumulus
+addEventListener('keydown', e => {
+  const speeds = ['0.5', '1', '2', '4'];
+  const idx = ['1', '2', '3', '4'].indexOf(e.key);
+  if (idx >= 0) ui.querySelector(`button[data-speed="${speeds[idx]}"]`).click();
+  if (e.key === 'o') ui.querySelector('button[data-style="0"]').click();
+  if (e.key === 'c') ui.querySelector('button[data-style="1"]').click();
+});
+
+// fade the controls in on mouse activity, out when idle
+let hideTimer;
+function poke() {
+  ui.classList.add('visible');
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => ui.classList.remove('visible'), 2500);
+}
+addEventListener('mousemove', poke);
+addEventListener('touchstart', poke, { passive: true });
+poke();
+
+function fmt(t) {
+  const m = Math.floor(t / 60), s = Math.floor(t % 60);
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function frame(now) {
+  const dt = Math.min((now - last) / 1000, 0.1); // clamp tab-switch gaps
+  last = now;
+  simTime += dt * speed;
+  clock.textContent = fmt(simTime);
+  gl.uniform2f(uRes, canvas.width, canvas.height);
+  gl.uniform1f(uTime, simTime);
+  gl.uniform1f(uStyle, style);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

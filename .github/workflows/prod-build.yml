@@ -26,6 +26,13 @@ jobs:
     steps:
       - uses: "actions/checkout@v6"
 
+      - name: "Fetch licensed font sources (private repo)"
+        uses: "actions/checkout@v6"
+        with:
+          repository: "zaneriley/personal-site-fonts"
+          ssh-key: ${{ secrets.FONTS_DEPLOY_KEY }}
+          path: "assets/fonts/src"
+
       - name: "Install CI dependencies"
         run: ./run ci:install-deps
 

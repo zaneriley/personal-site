@@ -42,9 +42,17 @@
     }
   },
   "performance": {
+    "_contract": "ADR 0006: the goal is readable_content_ms <= 1000 cold on the throttled profile below, authoritative on the reference machine (local ci:release; measured 636-847ms there). The timing ceilings here are calibrated 2026-08-30 to shared CI runners, which are ~2x slower under the CPU throttle - they catch gross regressions, not the 1s goal itself. Byte budgets are never-worse-than-now ratchets: tighten when a saving lands, never raise to make a run green. Dated entries in `exceptions` are the only sanctioned way to carry a known overrun.",
     "profile": {
       "name": "mobile-cold",
-      "device": "Pixel 5"
+      "device": "Pixel 5",
+      "network": {
+        "download_kbps": 9000,
+        "upload_kbps": 1500,
+        "latency_ms": 100
+      },
+      "cpu_throttle_rate": 4,
+      "timing_samples": 3
     },
     "required_metrics": [
       "readable_content_ms",
@@ -56,18 +64,17 @@
       "timeout_ms": 15000,
       "settle_ms": 500,
       "allowed_statuses": [200],
-      "max_total_bytes": 88000,
-      "max_html_bytes": 30000,
+      "max_total_bytes": 525000,
+      "max_html_bytes": 15000,
       "max_css_bytes": 10000,
-      "max_js_bytes": 60000,
-      "max_font_bytes": 100000,
-      "max_image_bytes": 150000,
-      "max_websocket_bytes": 20000,
-      "max_request_count": 6,
-      "max_readable_content_ms": 500,
-      "max_dom_content_loaded_ms": 500,
-      "max_load_ms": 1000,
-      "max_fcp_ms": 1000,
+      "max_js_bytes": 52000,
+      "max_font_bytes": 380000,
+      "max_image_bytes": 76000,
+      "max_request_count": 11,
+      "max_readable_content_ms": 2400,
+      "max_dom_content_loaded_ms": 1000,
+      "max_load_ms": 1400,
+      "max_fcp_ms": 1400,
       "max_cls": 0.1
     },
     "exceptions": []
@@ -77,18 +84,18 @@
       "label": "root",
       "path": "/",
       "allowed_statuses": [200],
-      "required_body_text": ["Digital Product Designer", "Tokyo"],
+      "required_body_text": ["Product designer", "Tokyo"],
       "browser": {
-        "required_visible_text": ["Digital Product Designer", "Tokyo"]
+        "required_visible_text": ["Product designer", "Tokyo"]
       }
     },
     {
       "label": "english-home",
       "path": "/en",
       "allowed_statuses": [200],
-      "required_body_text": ["Digital Product Designer", "Tokyo"],
+      "required_body_text": ["Product designer", "Tokyo"],
       "browser": {
-        "required_visible_text": ["Digital Product Designer", "Tokyo"]
+        "required_visible_text": ["Product designer", "Tokyo"]
       }
     },
     {

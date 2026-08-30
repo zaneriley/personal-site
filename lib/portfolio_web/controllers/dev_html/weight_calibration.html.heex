@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Weight calibration</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <style>
+      .wcal {
+        --bg: oklch(27% 0.009 286deg);
+        --fg: oklch(81% 0.086 303deg);
+        --fg-dim: oklch(68% 0.07 277deg);
+        --panel: oklch(22% 0.012 286deg / 80%);
+        --rule: oklch(100% 0 0deg / 10%);
+        background: var(--bg);
+        color: var(--fg);
+        min-height: 100vh;
+        font-family: "GT Flexa", system-ui, sans-serif;
+        font-weight: 300;
+      }
+      .wcal[data-bg="light"] {
+        --bg: oklch(86% 0.04 280deg);
+        --fg: oklch(28% 0.05 290deg);
+        --fg-dim: oklch(45% 0.04 290deg);
+        --panel: oklch(96% 0.01 280deg / 80%);
+        --rule: oklch(0% 0 0deg / 12%);
+      }
+      body { margin: 0; }
+      .wcal__wrap { display: grid; grid-template-columns: 320px 1fr; gap: 0; }
+      .wcal__controls {
+        position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+        padding: 1.25rem; border-right: 1px solid var(--rule);
+        background: var(--panel); backdrop-filter: blur(6px); font-size: 13px;
+      }
+      .wcal__main { padding: 1.5rem 2rem; max-width: 1100px; }
+      .wcal h1 { font-size: 18px; font-weight: 427; margin: 0 0 .25rem; }
+      .wcal h2 { font-size: 13px; font-weight: 427; text-transform: uppercase;
+        letter-spacing: .08em; color: var(--fg-dim); margin: 2rem 0 .75rem;
+        padding-top: 1rem; border-top: 1px solid var(--rule); }
+      .wcal__lede { color: var(--fg-dim); font-size: 12px; margin: 0 0 1rem; line-height: 1.4; }
+      .wcal__ctl { margin: 0 0 1rem; }
+      .wcal__ctl label { display: flex; justify-content: space-between; margin-bottom: .25rem; }
+      .wcal__ctl b { font-weight: 427; font-variant-numeric: tabular-nums; }
+      .wcal__ctl input[type="range"] { width: 100%; }
+      .wcal__seg { display: flex; gap: .25rem; flex-wrap: wrap; }
+      .wcal__seg button {
+        flex: 1; padding: .35rem .25rem; border: 1px solid var(--rule);
+        background: transparent; color: var(--fg-dim); border-radius: 6px; cursor: pointer; font: inherit;
+      }
+      .wcal__seg button[aria-pressed="true"] { color: var(--fg); border-color: var(--fg); }
+
+      /* Samples consume the live --fw-flexa-* vars set by the script. */
+      .wcal__sample { line-height: 1.1; }
+      .wcal__row {
+        display: grid; grid-template-columns: 56px 1fr 1fr; gap: 1rem; align-items: baseline;
+        padding: .65rem 0; border-bottom: 1px solid var(--rule);
+      }
+      .wcal__rowhead { font-size: 11px; color: var(--fg-dim); font-variant-numeric: tabular-nums; }
+      .wcal__rowhead .step { display: block; opacity: .6; }
+      .wcal__wlabel { font-size: 10px; color: var(--fg-dim); font-variant-numeric: tabular-nums;
+        font-family: ui-monospace, monospace; display: block; margin-bottom: .15rem; }
+      .wcal__colhead { display: grid; grid-template-columns: 56px 1fr 1fr; gap: 1rem;
+        font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-dim);
+        padding-bottom: .35rem; border-bottom: 1px solid var(--fg-dim); }
+      .wcal__fam { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 1rem;
+        align-items: baseline; padding: .6rem 0; border-bottom: 1px solid var(--rule); }
+      .wcal__famname { font-size: 11px; color: var(--fg-dim); }
+      .wcal__famname .note { display: block; opacity: .55; font-size: 10px; }
+
+      /* In-situ compositions */
+      .wcal__situ { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem 2.5rem; }
+      .wcal__situ p { margin: 0 0 .6rem; }
+      .situ-card { padding: 1.25rem 1.5rem; border: 1px solid var(--rule); border-radius: 12px; }
+      .situ-card h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+        color: var(--fg-dim); margin: 0 0 1rem; font-weight: 427; }
+      .situ-hero .lede2 { color: var(--fg-dim); }
+      .situ-ks p { color: var(--fg); }
+      .situ-ks .dim { color: var(--fg-dim); }
+
+      .wcal__out {
+        margin-top: .5rem; background: oklch(0% 0 0 / 30%); color: var(--fg);
+        border: 1px solid var(--rule); border-radius: 8px; padding: .75rem;
+        font-family: ui-monospace, monospace; font-size: 11px; line-height: 1.5;
+        white-space: pre; overflow-x: auto;
+      }
+      .wcal__copy { margin-top: .5rem; padding: .4rem .8rem; border: 1px solid var(--fg);
+        background: transparent; color: var(--fg); border-radius: 6px; cursor: pointer; font: inherit; }
+      .wcal code { font-family: ui-monospace, monospace; font-size: .9em; }
+    </style>
+  </head>
+  <body>
+    <div class="wcal">
+      <div class="wcal__wrap">
+        <aside class="wcal__controls">
+          <h1>Weight calibration</h1>
+          <p class="wcal__lede">
+            Tune GT Flexa's optical weight curve by eye. The sliders set the live
+            <code>--fw-flexa-*</code>
+            tokens; everything below consumes them.
+            No <code>opsz</code>
+            axis exists — this is the manual compensation.
+          </p>
+
+          <div class="wcal__ctl">
+            <label>Anchor size <b id="v-anchor">2xl</b></label>
+            <div class="wcal__seg" id="seg-anchor">
+              <%= for s <- @sizes do %>
+                <button
+                  type="button"
+                  data-anchor={s.step}
+                  aria-pressed={s.label == "2xl"}
+                >
+                  {s.label}
+                </button>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="wcal__ctl">
+            <label>
+              Base regular @ anchor <b><span id="v-base">300</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-base"
+              min="100"
+              max="800"
+              step="1"
+              value="300"
+            />
+          </div>
+          <div class="wcal__ctl">
+            <label>
+              Regular opsz slope (wght / step)
+              <b><span id="v-opsz">15</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-opsz"
+              min="-60"
+              max="60"
+              step="1"
+              value="15"
+            />
+            <p class="wcal__lede">
+              + = smaller sizes get heavier (hold apparent weight)
+            </p>
+          </div>
+          <div class="wcal__ctl">
+            <label>
+              Bold delta @ anchor (wght) <b><span id="v-bold">125</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-bold"
+              min="0"
+              max="350"
+              step="1"
+              value="125"
+            />
+          </div>
+          <div class="wcal__ctl">
+            <label>
+              Bold slope (wght / step) <b><span id="v-boldslope">0</span></b>
+            </label>
+            <input
+              type="range"
+              id="c-boldslope"
+              min="-40"
+              max="40"
+              step="1"
+              value="0"
+            />
+            <p class="wcal__lede">
+              how much the bold delta itself drifts by size
+            </p>
+          </div>
+
+          <h2 style="border:0;padding:0;margin-top:1.5rem">Preview</h2>
+          <div class="wcal__ctl">
+            <label>Background</label>
+            <div class="wcal__seg" id="seg-bg">
+              <button type="button" data-bg="dark" aria-pressed="true">
+                Dark
+              </button>
+              <button type="button" data-bg="light" aria-pressed="false">
+                Light
+              </button>
+            </div>
+          </div>
+          <div class="wcal__ctl">
+            <label for="c-text">Ladder sample text</label>
+            <input
+              type="text"
+              id="c-text"
+              value="Product designer at Google"
+              style="width:100%;padding:.35rem;background:transparent;color:var(--fg);border:1px solid var(--rule);border-radius:6px;font:inherit;"
+            />
+          </div>
+        </aside>
+
+        <main class="wcal__main">
+          <h2 style="border:0;padding:0;margin-top:0">In situ</h2>
+          <div class="wcal__situ font-gt-flexa">
+            <div class="situ-card situ-hero">
+              <h3>Home hero</h3>
+              <p style="font-size:var(--fs-2xl)">
+                <span
+                  class="text-callout"
+                  style="font-weight:var(--fw-flexa-2xl-bold)"
+                >
+                  Product designer
+                </span>
+                <span class="text-main" style="font-weight:var(--fw-flexa-2xl)">
+                  at
+                </span>
+                <span
+                  class="text-callout"
+                  style="font-weight:var(--fw-flexa-2xl-bold)"
+                >
+                  G
+                </span>
+              </p>
+              <p
+                class="text-main"
+                style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)"
+              >
+                Based in
+                <span
+                  class="font-cardinal-fruit text-callout"
+                  style="font-weight:700;text-transform:uppercase"
+                >
+                  Tokyo
+                </span>
+                &amp; previously
+                <span
+                  class="font-cardinal-fruit text-callout"
+                  style="font-weight:700;text-transform:uppercase"
+                >
+                  San Francisco
+                </span>
+              </p>
+              <p
+                class="text-main"
+                style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)"
+              >
+                +15 years experience in making digital products using strategy,
+                design, code or whatever else it takes.
+              </p>
+            </div>
+
+            <div class="situ-card situ-ks">
+              <h3>Kitchen sink (one family, all sizes)</h3>
+              <p style="font-size:var(--fs-4xl);font-weight:var(--fw-flexa-4xl)">
+                Display 4xl
+              </p>
+              <p style="font-size:var(--fs-3xl);font-weight:var(--fw-flexa-3xl)">
+                Heading 3xl
+              </p>
+              <p style="font-size:var(--fs-2xl);font-weight:var(--fw-flexa-2xl)">
+                Heading 2xl
+              </p>
+              <p style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)">
+                Subhead 1xl
+              </p>
+              <p style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)">
+                Body copy at md. The quick brown fox, and an
+                <strong style="font-weight:var(--fw-flexa-md-bold)">
+                  inline bold run
+                </strong>
+                inside regular text to check the emphasis step at reading size.
+              </p>
+              <p
+                class="dim"
+                style="font-size:var(--fs-1xs);font-weight:var(--fw-flexa-1xs)"
+              >
+                Caption 1xs — metadata, timestamps, <strong style="font-weight:var(--fw-flexa-1xs-bold)">a bold label</strong>.
+              </p>
+              <p
+                class="dim"
+                style="font-size:var(--fs-2xs);font-weight:var(--fw-flexa-2xs)"
+              >
+                Fine print 2xs — the smallest rung, where thin strokes vanish first.
+              </p>
+            </div>
+          </div>
+
+          <h2>GT Flexa optical ladder</h2>
+          <div class="wcal__colhead">
+            <span>Size</span><span>Regular</span><span>Bold</span>
+          </div>
+          <%= for s <- @sizes do %>
+            <div class="wcal__row" data-step={s.step} data-label={s.label}>
+              <div class="wcal__rowhead">
+                {s.label}<span class="step">step {s.step}</span>
+              </div>
+              <div>
+                <span class="wcal__wlabel" data-w="regular">—</span>
+                <span
+                  class="wcal__sample font-gt-flexa"
+                  data-variant="regular"
+                  style={"font-size: var(--fs-#{s.label}); font-weight: var(--fw-flexa-#{s.label})"}
+                >
+                  Sample
+                </span>
+              </div>
+              <div>
+                <span class="wcal__wlabel" data-w="bold">—</span>
+                <span
+                  class="wcal__sample font-gt-flexa"
+                  data-variant="bold"
+                  style={"font-size: var(--fs-#{s.label}); font-weight: var(--fw-flexa-#{s.label}-bold)"}
+                >
+                  Sample
+                </span>
+              </div>
+            </div>
+          <% end %>
+
+          <h2>Cross-family check (at <span id="v-famsize">md</span>)</h2>
+          <div class="wcal__ctl" style="max-width:280px">
+            <label>
+              Compare at size <b><span id="v-famsize2">md</span></b>
+            </label>
+            <div class="wcal__seg" id="seg-famsize">
+              <%= for s <- @sizes do %>
+                <button
+                  type="button"
+                  data-famsize={s.label}
+                  aria-pressed={s.label == "md"}
+                >
+                  {s.label}
+                </button>
+              <% end %>
+            </div>
+          </div>
+          <div id="fam-area">
+            <%= for f <- @compare_faces do %>
+              <div class="wcal__fam" data-fam={f.key}>
+                <div class="wcal__famname">
+                  {f.name}<span class="note">{f.note}</span>
+                </div>
+                <div>
+                  <span class="wcal__wlabel" data-w="regular">—</span>
+                  <span class={"wcal__sample #{f.css}"} data-variant="regular">
+                    Sample
+                  </span>
+                </div>
+                <div>
+                  <span class="wcal__wlabel" data-w="bold">—</span>
+                  <span class={"wcal__sample #{f.css}"} data-variant="bold">
+                    Sample
+                  </span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <h2>Output (paste into the token pipeline)</h2>
+          <button type="button" class="wcal__copy" id="btn-copy">Copy</button>
+          <pre class="wcal__out" id="out">…</pre>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const SIZES = [
+          {label:"4xl",step:4},{label:"3xl",step:3},{label:"2xl",step:2},
+          {label:"1xl",step:1},{label:"md",step:0},{label:"1xs",step:-1},{label:"2xs",step:-2}
+        ];
+        const root = document.querySelector(".wcal");
+        const $ = id => document.getElementById(id);
+        const state = { anchor:2, base:300, opsz:15, bold:125, boldslope:0, famsize:"md", text:"Product designer at Google" };
+
+        const clampW = w => Math.round(Math.min(800, Math.max(100, w)));
+        const regular = step => clampW(state.base + state.opsz * (state.anchor - step));
+        const bold = step => clampW(regular(step) + state.bold + state.boldslope * (state.anchor - step));
+
+        function setVars() {
+          for (const s of SIZES) {
+            root.style.setProperty("--fw-flexa-" + s.label, regular(s.step));
+            root.style.setProperty("--fw-flexa-" + s.label + "-bold", bold(s.step));
+          }
+        }
+
+        function paint() {
+          setVars(); // drives in-situ + ladder via CSS vars
+
+          document.querySelectorAll(".wcal__row").forEach(row => {
+            const step = parseInt(row.dataset.step, 10);
+            const wr = regular(step), wb = bold(step);
+            row.querySelector('[data-variant="regular"]').textContent = state.text;
+            row.querySelector('[data-variant="bold"]').textContent = state.text;
+            row.querySelector('[data-w="regular"]').textContent = "wght " + wr;
+            row.querySelector('[data-w="bold"]').textContent = "wght " + wb + "  (Δ" + (wb - wr) + ")";
+          });
+
+          const fs = SIZES.find(s => s.label === state.famsize);
+          const wr = regular(fs.step), wb = bold(fs.step);
+          document.querySelectorAll(".wcal__fam").forEach(famRow => {
+            const fam = famRow.dataset.fam;
+            const r = famRow.querySelector('[data-variant="regular"]');
+            const b = famRow.querySelector('[data-variant="bold"]');
+            [r,b].forEach(el => { el.style.fontSize = "var(--fs-" + state.famsize + ")"; el.textContent = state.text; });
+            if (fam === "flexa" || fam === "cheee") {
+              r.style.fontWeight = wr; b.style.fontWeight = wb;
+              famRow.querySelector('[data-w="regular"]').textContent = "wght " + wr;
+              famRow.querySelector('[data-w="bold"]').textContent = "wght " + wb;
+            } else {
+              r.style.fontWeight = ""; b.style.fontWeight = (fam === "cardinal") ? 700 : "";
+              famRow.querySelector('[data-w="regular"]').textContent = "static";
+              famRow.querySelector('[data-w="bold"]').textContent = (fam === "cardinal") ? "700" : "static";
+            }
+          });
+          $("v-famsize").textContent = state.famsize;
+          $("v-famsize2").textContent = state.famsize;
+          paintOutput();
+        }
+
+        function paintOutput() {
+          const anchorLabel = SIZES.find(s => s.step === state.anchor).label;
+          let css = "/* GT Flexa weight ladder — generated by /weight-calibration\n";
+          css += "   anchor " + anchorLabel + " | base(regular) " + state.base + " | regular opsz " + state.opsz + " wght/step\n";
+          css += "   bold delta +" + state.bold + " | bold slope " + state.boldslope + " wght/step */\n";
+          css += ":root {\n";
+          for (const s of SIZES) {
+            css += "  --fw-flexa-" + s.label + ": " + regular(s.step) + ";  --fw-flexa-" + s.label + "-bold: " + bold(s.step) + ";\n";
+          }
+          css += "}\n\n";
+          const params = { flexa: { anchorStep: state.anchor, base: state.base, opszSlope: state.opsz, boldDelta: state.bold, boldSlope: state.boldslope } };
+          css += JSON.stringify(params, null, 2);
+          $("out").textContent = css;
+        }
+
+        const bind = (id, key, vlabel) => {
+          const el = $(id);
+          el.addEventListener("input", () => {
+            state[key] = parseFloat(el.value);
+            if (vlabel) $(vlabel).textContent = el.value;
+            paint();
+          });
+        };
+        bind("c-base","base","v-base");
+        bind("c-opsz","opsz","v-opsz");
+        bind("c-bold","bold","v-bold");
+        bind("c-boldslope","boldslope","v-boldslope");
+        $("c-text").addEventListener("input", e => { state.text = e.target.value || " "; paint(); });
+
+        const seg = (segId, attr, apply) => {
+          $(segId).addEventListener("click", e => {
+            const btn = e.target.closest("button"); if (!btn) return;
+            $(segId).querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b === btn));
+            apply(btn.dataset[attr]); paint();
+          });
+        };
+        seg("seg-anchor","anchor", v => { state.anchor = parseInt(v,10); $("v-anchor").textContent = SIZES.find(s=>s.step===state.anchor).label; });
+        seg("seg-famsize","famsize", v => { state.famsize = v; });
+        seg("seg-bg","bg", v => { root.dataset.bg = v; });
+
+        $("btn-copy").addEventListener("click", () => navigator.clipboard.writeText($("out").textContent));
+
+        paint();
+      })();
+    </script>
+  </body>
+</html>

@@ -312,18 +312,20 @@ function write_runtime_artifact {
 }
 
 function run_browser_performance {
+    local image="${PROD_BUILD_BROWSER_IMAGE:-personal-site-prod-build-browser}"
     local output=".tmp/ci-artifacts/prod-build/browser-performance-last-run.json"
     local tmp_output
     local status
 
     tmp_output="$(mktemp)"
 
-    "${compose[@]}" build js >/dev/null
+    docker build --target browser -t "${image}" . >/dev/null
 
-    if "${compose[@]}" run --rm --no-deps \
+    if docker run --rm \
+        --network "${PROJECT_NAME}_default" \
         -e "PERF_BROWSER_BASE_URL=http://web:${APP_PORT}" \
         -e "PROD_BUILD_APP_SHA=${APP_SHA}" \
-        js node ../ci/gates/browser-performance.mjs --output - > "${tmp_output}" &&
+        "${image}" node ../ci/gates/browser-performance.mjs --output - > "${tmp_output}" &&
         jq -e '.status == "pass"' "${tmp_output}" >/dev/null; then
         mkdir -p "$(dirname "${output}")"
         mv "${tmp_output}" "${output}"

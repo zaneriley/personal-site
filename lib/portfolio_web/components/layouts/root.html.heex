@@ -4,6 +4,30 @@
   data-theme={Application.get_env(:portfolio, :default_theme, "dark")}
 >
   <head>
+    <%!-- Set data-theme from the saved preference BEFORE first paint, so a
+         light-preferring user never sees a flash of the server-default dark.
+         Mirrors the decision logic in assets/js/theme-switcher.ts; that file
+         remains the source of truth for runtime toggling. Inline is required
+         (must run pre-paint); CSP allows script-src 'unsafe-inline'.
+         Also arms the cloud surface: with JS on, the static light layers stay
+         hidden from first paint so they never flash ahead of the shader.
+         assets/js/cloud-surface.ts disarms (restoring them) if WebGL fails. --%>
+    <script>
+      (function () {
+        try {
+          var d = document.documentElement;
+          d.classList.add("clouds-armed");
+          var t = localStorage.getItem("theme");
+          if (t === "light" || t === "dark") {
+            d.setAttribute("data-theme", t);
+          } else {
+            var light = window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: light)").matches;
+            d.setAttribute("data-theme", light ? "light" : "dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <.live_title>
       {assigns[:page_title] ||
         "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"}
@@ -26,23 +50,44 @@
     </noscript>
     <!-- href langs -->
     {hreflang_tags(@conn)}
+    <%!-- Atom feed autodiscovery (feeds-spec.md): main everywhere, section
+         feeds on their index pages. Rendered from the feeds registry. --%>
+    <link
+      :for={
+        {feed_title, feed_path} <-
+          PortfolioWeb.Feeds.autodiscovery(
+            @user_locale || @conn.assigns[:user_locale] || "en",
+            @conn.request_path
+          )
+      }
+      rel="alternate"
+      type="application/atom+xml"
+      title={feed_title}
+      href={feed_path}
+    />
     <!-- Favicon and touch icons -->
+    <!-- Primary: one adaptive SVG (the hanko); follows OS light/dark via
+         prefers-color-scheme. PNG/ICO below are the raster fallback.
+         ?v= is a cache-buster: favicons aren't content-digested, and browsers
+         (esp. Firefox/Zen) cache them very stubbornly — bump v on icon change. -->
+    <link rel="icon" type="image/svg+xml" href={~p"/favicon.svg?v=2"} />
+    <link rel="icon" sizes="any" href={~p"/favicon.ico?v=2"} />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href={~p"/apple-touch-icon.png"}
+      href={~p"/apple-touch-icon.png?v=2"}
     />
     <link
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href={~p"/favicon-32x32.png"}
+      href={~p"/favicon-32x32.png?v=2"}
     />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href={~p"/favicon-16x16.png"}
+      href={~p"/favicon-16x16.png?v=2"}
     />
     <link
       rel="mask-icon"
@@ -74,8 +119,31 @@
     <meta name="twitter:title" content={@share_metadata.title} />
     <meta name="twitter:description" content={@share_metadata.description} />
     <meta name="twitter:image" content={@share_metadata.image} />
-    <!-- FUll CSS -->
-    <link phx-track-static rel="stylesheet" href="/css/app.css" />
+    <%!-- Preload the one render-critical face (GT Flexa, the body type) so the
+         fetch starts during head parse — in parallel with the stylesheet —
+         instead of waiting for app.css to download and the @font-face to be
+         discovered. The face is font-display: swap with a metric-override
+         fallback (see _fontface.generated.css), so the preload only shortens the
+         swap window; it never adds layout shift.
+         Both this preload and the stylesheet below use ~p, so in prod they
+         resolve through the cache manifest to the digested, immutable paths
+         (mix phx.digest also rewrites the @font-face url() inside the digested
+         CSS to the same digested font path). The preload URL therefore still
+         byte-matches what the @font-face requests, so the font is fetched once —
+         now with cache-control: immutable instead of an etag revalidation.
+         crossorigin is mandatory — fonts always fetch in anonymous CORS mode, and
+         without it the preloaded bytes won't be reused by the @font-face.
+         NOTE: this path is a hardcoded duplicate of the pipeline's body face;
+         it should derive from one source (see _PROJECT_DOCS/BACKLOG.md). --%>
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={~p"/fonts/gt-flexa.woff2"}
+      crossorigin
+    />
+    <!-- Full CSS -->
+    <link phx-track-static rel="stylesheet" href={~p"/css/app.css"} />
     <script
       defer
       phx-track-static
@@ -83,112 +151,133 @@
       src={~p"/js/app.js"}
     />
   </head>
-  <body class="min-h-screen flex flex-col text-md bg-gradient">
+  <body class="min-h-screen flex flex-col text-md py-2xl">
+    <%!-- Fixed full-viewport background behind all content. Two gradient fills
+         cross-fade on theme toggle (dusk transition), turbulence textures blend
+         per theme, and an animated cloud canvas covers them in light mode (see
+         below). Static markup — not LiveView-driven. --%>
+    <div class="surface" aria-hidden="true">
+      <div class="surface-fill surface-fill-dark"></div>
+      <div class="surface-fill surface-fill-light"></div>
+
+      <%!-- Texture layers. Static feTurbulence (rasterized once); only opacity
+           cross-fades per theme. Dark = grain only; light = highlight cloud +
+           shadow cloud + fine grain. Confirmed sketch values. --%>
+      <svg class="surface-layer surface-grain-dark" preserveAspectRatio="none">
+        <filter id="surface-grain-dark" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.5"
+            numOctaves="1"
+            seed="36"
+            result="n"
+          />
+          <feColorMatrix
+            in="n"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.2126 0.7152 0.0722 0 0"
+            result="a"
+          />
+          <feFlood flood-color="#ffffff" result="t" />
+          <feComposite in="t" in2="a" operator="in" />
+        </filter>
+        <rect
+          width="100%"
+          height="100%"
+          fill="#ffffff"
+          filter="url(#surface-grain-dark)"
+        />
+      </svg>
+
+      <svg class="surface-layer surface-highlight" preserveAspectRatio="none">
+        <filter id="surface-highlight" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.00714"
+            numOctaves="7"
+            seed="24"
+            result="n"
+          />
+          <feGaussianBlur in="n" stdDeviation="10" result="s" />
+          <feColorMatrix
+            in="s"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.2041 0.6866 0.0693 0 0"
+            result="a"
+          />
+          <feFlood flood-color="oklch(100% 0.147 268.8deg)" result="t" />
+          <feComposite in="t" in2="a" operator="in" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#surface-highlight)" />
+      </svg>
+
+      <svg class="surface-layer surface-shadow" preserveAspectRatio="none">
+        <filter id="surface-shadow" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.00847"
+            numOctaves="3"
+            seed="31"
+            result="n"
+          />
+          <feGaussianBlur in="n" stdDeviation="16" result="s" />
+          <feColorMatrix
+            in="s"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.0213 0.0715 0.0072 0 0"
+            result="a"
+          />
+          <feFlood flood-color="oklch(64.8% 0.095 360deg)" result="t" />
+          <feComposite in="t" in2="a" operator="in" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#surface-shadow)" />
+      </svg>
+
+      <%!-- Animated cloud shader (assets/js/cloud-surface.ts) — light mode's
+           live surface. Opaque: in light mode it visually replaces the static
+           gradient + highlight/shadow clouds beneath it, which remain as the
+           no-WebGL fallback. CSS keeps it at opacity 0 until the module adds
+           .ready after its first frame. Grain still blends over it. --%>
+      <canvas class="surface-layer surface-clouds"></canvas>
+
+      <svg
+        class="surface-layer surface-grain-light"
+        preserveAspectRatio="none"
+      >
+        <filter id="surface-grain-light" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.5"
+            numOctaves="1"
+            seed="36"
+            result="n"
+          />
+          <feColorMatrix
+            in="n"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.2169 0.7295 0.0736 0 0"
+            result="a"
+          />
+          <feFlood flood-color="oklch(33% 0.05 50deg)" result="t" />
+          <feComposite in="t" in2="a" operator="in" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#surface-grain-light)" />
+      </svg>
+    </div>
     <a href="#main-content" class="sr-only" tabindex="0">
       {gettext("Skip to main content")}
     </a>
 
     {@inner_content}
-    <footer
-      role="contentinfo"
-      class="mt-auto grid grid-cols-12 sticky top-[100vh] text-1xs"
-    >
-      <div class="col-span-2">
-        Logo
-      </div>
-      <div class="col-span-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Connect")}
-        </.typography>
-        <.typography locale={@user_locale} tag="ul" size="1xs">
-          <li>
-            <a href="mailto:zane@zaneriley.com" target="_blank" rel="noopener">
-              hello@zaneriley.com
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://www.linkedin.com/in/zaneriley/"
-              target="_blank"
-              rel="noopener"
-            >
-              LinkedIn
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/zaneriley"
-              target="_blank"
-              rel="noopener"
-            >
-              Github
-            </a>
-          </li>
-        </.typography>
-      </div>
-      <div class="col-span-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Colophon")}
-        </.typography>
-
-        <.typography locale={@user_locale} tag="p" size="1xs">
-          {raw(
-            gettext(
-              "Type set in %{font1}, %{font2}, %{font3}, & %{font4}.",
-              font1:
-                "<a href='https://www.grillitype.com/typeface/gt-flexa'>GT Flexa</a>",
-              font2:
-                "<a href='https://productiontype.com/font/cardinal/cardinal-fruit' class='font-cardinal-fruit' rel='noopener' target='_blank'>Cardinal Fruit</a>",
-              font3:
-                "<a href='https://ohnotype.co/fonts/cheee' class='font-cheee' rel='noopener' target='_blank'>CHEEE</a>",
-              font4:
-                "<a href='https://fonts.google.com/noto/specimen/Noto+Sans+JP' rel='noopener' target='_blank'>Noto Sans JP</a>"
-            )
-          )}<br />{raw(
-            gettext("Design avaiable in %{figma}.",
-              figma:
-                "<a href='https://www.figma.com/design/zDOcBhnjTDCWmc6OFgeoUc/Zane-Riley's-Product-Portfolio?node-id=2209-559&t=0gZqDDkC2pYanuW3-0' target='_blank' rel='noopener'>Figma</a>"
-            )
-          )}
-        </.typography>
-      </div>
-      <div class="col-span-3">
-        <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
-          {gettext("Server")}
-        </.typography>
-        <.typography locale={@user_locale} tag="p" size="1xs">
-          {gettext("Hosted on my home server in Tokyo.")} <br />
-          {gettext("Written in Elixir.")} <br />
-          {raw(
-            gettext("Open source on %{github}.",
-              github:
-                "<a href='https://github.com/zane-riley/personal-site' target='_blank' rel='noopener'>Github</a>"
-            )
-          )}
-        </.typography>
-      </div>
-      <div class="col-span-12">
-        <.typography
-          locale={@user_locale}
-          tag="p"
-          size="1xs"
-          font="cheee"
-          center={true}
-          color="suppressed"
-        >
-          Now in Tokyo
-        </.typography>
-        <.typography
-          locale={@user_locale}
-          tag="p"
-          size="1xs"
-          font="cheee"
-          center={true}
-          color="suppressed"
-        >
-          &copy; 2010 – {@current_year}
-        </.typography>
-      </div>
-    </footer>
+    <% footer_path =
+      (assigns[:conn] && assigns[:conn].request_path) || assigns[:current_path] ||
+        "" %>
+    <%= unless String.ends_with?(footer_path, "/color-sketch") or
+                 String.ends_with?(footer_path, "/shader-scale-sketch") do %>
+      <PortfolioWeb.Components.Footer.site_footer
+        user_locale={@user_locale}
+        current_year={@current_year}
+      />
+    <% end %>
   </body>
 </html>

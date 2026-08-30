@@ -19,7 +19,7 @@ defmodule PortfolioWeb do
 
   def static_paths,
     do:
-      ~w(css fonts images js favicon.ico favicon-32x32.png favicon-16x16.png site.webmanifest mstile
+      ~w(css fonts images js favicon.svg favicon.ico favicon-32x32.png favicon-16x16.png site.webmanifest mstile
         robots.txt 502.html maintenance.html
         apple-touch-icon.png android-chrome browserconfig manifest.json mstile
         safari-pinned-tab.svg)
@@ -94,6 +94,10 @@ defmodule PortfolioWeb do
       import PortfolioWeb.SiteOrigin, only: [absolute_url: 1]
       use Gettext, backend: PortfolioWeb.Gettext
       import PortfolioWeb.Components.Typography
+
+      # Zane's own visual-identity marks (hanko, signature) — cross-cutting like
+      # CoreComponents/Typography: used in nav, the / hero, and the footer.
+      import PortfolioWeb.Components.Identity
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

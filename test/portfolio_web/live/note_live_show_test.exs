@@ -24,7 +24,7 @@ defmodule PortfolioWeb.NoteLive.ShowTest do
       assert html =~ "A heading"
       assert html =~ "A paragraph"
       assert html =~ "<strong>"
-      assert html =~ ~s(href="/favicon-32x32.png")
+      assert html =~ ~s(href="/favicon-32x32.png)
       assert html =~ ~s(src="/js/app.js")
       refute html =~ "We ran into an issue loading this note"
       refute html =~ "## A heading"

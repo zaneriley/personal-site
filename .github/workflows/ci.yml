@@ -51,6 +51,15 @@ jobs:
     steps:
       - uses: "actions/checkout@v6"
 
+      # This job builds the preview-page-acceptance image, which passes
+      # through the production assets stage - so it needs the fonts too.
+      - name: "Fetch licensed font sources (private repo)"
+        uses: "actions/checkout@v6"
+        with:
+          repository: "zaneriley/personal-site-fonts"
+          ssh-key: ${{ secrets.FONTS_DEPLOY_KEY }}
+          path: "assets/fonts/src"
+
       - name: "Disposable host check"
         run: ./run ci:disposable-host-check
 
@@ -106,6 +115,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       CONTENT_REPO_URL: ${{ secrets.CONTENT_REPO_URL }}
       DC: run
+      MIX_ENV: test
 
     steps:
       - uses: "actions/checkout@v6"

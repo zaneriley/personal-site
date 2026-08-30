@@ -1,12 +1,15 @@
 :root {
   /* TYPE & LAYOUT */
-  --fs-base: clamp(1.13rem, 0vi + 1.13rem, 1.13rem);
-  /* stylelint-disable unit-disallowed-list */
-  --grid-max-width: 1440px;
-  /* stylelint-enable unit-disallowed-list */
-  --grid-gutter: 3rem;
-  --grid-outer-margins: 0.5rem;
-  --grid-columns: 12;
+
+  /* Base reading size = the md rung of the generated scale (--fs-md, 22px). No
+     separate --fs-base: it drifted from --fs-md and was a second source of truth
+     for the same relationship. */
+
+  /* Reading grid tokens (--content-cap, --gutter, --page-inset, --columns) moved
+     to _grid.css — the layout contract belongs on the type/space axis, not here.
+     Type tokens (sizes, weight, metrics) are generated into
+     _type-tokens.generated.css; caps tracking + utilities in _type-utilities.css.
+     Neither lives here. */
 
   /* DARK MODE PRIMITIVES */
   --white-absolute: oklch(100% 0 0deg);
@@ -23,7 +26,7 @@
 
   /* This acts as a neutral text palette, but hue shifts significantly 
   compared to most website/app color palettes. */
-  --dusk-0: var(--white-point);
+  --dusk-000: var(--white-point);
   --dusk-100: oklch(88.73% 0.056 324.15deg);
   --dusk-200: oklch(85.53% 0.072 314.14deg);
   --dusk-300: oklch(81.03% 0.086 303.13deg);
@@ -35,154 +38,422 @@
   --dusk-900: oklch(28.04% 0.012 264.36deg);
   --dusk-1000: oklch(25.26% 0.008 274.64deg);
 
-  /* Neutral Palette */
-  --neutral-0: var(--white-point);
-  --neutral-100: oklch(78.23% 0.036 333.34deg);
-  --neutral-200: #bd9ca6;
-  --neutral-300: oklch(77.77% 0.0704 75.85deg);
+  /* Neutral ramp — the cool blue-grey UI/metadata greys (Figma `neutral/*`),
+     used for footer chrome + code-block line numbers/filename. Per-theme, so
+     the rungs live in the html[data-theme] blocks below. (Replaces a vestigial
+     warm `--neutral-0/100/200/300` set that nothing consumed.) */
 
   /* Gold Palette */
   --ochre-0: oklch(77.77% 0.0704 75.85deg);
 
-  /* SEMANTIC TOKENS */
-  --text-color-main: var(--neutral-0);
-  --text-color-callout: var(--white-absolute);
-  --text-color-deemphasized: var(--dusk-500);
-  --text-color-suppressed: var(--dusk-600);
-  --text-color-accent: var(--ochre-0);
+  /* SHARED HUE ANCHORS (single source of truth for role hues).
+     Lightness + chroma are per-mode; only the hue is shared and re-anchored
+     in the light block. */
+  --hue-warm-text: 65deg; /* dark warm-text anchor; light re-anchors to 6deg */
+  --hue-cool-surface: 268deg; /* 250–286 band, surfaces + mid/dark neutrals */
+  --hue-link: 264deg; /* 252–277 band, links */
 
-  /* DARK MODE GRADIENTS */
+  /* Brand mark colour — the hanko's single canonical colour, referencing the
+     per-theme accent so it tracks light/dark. Change here to recolour the mark
+     everywhere. */
+  --hanko-color: var(--accent);
 
-  --grad-bg-time: 10s;
-  --bg-gradient-1: radial-gradient(
-    140.76% 178.27% at 91.11% 4.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
+  /* SEMANTIC TEXT TOKENS are defined per-mode below (see the html[data-theme]
+     blocks) — light and dark need independent envelopes. Defining text in
+     :root is what made light-mode text resolve to near-white (invisible). */
+
+  /* SURFACE GRADIENTS — both always defined; the .surface layers cross-fade
+     between them on theme toggle (geometries differ, so they can't morph in
+     place; opacity cross-fade is the mechanism). Confirmed tuned values. */
+  --surface-grad-dark: radial-gradient(
+    177% 177% at 15% 98%,
+    oklch(25.7% 0.006 286deg) 0%,
+    oklch(27.5% 0.009 286deg) 50%,
+    oklch(33.1% 0.022 259deg) 100%
   );
-  --bg-gradient-2: radial-gradient(
-    140.76% 158.27% at 33.11% 95.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
-  );
-  --bg-gradient-3: radial-gradient(
-    140.76% 128.27% at 5.11% 15.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
-  );
-  --bg-gradient-4: radial-gradient(
-    140.76% 138.27% at 55.11% 10.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
-  );
-  --bg-gradient-5: radial-gradient(
-    140.76% 178.27% at 91.11% 4.14%,
-    #000 0%,
-    #100904 30.86%,
-    #24150a 57.26%,
-    #20130a 76.92%,
-    #1e0f0b 100%
+  --surface-grad-light: radial-gradient(
+    138% 138% at 19% 20%,
+    oklch(100% 0.079 230deg) 0%,
+    oklch(81.3% 0.144 238deg) 100%
   );
 }
 
-@property --color-grad-1 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(41.84% 0.038 261.51deg);
+/* Signature wordmark wrapper. One inline SVG (Identity.signature/1) that
+   recolors via --signature-* tokens — no light/dark image swap. Block so the
+   SVG's width:100% resolves against the container; the inner SVG carries its
+   own display/width/height/isolation. */
+.signature {
+  display: block;
 }
 
-@property --color-grad-2 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(33.09% 0.022 259.38deg);
+/* Hanko (personal seal) — ONE canonical appearance everywhere (nav, footer,
+   future). Colour + size are design-system invariants owned by the mark, not
+   per-call choices, so instances can't drift. --hanko-color is the brand
+   accent; size is a single spacing rung. fill/stroke use currentColor, so
+   setting `color` here recolours the whole mark. */
+.hanko {
+  color: var(--hanko-color);
+  height: var(--space-1xl);
+  width: auto;
 }
 
-@property --color-grad-3 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(28.04% 0.012 264.36deg);
-}
+/* Employer/client mark rendered in a single site color — the token override
+   for logos whose brand palette fights the scheme (e.g. Brit + Co red). The
+   asset on disk stays canonical brand color; this paints its SHAPE via mask
+   in --logo-color (default: the text color in place, hanko-style). Brand-color
+   rendering stays a plain <img>. The consumer sets the box (inline-size +
+   aspect-ratio from the mark's viewBox) and accessibility (role="img",
+   aria-label):
 
-@property --color-grad-4 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: oklch(25.26% 0.008 274.64deg);
+     <span class="logo-monochrome" role="img" aria-label="Brit + Co"
+           style={"--logo-src: url(#{~p"/images/logos/brit-and-co.svg"})"} /> */
+.logo-monochrome {
+  display: inline-block;
+  background-color: var(--logo-color, currentColor);
+  mask: var(--logo-src) no-repeat center / contain;
 }
 
 /* Dark mode by default */
 html,
 html[data-theme="dark"] {
   color-scheme: dark;
+
+  /* TEXT EMPHASIS LADDER (dark).
+     callout = absolute white (the sanctioned "for effect" white) — loudest text, above body.
+     main = dusk-000 / white-point — body, the brightest neutral (near-white, low chroma).
+     deemphasized/suppressed still sit on the dusk arc (chroma'd lower rungs), AA-verified
+     vs the worst-case surface (L≈33): deemphasized 5.6:1 (AA floor), suppressed 4.3:1
+     (decorative sub-floor, never body). callout/main are far brighter → comfortably AA.
+     FOLLOW-UP: main→deemphasized is now a big jump (90.8%→76.3%); re-seating
+     deemphasized/suppressed up the ramp (and the light-mode mirror) is its own task. */
+  --text-color-callout: var(
+    --white-absolute
+  ); /* loudest text — the "for effect" white, above body */
+
+  --text-color-main: var(
+    --dusk-000
+  ); /* body = white-point (the crushed white), brightest neutral */
+
+  --text-color-deemphasized: var(--dusk-400); /* AA floor, 5.6:1 */
+  --text-color-suppressed: var(--dusk-500); /* decorative sub-floor, 4.3:1 */
+  --text-color-accent: var(--ochre-0);
+
+  /* CODE PALETTE PRIMITIVES (dark) — hue-named raw colors for source-code
+     rendering, from the Figma code-block mock; tuned in /code-block (dev).
+     Role mapping (keyword→green etc.) lives in _code.css — these are paint
+     only. Surface notes: card/code bgs intentionally equal the two darkest
+     --surface-grad-dark stops; the border is the same value as --dusk-800. */
+  --code-white: oklch(91.6% 0.018 65deg);
+  --code-green: oklch(73.2% 0.071 155deg);
+  --code-teal: oklch(73.4% 0.045 202deg);
+  --code-gold: oklch(82.9% 0.113 82deg);
+  --code-orange: oklch(74.9% 0.118 60deg);
+  --code-red: oklch(66.9% 0.12 31deg);
+  --code-tan: oklch(74.5% 0.046 66deg);
+  --code-mauve: oklch(66.6% 0.091 329deg);
+  --code-brown: oklch(57.1% 0.035 67deg);
+  --code-bg-card: oklch(25.7% 0.006 286deg);
+  --code-bg: oklch(27.5% 0.009 286deg);
+  --code-border: var(--dusk-800);
+
+  /* Folder/filename deliberately track the neutral ramp — code chrome and
+     footer chrome share one cool-grey kernel. Re-grade via --neutral-*, not here. */
+  --code-folder: var(--neutral-25);
+  --code-filename: var(--neutral-50);
+
+  /* NEUTRAL RAMP (dark) — cool blue-grey, Figma neutral/25,50. Quiet UI
+     labels (25) and emphasis labels/links (50). Numbers mirror the Figma
+     neutral/* stops — not lightness, opacity, or the --dusk-* step scale. */
+  --neutral-25: oklch(53.32% 0.0379 277.61deg);
+  --neutral-50: oklch(70.59% 0.0781 277.55deg);
+
+  /* Footer panel — a solid surface the footer paints over the page gradient
+     (Figma bg/90). Its own token: it tracks the code bg in dark, but sits
+     lighter than it in light mode. */
+  --footer-bg: oklch(27.48% 0.0091 285.78deg);
+
+  /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:
+     brighter on dark, deeper on light. Same idea as the dark "bright" sibling
+     (neutral-50 → neutral-50-bright). Used by the hanko (nav + favicon). */
+  --accent: oklch(66.6% 0.138 275deg); /* brighter link (= neutral-50-bright) */
+
+  /* SIGNATURE WORDMARK — brand-art gradient stops for the calligraphic
+     "Zane Riley" mark (Identity.signature/1 inlines the SVG; its <stop>s and
+     kana read these). Literal hand-graded art colors (Frieren-inspired), NOT
+     the semantic text ladder. Dark = warm-violet to slate; light re-grades to
+     mint-to-teal below.
+
+     OPTICAL CORRECTION: the signature's feTurbulence grain desaturates the
+     rendered mark by a measured ~24% (rasterized noise-on vs noise-off, mean
+     OKLCH chroma 0.048 -> 0.037). Dark's low-chroma pastels can't spare it, so
+     these stops are pre-boosted in chroma by 1/(1-0.24) = x1.31, holding L and
+     H — after the grain takes its 24%, the mark lands back on the raw palette
+     (verified post-grain chroma 0.0484). Light is vivid enough to ride the same
+     loss untouched, so only the dark grade is corrected. Raw source stops were
+     #ede3eb #c7b0c2 #949cd1 #597099 / kana #676b83. */
+
+  /* Boost factor x1.40: over-corrects past the raw palette for extra pop
+     (the measured-exact x1.31 read too subtle in situ). Still holds L and H. */
+  --signature-1: #f0e2ed;
+  --signature-2: #cdadc6;
+  --signature-3: #9099e4;
+  --signature-4: #4f6fa9;
+  --signature-kana: #656a8c;
 }
 
 html[data-theme="light"] {
   color-scheme: light;
 
-  --color-grad-1: oklch(100% 0 0deg);
-  --color-grad-2: oklch(79.52% 0.1341 209.59deg);
-  --color-grad-3: oklch(63.36% 0.1372 226.77deg);
-  --color-grad-4: oklch(55.54% 0.244 265.91deg);
+  /* TEXT LADDER — mirrored: ΔL measured from the worst-case (darkest) light
+     surface stop, text travels darker. Hue anchored at 6°: measured off the
+     light hero mock (3715:775), whose strong tier is oklch(33.6% 0.063 7deg).
+     Was 50° (yellow-brown) — a 45° error that warped every light text colour.
+     Check: --text-color-main now renders 8.86:1 on the hero surface vs the
+     mock's measured 8.72:1. */
+  --hue-warm-text: 6deg;
+  --text-color-callout: oklch(
+    23% 0.05 var(--hue-warm-text)
+  ); /* ΔL58 emphasis */
+
+  --text-color-main: oklch(33% 0.05 var(--hue-warm-text)); /* ΔL48 body */
+  --text-color-deemphasized: oklch(
+    43% 0.04 var(--hue-warm-text)
+  ); /* ΔL38 AA floor */
+
+  --text-color-suppressed: oklch(
+    53% 0.03 var(--hue-warm-text)
+  ); /* ΔL28 sub-floor */
+
+  /* Gold, NOT the warm-text anchor: --hue-warm-text anchors the neutral text
+     ramp, while accent is the ochre. Hue matches --ochre-0 (75.85°) so light
+     and dark accents stay the same colour family. */
+  --text-color-accent: oklch(50% 0.09 76deg);
+  --accent: oklch(49% 0.145 252deg); /* deeper link (link hue/chroma, −10 L) */
+
+  /* CODE PALETTE PRIMITIVES (light) — same hues re-seated darker with a touch
+     more chroma so they read on the light card; tuned + approved in /code-block. */
+  --code-white: oklch(35% 0.02 65deg);
+  --code-green: oklch(48% 0.11 155deg);
+  --code-teal: oklch(46% 0.09 202deg);
+  --code-gold: oklch(58% 0.13 82deg);
+  --code-orange: oklch(52% 0.15 50deg);
+  --code-red: oklch(50% 0.16 30deg);
+  --code-tan: oklch(45% 0.05 66deg);
+  --code-mauve: oklch(48% 0.12 329deg);
+  --code-brown: oklch(50% 0.04 67deg);
+  --code-bg-card: oklch(96% 0.008 90deg);
+  --code-bg: oklch(93% 0.01 90deg);
+  --code-border: oklch(86% 0.02 260deg);
+  --code-folder: var(--neutral-25);
+  --code-filename: var(--neutral-50);
+
+  /* NEUTRAL RAMP (light) — 25 is NOT re-seated: measured off both Figma footer
+     mocks, neutral/25 is the same #676B83 in light and dark, so it matches the
+     dark rung above. (It was 60% L here, a lighter invention that read at only
+     3.53:1 on the footer; the mock value gives 4.49:1 and also lifts the
+     code-block folder it feeds.) 50 stays darker than the mock's #7892BD,
+     which measures 2.71:1 — see _PROJECT_DOCS/BACKLOG.md before matching it. */
+  --neutral-25: oklch(53.32% 0.0379 277.61deg);
+  --neutral-50: oklch(45% 0.11 278deg);
+
+  /* Figma light footer bg #E8EEF7 — measured, not eyeballed. */
+  --footer-bg: oklch(94.7% 0.014 258deg);
+
+  /* signature wordmark — light re-grade (mint → teal → blue → indigo) */
+  --signature-1: #b5d7bd;
+  --signature-2: #71c6e5;
+  --signature-3: #2aa7cf;
+  --signature-4: #4f589b;
+  --signature-kana: #9f8c90;
 }
 
 @media (prefers-color-scheme: light) {
   html:not([data-theme]) {
     color-scheme: light;
 
-    --color-grad-1: oklch(100% 0 0deg);
-    --color-grad-2: oklch(79.52% 0.1341 209.59deg);
-    --color-grad-3: oklch(63.36% 0.1572 226.77deg);
-    --color-grad-4: oklch(55.54% 0.244 265.91deg);
+    /* Same light ladder for OS-light users who haven't toggled explicitly —
+       without this they hit the original invisible-text bug. */
+    --hue-warm-text: 6deg;
+    --text-color-callout: oklch(23% 0.05 var(--hue-warm-text));
+    --text-color-main: oklch(33% 0.05 var(--hue-warm-text));
+    --text-color-deemphasized: oklch(43% 0.04 var(--hue-warm-text));
+    --text-color-suppressed: oklch(53% 0.03 var(--hue-warm-text));
+    --text-color-accent: oklch(50% 0.09 76deg);
+    --accent: oklch(49% 0.145 252deg);
+
+    /* code palette — light values (same as html[data-theme="light"]) */
+    --code-white: oklch(35% 0.02 65deg);
+    --code-green: oklch(48% 0.11 155deg);
+    --code-teal: oklch(46% 0.09 202deg);
+    --code-gold: oklch(58% 0.13 82deg);
+    --code-orange: oklch(52% 0.15 50deg);
+    --code-red: oklch(50% 0.16 30deg);
+    --code-tan: oklch(45% 0.05 66deg);
+    --code-mauve: oklch(48% 0.12 329deg);
+    --code-brown: oklch(50% 0.04 67deg);
+    --code-bg-card: oklch(96% 0.008 90deg);
+    --code-bg: oklch(93% 0.01 90deg);
+    --code-border: oklch(86% 0.02 260deg);
+    --code-folder: var(--neutral-25);
+    --code-filename: var(--neutral-50);
+
+    /* neutral ramp — light (same as html[data-theme="light"]) */
+    --neutral-25: oklch(53.32% 0.0379 277.61deg);
+    --neutral-50: oklch(45% 0.11 278deg);
+    --footer-bg: oklch(94.7% 0.014 258deg);
+
+    /* signature wordmark — light re-grade (same as html[data-theme="light"]) */
+    --signature-1: #b5d7bd;
+    --signature-2: #71c6e5;
+    --signature-3: #2aa7cf;
+    --signature-4: #4f589b;
+    --signature-kana: #9f8c90;
   }
 }
 
-.bg-gradient {
-  background: linear-gradient(
-    to top,
-    var(--color-grad-1) 0%,
-    var(--color-grad-2) 12%,
-    var(--color-grad-3) 25%,
-    var(--color-grad-4) 50%
-  );
-  background-attachment: fixed;
-  transition:
-    --color-grad-1 5s,
-    --color-grad-2 5s,
-    --color-grad-3 5s,
-    --color-grad-4 5s;
-  background-size: 400% 400%;
-  animation: gradient var(--grad-bg-time) ease infinite;
-  background-image: var(--bg-gradient-1);
+/* ---- SURFACE: fixed full-viewport background, behind all content.
+   Two gradient fills cross-fade on theme toggle (dusk transition, not a hard
+   flash). Turbulence cloud/grain layers will be added inside .surface next. ---- */
+.surface {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-@keyframes gradient {
-  0% {
-    background-image: var(--bg-gradient-1);
+.surface-fill {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.6s ease;
+}
+
+.surface-fill-dark {
+  background: var(--surface-grad-dark);
+  opacity: 1;
+}
+
+.surface-fill-light {
+  background: var(--surface-grad-light);
+  opacity: 0;
+}
+
+html[data-theme="light"] .surface-fill-dark {
+  opacity: 0;
+}
+
+/* Fallback gating: when JS has armed the cloud canvas (pre-paint, see the
+   inline script in root.html.heex), the static light fill + turbulence clouds
+   stay hidden so they can never flash ahead of the shader. cloud-surface.ts
+   removes .clouds-armed if WebGL init fails, restoring these. */
+html[data-theme="light"]:not(.clouds-armed) .surface-fill-light {
+  opacity: 1;
+}
+
+/* Texture layers — full-viewport, blended over the gradient within the
+   surface's isolated stacking context. Opacity cross-fades with the theme. */
+.surface-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.surface-grain-dark {
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+} /* dark: heavy grain */
+
+.surface-highlight {
+  mix-blend-mode: screen;
+  opacity: 0;
+} /* light only */
+
+.surface-shadow {
+  mix-blend-mode: multiply;
+  opacity: 0;
+} /* light only */
+
+.surface-grain-light {
+  mix-blend-mode: overlay;
+  opacity: 0;
+} /* light only */
+
+/* Animated cloud canvas — light mode only, and only once cloud-surface.ts has
+   drawn its first frame (.ready): the WebGL context is opaque black before the
+   first draw, so without .ready gating it would flash on load. Cross-fades
+   with the same 0.6s dusk transition as the other surface layers. */
+.surface-clouds {
+  opacity: 0;
+}
+
+html[data-theme="light"] .surface-clouds.ready {
+  opacity: 1;
+}
+
+/* While the cloud canvas is armed, .surface itself carries the shader's
+   sky-bottom tone, so first paint and the canvas's fade-in start from sky
+   instead of page white. */
+html.clouds-armed[data-theme="light"] .surface {
+  background: #f2f6fa;
+}
+
+html[data-theme="light"] .surface-grain-dark {
+  opacity: 0;
+}
+
+html[data-theme="light"]:not(.clouds-armed) .surface-highlight {
+  opacity: 0.8;
+}
+
+html[data-theme="light"]:not(.clouds-armed) .surface-shadow {
+  opacity: 0.22;
+}
+
+html[data-theme="light"] .surface-grain-light {
+  opacity: 0.32;
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .surface-fill-dark {
+    opacity: 0;
   }
 
-  25% {
-    background-image: var(--bg-gradient-2);
+  html:not([data-theme], .clouds-armed) .surface-fill-light {
+    opacity: 1;
   }
 
-  50% {
-    background-image: var(--bg-gradient-3);
+  html:not([data-theme]) .surface-grain-dark {
+    opacity: 0;
   }
 
-  75% {
-    background-image: var(--bg-gradient-4);
+  html:not([data-theme], .clouds-armed) .surface-highlight {
+    opacity: 0.8;
   }
 
-  100% {
-    background-image: var(--bg-gradient-5);
+  html:not([data-theme], .clouds-armed) .surface-shadow {
+    opacity: 0.22;
+  }
+
+  html:not([data-theme]) .surface-grain-light {
+    opacity: 0.32;
+  }
+
+  html:not([data-theme]) .surface-clouds.ready {
+    opacity: 1;
+  }
+
+  html.clouds-armed:not([data-theme]) .surface {
+    background: #f2f6fa;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surface-fill,
+  .surface-layer {
+    transition: none;
   }
 }

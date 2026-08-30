@@ -1,0 +1,124 @@
+defmodule PortfolioWeb.Components.Identity do
+  @moduledoc """
+  Zane's own visual-identity marks — the single source of truth for their
+  geometry. Each mark is ONE inline SVG that recolors via `currentColor`
+  (driven by the page's theme tokens), never a per-theme image pair.
+
+    * `hanko/1` — the personal seal (swirl monogram). Rendered as the nav logo;
+      the same geometry is also the favicon (`assets/static/favicon.svg`), which
+      adapts via `prefers-color-scheme` because it renders in browser chrome and
+      cannot read page tokens.
+
+    * `signature/1` — the calligraphic "Zane Riley" wordmark (the long signature).
+      One inline SVG whose gradient stops + kana read `--signature-*` design
+      tokens, so a single geometry recolors per theme (dark warm-violet→slate,
+      light mint→teal); noise stays in both modes. Lives on the `/` index hero.
+
+  Third-party company logos are a *different* concept (foreign brand colors,
+  never themed) and live in `PortfolioWeb.Components.Credits`.
+  """
+  use Phoenix.Component
+
+  # The signature wordmark is authored + SVGO-optimized as a source file and
+  # read at compile time, then injected raw — so the optimized SVG stays the
+  # single source of truth (no hand-transcribed copy in the heredoc) and the
+  # markup is SSR'd with zero extra requests. @external_resource recompiles the
+  # module when the asset changes.
+  @signature_path Path.join(__DIR__, "identity/signature.svg")
+  @external_resource @signature_path
+  @signature_svg File.read!(@signature_path)
+
+  @doc """
+  Renders the hanko (personal seal) as an inline SVG.
+
+  The mark owns its appearance: the `.hanko` class fixes its colour
+  (`--hanko-color`, the brand accent) and size (one canonical `--space-1xl`
+  rung), so every instance is identical by construction. Callers **cannot**
+  recolour or resize it — that's a design-system invariant, not a per-call
+  choice. `id` only varies the internal clipPath id so multiple instances on
+  one page don't collide; `class` is for layout (margins, alignment) only.
+  """
+  attr :id, :string,
+    default: "nav",
+    doc:
+      "suffix for the internal clipPath id; must be unique per instance on a page"
+
+  attr :class, :string,
+    default: nil,
+    doc: "extra layout classes (margins, etc.)"
+
+  attr :rest, :global, doc: "aria-* and other passthrough attributes"
+
+  @spec hanko(map()) :: Phoenix.LiveView.Rendered.t()
+  def hanko(assigns) do
+    ~H"""
+    <svg
+      viewBox="-3 -3 50 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      class={["hanko", @class]}
+      {@rest}
+    >
+      <defs>
+        <clipPath id={"hanko-seal-#{@id}"}>
+          <rect x="1.9734" y="2.6875" width="39.2886" height="36.625" rx="18.3125" />
+        </clipPath>
+      </defs>
+      <rect
+        x="-0.0266113"
+        y="0.6875"
+        width="43.2886"
+        height="40.625"
+        rx="20.3125"
+        stroke="currentColor"
+        stroke-width="4"
+      />
+      <g clip-path={"url(#hanko-seal-#{@id})"}>
+        <path
+          fill="currentColor"
+          d="M24.0948 20.4957C24.9918 20.6869 25.6392 20.3811 25.7875 19.7079C25.8809 19.2841 26.0358 18.4557 26.1896 17.7576C26.4258 16.6855 29.6378 16.9002 33.2257 17.665C36.075 18.2723 37.2226 18.8302 37.0688 19.5283C36.8436 20.5505 36.5534 21.1151 36.3777 21.913C36.2788 22.3617 36.4998 23.1136 37.7662 23.3836C38.8742 23.6197 39.4216 23.2665 39.8469 22.3392C40.2348 21.456 40.4215 20.6083 40.6028 19.7856C41.7289 14.6744 40.7446 10.3665 36.0373 6.28294C35.78 6.07149 35.2436 5.74832 34.6368 5.61899C34.03 5.48965 33.332 5.5236 32.8231 5.70226C26.6786 7.26394 24.0476 11.5583 23.0588 16.0461C22.8446 17.0185 22.6886 17.9772 22.6469 18.5426C22.5316 19.6926 23.0132 20.2651 24.0948 20.4957ZM28.0139 13.8655C27.6181 13.7812 27.3928 13.5504 27.4697 13.2013C27.7883 11.7553 29.8689 10.0844 32.6509 9.24169C33.0378 9.11534 33.4555 9.09996 33.8513 9.1843C34.2206 9.26303 34.5416 9.43586 34.7725 9.64168C36.4522 11.0438 38.0475 13.0806 37.6739 14.776C37.608 15.0751 37.4904 15.2328 36.9891 15.126C36.4615 15.0135 35.6283 14.7837 34.019 14.4407C30.8795 13.7715 28.7262 14.0173 28.0139 13.8655Z"
+        />
+        <path
+          fill="currentColor"
+          d="M11.6405 19.5758C14.1264 19.8987 16.6847 20.2825 18.537 20.2912C19.8737 20.2845 20.5084 19.6971 20.7087 18.3834C20.8665 17.3476 20.3446 16.3008 18.6606 16.0821C16.7628 15.8356 13.268 16.0515 10.5149 15.6939C9.76642 15.5967 9.47647 15.3529 9.53038 14.9992C9.61124 14.4687 10.5975 13.7208 14.45 11.5161C18.7802 9.03841 22.0588 7.55778 22.3168 5.86513C22.4786 4.80408 22.0477 4.23285 20.8526 4.02609C19.2069 3.73504 16.4308 3.3487 13.8113 3.00846C12.0204 2.77585 10.3555 2.61112 9.11434 2.5272C7.41496 2.40953 6.68873 2.88199 6.4885 4.19569C6.31522 5.33253 6.72275 6.23566 8.32654 6.44397C10.652 6.74602 12.8944 6.34167 15.2733 6.65066C15.9416 6.73746 16.1513 6.97081 16.1051 7.27397C16.0243 7.8045 15.2487 8.06444 11.316 10.2588C6.63811 12.8716 3.97806 14.4069 3.64691 16.5795C3.47363 17.7164 3.87391 18.3094 5.64555 18.6683C7.18047 18.9707 9.3952 19.2842 11.6405 19.5758Z"
+        />
+        <path
+          fill="currentColor"
+          d="M2.67056 37.2334C4.12005 37.3763 4.71325 36.7164 4.84694 35.5751C4.9747 34.4845 4.34421 31.7542 4.89089 27.0875C5.04835 25.7433 5.39126 25.5975 5.71337 25.6292C5.87442 25.6451 6.16672 25.6995 6.33382 25.8956C8.98333 28.5426 10.3627 32.0651 12.7923 36.3581C13.7982 38.2018 14.869 38.5638 16.2648 38.7014C17.6069 38.8337 18.5401 38.2842 18.9542 37.0679C19.4873 35.5298 19.8232 33.1257 20.1025 30.7416C20.3967 28.2307 20.6639 25.4863 20.5887 24.0421C20.5015 22.4686 19.5947 22.097 18.6015 21.9991C17.4473 21.8854 16.5796 22.3386 16.4162 23.7336C16.3003 24.7227 17.2294 28.1495 16.5876 33.6278C16.5401 34.0336 16.403 34.2766 16.0272 34.2396C15.7319 34.2105 15.5261 34.1132 15.3709 33.8157C12.7353 28.9637 9.72692 24.0493 7.84118 22.0676C6.99678 21.1634 6.48964 20.8568 5.22805 20.7325C4.39593 20.6505 3.53411 20.8221 2.88733 21.7076C2.23461 22.6439 1.43672 25.7465 1.03265 29.1958C0.803883 31.1487 0.518454 33.1217 0.623674 35.0049C0.71076 36.3476 1.22107 37.0906 2.67056 37.2334Z"
+        />
+        <path
+          fill="currentColor"
+          d="M29.2373 39.5451C31.2771 40.2198 33.3919 40.998 35.2804 41.5431C36.4746 41.8756 37.2557 41.3412 37.6613 40.2895C37.9788 39.4664 37.7621 38.5375 36.5943 38.1364C34.2841 37.343 31.1774 36.975 26.9886 35.5363C25.2624 34.9433 25.036 34.7103 25.6445 33.1327C26.2882 31.4637 26.9127 31.1862 28.1313 31.6047C30.4256 32.3928 31.9933 33.1402 32.6534 33.3669C33.5419 33.6721 34.2778 33.3293 34.5865 32.5291C35.0097 31.4317 34.3436 30.9955 32.0671 30.2656C29.5166 29.4478 30.0694 29.7848 28.8509 29.3663C28.1147 29.1134 27.9479 28.8749 28.1419 28.3719C28.7945 26.68 29.7819 25.9835 31.3051 26.5066C35.4176 27.9192 37.8208 29.366 39.3186 29.8804C40.5625 30.3077 41.3535 29.6731 41.7062 28.7586C42.0237 27.9355 41.7728 27.0208 40.2418 26.4432C38.9062 25.8809 36.638 25.1277 34.4548 24.3779C32.7539 23.7937 31.1292 23.2356 30.2738 22.9936C29.2495 22.6677 28.1293 22.516 27.3076 23.5283C25.5253 25.7643 23.7533 29.0913 22.9674 31.2034C22.3237 32.8724 21.9621 33.8098 21.6866 34.6732C21.1621 36.3314 21.7925 36.8586 23.1965 37.3926C24.8036 37.9964 26.978 38.7691 29.2373 39.5451Z"
+        />
+      </g>
+    </svg>
+    """
+  end
+
+  @doc """
+  Renders the calligraphic "Zane Riley" signature wordmark as an inline SVG.
+
+  The gradient stops and kana fill read the per-theme `--signature-*` tokens
+  (defined in `assets/css/_color.css`), so one geometry recolors with the page
+  theme — no per-mode image pair, no extra request. The wrapper is a block so
+  the SVG (`width:100%`) scales to its container; constrain via the caller
+  (e.g. a `max-width` on the wrapper or its parent column).
+  """
+  attr :class, :string,
+    default: nil,
+    doc: "extra classes merged onto the wrapper"
+
+  attr :rest, :global,
+    doc: "style, aria-*, and other passthrough on the wrapper"
+
+  @spec signature(map()) :: Phoenix.LiveView.Rendered.t()
+  def signature(assigns) do
+    assigns = assign(assigns, :markup, {:safe, @signature_svg})
+
+    ~H"""
+    <span class={["signature", @class]} role="img" aria-label="Zane Riley" {@rest}>
+      {@markup}
+    </span>
+    """
+  end
+end

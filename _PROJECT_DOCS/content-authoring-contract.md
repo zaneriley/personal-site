@@ -20,6 +20,34 @@ The app owns the explicit mapping from these fields into runtime output:
 
 Do not author `og_*`, `twitter_*`, or `og:image` fields in content files. Those names belong to rendered HTML metadata, not to the content authoring contract.
 
+## Main-Feed Membership
+
+`main_feed: true | false` in frontmatter controls whether an entry appears in
+the curated main Atom feed (see `_PROJECT_DOCS/feeds-spec.md`). Defaults when
+the key is absent: **case studies are in, notes are out**. So the only times
+to write the key are promoting a long-form note into the main feed
+(`main_feed: true`) or keeping an off-topic case study out of it
+(`main_feed: false`). Section feeds (notes, case-studies) and the everything
+feed ignore this key — they always carry their full stream.
+
+## Fenced Code Blocks
+
+Standard CommonMark fences. The info string carries the language and, optionally,
+the path the snippet comes from:
+
+    ```elixir lib/push_search/accounts.ex
+    defmodule PushSearch.Accounts do
+    ```
+
+- The first token is the language (drives syntax coloring at publish time).
+- The second token, when present, is a file path shown in the rendered block's
+  header. Other renderers (GitHub, Obsidian) ignore it — the content stays
+  portable.
+- An unknown or missing language renders as plain uncolored code; it never
+  fails a publish.
+- Indentation-style (4-space) code blocks still render, but cannot carry a
+  language or filename — prefer fences.
+
 ## Rename / Alias Frontmatter
 
 Use optional `aliases` frontmatter when a published note or case study has been renamed and the old URL should keep working.

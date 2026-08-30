@@ -1,6 +1,5 @@
 defmodule PortfolioWeb.Components.ImageTest do
   use ExUnit.Case, async: true
-  import Phoenix.Component
   import Phoenix.LiveViewTest
 
   alias PortfolioWeb.Components.Image

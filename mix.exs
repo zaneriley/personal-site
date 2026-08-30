@@ -51,7 +51,11 @@ defmodule Portfolio.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:earmark, "~> 1.4"},
-      {:earmark_parser, "~> 1.4"},
+      # 1.4.45+ refactor collapses dialyzer's success typing of as_ast/2 to
+      # binary() | [], flagging our AST tuple clauses as unreachable. Pin
+      # until upstream typing recovers.
+      {:earmark_parser, "== 1.4.44"},
+      {:lumis, "~> 0.5.0"},
       {:ecto_sql, "~> 3.13"},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18", only: [:dev, :test]},

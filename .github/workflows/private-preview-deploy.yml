@@ -54,6 +54,15 @@ jobs:
           ref: ${{ inputs.expected_head_sha }}
           path: ".tmp/preview-candidate"
 
+      # The candidate image builds from .tmp/preview-candidate as its context,
+      # so the licensed fonts must land inside that path, not the repo root.
+      - name: "Fetch licensed font sources (private repo)"
+        uses: "actions/checkout@v6"
+        with:
+          repository: "zaneriley/personal-site-fonts"
+          ssh-key: ${{ secrets.FONTS_DEPLOY_KEY }}
+          path: ".tmp/preview-candidate/assets/fonts/src"
+
       - name: "Install preview dependencies"
         run: |
           sudo apt-get update

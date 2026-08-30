@@ -159,7 +159,8 @@ defmodule Portfolio.Content.Entry.AstSerialization do
         content: content,
         meta: meta
       }) do
-    {:component, type, deserialize_attrs(attrs), deserialize_ast(content), meta}
+    {:component, component_type(type), deserialize_attrs(attrs),
+     deserialize_ast(content), meta}
   end
 
   # Handle string keys
@@ -195,7 +196,8 @@ defmodule Portfolio.Content.Entry.AstSerialization do
         "content" => content,
         "meta" => meta
       }) do
-    {:component, type, deserialize_attrs(attrs), deserialize_ast(content), meta}
+    {:component, component_type(type), deserialize_attrs(attrs),
+     deserialize_ast(content), meta}
   end
 
   def deserialize_ast_node(%{tuple_key: key, tuple_value: value})
@@ -226,5 +228,17 @@ defmodule Portfolio.Content.Entry.AstSerialization do
   @spec deserialize_attrs(map()) :: map()
   def deserialize_attrs(attrs) when is_map(attrs) do
     attrs
+  end
+
+  # Storage stringifies the component type; the AST contract (and
+  # Registry.lookup/1) wants the atom. Component types are compile-time atoms,
+  # so to_existing_atom is bounded; a type unknown to this build stays a string
+  # and falls through to the renderer's component-not-found fallback.
+  defp component_type(type) when is_atom(type), do: type
+
+  defp component_type(type) when is_binary(type) do
+    String.to_existing_atom(type)
+  rescue
+    ArgumentError -> type
   end
 end

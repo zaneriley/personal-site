@@ -16,16 +16,6 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
     end
   end
 
-  setup do
-    # Ensure the application is started
-    Application.ensure_all_started(:portfolio)
-
-    # Clear the registry state before each test
-    Registry.clear_all_components()
-
-    :ok
-  end
-
   describe "Registry API - using global registry" do
     test "registers a component successfully" do
       component_type = :test_component_api
@@ -163,8 +153,6 @@ defmodule Portfolio.Content.Markdown.Component.RegistryTest do
 
   describe "Registry startup" do
     test "registry is responsive after startup and accepts registrations" do
-      Registry.clear_all_components()
-
       assert :ok = Registry.register(:startup_test, TestComponent)
 
       assert {:ok, {TestComponent, :render}} =

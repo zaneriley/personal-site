@@ -22,10 +22,31 @@ config :portfolio,
     "woff2"
   ]
 
+# Markdown components stored content may reference ({:component, type, ...}
+# nodes). Registered with the Component.Registry at startup — prod never
+# recompiles, so compile-hook registration alone would leave these unresolved.
+# ONLY components whose render function accepts the pipeline assigns shape
+# (%{component:, attrs:, content:} — see Component.Definition) belong here.
+# Figure/Typography are registered-but-incompatible with this generic path:
+# listing them would turn the renderer's safe not-found fallback into a
+# KeyError crash on any stored node referencing them. Figure compatibility is
+# tracked in _PROJECT_DOCS/BACKLOG.md; typography nodes have a dedicated renderer.
+config :portfolio,
+  markdown_components: [
+    PortfolioWeb.Components.CodeBlock
+  ]
+
 config :portfolio, PortfolioWeb.Endpoint,
   # Enable both ipv4 and ipv6 on all interfaces. By the way, the port is
   # configured with an environment variable and it's in the runtime.exs config.
-  http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}],
+  #
+  # `compress: true` gzips responses the app renders. Plug.Static's `gzip: true`
+  # only serves pre-compressed copies of files already on disk, so without this
+  # every page ships uncompressed — measured 70,225 bytes vs 12,338 on /en.
+  # Must be a top-level http option: Plug.Cowboy reads :compress and
+  # :stream_handlers from here, and its defaults silently override anything
+  # nested under :protocol_options.
+  http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, compress: true],
   adapter: Phoenix.Endpoint.Cowboy2Adapter,
   render_errors: [
     formats: [html: PortfolioWeb.ErrorHTML, json: PortfolioWeb.ErrorJSON],

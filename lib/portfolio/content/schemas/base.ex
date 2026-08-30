@@ -54,6 +54,8 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         field :locale, :string
         field :published_at, :utc_datetime
         field :is_draft, :boolean, default: true
+        # nil = use the type default for main-feed membership (feeds-spec.md)
+        field :main_feed, :boolean
 
         has_many :translations, Translation, foreign_key: :translatable_id
 
@@ -76,7 +78,8 @@ defmodule Portfolio.Content.Schemas.BaseSchema do
         :published_at,
         :is_draft,
         :word_count,
-        :stored_ast
+        :stored_ast,
+        :main_feed
       ]
 
       @spec changeset(struct(), map()) :: Ecto.Changeset.t()

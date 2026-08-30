@@ -32,5 +32,10 @@ Mox.defmock(
   for: Portfolio.Content.Remote.GitCommand
 )
 
+Mox.defmock(
+  Portfolio.Content.Code.Tokenizer.Mock,
+  for: Portfolio.Content.Code.Tokenizer
+)
+
 # Register essential components
 Portfolio.TestComponents.ensure_essential_components_registered()

@@ -1,6 +1,8 @@
 defmodule Portfolio.Content.FileManagement.ValidatorTest do
   use Portfolio.DataCase, async: true
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   alias Portfolio.Content.FileManagement.Validator
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Repo
@@ -23,6 +25,7 @@ defmodule Portfolio.Content.FileManagement.ValidatorTest do
       refute Repo.get_by(Note, url: "published-note")
     end
 
+    @tag capture_log: @capture_owned_logs
     test "returns promoter errors for invalid content" do
       content_path = tmp_dir!("validate-invalid")
       on_exit(fn -> File.rm_rf!(content_path) end)

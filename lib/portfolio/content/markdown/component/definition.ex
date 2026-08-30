@@ -15,6 +15,21 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
      and the component will register on its next compile inside a running
      system (hot-reload / runtime recompile).
 
+  ## The pipeline calling convention
+
+  When the renderer encounters a `{:component, type, attrs, children, _meta}`
+  node, it applies the registered function with a SINGLE assigns map of the
+  shape `%{component: type, attrs: attrs_map, content: rendered_children_html}`
+  — NOT the per-attr assigns a HEEx caller would pass. Two consequences for
+  component authors:
+
+  1. The registered function needs a clause that accepts that shape and
+     normalizes it (attr keys are STRINGS once content has round-tripped
+     storage). See `PortfolioWeb.Components.CodeBlock.code_block/1` for the
+     pattern.
+  2. Return a `%Phoenix.LiveView.Rendered{}` (or any `Phoenix.HTML.Safe`) —
+     the renderer converts the result to an HTML string itself.
+
   Example Usage:
 
       defmodule MyComponent do
@@ -30,8 +45,6 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
         end
       end
   """
-
-  require Logger
 
   alias Portfolio.Content.Markdown.Component.Registry
 
@@ -129,27 +142,14 @@ defmodule Portfolio.Content.Markdown.Component.Definition do
   """
   @spec register_component(module(), atom(), atom()) :: :ok
   def register_component(module, type, function) do
-    Logger.debug(
-      "Registering component #{inspect(type)} from #{inspect(module)}"
-    )
-
     if Process.whereis(Registry) do
       try do
         _ = Registry.register(type, module, custom_function: function)
         :ok
       catch
-        :exit, _reason ->
-          Logger.debug(
-            "Registry not reachable for #{inspect(module)}; will register at runtime."
-          )
-
-          :ok
+        :exit, _reason -> :ok
       end
     else
-      Logger.debug(
-        "Registry not running for #{inspect(module)}; will register at runtime."
-      )
-
       :ok
     end
   end

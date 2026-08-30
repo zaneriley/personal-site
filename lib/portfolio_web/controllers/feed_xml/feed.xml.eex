@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="<%= @locale %>">
+  <title><%= PortfolioWeb.FeedXML.xml_escape(@title) %></title>
+  <subtitle><%= PortfolioWeb.FeedXML.xml_escape(@description) %></subtitle>
+  <id>tag:zaneriley.com,2026:feed/<%= @feed %>/<%= @locale %></id>
+  <link rel="self" href="<%= @self_url %>"/>
+  <link rel="alternate" type="text/html" href="<%= @site_url %>"/>
+  <updated><%= @feed_updated %></updated>
+  <author><name>Zane Riley</name></author>
+<%= for entry <- @entries do %>  <entry>
+    <id><%= entry.id %></id>
+    <title><%= PortfolioWeb.FeedXML.xml_escape(entry.title) %></title>
+    <link rel="alternate" type="text/html" href="<%= entry.url %>"/>
+    <published><%= entry.published %></published>
+    <updated><%= entry.updated %></updated>
+<%= if entry.summary do %>    <summary><%= PortfolioWeb.FeedXML.xml_escape(entry.summary) %></summary>
+<% end %>    <content type="html"><%= PortfolioWeb.FeedXML.xml_escape(entry.content_html) %></content>
+  </entry>
+<% end %></feed>

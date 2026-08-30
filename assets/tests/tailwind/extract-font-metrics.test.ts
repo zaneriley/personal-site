@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import process from "node:process";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   CSSParsingError,
@@ -119,25 +118,17 @@ describe("getFontPathsFromCSS", () => {
   it.skipIf(!fontsAvailable)(
     "should resolve relative and absolute font paths correctly",
     () => {
-      console.log(`Current working directory: ${process.cwd()}`);
-      console.log(`Directory of current file: ${__dirname}`);
-      console.log(
-        `Absolute path of this test file: ${path.resolve(__dirname, __filename)}`,
-      );
-
       const webRoot = path.resolve(__dirname, "../../static");
-      console.log(`Calculated webRoot: ${webRoot}`);
 
-      const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
-      console.log(`CSS file path: ${cssFilePath}`);
+      const cssFilePath = path.resolve(
+        __dirname,
+        "../../css/_fontface.generated.css",
+      );
 
       const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
 
       for (const absoluteFontPath of fontPaths) {
         const exists = fs.existsSync(absoluteFontPath);
-        console.log(
-          `Checking if file exists: ${absoluteFontPath} -> ${exists}`,
-        );
         expect(exists).toBe(true);
       }
     },
@@ -216,7 +207,10 @@ describeWithFonts("extractFontMetrics", () => {
 // Adding tests for generateFontMetricsJSON
 
 describeWithFonts("generateFontMetricsJSON", () => {
-  const cssFilePath = path.resolve(__dirname, "../../css/_fontface.css");
+  const cssFilePath = path.resolve(
+    __dirname,
+    "../../css/_fontface.generated.css",
+  );
   const outputJsonPath = path.resolve(
     __dirname,
     "../../tailwind/font-metrics.test.json",

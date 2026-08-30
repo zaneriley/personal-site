@@ -1,6 +1,8 @@
 defmodule Portfolio.Content.Markdown.PipelineTest do
   use ExUnit.Case, async: true
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   # Module doesn't exist yet, but we're defining tests first per TDD
   alias Portfolio.Content.Markdown.Pipeline
 
@@ -96,6 +98,7 @@ defmodule Portfolio.Content.Markdown.PipelineTest do
       assert p_attrs.processed_by == [:test2, :test1]
     end
 
+    @tag capture_log: @capture_owned_logs
     test "halts pipeline on stage error" do
       ast = [make_element("h1", [], [make_text("Test Heading")])]
 

@@ -4,6 +4,7 @@ defmodule PortfolioWeb.SetLocalePlugTest do
   import Plug.Conn
 
   alias PortfolioWeb.I18nHelpers
+  alias PortfolioWeb.Plugs.SetLocale
 
   describe "SetLocale plug" do
     test "sets the locale based on the Accept-Language header", %{conn: conn} do
@@ -85,6 +86,17 @@ defmodule PortfolioWeb.SetLocalePlugTest do
     test "handles URLs with multiple path segments", %{conn: conn} do
       conn = get(conn, "/en/case-studies/")
       assert get_session(conn, "user_locale") == "en"
+    end
+
+    test "sets the locale for a valid nested dynamic route" do
+      conn =
+        :get
+        |> build_conn("/ja/note/missing-note", nil)
+        |> init_test_session(%{})
+        |> SetLocale.call([])
+
+      assert get_session(conn, "user_locale") == "ja"
+      assert get_resp_header(conn, "content-language") == ["ja"]
     end
 
     test "handles locales with region subtags", %{conn: conn} do

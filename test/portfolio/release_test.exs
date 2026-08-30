@@ -1,6 +1,8 @@
 defmodule Portfolio.ReleaseTest do
   use Portfolio.DataCase, async: false
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   import Ecto.Query
   import Portfolio.ContentFixtures
   import Portfolio.ContentRepoHelpers
@@ -30,12 +32,14 @@ defmodule Portfolio.ReleaseTest do
       %{content_base_path: content_base_path}
     end
 
+    @tag capture_log: @capture_owned_logs
     test "raises when boot content sync fails and no last-good content exists" do
       assert_raise RuntimeError, ~r/no last-good content exists/, fn ->
         Release.pull_repository()
       end
     end
 
+    @tag capture_log: @capture_owned_logs
     test "keeps booting when boot content sync fails but last-good content exists" do
       content_sha = String.duplicate("a", 40)
       {:ok, generation} = Publishing.prepare_generation(content_sha)
@@ -56,6 +60,7 @@ defmodule Portfolio.ReleaseTest do
                content_sha
     end
 
+    @tag capture_log: @capture_owned_logs
     test "keeps booting when content repo config is invalid but last-good content exists" do
       content_sha = String.duplicate("b", 40)
       {:ok, generation} = Publishing.prepare_generation(content_sha)

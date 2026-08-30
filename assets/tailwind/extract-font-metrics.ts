@@ -3,6 +3,12 @@ import path from "node:path";
 import type { Font, FontCollection } from "fontkit";
 import * as fontkit from "fontkit";
 
+const debugLog = (...args: unknown[]): void => {
+  if (process.env.TYPE_SCALE_DEBUG === "1") {
+    console.log(...args);
+  }
+};
+
 // Add utility function for kebab-casing
 function toKebabCase(str: string): string {
   return str
@@ -30,7 +36,7 @@ export function getFontPathsFromCSS(
   cssFilePath: string,
   webRoot?: string,
 ): string[] {
-  console.log(`Processing CSS file: ${cssFilePath}`);
+  debugLog(`Processing CSS file: ${cssFilePath}`);
   let cssContent: string;
   const fontPaths: string[] = [];
 
@@ -47,14 +53,14 @@ export function getFontPathsFromCSS(
   const fontFaceRegex = /@font-face\s*{[^}]*}/g;
   const fontFaces = cssContent.match(fontFaceRegex);
 
-  console.log(
+  debugLog(
     `Number of @font-face blocks found: ${fontFaces ? fontFaces.length : 0}`,
   );
 
   if (fontFaces) {
     fontFaces.forEach((fontFace, index) => {
-      console.log(`Processing @font-face block ${index + 1}:`);
-      console.log(fontFace);
+      debugLog(`Processing @font-face block ${index + 1}:`);
+      debugLog(fontFace);
 
       try {
         // Regular expression to match src: url(...) statements
@@ -63,7 +69,7 @@ export function getFontPathsFromCSS(
 
         if (srcMatches?.[1]) {
           const srcValue = srcMatches[1];
-          console.log(`Found src value: ${srcValue}`);
+          debugLog(`Found src value: ${srcValue}`);
 
           // Regular expression to extract URLs from src
           const urlRegex = /url\(['"]?([^'")]+)['"]?\)/g;
@@ -79,14 +85,14 @@ export function getFontPathsFromCSS(
               absoluteFontPath = path.resolve(webRoot, `.${fontPath}`);
             }
 
-            console.log(`Extracted font path: ${absoluteFontPath}`);
+            debugLog(`Extracted font path: ${absoluteFontPath}`);
             fontPaths.push(absoluteFontPath);
 
             // Update urlMatch for the next iteration
             urlMatch = urlRegex.exec(srcValue);
           }
         } else {
-          console.log("No src value found in this @font-face block");
+          debugLog("No src value found in this @font-face block");
         }
       } catch (error) {
         console.error(`Error processing @font-face block: ${error}`);
@@ -94,11 +100,11 @@ export function getFontPathsFromCSS(
       }
     });
   } else {
-    console.log("No @font-face blocks found in the CSS file");
+    debugLog("No @font-face blocks found in the CSS file");
   }
 
-  console.log(`Total font paths extracted: ${fontPaths.length}`);
-  console.log("Extracted font paths:", fontPaths);
+  debugLog(`Total font paths extracted: ${fontPaths.length}`);
+  debugLog("Extracted font paths:", fontPaths);
 
   return fontPaths;
 }
@@ -110,13 +116,7 @@ function isFontCollection(font: Font | FontCollection): font is FontCollection {
 export function extractFontMetrics(fontPath: string): FontMetrics {
   const absolutePath = path.resolve(fontPath);
 
-  let fontResult: Font | FontCollection;
-  try {
-    fontResult = fontkit.openSync(absolutePath);
-  } catch (error) {
-    console.error(`Error opening font file: ${absolutePath}`, error);
-    throw error; // Rethrow the original file system error
-  }
+  const fontResult: Font | FontCollection = fontkit.openSync(absolutePath);
 
   if (isFontCollection(fontResult)) {
     // Handle FontCollection
@@ -128,7 +128,7 @@ export function extractFontMetrics(fontPath: string): FontMetrics {
   const { unitsPerEm, capHeight, ascent, descent, xHeight } = font;
 
   // Log Raw Metrics
-  console.log(`Raw Metrics for ${absolutePath}:`, {
+  debugLog(`Raw Metrics for ${absolutePath}:`, {
     unitsPerEm,
     capHeight,
     ascent,
@@ -144,9 +144,6 @@ export function extractFontMetrics(fontPath: string): FontMetrics {
     descent === undefined ||
     xHeight === undefined
   ) {
-    console.error(
-      `One or more required font metrics are missing or invalid in: ${absolutePath}`,
-    );
     throw new Error(`Invalid font metrics in: ${absolutePath}`);
   }
 
@@ -157,11 +154,11 @@ export function extractFontMetrics(fontPath: string): FontMetrics {
   const normalizedXHeight = xHeight / unitsPerEm;
 
   // **Log Normalized Metrics**
-  console.log("Normalized Metrics:");
-  console.log(`capHeight: ${normalizedCapHeight}`);
-  console.log(`ascent: ${normalizedAscent}`);
-  console.log(`descent: ${normalizedDescent}`);
-  console.log(`xHeight: ${normalizedXHeight}`);
+  debugLog("Normalized Metrics:");
+  debugLog(`capHeight: ${normalizedCapHeight}`);
+  debugLog(`ascent: ${normalizedAscent}`);
+  debugLog(`descent: ${normalizedDescent}`);
+  debugLog(`xHeight: ${normalizedXHeight}`);
 
   // Check for NaN Values
   if (
@@ -170,9 +167,6 @@ export function extractFontMetrics(fontPath: string): FontMetrics {
     Number.isNaN(normalizedDescent) ||
     Number.isNaN(normalizedXHeight)
   ) {
-    console.error(
-      `Normalization resulted in NaN values for font: ${absolutePath}`,
-    );
     throw new Error(`Invalid normalization for font: ${absolutePath}`);
   }
 
@@ -190,36 +184,31 @@ export function generateFontMetricsJSON(
   outputJsonPath: string,
   webRoot?: string,
 ) {
-  try {
-    const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
-    const fontMetrics: { [key: string]: FontMetrics } = {};
+  const fontPaths = getFontPathsFromCSS(cssFilePath, webRoot);
+  const fontMetrics: { [key: string]: FontMetrics } = {};
 
-    for (const fontPath of fontPaths) {
-      const originalFontName = path.basename(fontPath, path.extname(fontPath));
-      const kebabFontName = toKebabCase(originalFontName); // Convert to kebab-case
-      try {
-        const metrics = extractFontMetrics(fontPath);
-        fontMetrics[kebabFontName] = metrics; // Use kebab-case key
-      } catch (error) {
-        console.error(`Failed to extract metrics for font: ${fontPath}`, error);
-      }
+  for (const fontPath of fontPaths) {
+    const originalFontName = path.basename(fontPath, path.extname(fontPath));
+    const kebabFontName = toKebabCase(originalFontName); // Convert to kebab-case
+    try {
+      const metrics = extractFontMetrics(fontPath);
+      fontMetrics[kebabFontName] = metrics; // Use kebab-case key
+    } catch (error) {
+      console.error(`Failed to extract metrics for font: ${fontPath}`, error);
     }
-
-    fs.writeFileSync(
-      outputJsonPath,
-      JSON.stringify(fontMetrics, null, 2),
-      "utf8",
-    );
-    console.log(`Successfully wrote font metrics to ${outputJsonPath}`);
-  } catch (error) {
-    console.error("Error generating font metrics JSON:", error);
-    throw error;
   }
+
+  fs.writeFileSync(
+    outputJsonPath,
+    JSON.stringify(fontMetrics, null, 2),
+    "utf8",
+  );
+  debugLog(`Successfully wrote font metrics to ${outputJsonPath}`);
 }
 
 // **Execute the Script**
 if (require.main === module) {
-  const cssFilePath = path.join(__dirname, "../css/_fontface.css"); // Update with actual CSS path
+  const cssFilePath = path.join(__dirname, "../css/_fontface.generated.css"); // generated by fonts/generate-fonts.mjs
   const outputJsonPath = path.join(__dirname, "font-metrics.json");
   const webRoot = path.join(__dirname, "../static"); // Updated based on your project structure
 

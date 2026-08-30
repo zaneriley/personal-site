@@ -42,7 +42,22 @@ const browser = await chromium.launch({ headless: true });
 
 try {
   for (const routeBudget of budget.routes ?? []) {
-    const routeResult = await measureRoute(browser, routeBudget);
+    // Throttled timings are noisy; sample N times and judge the sample with
+    // the median readable_content_ms so one slow navigation can't fail the
+    // gate and one fast one can't hide a regression (ADR 0006).
+    const sampleCount = budget.profile?.timing_samples ?? 1;
+    const samples = [];
+
+    for (let i = 0; i < sampleCount; i += 1) {
+      samples.push(await measureRoute(browser, routeBudget));
+    }
+
+    samples.sort(
+      (a, b) =>
+        (a.metrics.readable_content_ms ?? Infinity) -
+        (b.metrics.readable_content_ms ?? Infinity),
+    );
+    const routeResult = samples[Math.floor((samples.length - 1) / 2)];
     routes[routeBudget.path] = routeResult;
     failures.push(...routeResult.failures);
     warnings.push(...routeResult.warnings);
@@ -130,6 +145,29 @@ async function measureRoute(browserInstance, routeBudget) {
 
   const page = await context.newPage();
 
+  // Emulate the contract's network shape and CPU slowdown so timing budgets
+  // measure a visitor, not the build machine (ADR 0006). Without this,
+  // "mobile-cold" is only a viewport.
+  const network = budget.profile?.network;
+  const cpuRate = budget.profile?.cpu_throttle_rate;
+
+  if (network || cpuRate) {
+    const cdp = await context.newCDPSession(page);
+
+    if (network) {
+      await cdp.send("Network.emulateNetworkConditions", {
+        offline: false,
+        latency: network.latency_ms,
+        downloadThroughput: (network.download_kbps * 1024) / 8,
+        uploadThroughput: (network.upload_kbps * 1024) / 8,
+      });
+    }
+
+    if (cpuRate) {
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpuRate });
+    }
+  }
+
   page.on("console", (message) => {
     if (message.type() === "error") {
       consoleErrors.push({
@@ -206,7 +244,11 @@ async function measureRoute(browserInstance, routeBudget) {
     navigationError = error.message;
   }
 
-  const metrics = await pageMetrics(page, readableContentMs);
+  const metrics = await collectPageMetrics(page, readableContentMs, (error) => {
+    navigationError = [navigationError, `metrics collection failed: ${error.message}`]
+      .filter(Boolean)
+      .join("; ");
+  });
   const resources = await resourceMetrics(responses, baseOrigin, webSockets);
   const status = mainResponse?.status() ?? null;
 
@@ -274,6 +316,23 @@ async function pageMetrics(page, readableContentMs) {
           : null,
     };
   }, readableContentMs);
+}
+
+async function collectPageMetrics(page, readableContentMs, onError) {
+  try {
+    return await pageMetrics(page, readableContentMs);
+  } catch (error) {
+    onError(error);
+    return {
+      readable_content_ms: readableContentMs,
+      ttfb_ms: null,
+      dom_content_loaded_ms: null,
+      load_ms: null,
+      fcp_ms: null,
+      lcp_ms: null,
+      cls: null,
+    };
+  }
 }
 
 async function resourceMetrics(responses, origin, webSockets) {

@@ -11,7 +11,6 @@ defmodule Portfolio.Content.Entry.Records do
   """
 
   alias Portfolio.Content.Entry.AstSerialization
-  alias Portfolio.Content.Publishing
   alias Portfolio.Content.PublicRead.Scope
   alias Portfolio.Content.Schemas.CaseStudy
   alias Portfolio.Content.Schemas.Note
@@ -305,15 +304,49 @@ defmodule Portfolio.Content.Entry.Records do
       schema ->
         query =
           from c in schema,
+            as: :content,
             where: c.is_draft == false and not is_nil(c.published_at)
 
         query =
           query
-          |> filter_live_generation()
+          |> filter_live_generation(opts[:scope])
+          |> filter_main_feed(opts[:main_feed])
+          |> filter_available_in(opts[:available_in], content_type)
           |> apply_sorting(schema, opts[:sort_by], opts[:sort_order])
 
         Repo.all(query)
     end
+  end
+
+  # Main-feed membership (feeds-spec.md). The caller names the semantics —
+  # :promoted = only explicit opt-ins; :not_demoted = everything not opted out
+  # (nil column means "use the type default", decided by the caller's choice
+  # of filter, so changing a default never needs a backfill).
+  defp filter_main_feed(query, nil), do: query
+  defp filter_main_feed(query, :all), do: query
+
+  defp filter_main_feed(query, :promoted),
+    do: from(c in query, where: c.main_feed == true)
+
+  defp filter_main_feed(query, :not_demoted),
+    do: from(c in query, where: is_nil(c.main_feed) or c.main_feed == true)
+
+  # Strict locale availability: the entry is canonical in the locale, or a
+  # translation for it exists. Feeds use this for their no-fallback promise.
+  defp filter_available_in(query, nil, _content_type), do: query
+
+  defp filter_available_in(query, locale, content_type) do
+    from c in query,
+      where:
+        c.locale == ^locale or
+          exists(
+            from t in Portfolio.Content.Schemas.Translation,
+              where:
+                t.translatable_id == parent_as(:content).id and
+                  t.translatable_type == ^content_type and
+                  t.locale == ^locale,
+              select: 1
+          )
   end
 
   # Private helper functions
@@ -325,8 +358,15 @@ defmodule Portfolio.Content.Entry.Records do
     end
   end
 
-  defp filter_live_generation(query) do
-    case Publishing.live_generation_id() do
+  defp filter_live_generation(query), do: filter_live_generation(query, nil)
+
+  # An explicit PublicRead.Scope pins multi-query reads (e.g. cross-type
+  # feeds) to ONE generation — without it, each query re-reads the live
+  # pointer and a publication flip between queries could mix generations.
+  defp filter_live_generation(query, %Scope{
+         publication_generation_id: generation_id
+       }) do
+    case generation_id do
       nil ->
         where(query, [content], content.id in [])
 
@@ -335,6 +375,10 @@ defmodule Portfolio.Content.Entry.Records do
         |> filter_generation(generation_id)
         |> public_content()
     end
+  end
+
+  defp filter_live_generation(query, nil) do
+    filter_live_generation(query, Scope.current())
   end
 
   defp find_content_by_alias(generation_id, schema, alias_url) do

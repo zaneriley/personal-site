@@ -102,4 +102,88 @@ defmodule Portfolio.Content.Markdown.ParserTest do
       assert content == markdown
     end
   end
+
+  describe "parse/1 fenced code with filenames" do
+    test "a fence with a filename in the info string still parses as a code block" do
+      markdown = """
+      ```elixir lib/push_search/accounts.ex
+      :ok
+      ```
+      """
+
+      assert {:ok, %{ast: ast}} = Parser.parse(markdown)
+
+      assert [{"pre", _, [{"code", attrs, [":ok"], _}], _}] = ast
+      assert {"class", "elixir"} in attrs
+      assert {"data-filename", "lib/push_search/accounts.ex"} in attrs
+    end
+
+    test "multiple fences keep their own filenames in order" do
+      markdown = """
+      ```elixir lib/a.ex
+      :a
+      ```
+
+      ```rust
+      let b = 1;
+      ```
+
+      ```css src/c.css
+      .c { color: red; }
+      ```
+      """
+
+      assert {:ok, %{ast: ast}} = Parser.parse(markdown)
+
+      fences =
+        for {"pre", _, [{"code", attrs, _, _}], _} <- ast do
+          {attr(attrs, "class"), attr(attrs, "data-filename")}
+        end
+
+      assert fences == [
+               {"elixir", "lib/a.ex"},
+               {"rust", nil},
+               {"css", "src/c.css"}
+             ]
+    end
+
+    test "a fence with no info string is untouched" do
+      markdown = """
+      ```
+      plain
+      ```
+      """
+
+      assert {:ok, %{ast: ast}} = Parser.parse(markdown)
+      assert [{"pre", _, [{"code", attrs, ["plain"], _}], _}] = ast
+      assert attr(attrs, "data-filename") == nil
+    end
+
+    test "code fences inside the document body don't disturb surrounding content" do
+      markdown = """
+      # Title
+
+      ```elixir lib/a.ex
+      :ok
+      ```
+
+      After.
+      """
+
+      assert {:ok, %{ast: ast}} = Parser.parse(markdown)
+
+      assert [
+               {"h1", _, ["Title"], _},
+               {"pre", _, _, _},
+               {"p", _, ["After."], _}
+             ] = ast
+    end
+  end
+
+  defp attr(attrs, key) do
+    Enum.find_value(attrs, fn
+      {^key, value} -> value
+      _ -> nil
+    end)
+  end
 end

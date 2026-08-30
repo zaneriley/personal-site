@@ -1,0 +1,201 @@
+/* ============================================================================
+   FOOTER + spec_sheet primitive
+   Styling for PortfolioWeb.Components.Footer. Layout (the 12-col grid, column
+   spans, spacing) is done with Tailwind utilities in the HEEx; this file owns
+   the spec_sheet primitive's frame + the small footer-specific text roles, all
+   driven by the design tokens in _color.css. Colours never hardcoded here —
+   they derive from --neutral-* / --text-color-* so the footer recolours per theme.
+
+   Labels/values are rendered through the <.typography> component (font, size,
+   and optical correction); this file keeps only role-specific colours,
+   letter-spacing, and structural styles.
+============================================================================ */
+
+:root {
+  /* Hairline derived from the suppressed text colour so it tracks the theme. */
+  --footer-rule: color-mix(
+    in oklch,
+    var(--text-color-suppressed) 28%,
+    transparent
+  );
+  --footer-inset: color-mix(
+    in oklch,
+    var(--text-color-suppressed) 6%,
+    transparent
+  );
+
+  /* Server datum colours ARE the code palette's green + blue (Figma reuses
+     them here): the PASSING status and the metric values. Alias, don't copy —
+     the code tokens re-seat per theme, so these track light/dark automatically. */
+  --footer-ok: var(--code-green); /* status "up" dot / PASSING */
+  --footer-datum: var(--code-teal); /* stack / temp / cost values */
+}
+
+/* Full-bleed solid panel behind the footer (Figma bg/90). The wrapper is a
+   block so the background spans the viewport; the reading grid inside keeps
+   the content column. */
+.footer-surface {
+  background: var(--footer-bg);
+}
+
+/* Light mode: the panel fades in over its first 12rem and stays translucent
+   (70%) below that, so the animated cloud surface (canvas.surface-clouds)
+   drifts behind the footer with no hard seam at the top edge. 70% keeps the
+   panel's separation and the measured text contrast (neutral-25 was measured
+   at 4.49:1 on the solid bg; behind 70% sits the sky gradient at 82-98% L,
+   same family, so contrast holds). Dark mode keeps the solid panel — there is
+   no cloud layer there. */
+html[data-theme="light"] .footer-surface {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklch, var(--footer-bg) 70%, transparent) 12rem
+  );
+}
+
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) .footer-surface {
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in oklch, var(--footer-bg) 70%, transparent) 12rem
+    );
+  }
+}
+
+/* Action eyebrow — section headers, links, go-to-top. The cool emphasis grey
+   (Figma neutral/50), set at the smallest mono rung. */
+.footer-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--neutral-50);
+}
+
+/* Cheee section headers (Colophon / Server) take the same emphasis grey as the
+   action eyebrows; overrides the typography component's default cheee colour. */
+.footer-section-head {
+  color: var(--neutral-50);
+}
+
+/* Quiet meta — "Now in Tokyo", the "(PDF)" suffix: one step down from the
+   action greys (Figma neutral/25). Defined after .footer-eyebrow so it wins
+   the colour on shared elements. */
+.footer-muted {
+  color: var(--neutral-25);
+}
+
+/* Copyright — quiet grey override on top of the typography component's
+   size/optical-correction. GT Flexa (not mono), sentence case. */
+.footer-copyright {
+  color: var(--neutral-25);
+}
+
+/* ---- spec_sheet: a framed, titled list of labelled facts -------------------
+   One primitive; the Typefaces sheet and the Server sheet differ only by the
+   optional header tag + status dot. Rows are a semantic <dl>. */
+.spec-sheet {
+  border: 1px solid var(--footer-rule);
+  border-radius: var(--space-2xs);
+  background: var(--footer-inset);
+}
+
+.spec-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs) var(--space-1xs);
+  border-bottom: 1px solid var(--footer-rule);
+}
+
+/* Font/size/optical-correction come from <.typography font="mono" size="2xs">;
+   these rules keep only the role-specific colour, spacing, and frame. */
+.spec-sheet-tag {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--neutral-50);
+  background: var(--code-border); /* solid bg/x tag, per Figma */
+  border-radius: var(--space-3xs);
+  padding: 0.15em 0.5em;
+}
+
+.spec-sheet-title {
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(
+    --text-color-main
+  ); /* bright (Figma neutral/100 → our brightest) */
+}
+
+.spec-sheet-dot {
+  width: 0.5em;
+  height: 0.5em;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--text-color-suppressed);
+}
+
+.spec-sheet-dot.is-up {
+  background: var(--footer-ok);
+  box-shadow: 0 0 0 0.25em
+    color-mix(in oklch, var(--footer-ok) 22%, transparent);
+}
+
+/* Rows: a description list. dt = label rail, dd = value.
+   The <dl> defines a two-column grid (label / value); each row is a subgrid
+   so every label shares the same track width and all values align. */
+.spec-sheet-rows {
+  margin: 0;
+  padding: var(--space-1xs);
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1xs);
+}
+
+.spec-sheet-row {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: baseline;
+}
+
+/* dt is rendered through <.typography>; keep only role-specific colour
+   and the uppercase + tracking that define the spec-sheet label voice. */
+.spec-sheet-row dt {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--neutral-25); /* quiet label rail (Figma neutral/25) */
+}
+
+.spec-sheet-row dd {
+  margin: 0;
+  color: var(--text-color-main);
+}
+
+/* Server datum values: rendered through <.typography font="mono" size="2xs">;
+   keep only the role-specific datum teal (Figma code/blue). The PASSING
+   deploy state reads "ok" green instead. */
+.spec-sheet-value {
+  color: var(--footer-datum);
+}
+
+.spec-sheet-value-ok {
+  color: var(--footer-ok);
+}
+
+/* Typeface specimen: primary name set in its own face, JP fallback muted.
+   These are raw spans (not <.typography>) because each row shows the face
+   itself as the specimen. */
+.spec-sheet-specimen {
+  display: block;
+  color: var(--text-color-main);
+  line-height: 1.1;
+}
+
+.spec-sheet-specimen-sub {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-color-suppressed);
+  line-height: 1.3;
+}

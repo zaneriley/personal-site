@@ -48,6 +48,12 @@ defmodule PortfolioWeb.Components.Typography do
         default: nil,
         description: "The font variant to use, e.g., 'cardinal', 'cheee'"
       },
+      weight: %{
+        type: :string,
+        required: false,
+        default: nil,
+        description: "The weight token to use, e.g., 'regular', 'bold'"
+      },
       dropcap: %{
         type: :boolean,
         required: false,
@@ -81,6 +87,7 @@ defmodule PortfolioWeb.Components.Typography do
     * `:id` - The HTML `id` attribute (optional).
     * `:color` - Additional text color classes (optional).
     * `:font` - The font variant to use, e.g., `"cardinal"`, `"cheee"` (optional).
+    * `:weight` - The weight token to use, e.g., `"regular"`, `"bold"` (optional).
     * `:dropcap` - Enables dropcap styling if set to `true` (default: `false`).
     * `:class` - Additional custom classes (optional).
     * `:locale` - The locale for the text (optional).
@@ -101,6 +108,7 @@ defmodule PortfolioWeb.Components.Typography do
   attr :id, :string, default: nil
   attr :color, :string, default: nil
   attr :font, :string, default: nil
+  attr :weight, :string, default: nil
   attr :dropcap, :boolean, default: false
   attr :class, :string, default: nil
   attr :locale, :string, default: nil
@@ -152,13 +160,13 @@ defmodule PortfolioWeb.Components.Typography do
           <%= if starts_with_hanging_punct?(text) do %>
             <% {hanging_punct, rest} = String.split_at(text, 1) %>
             <span class="dropcap hanging-punct font-noto-sans-jp" aria-hidden="true">
-              <span class="hanging-punct">{hanging_punct}</span><span><%= rest %></span>
+              <span class="hanging-punct">{hanging_punct}</span><span>{rest}</span>
             </span>
             <span class="sr-only">{text}</span>
           <% else %>
             <% {first_char, rest} = String.split_at(text, 1) %>
             <span aria-hidden="true">
-              <span class="dropcap font-noto-serif-jp">{first_char}</span><span><%= rest %></span>
+              <span class="dropcap font-noto-serif-jp">{first_char}</span><span>{rest}</span>
             </span>
             <span class="sr-only">{text}</span>
           <% end %>

@@ -10,13 +10,17 @@ ARG GID=1000
 
 # Install build dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential=12.9 \
+  && apt-get install -y --no-install-recommends \
+    build-essential=12.* \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Update node user and group IDs and set ownership
   && groupmod -g "${GID}" node && usermod -u "${UID}" -g "${GID}" node \
   && mkdir -p /node_modules && chown node:node -R /node_modules /app
 
+# Named USER is intentional: users are created from the UID/GID build args
+# above, so the name resolves in-container. DL3066 prefers numeric ids.
+# hadolint ignore=DL3066
 USER node
 
 # Copy package.json and yarn files and install dependencies
@@ -31,9 +35,16 @@ ENV NODE_ENV="${NODE_ENV}" \
 # Copy application code
 COPY --chown=node:node . ..
 
-# Conditionally build assets based on NODE_ENV
+# Production builds regenerate the licensed fonts from sources (private repo,
+# checked out to fonts/src pre-build) and assert the committed @font-face CSS
+# matches what the generator produces. Missing sources FAIL the build - a
+# fontless "success" is the failure mode this exists to prevent (ADR 0004,
+# font-delivery-spec.md). Dev builds bind-mount the working tree instead.
 RUN if [ "${NODE_ENV}" != "development" ]; then \
-  ../run yarn:build:js && ../run yarn:build:css; else mkdir -p /app/priv/static; fi
+  cp css/_fontface.generated.css /tmp/fontface.committed.css \
+  && node fonts/generate-fonts.mjs \
+  && cmp css/_fontface.generated.css /tmp/fontface.committed.css \
+  && ../run yarn:build:js && ../run yarn:build:css; else mkdir -p /app/priv/static; fi
 
 # Stage 2: Development environment
 FROM elixir:1.17.2-slim AS dev
@@ -46,7 +57,12 @@ ARG GID=1000
 
 # Install development dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates=20230311+deb12u* build-essential=12.9 curl=7.88.1-10+deb12u* inotify-tools=3.22.6.0-4 git=1:2.39.5-0+deb12u* \
+  && apt-get install -y --no-install-recommends \
+    build-essential=12.* \
+    ca-certificates=20230311+deb12u* \
+    curl=7.88.* \
+    git=1:2.39.* \
+    inotify-tools=3.22.* \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership
@@ -54,6 +70,7 @@ RUN apt-get update \
   && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" elixir \
   && mkdir -p /mix && chown elixir:elixir -R /mix /app
 
+# hadolint ignore=DL3066
 USER elixir
 
 # Install Hex and Rebar
@@ -68,7 +85,7 @@ COPY --chown=elixir:elixir mix.* ./
 RUN if [ "${MIX_ENV}" = "dev" ]; then \
   mix deps.get --verbose; else mix deps.get --only "${MIX_ENV}"; fi
 
-# Copy config files and compile dependencies  
+# Copy dependency-affecting config and compile dependencies.
 COPY --chown=elixir:elixir config/config.exs config/"${MIX_ENV}".exs config/
 RUN mix deps.compile
 
@@ -77,13 +94,12 @@ COPY --chown=elixir:elixir --from=assets /app/priv/static /public
 COPY --chown=elixir:elixir . .
 
 # Conditionally digest assets, create a release, and clean up based on MIX_ENV
-RUN if [ "${MIX_ENV}" != "dev" ]; then \
+RUN if [ "${MIX_ENV}" = "prod" ]; then \
   mkdir -p /app/priv/static \
   && cp -r /public/* /app/priv/static/ \
   && mix compile --warnings-as-errors \
   && mix phx.digest && mix release; fi
 
-  
 ENTRYPOINT ["/app/bin/docker-entrypoint-web"]
 
 EXPOSE 8000
@@ -92,7 +108,14 @@ CMD ["iex", "-S", "mix", "phx.server"]
 
 ###############################################################################
 
-# Stage 3: Production environment
+# Stage 3: Test environment. The dev builder is already parameterized by
+# MIX_ENV, so this alias gives CI a cacheable test-dependency image without a
+# second build implementation.
+FROM dev AS test
+
+###############################################################################
+
+# Stage 4: Production environment
 FROM elixir:1.17.2-slim AS prod
 LABEL maintainer="Zane Riley <zaneriley@gmail.com>"
 
@@ -103,7 +126,11 @@ ARG GID=1000
 
 # Install production dependencies and clean up apt cache
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates=20230311+deb12u* curl=7.88.1-10+deb12u* inotify-tools=3.22.6.0-4 git=1:2.39.5-0+deb12u* \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates=20230311+deb12u* \
+    curl=7.88.* \
+    git=1:2.39.* \
+    inotify-tools=3.22.* \
   && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man \
   && apt-get clean \
   # Create elixir user and group and set ownership
@@ -111,6 +138,7 @@ RUN apt-get update \
   && useradd --create-home --no-log-init -u "${UID}" -g "${GID}" elixir \
   && chown elixir:elixir -R /app
 
+# hadolint ignore=DL3066
 USER elixir
 
 ENV USER=elixir
@@ -133,12 +161,14 @@ CMD ["bin/portfolio", "start"]
 
 ###############################################################################
 
-# Stage 4: Browser test/performance environment
+# Stage 5: Browser test/performance environment
 FROM assets AS browser
 
+# hadolint ignore=DL3066
 USER root
 RUN npx playwright install-deps chromium
 
+# hadolint ignore=DL3066
 USER node
 RUN npx playwright install chromium
 
@@ -147,9 +177,11 @@ RUN npx playwright install chromium
 # Stage 5: One-shot preview page acceptance runner
 FROM browser AS preview-page-acceptance
 
+# hadolint ignore=DL3066
 USER root
 RUN mkdir -p /opt/preview-page-acceptance && chown node:node /opt/preview-page-acceptance
 
+# hadolint ignore=DL3066
 USER node
 WORKDIR /opt/preview-page-acceptance
 ENV PREVIEW_PAGE_ACCEPTANCE_ROOT=/opt/preview-page-acceptance

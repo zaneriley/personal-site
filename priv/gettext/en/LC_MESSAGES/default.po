@@ -1,149 +1,427 @@
-msgid "Zane Riley"
-msgstr "Zane Riley"
-
-msgid "Zane Riley | Product Design Portfolio"
-msgstr "Zane Riley | Product Design Portfolio"
-
-msgid "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
-msgstr "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
-
-msgid "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
-msgstr "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
-
-msgid "%{role} based in %{city}"
-msgstr "%{role} based in %{city}"
-
-msgid "Digital Product Designer"
-msgstr "Digital Product Designer <br />"
-
-msgid "Tokyo"
-msgstr "Tokyo"
-
-msgid "Solving problems for customers through %{tagline_methods} or %{tagline_else}"
-msgstr "Solving problems for customers through %{tagline_methods} or %{tagline_else}"
-
-msgid "tagline_methods"
-msgstr "product strategy, design, code"
-
-msgid "tagline_else"
-msgstr "WHATEVER IT TAKES"
-
-msgid "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
-msgstr "10+ years of experience based in Tokyo, Japan. I believe in creating products that empower people’s lives. My ultimate goal is to make things that help people shape the future they desire, not a future that is imposed upon them."
-
-msgid "Helping people make informed healthcare choices and access care when they need it."
-msgstr "Helping people make informed healthcare choices and access care when they need it."
-
-msgid "Skip to main content"
-msgstr "Skip to main content"
-
-msgid "Zane Riley Portfolio Logo"
-msgstr "Zane Riley Portfolio Logo"
-
-msgid "Change language"
-msgstr "Change language"
-
-msgid "Language switcher"
-msgstr "Language switcher"
-
-msgid "English"
-msgstr "English"
-
-msgid "Japanese"
-msgstr "日本語"
-
-msgid "Theme switcher"
-msgstr "Theme switcher"
-
-msgid "Light mode"
-msgstr "Light mode"
-
-msgid "Dark mode"
-msgstr "Dark mode"
-
-msgid "Case Study"
-msgid_plural "Case Studies"
-msgstr[0] "Case Study"
-msgstr[1] "Case Studies"
-
-msgid "Role"
-msgstr "Role"
-
-msgid "Platform"
-msgid_plural "Platforms"
-msgstr[0] "Platform"
-msgstr[1] "Platforms"
-
-
-msgid "Timeline"
-msgstr "Timeline"
-
-msgid "Company"
-msgstr "Company"
-
-
-msgid "Note"
-msgid_plural "Notes"
-msgstr[0] "Note"
-msgstr[1] "Notes"
-
-msgid "Self"
-msgstr "Self"
-
-msgid "Switch to English"
-msgstr "Switch to English"
-
-msgid "Switch to Japanese"
-msgstr "Switch to Japanese"
-
-msgid "Colophon"
-msgstr "Colophon"
-
-msgid "Hosted on my home server in Tokyo."
-msgstr "Hosted on my home server in Tokyo."
-
-msgid "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
-msgstr "Type set in %{font1}, %{font2}, %{font3}, & %{font4}."
-
-msgid "Written in Elixir."
-msgstr "Written in Elixir."
-
-msgid "Open source on %{github}."
-msgstr "Open source on %{github}."
-
-msgid "Design avaiable in %{figma}."
-msgstr "Design avaiable in %{figma}."
-
-
-# Read time
-msgid "Less than a minute read"
-msgstr "Less than a minute read"
-
-msgid "1 min read"
-msgstr "1 min read"
-
+#: lib/portfolio_web/components/content_metadata.ex:101
+#, elixir-autogen, elixir-format
 msgid "%{count} min read"
 msgstr "%{count} min read"
 
-msgid "%{hours} hour %{minutes} min read"
-msgstr "%{hours} hour %{minutes} min read"
-
 # Word/Character count
+#: lib/portfolio_web/components/content_metadata.ex:122
+#, elixir-autogen, elixir-format
 msgid "%{formatted_count} word"
 msgid_plural "%{formatted_count} words"
 msgstr[0] "%{formatted_count} word"
 msgstr[1] "%{formatted_count} words"
 
-# Update date
-msgid "Updated today"
-msgstr "Updated today"
+#: lib/portfolio_web/components/content_metadata.ex:99
+#, elixir-autogen, elixir-format
+msgid "1 min read"
+msgstr "1 min read"
 
-msgid "Updated yesterday"
-msgstr "Updated yesterday"
+#: lib/portfolio_web/live/about_live.ex:11
+#, elixir-autogen, elixir-format
+msgid "About Zane Riley | Product Designer"
+msgstr ""
 
+#: lib/portfolio_web/components/core_components.ex:546
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:72
+#, elixir-autogen, elixir-format
+msgid "Body"
+msgstr ""
+
+#: lib/portfolio_web/components/navigation.ex:72
+#: lib/portfolio_web/live/case_study_live/show.ex:69
+#: lib/portfolio_web/live/case_study_live/show.html.heex:6
+#: lib/portfolio_web/live/home_live.ex:128
+#, elixir-autogen, elixir-format
+msgid "Case Study"
+msgid_plural "Case Studies"
+msgstr[0] "Case Study"
+msgstr[1] "Case Studies"
+
+#: lib/portfolio_web/components/footer.ex:57
+#, elixir-autogen, elixir-format
+msgid "Colophon"
+msgstr "Colophon"
+
+#: lib/portfolio_web/components/footer.ex:116
+#, elixir-autogen, elixir-format
+msgid "Cost"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:60
+#, elixir-autogen, elixir-format
+msgid "Created on a 2014 macbook. Mocks in figma, remix freely."
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:98
+#, elixir-autogen, elixir-format
+msgid "DATA NOT FOUND"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:109
+#, elixir-autogen, elixir-format
+msgid "DISAPPEARED INTO THE VOID OR"
+msgstr ""
+
+#: lib/portfolio_web/components/theme_switcher.ex:42
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Dark"
+msgstr "Dark mode"
+
+#: lib/portfolio_web/components/footer.ex:119
+#, elixir-autogen, elixir-format
+msgid "Deploy"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:98
+#, elixir-autogen, elixir-format
+msgid "ERROR 404"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:113
+#, elixir-autogen, elixir-format
+msgid "EVERY DEAD END IS JUST A NEW BEGINNING."
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:161
+#, elixir-autogen, elixir-format
+msgid "Email"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:150
+#, elixir-autogen, elixir-format
+msgid "Footer"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:105
+#, elixir-autogen, elixir-format
+msgid "GREETINGS,"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:169
+#, elixir-autogen, elixir-format
+msgid "Github"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:185
+#, elixir-autogen, elixir-format
+msgid "Go to top"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:86
+#, elixir-autogen, elixir-format
+msgid "Headers"
+msgstr ""
+
+#: lib/portfolio_web/components/navigation.ex:102
+#, elixir-autogen, elixir-format
+msgid "Language switcher"
+msgstr "Language switcher"
+
+#: lib/portfolio_web/live/about_live.ex:12
+#, elixir-autogen, elixir-format
+msgid "Learn more about Zane Riley, a Product Designer with over 10 years of experience in various industries."
+msgstr ""
+
+#: lib/portfolio_web/components/theme_switcher.ex:41
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Light"
+msgstr "Light mode"
+
+#: lib/portfolio_web/components/footer.ex:177
+#, elixir-autogen, elixir-format
+msgid "LinkedIn"
+msgstr ""
+
+# Separator
+#: lib/portfolio_web/components/content_metadata.ex:55
+#, elixir-autogen, elixir-format
+msgid "Metadata separator"
+msgstr " • "
+
+#: lib/portfolio_web/components/footer.ex:78
+#, elixir-autogen, elixir-format
+msgid "Mono"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:110
+#, elixir-autogen, elixir-format
+msgid "NEVER EXISTED IN THE FIRST PLACE"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:106
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Node"
+msgstr "Note"
+
+#: lib/portfolio_web/components/navigation.ex:82
+#: lib/portfolio_web/live/note_live/show.ex:51
+#: lib/portfolio_web/live/note_live/show.html.heex:11
+#, elixir-autogen, elixir-format
+msgid "Note"
+msgid_plural "Notes"
+msgstr[0] "Note"
+msgstr[1] "Notes"
+
+#: lib/portfolio_web/components/footer.ex:131
+#, elixir-autogen, elixir-format
+msgid "Now in Tokyo"
+msgstr ""
+
+#: lib/portfolio_web/live/case_study_live/show.html.heex:41
+#, elixir-autogen, elixir-format
+msgid "Platform"
+msgid_plural "Platforms"
+msgstr[0] "Platform"
+msgstr[1] "Platforms"
+
+#: lib/portfolio_web/live/live_helpers.ex:40
+#, elixir-autogen, elixir-format
+msgid "Portfolio of Zane Riley, a Product Designer based in Tokyo with over 10 years of experience."
+msgstr ""
+
+#: lib/portfolio_web/live/home_live.ex:119
+#, elixir-autogen, elixir-format
+msgid "Portrait of Zane Riley"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:118
+#, elixir-autogen, elixir-format
+msgid "RETURN TO HOME"
+msgstr ""
+
+#: lib/portfolio_web/live/note_live/show.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "Read Time"
+msgstr ""
+
+#: lib/portfolio_web/live/home_live.ex:136
+#, elixir-autogen, elixir-format
+msgid "Read more about %{title}"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:94
+#, elixir-autogen, elixir-format
+msgid "Return to homepage"
+msgstr ""
+
+#: lib/portfolio_web/live/case_study_live/show.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "Role"
+msgstr "Role"
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:101
+#, elixir-autogen, elixir-format
+msgid "STATUS: [CONFUSED BUT OPERATIONAL]"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:100
+#, elixir-autogen, elixir-format
+msgid "SYSTEM: Zane's Design Portfolio"
+msgstr ""
+
+#: lib/portfolio_web/components/navigation.ex:92
+#, elixir-autogen, elixir-format
+msgid "Self"
+msgstr "Self"
+
+#: lib/portfolio_web/components/footer.ex:101
+#, elixir-autogen, elixir-format
+msgid "Self-hosted on my home server. Open source on Github."
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:98
+#, elixir-autogen, elixir-format
+msgid "Server"
+msgstr ""
+
+#: lib/portfolio_web/components/layouts/root.html.heex:254
+#: lib/portfolio_web/controllers/error_html/404.html.heex:86
+#: lib/portfolio_web/controllers/error_html/500.html.heex:87
+#, elixir-autogen, elixir-format
+msgid "Skip to main content"
+msgstr "Skip to main content"
+
+#: lib/portfolio_web/components/footer.ex:110
+#, elixir-autogen, elixir-format
+msgid "Stack"
+msgstr ""
+
+#: lib/portfolio_web/components/navigation.ex:109
+#, elixir-autogen, elixir-format
+msgid "Switch to English"
+msgstr "Switch to English"
+
+#: lib/portfolio_web/components/navigation.ex:121
+#, elixir-autogen, elixir-format
+msgid "Switch to Japanese"
+msgstr "Switch to Japanese"
+
+#: lib/portfolio_web/components/theme_switcher.ex:43
+#, elixir-autogen, elixir-format
+msgid "System"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:108
+#, elixir-autogen, elixir-format
+msgid "THE DATA YOU SEEK HAS EITHER"
+msgstr ""
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:114
+#, elixir-autogen, elixir-format
+msgid "THIS TERMINAL WISHES YOU LUCK ON"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:113
+#, elixir-autogen, elixir-format
+msgid "Temp"
+msgstr ""
+
+#: lib/portfolio_web/components/theme_switcher.ex:52
+#, elixir-autogen, elixir-format
+msgid "Theme"
+msgstr ""
+
+#: lib/portfolio_web/live/case_study_live/show.html.heex:34
+#, elixir-autogen, elixir-format
+msgid "Timeline"
+msgstr "Timeline"
+
+#: lib/portfolio_web/components/footer.ex:64
+#, elixir-autogen, elixir-format
+msgid "Titles"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:63
+#, elixir-autogen, elixir-format
+msgid "Typefaces"
+msgstr ""
+
+#: lib/portfolio_web/components/content_metadata.ex:154
+#, elixir-autogen, elixir-format
 msgid "Updated %{date}"
 msgstr "Updated %{date}"
 
-# Separator
-msgid "Metadata separator"
-msgstr " • "
+# Update date
+#: lib/portfolio_web/components/content_metadata.ex:148
+#, elixir-autogen, elixir-format
+msgid "Updated today"
+msgstr "Updated today"
+
+#: lib/portfolio_web/components/content_metadata.ex:151
+#, elixir-autogen, elixir-format
+msgid "Updated yesterday"
+msgstr "Updated yesterday"
+
+#: lib/portfolio_web/controllers/error_html/404.html.heex:115
+#, elixir-autogen, elixir-format
+msgid "YOUR CONTINUED EXPLORATION."
+msgstr ""
+
+#: lib/portfolio_web/components/navigation.ex:56
+#, elixir-autogen, elixir-format
+msgid "Zane Riley Portfolio Logo"
+msgstr "Zane Riley Portfolio Logo"
+
+#: lib/portfolio_web/live/case_study_live/show.ex:71
+#: lib/portfolio_web/live/note_live/show.ex:53
+#, elixir-autogen, elixir-format
+msgid "Zane Riley | Product Design Portfolio"
+msgstr "Zane Riley | Product Design Portfolio"
+
+#: lib/portfolio_web/live/live_helpers.ex:39
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Zane Riley | Product Designer"
+msgstr "Zane Riley | Product Design Portfolio"
+
+#: lib/portfolio_web/live/home_live.ex:14
+#, elixir-autogen, elixir-format
+msgid "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
+msgstr "Zane Riley | Product Designer (Tokyo) | 10+ Years Experience"
+
+#: lib/portfolio_web/live/home_live.ex:18
+#, elixir-autogen, elixir-format
+msgid "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+msgstr "Zane Riley: Tokyo Product Designer. 10+ yrs experience. Currently at Google. Worked in e-commerce, healthcare, and finance. Designed and built products for Google, Google Maps, and Google Search."
+
+#: lib/portfolio_web/components/core_components.ex:81
+#: lib/portfolio_web/components/core_components.ex:191
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr ""
+
+#: lib/portfolio_web/live/note_live/show.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/portfolio_web/components/footer.ex:156
+#, elixir-autogen, elixir-format
+msgid " (PDF)"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:156
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Resume"
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:48
+#, elixir-autogen, elixir-format
+msgid "Case studies and selected long-form notes. Low volume — the default subscription."
+msgstr ""
+
+#: lib/portfolio_web/components/code_block.ex:116
+#, elixir-autogen, elixir-format
+msgid "Copy code"
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:53
+#, elixir-autogen, elixir-format
+msgid "Every note, short and long. Higher volume."
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:56
+#, elixir-autogen, elixir-format
+msgid "Every published entry — the opt-in firehose."
+msgstr ""
+
+#: lib/portfolio_web/live/feeds_live.ex:18
+#: lib/portfolio_web/live/feeds_live.ex:26
+#, elixir-autogen, elixir-format
+msgid "Feeds"
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:50
+#, elixir-autogen, elixir-format
+msgid "Only the case studies."
+msgstr ""
+
+#: lib/portfolio_web/live/feeds_live.ex:28
+#, elixir-autogen, elixir-format
+msgid "Subscribe in any feed reader. Pick the stream that matches the volume you want — each feed describes itself."
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:42
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — all notes"
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:41
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — case studies"
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:43
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — everything"
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:40
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — the work"
+msgstr ""

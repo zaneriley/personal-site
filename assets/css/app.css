@@ -1,9 +1,13 @@
 @import url("tailwindcss/base");
 @import url("tailwindcss/components");
 @import url("tailwindcss/utilities");
-@import url("./_fontface.css");
+@import url("./_fontface.generated.css");
 @import url("./_color.css");
-@import url("./_typography.css");
+@import url("./_type-tokens.generated.css");
+@import url("./_type-utilities.css");
+@import url("./_grid.css");
+@import url("./_code.css");
+@import url("./_footer.css");
 
 @property --fantazio-rotate {
   syntax: "<angle>";
@@ -12,9 +16,10 @@
 }
 
 * {
-  font-variation-settings:
-    "wght" var(--font-wght),
-    "wdth" var(--font-wdth);
+  /* Weight is driven by the standard font-weight property (GT Flexa is a
+     variable font with a 100–900 weight axis); no font-variation-settings here,
+     since "wght" in variation-settings would override font-weight and break
+     bolding. Only OT features + no synthetic faces. */
   font-feature-settings:
     "fina" 1,
     "kern" 1,
@@ -27,21 +32,34 @@
 }
 
 body {
-  font-size: var(--fs-base);
-  line-height: 1.5;
+  font-family:
+    "GT Flexa", "GT Flexa Fallback", "Noto Sans JP", "Trebuchet MS", Avenir,
+    "Fira Sans", -apple-system, system-ui, sans-serif;
+  font-size: var(--fs-md);
+
+  /* GT Flexa regular at the body size (= --fw-flexa-md, the md rung of the
+     optical weight curve; see _type-tokens.generated.css). Weight is a free axis —
+     per-size optical comp comes from the typography component's fw-flexa-*
+     classes; emphasis from the -bold rungs. Was bundled into .font-gt-flexa. */
+  font-weight: var(--fw-flexa-md);
+
+  /* md rung of the baseline-grid leading (= 28px on the 7px grid). The root
+     layout's body also carries .text-md which sets the same value; this is the
+     grid-consistent fallback so body never falls back to an off-grid ratio. */
+  line-height: var(--lh-en-md);
   min-height: 100vh;
   hanging-punctuation: allow-end last; /* Safari only */
 }
 
 .u-container {
-  max-width: var(--grid-max-width);
-  padding-inline: var(--grid-outer-margins);
+  max-width: var(--content-cap);
+  padding-inline: var(--page-inset);
   margin-inline: auto;
 }
 
 .u-grid {
   display: grid;
-  gap: var(--grid-gutter);
+  gap: var(--gutter);
 }
 
 .col-span-12-children > * {
@@ -80,8 +98,37 @@ body {
   margin-bottom: calc(((var(--_lh) - 1) * -0.5em) + (var(--_db) * 1em));
 }
 
+/* Japanese (:lang(ja)) typographic foundation. The Latin-calibrated knobs (the
+   ch-based measure, Latin OT features) don't fit Japanese; the font *faces* are
+   already switched per-locale in typography_helpers.ex. Research:
+   .tmp/2026-06-05-japanese-typography/literature/brief.md */
+
+/* Kinsoku (禁則処理): JP has no inter-word spaces, so default wrapping can break
+   mid-phrase; forbid breaks at the wrong side of 、。「」 etc. (BudouX phrase-
+   breaking is the next step once the copy is final.) */
+html[lang="ja"] {
+  line-break: strict;
+}
+
+/* The * Latin OT features (oldstyle figures, slashed zero) are wrong for the
+   Latin/numerals embedded in JP ("+15", "Google"); reset to JP-relevant ones. */
 html[lang="ja"] * {
+  /* biome-ignore lint/complexity/noImportantStyles: locale-wide CJK leading must override per-component Latin line-height utilities */
   line-height: var(--cjk-lh) !important;
+  font-feature-settings:
+    "kern" 1,
+    "palt" 1;
+}
+
+/* Hero lede measure is per-locale: Latin reads to ~36rem; Japanese is
+   character-counted (1em ≈ 1 fullwidth glyph) so ~30 chars = 30em — the Latin
+   `ch`/50ch measure would yield only ~25 kanji. */
+.hero-lede {
+  max-width: 36rem;
+}
+
+html[lang="ja"] .hero-lede {
+  max-inline-size: 30em;
 }
 
 @supports (text-justify: inter-character) {

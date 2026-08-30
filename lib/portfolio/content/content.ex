@@ -210,6 +210,12 @@ defmodule Portfolio.Content do
   end
 
   @doc """
+  Lists the entries belonging to a syndication feed, per the ratified feeds
+  spec. See `Portfolio.Content.Feeds`.
+  """
+  defdelegate list_for_feed(feed, locale), to: Portfolio.Content.Feeds
+
+  @doc """
   Lists content items of a specific type with optional sorting and locale.
 
   ## Parameters
@@ -264,7 +270,6 @@ defmodule Portfolio.Content do
         fetch_content(type, id_or_url)
 
       false ->
-        Logger.error("Invalid content type provided: #{inspect(type)}")
         raise InvalidContentTypeError, "Invalid content type: #{inspect(type)}"
     end
   end
@@ -422,7 +427,6 @@ defmodule Portfolio.Content do
         changeset
 
       {:error, :invalid_content_type} ->
-        Logger.error("Invalid content type: #{inspect(type)}")
         {:error, :invalid_content_type}
     end
   end
@@ -519,15 +523,11 @@ defmodule Portfolio.Content do
         {:ok, locale}
 
       _ ->
-        Logger.error("Failed to extract locale from file path: #{file_path}")
         {:error, :invalid_file_path}
     end
   end
 
-  def extract_locale(file_path) do
-    Logger.error("Invalid file path type: #{inspect(file_path)}")
-    {:error, :invalid_file_path}
-  end
+  def extract_locale(_file_path), do: {:error, :invalid_file_path}
 
   defp normalize_publication_status(status) when is_atom(status) do
     Atom.to_string(status)

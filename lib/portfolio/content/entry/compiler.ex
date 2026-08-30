@@ -14,7 +14,9 @@ defmodule Portfolio.Content.Entry.Compiler do
   """
 
   alias Portfolio.Content.Markdown.Parser
+  alias Portfolio.Content.Markdown.Pipeline
   alias Portfolio.Content.Markdown.Renderer
+  alias Portfolio.Content.Markdown.Transforms
   alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.TranslationRepository
@@ -56,7 +58,12 @@ defmodule Portfolio.Content.Entry.Compiler do
   end
 
   @doc """
-  Processes an AST with various transformations to prepare it for rendering.
+  Runs the compile-time pipeline stages over an AST, baking their output in.
+
+  Runs in the compile path BEFORE the AST is stored, so stage work (e.g. syntax
+  classification of fenced code) is paid once at publish time. The read path
+  calls this again after deserialization, where it is a cheap no-op walk —
+  stage target nodes are already rewritten into components.
 
   ## Parameters
     - ast: The AST to process
@@ -65,11 +72,19 @@ defmodule Portfolio.Content.Entry.Compiler do
   ## Returns
     - The processed AST
   """
+  # Compile-time pipeline stages: transforms whose work is baked into the
+  # stored AST once at publish time. The same stages run on the read path as
+  # cheap no-op walks (their target nodes are already rewritten).
+  @compile_stages [Transforms.CodeBlock]
+
   @spec process_ast(ast(), keyword()) :: ast()
-  def process_ast(ast, _opts \\ []) when is_list(ast) do
-    # Apply transforms like syntax highlighting, image processing, etc.
-    # This is a simple pass-through for now as we migrate functionality
-    ast
+  def process_ast(ast, opts \\ []) when is_list(ast) do
+    stages = Keyword.get(opts, :stages, @compile_stages)
+
+    # Stages never fail soft today (CodeBlock degrades internally); a stage
+    # error here is a bug and should halt compilation loudly.
+    {:ok, processed} = Pipeline.process(ast, Keyword.put(opts, :stages, stages))
+    processed
   end
 
   @doc """

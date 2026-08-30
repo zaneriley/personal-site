@@ -1,6 +1,8 @@
 defmodule Portfolio.Content.Remote.GitRepoSyncerTest do
   use ExUnit.Case, async: true
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
+
   import ExUnit.CaptureLog
   import Mox
   import Portfolio.ContentRepoHelpers
@@ -85,6 +87,7 @@ defmodule Portfolio.Content.Remote.GitRepoSyncerTest do
       assert target_sha == rev_parse!(clone_path, "HEAD")
     end
 
+    @tag capture_log: @capture_owned_logs
     test "returns an error for an invalid repository URL" do
       clone_path = tmp_dir!("sync-invalid-clone")
       on_exit(fn -> File.rm_rf!(clone_path) end)
@@ -95,6 +98,7 @@ defmodule Portfolio.Content.Remote.GitRepoSyncerTest do
       refute File.exists?(Path.join(clone_path, ".git"))
     end
 
+    @tag capture_log: @capture_owned_logs
     test "injects HTTPS token auth ephemerally and redacts failed git output" do
       token = "BOGUS_TOKEN_123"
       repo_url = "https://github.com/zaneriley/private-repo.git"

@@ -59,7 +59,7 @@ import * as generateTypeTokensModule from "../../tailwind/generate-type-tokens";
 // import { latinTypeConfig } from "../../tailwind/configs/type-config";
 
 // Define DEFAULT_OUTPUT_PATH locally for test verification
-const DEFAULT_OUTPUT_PATH = path.resolve("css/_typography.css");
+const DEFAULT_OUTPUT_PATH = path.resolve("css/_type-tokens.generated.css");
 
 const {
   generateCSS, // This is the function we want to test directly now
@@ -134,13 +134,24 @@ describe("generateCSS Output Contract", () => {
       expect(Number.parseFloat(match1xs[1])).toBeGreaterThan(0);
     }
   });
+
+  it("should derive the GT Flexa optical weight rungs from the knobs", () => {
+    // The curve is derived: regular(step) = base − opszSlope·step;
+    // bold(step) = regular + boldDelta − boldSlope·step. md is the anchor (step 0).
+    // These exact values are the contract — a mismatch means the relationship,
+    // not a literal, changed (knobs: base 268, opsz 30, boldDelta 350, boldSlope 40).
+    expect(generatedCSS).toContain("--fw-flexa-md: 268;"); // anchor regular
+    expect(generatedCSS).toContain("--fw-flexa-md-bold: 618;"); // anchor + delta
+    expect(generatedCSS).toContain("--fw-flexa-4xl: 148;"); // +4 steps lighter
+    expect(generatedCSS).toContain("--fw-flexa-2xs-bold: 758;"); // −2 steps, near 800 ceiling
+  });
 });
 
 // --- Keep existing tests for writeCSS and generateAndWriteCSS ---
 
 describe("Critical Functional Tests - writeCSS", () => {
   const mockCSS = "/* Test CSS */"; // Specific CSS content for this test
-  const expectedPath = path.resolve("css/_typography.css");
+  const expectedPath = path.resolve("css/_type-tokens.generated.css");
 
   beforeEach(() => {
     // Clear mocks for fs sync methods used by writeCSS
@@ -177,21 +188,12 @@ describe("Integration Tests - generateAndWriteCSS", () => {
   });
 
   it("should generate and write CSS successfully using sync methods", () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     generateAndWriteCSS(); // Calls generateCSS -> writeCSS (using mocked fs)
     // Verify writeFileSync was called with the default path and the generated CSS string
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       DEFAULT_OUTPUT_PATH,
       expect.any(String),
     );
-    // Check console logs
-    // writeCSS logs "CSS variables generated successfully..."
-    // generateAndWriteCSS logs "CSS generation complete."
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining("CSS variables generated successfully"),
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith("CSS generation complete.");
-    consoleLogSpy.mockRestore();
   });
 
   it("should handle sync file system errors gracefully during write", () => {
@@ -200,22 +202,10 @@ describe("Integration Tests - generateAndWriteCSS", () => {
     vi.mocked(fs.writeFileSync).mockImplementationOnce(() => {
       throw error;
     });
-    const consoleErrorSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-
-    // generateAndWriteCSS calls writeCSS, which might throw.
-    // Corrected assertion to check the specific error message from the caught error
+    // generateAndWriteCSS lets writeCSS's actionable error propagate.
     expect(() => generateAndWriteCSS()).toThrowError(
       `Failed to write CSS file to ${DEFAULT_OUTPUT_PATH}: Sync File system error during write`,
     );
-    // Check the console error from generateAndWriteCSS's catch block
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "Failed to generate or write CSS:",
-      // The error message is constructed within writeCSS
-      expect.stringContaining("Failed to write CSS file"),
-    );
-    consoleErrorSpy.mockRestore();
   });
 
   it("should use custom output path when provided (sync)", () => {

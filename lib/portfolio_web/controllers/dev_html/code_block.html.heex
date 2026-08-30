@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Code block in situ</title>
+    <link rel="stylesheet" href="/css/app.css" />
+    <style>
+      /* The code color primitives + the component's chrome now live in the
+         real stylesheets (_color.css / _code.css) — this page renders the real
+         component and only overrides the variables via the panel's inline
+         styles (the JS arrays are the slider defaults, seeded from the shipped
+         values). Page chrome (bar/panel) is the only CSS left here. */
+      body { margin: 0; }
+      .lab {
+        min-block-size: 100vb;
+        background: var(--surface-grad-dark);
+        font-family: "GT Flexa", system-ui, sans-serif;
+        padding-block-end: var(--space-4xl);
+      }
+      html[data-theme="light"] .lab { background: var(--surface-grad-light); }
+
+      /* ── control bar ── */
+      .bar {
+        position: sticky; inset-block-start: 0; z-index: 20; display: flex; gap: var(--space-md); align-items: center;
+        flex-wrap: wrap; padding-block: var(--space-3xs); padding-inline: var(--space-md);
+        background: color-mix(in oklch, black 55%, transparent);
+        backdrop-filter: blur(8px);
+        border-block-end: 1px solid color-mix(in oklch, white 15%, transparent);
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs); color: #cbd0dd;
+      }
+      html[data-theme="light"] .bar { background: color-mix(in oklch, white 65%, transparent); color: #444; }
+      .bar strong { letter-spacing: .12em; }
+      .seg button, .bar button {
+        font: inherit; color: inherit; background: transparent;
+        border: 1px solid color-mix(in oklch, currentColor 40%, transparent);
+        border-radius: var(--space-3xs); padding-block: var(--space-3xs); padding-inline: var(--space-2xs); cursor: pointer;
+      }
+      .seg button[aria-pressed="true"] { border-color: currentColor; font-weight: 700; }
+
+      /* ── tweaks panel ── */
+      .panel {
+        position: fixed;
+        inset-block-start: var(--space-3xl);
+        inset-inline-end: 0;
+        inset-block-end: 0;
+        inline-size: var(--space-4xl);
+        z-index: 15;
+        overflow: auto; padding-block: var(--space-md) var(--space-4xl); padding-inline: var(--space-md);
+        background: color-mix(in oklch, black 70%, transparent);
+        backdrop-filter: blur(10px);
+        border-inline-start: 1px solid color-mix(in oklch, white 12%, transparent);
+        font-family: ui-monospace, monospace; font-size: var(--fs-2xs); color: #cbd0dd;
+      }
+      html[data-theme="light"] .panel { background: color-mix(in oklch, white 80%, transparent); color: #333; }
+      .panel.hidden { display: none; }
+      .panel h3 { margin-block: var(--space-md) var(--space-3xs); margin-inline: 0; font-size: var(--fs-2xs); letter-spacing: .12em; opacity: .7; text-transform: uppercase; }
+      .row { display: grid; grid-template-columns: var(--space-md) 1fr; gap: var(--space-3xs); align-items: center; margin-block: var(--space-2xs); margin-inline: 0; }
+      .row .sw { inline-size: var(--space-md); block-size: var(--space-md); border-radius: var(--space-3xs); border: 1px solid color-mix(in oklch, currentColor 30%, transparent); }
+      .row .lab2 { display: flex; justify-content: space-between; gap: var(--space-3xs); }
+      .row .val { opacity: .65; }
+      .row .sliders { grid-column: 2; display: grid; gap: var(--space-3xs); }
+      .row .sliders label { display: grid; grid-template-columns: var(--space-md) 1fr; gap: var(--space-3xs); align-items: center; opacity: .85; }
+      .row input[type=range] { inline-size: 100%; }
+      .panel textarea {
+        inline-size: 100%; block-size: var(--space-4xl); margin-block-start: var(--space-2xs); font: var(--fs-2xs) ui-monospace, monospace;
+        background: color-mix(in oklch, black 30%, transparent); color: inherit;
+        border: 1px solid color-mix(in oklch, currentColor 25%, transparent); border-radius: var(--space-3xs); padding: var(--space-3xs);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="lab">
+      <div class="bar">
+        <strong>CODE BLOCK IN SITU</strong>
+        <span class="seg" id="seg-theme">
+          theme
+          <button type="button" data-theme="dark" aria-pressed="true">
+            dark
+          </button>
+          <button type="button" data-theme="light" aria-pressed="false">
+            light
+          </button>
+        </span>
+        <button type="button" id="toggle-panel">hide panel</button>
+        <span style="opacity:.6">edit a theme's values, then Export CSS ↓</span>
+      </div>
+
+      <%!-- The REAL component (PortfolioWeb.Components.CodeBlock). The sample's
+           spans are hand-classified to mirror the Figma mock so we judge the
+           color relationships; the live tokenizer (Autumn) lands later. --%>
+      <PortfolioWeb.Components.CodeBlock.code_block
+        language="elixir"
+        filename="folder1/folder2/folder3/Accounts.ex"
+        code={raw(@code_sample)}
+      />
+    </div>
+
+    <div class="panel" id="panel">
+      <h3>Syntax</h3>
+      <div id="syntax-rows"></div>
+      <h3>Surface</h3>
+      <div id="surface-rows"></div>
+      <h3>Export</h3>
+      <button type="button" id="export-btn">Export CSS for both themes</button>
+      <textarea id="export-out" readonly placeholder="dialed values appear here"></textarea>
+    </div>
+
+    <script>
+      // [key, label, cssVar, darkLCH, lightLCH]
+      const SYNTAX = [
+        ["white",  "default / identifier", "--code-white",  [91.6,0.018,65],  [35,0.02,65]],
+        ["green",  "keyword / atom",       "--code-green",  [73.2,0.071,155], [48,0.11,155]],
+        ["teal",   "module / fn-def",      "--code-teal",   [73.4,0.045,202], [46,0.09,202]],
+        ["gold",   "call / bound-var",     "--code-gold",   [82.9,0.113,82],  [58,0.13,82]],
+        ["orange", "operator / do / punct","--code-orange", [74.9,0.118,60],  [52,0.15,50]],
+        ["red",    "@ sigil",              "--code-red",    [66.9,0.120,31],  [50,0.16,30]],
+        ["tan",    "string / doc / comment","--code-tan",   [74.5,0.046,66],  [45,0.05,66]],
+        ["mauve",  "module reference",     "--code-mauve",  [66.6,0.091,329], [48,0.12,329]],
+        ["brown",  "parens",               "--code-brown",  [57.1,0.035,67],  [50,0.04,67]],
+      ];
+      const SURFACE = [
+        ["bg-card", "card bg",        "--code-bg-card",  [25.7,0.006,286], [96,0.008,90]],
+        ["bg",      "code bg + scrim","--code-bg",       [27.5,0.009,286], [93,0.01,90]],
+        ["border",  "border",         "--code-border",   [33.1,0.022,259], [86,0.02,260]],
+        ["folder",  "folder / line#", "--code-folder",   [53.3,0.038,278], [60,0.04,278]],
+        ["filename","filename",       "--code-filename", [70.6,0.078,278], [45,0.11,278]],
+      ];
+      const AXES = [["L","L",0,100,0.1],["C","C",0,0.4,0.002],["H","H",0,360,1]];
+
+      // state[theme][cssVar] = [L,C,H]
+      const state = { dark: {}, light: {} };
+      [...SYNTAX, ...SURFACE].forEach(([k,l,v,d,li]) => { state.dark[v]=d.slice(); state.light[v]=li.slice(); });
+
+      const root = document.documentElement;
+      const fmt = ([L,C,H]) => `oklch(${(+L).toFixed(1)}% ${(+C).toFixed(3)} ${(+H).toFixed(0)}deg)`;
+      let theme = "dark";
+
+      function apply(v) { root.style.setProperty(v, fmt(state[theme][v])); }
+      function applyAll() { Object.keys(state[theme]).forEach(apply); }
+
+      function buildRows(list, mount) {
+        list.forEach(([k,label,v]) => {
+          const row = document.createElement("div");
+          row.className = "row";
+          const sw = document.createElement("div"); sw.className = "sw";
+          const controls = document.createElement("div");
+          const head = document.createElement("div"); head.className = "lab2";
+          const name = document.createElement("span"); name.textContent = label;
+          const val = document.createElement("span"); val.className = "val";
+          head.appendChild(name); head.appendChild(val);
+          const sliders = document.createElement("div"); sliders.className = "sliders";
+          AXES.forEach(([ax,lbl,min,max,step],ai) => {
+            const lab = document.createElement("label");
+            const tag = document.createElement("span"); tag.textContent = lbl;
+            const r = document.createElement("input");
+            r.type = "range"; r.min = min; r.max = max; r.step = step;
+            r.value = state[theme][v][ai];
+            r.addEventListener("input", () => {
+              state[theme][v][ai] = parseFloat(r.value);
+              apply(v); paint();
+            });
+            r.dataset.var = v; r.dataset.axis = ai;
+            lab.appendChild(tag); lab.appendChild(r); sliders.appendChild(lab);
+          });
+          controls.appendChild(head); controls.appendChild(sliders);
+          row.appendChild(sw); row.appendChild(controls);
+          row.dataset.var = v; row._sw = sw; row._val = val;
+          mount.appendChild(row);
+        });
+      }
+
+      function paint() {
+        document.querySelectorAll(".row").forEach(row => {
+          const v = row.dataset.var; const c = fmt(state[theme][v]);
+          row._sw.style.background = `var(${v})`;
+          row._val.textContent = c;
+        });
+      }
+      function syncSliders() {
+        document.querySelectorAll("input[type=range]").forEach(r => {
+          r.value = state[theme][r.dataset.var][r.dataset.axis];
+        });
+      }
+
+      buildRows(SYNTAX, document.getElementById("syntax-rows"));
+      buildRows(SURFACE, document.getElementById("surface-rows"));
+      applyAll(); paint();
+
+      // theme toggle
+      document.getElementById("seg-theme").addEventListener("click", e => {
+        const b = e.target.closest("button[data-theme]"); if (!b) return;
+        theme = b.dataset.theme; root.dataset.theme = theme;
+        document.querySelectorAll("#seg-theme button").forEach(x =>
+          x.setAttribute("aria-pressed", x === b));
+        applyAll(); syncSliders(); paint();
+      });
+
+      // panel toggle
+      document.getElementById("toggle-panel").addEventListener("click", e => {
+        const p = document.getElementById("panel");
+        p.classList.toggle("hidden");
+        e.target.textContent = p.classList.contains("hidden") ? "show panel" : "hide panel";
+      });
+
+      // scrim shows while more code is below; hides at the scroll block end
+      // (same behavior the component's JS hook will own on real pages)
+      const body = document.querySelector(".code-block-scroll"),
+            scrim = document.querySelector(".code-block-scrim");
+      function scrim_update() {
+        const atBlockEnd = body.scrollHeight - body.scrollTop - body.clientHeight < 4;
+        const scrollable = body.scrollHeight > body.clientHeight + 4;
+        scrim.style.opacity = (scrollable && !atBlockEnd) ? "1" : "0";
+      }
+      body.addEventListener("scroll", scrim_update); scrim_update();
+
+      // export
+      document.getElementById("export-btn").addEventListener("click", () => {
+        const block = (th) => Object.entries(state[th])
+          .map(([v,lch]) => `  ${v}: ${fmt(lch)};`).join("\n");
+        const css =
+          `:root {\n${block("dark")}\n}\n\n` +
+          `html[data-theme="light"] {\n${block("light")}\n}\n`;
+        const out = document.getElementById("export-out");
+        out.value = css; out.select();
+        try { navigator.clipboard.writeText(css); } catch (_) {}
+      });
+    </script>
+  </body>
+</html>

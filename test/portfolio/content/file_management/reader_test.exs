@@ -50,8 +50,12 @@ defmodule Portfolio.Content.FileManagement.ReaderTest do
     end
 
     test "handles frontmatter with various data types" do
-      path = @test_file_path
-      {:ok, content_type, attrs} = Reader.read_markdown_file(path)
+      assert {:ok, "case_study", attrs} =
+               Reader.read_markdown_file(@test_file_path)
+
+      assert is_integer(attrs["read_time"])
+      assert is_list(attrs["platforms"])
+      assert is_boolean(attrs["is_draft"])
     end
   end
 end

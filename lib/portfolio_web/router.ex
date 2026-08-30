@@ -1,13 +1,16 @@
 defmodule PortfolioWeb.Router do
   use PortfolioWeb, :router
+
+  import Phoenix.LiveDashboard.Router
+  import Phoenix.LiveView.Router
+
   alias PortfolioWeb.Plugs.CommonMetadata
   alias PortfolioWeb.Plugs.ContentAliasRedirect
   alias PortfolioWeb.Plugs.CSPHeader
   alias PortfolioWeb.Plugs.LocaleRedirection
   alias PortfolioWeb.Plugs.Noindex
   alias PortfolioWeb.Plugs.SetLocale
-  import Phoenix.LiveView.Router
-  import Phoenix.LiveDashboard.Router
+
   require Logger
 
   pipeline :locale do
@@ -95,6 +98,14 @@ defmodule PortfolioWeb.Router do
     end
   end
 
+  # Atom feeds — deliberately OUTSIDE the :browser pipeline (HTML-only accepts,
+  # root layout, CSRF, CSP must not wrap XML) and ahead of locale redirection
+  # so the /feed.xml convention alias resolves first. See feeds-spec.md.
+  scope "/", PortfolioWeb do
+    get "/feed.xml", FeedController, :root_alias
+    get "/:locale/feeds/:feed", FeedController, :show
+  end
+
   scope "/", PortfolioWeb do
     pipe_through [:browser, :locale]
 
@@ -106,13 +117,25 @@ defmodule PortfolioWeb.Router do
     pipe_through :browser
     get "/up/", UpController, :index
     get "/up/databases", UpController, :databases
+    # Dev-only design-system harnesses (standalone, client-side).
+    get "/weight-calibration", DevController, :weight_calibration
+    get "/color-tokens", DevController, :color_tokens
+    get "/code-block", DevController, :code_block
+    get "/hdr-lab", DevController, :hdr_lab
   end
 
   scope "/:locale", PortfolioWeb do
     pipe_through [:browser, :locale]
 
     live_session :default, on_mount: PortfolioWeb.LiveHelpers do
+      # The /feeds discovery page (HTML, full site chrome) — the Atom
+      # documents themselves are served by the layout-free scope above.
+      live "/feeds", FeedsLive, :index
       live "/", HomeLive, :index
+      live "/color-sketch", ColorSketchLive, :index
+      live "/shader-scale-sketch", ShaderScaleSketchLive, :index
+      live "/palette-comparison", PaletteComparisonLive, :index
+      live "/dark-background-sketch", DarkBackgroundSketchLive, :index
       live "/kitchen-sink", KitchenSinkLive, :index
       live "/case-studies", CaseStudyLive.Index, :index
       live "/case-study/:url", CaseStudyLive.Show, :show

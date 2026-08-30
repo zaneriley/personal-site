@@ -1,9 +1,11 @@
 defmodule PortfolioWeb.EndpointWebhookTest do
   use PortfolioWeb.ConnCase, async: true
 
+  @capture_owned_logs System.get_env("PORTFOLIO_TEST_LOG_LEVEL") != "debug"
   @webhook_path "/api/v1/content/push"
 
   describe "GitHub webhook plug" do
+    @tag capture_log: @capture_owned_logs
     test "accepts a signed webhook request through the endpoint", %{conn: conn} do
       payload = payload_with_no_relevant_changes()
       encoded_payload = Jason.encode!(payload)

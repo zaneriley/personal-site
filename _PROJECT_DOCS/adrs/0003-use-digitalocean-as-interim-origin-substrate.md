@@ -22,13 +22,16 @@ are done enough to revisit self-hosting deliberately.
 
 This does not make every DigitalOcean Droplet a production origin. The current
 `disposable host` commands still create short-lived hosts for proof and
-measurement. The first preview wrapper now promotes that host/runtime proof into
-one private-preview result: candidate app image digest, disposable host, runtime
+measurement. The preview wrapper promotes that host/runtime proof into one
+private-preview result: candidate app image digest, disposable host, runtime
 viability, preview page acceptance, and preview deploy receipt. A manual GitHub
 Actions workflow validates a PR SHA on the default branch, builds that candidate
-image, and runs the preview path. The next deploy work should prove that
-workflow against a real PR and host, then add an interim production origin only
-after preview is boring.
+image, and runs the preview path.
+
+**Implementation update, 2026-05-18:** repeated real-PR/host preview proofs
+passed, including content-publication rehearsal and default destroy. Current
+work is promotion of the same proven digest/content shape to an interim origin,
+with live smoke, receipts, and rollback. See `_PROJECT_DOCS/BACKLOG.md`.
 
 Self-hosting remains the likely long-term direction, but it is parked until the
 application, content flow, deploy receipts, rollback, browser proof, and
@@ -39,9 +42,9 @@ operational loop are boring on DigitalOcean.
 - Do not keep reopening provider choice while implementing the deploy loop.
 - Do not add provider-neutral abstractions until DigitalOcean has enough real
   deploy surface to prove what abstraction is needed.
-- Do add the DigitalOcean-specific hardening that now earns rent: real GitHub
-  Actions preview proof, host janitor, SSH login path, firewall/IPv6 decision,
-  rollback proof, and promotion flow.
+- Preserve the proven GitHub Actions preview path while adding the
+  DigitalOcean-specific hardening that now earns rent: host janitor, SSH login
+  path, firewall/IPv6 decision, rollback proof, and promotion flow.
 - Continue treating AWS/S3/CloudFront as the live fallback until the DigitalOcean
   path has preview proof, rollback proof, and SEO-safe cutover work.
 - Revisit owned hardware/self-hosting after the app is done enough that moving

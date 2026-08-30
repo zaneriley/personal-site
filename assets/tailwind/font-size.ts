@@ -320,13 +320,22 @@ const calculateTypeStep = (
     maxWidth: config.maxWidth,
   });
 
+  // Steps below the base are fixed (small text shouldn't fluid-shrink on
+  // narrow screens). They divide the WIDE-end base (maxFontSize) by the MAX
+  // ratio (1.3) so the small end matches the mocks, which are designed at the
+  // wide viewport where the fluid positive steps also reach maxFontSize/1.3 —
+  // one consistent down-ratio. (In prod minFontSize == maxFontSize; using
+  // maxFontSize makes the relationship right even when they differ.)
   const isFixed = step < 0;
-  const fixedSize = config.minFontSize / config.minTypeScale ** Math.abs(step);
+  const fixedSize = config.maxFontSize / config.maxTypeScale ** Math.abs(step);
 
   return {
     step,
-    minFontSize: roundValue(minFontSize),
-    maxFontSize: roundValue(maxFontSize),
+    // Fixed steps report their emitted size as both min and max so downstream
+    // consumers (line-height baseline-grid snapping) derive from the size that
+    // actually renders — not the fluid min-scale size, which is never emitted.
+    minFontSize: isFixed ? roundValue(fixedSize) : roundValue(minFontSize),
+    maxFontSize: isFixed ? roundValue(fixedSize) : roundValue(maxFontSize),
     lineHeight: 0,
     wcagViolation: wcag?.length
       ? {

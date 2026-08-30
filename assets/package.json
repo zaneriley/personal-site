@@ -2,9 +2,9 @@
   "name": "portfolio",
   "private": true,
   "dependencies": {
-    "phoenix": "1.8.6",
+    "phoenix": "1.8.13",
     "phoenix_html": "4.3.0",
-    "phoenix_live_view": "1.1.30",
+    "phoenix_live_view": "1.2.11",
     "topbar": "^3.0.1"
   },
   "devDependencies": {
@@ -25,6 +25,8 @@
     "stylelint": "^17.0.0",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-config-tailwindcss": "^1.0.0",
+    "subset-font": "^2.5.0",
+    "svgo": "^4.0.1",
     "tailwindcss": "3.4.12",
     "ts-node": "^10.9.2",
     "vite": "^7.0.0",
@@ -35,6 +37,7 @@
     "lint:css:fix": "stylelint \"./css/**/*.css\" --fix",
     "test:browser": "vitest",
     "assets:font-metrics": "ts-node ./tailwind/extract-font-metrics.ts",
-    "generate:typography": "ts-node ./tailwind/generate-type-tokens.ts"
+    "generate:typography": "esbuild ./tailwind/generate-type-tokens.ts --bundle --platform=node --format=cjs --outfile=/tmp/gen-type-tokens.cjs && node /tmp/gen-type-tokens.cjs && biome format --write ./css/_type-tokens.generated.css && stylelint ./css/_type-tokens.generated.css --fix",
+    "svg:optimize": "svgo -rf static -o static"
   }
 }

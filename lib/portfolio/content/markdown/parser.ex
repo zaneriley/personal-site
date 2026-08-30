@@ -6,10 +6,15 @@ defmodule Portfolio.Content.Markdown.Parser do
   YAML frontmatter) and a structured AST suitable for further processing by the
   `Portfolio.Content.Markdown.Pipeline`.
 
-  It performs two key functions:
+  It performs three key functions:
   1.  **Standard Markdown Parsing:** Leverages the `Earmark` library to parse standard
       Markdown syntax (headings, lists, links, etc.) into an AST.
-  2.  **(Planned) Custom Component Syntax Handling:** Includes logic (currently marked with TODOs
+  2.  **Fence Filename Stash (Earmark workaround):** CommonMark allows an arbitrary
+      fence info string (` ```elixir lib/a.ex `), but Earmark degrades any multi-word
+      info string into inline code, so filenames are lifted off fence lines before
+      parsing and re-attached to the parsed code blocks (as `data-filename`) by
+      document order afterwards.
+  3.  **(Planned) Custom Component Syntax Handling:** Includes logic (currently marked with TODOs
       in `preprocess_custom_components` and `insert_custom_components`) to recognize, extract,
       and represent custom component blocks (e.g., `::my-component{...} ... ::end::`)
       within the final AST structure. This typically involves pre-processing the raw string
@@ -28,8 +33,10 @@ defmodule Portfolio.Content.Markdown.Parser do
   This function:
   1. Extracts and parses frontmatter metadata
   2. Processes any custom component syntax
-  3. Parses the markdown into an AST using Earmark
-  4. Returns a structured map with both the frontmatter and AST
+  3. Stashes fence filenames Earmark would otherwise mangle
+  4. Parses the markdown into an AST using Earmark
+  5. Re-attaches the fence filenames, and returns a structured map with both
+     the frontmatter and AST
 
   ## Parameters
     - markdown: The raw markdown string to parse
@@ -48,16 +55,26 @@ defmodule Portfolio.Content.Markdown.Parser do
     {processed_content, custom_components} =
       preprocess_custom_components(content)
 
+    # Stash fence filenames: Earmark mis-parses any multi-word info string
+    # (```elixir lib/a.ex degrades the whole fence to inline code), so the
+    # filename is lifted off the fence line here and re-attached to the
+    # parsed code block below. Authoring stays standard CommonMark.
+    {processed_content, fence_filenames} =
+      preprocess_fence_filenames(processed_content)
+
     case EarmarkParser.as_ast(processed_content) do
       {:ok, ast, _} ->
         # Insert custom components back into the AST if any were extracted
         ast_with_components = insert_custom_components(ast, custom_components)
 
+        ast_with_filenames =
+          attach_fence_filenames(ast_with_components, fence_filenames)
+
         # Return the raw AST with frontmatter
         {:ok,
          %{
            frontmatter: frontmatter_map,
-           ast: ast_with_components
+           ast: ast_with_filenames
          }}
 
       {:error, _ast, error_messages} ->
@@ -147,4 +164,87 @@ defmodule Portfolio.Content.Markdown.Parser do
   # Currently a placeholder — preprocess_custom_components/1 always returns [],
   # so only the empty-list clause is reachable.
   defp insert_custom_components(ast, []), do: ast
+
+  # ── Fence filenames (Earmark workaround) ────────────────────────────────
+  # CommonMark allows an arbitrary fence info string (```elixir lib/a.ex), but
+  # Earmark degrades any multi-word info string into inline code. The filename
+  # is stripped before parsing (one queue entry per fence, nil when absent)
+  # and re-attached by document order afterwards. Known limit: an indented
+  # (4-space) code block between fences shifts the correlation — we author
+  # exclusively with fences.
+
+  @fence_with_filename ~r/^(\s{0,3})```(\S+)[ \t]+(\S+)[ \t]*$/
+  @fence_line ~r/^\s{0,3}```/
+
+  # Most content has no fences at all — skip the line-wise scan entirely.
+  defp preprocess_fence_filenames(content) do
+    if String.contains?(content, "```") do
+      scan_fences(content)
+    else
+      {content, []}
+    end
+  end
+
+  defp scan_fences(content) do
+    {reversed_lines, reversed_filenames, _in_fence} =
+      content
+      |> String.split("\n")
+      |> Enum.reduce({[], [], false}, &scan_fence_line/2)
+
+    {
+      reversed_lines |> Enum.reverse() |> Enum.join("\n"),
+      Enum.reverse(reversed_filenames)
+    }
+  end
+
+  defp scan_fence_line(line, {lines, filenames, in_fence}) do
+    cond do
+      in_fence and Regex.match?(@fence_line, line) ->
+        {[line | lines], filenames, false}
+
+      in_fence ->
+        {[line | lines], filenames, in_fence}
+
+      match = Regex.run(@fence_with_filename, line) ->
+        [_, indent, language, filename] = match
+        {[indent <> "```" <> language | lines], [filename | filenames], true}
+
+      Regex.match?(@fence_line, line) ->
+        {[line | lines], [nil | filenames], true}
+
+      true ->
+        {[line | lines], filenames, in_fence}
+    end
+  end
+
+  defp attach_fence_filenames(ast, []), do: ast
+
+  defp attach_fence_filenames(ast, filenames) do
+    {nodes, _remaining} = attach_walk(ast, filenames)
+    nodes
+  end
+
+  defp attach_walk(nodes, queue) when is_list(nodes) do
+    Enum.map_reduce(nodes, queue, &attach_node/2)
+  end
+
+  defp attach_node(
+         {"pre", pre_attrs, [{"code", code_attrs, content, code_meta}], meta},
+         [filename | rest]
+       ) do
+    code_attrs =
+      if filename,
+        do: code_attrs ++ [{"data-filename", filename}],
+        else: code_attrs
+
+    {{"pre", pre_attrs, [{"code", code_attrs, content, code_meta}], meta}, rest}
+  end
+
+  defp attach_node({tag, attrs, children, meta}, queue)
+       when is_list(children) do
+    {new_children, remaining} = attach_walk(children, queue)
+    {{tag, attrs, new_children, meta}, remaining}
+  end
+
+  defp attach_node(other, queue), do: {other, queue}
 end
