@@ -77,6 +77,20 @@ never-worse-than-now ratchets.**
   gitignored and 404 in CI). The ratchets are therefore only fully honest in
   local `ci:release` runs until that backlog item closes.
 
+## Calibration note, 2026-08-30
+
+The first honest CI run (fonts present for the first time) showed shared CI
+runners are roughly 2× slower than the reference machine under the CPU
+throttle: readable 1073–1805 ms in CI vs 636–847 ms locally, identical bytes.
+The contract's timing ceilings were recalibrated to CI-hardware reality
+(readable 2400, dcl 1000, load 1400, fcp 1400) and the contract text now names
+the split explicitly: **the one-second goal is authoritative on the reference
+profile via local `ci:release`; CI's timing ceilings catch gross regressions
+on slower shared hardware.** Byte ratchets, which are hardware-independent,
+carry the deterministic enforcement in both places. This is a measurement
+calibration, not a goal change — the site still reads in under a second on
+the profile the goal was written for.
+
 ## Rejected
 
 - **Bytes as the primary metric (status quo):** enforces a proxy, not the
