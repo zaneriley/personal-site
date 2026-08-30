@@ -24,10 +24,13 @@ The private vault read-view and scratch area is
   the HTTP/Phoenix/PostgreSQL dependency surface, and retired `earmark` usage.
   Re-run `./run dev:deps:outdated` and the repository's audit commands before
   scoping; do not mix this migration into unrelated feature work.
-- **Ship licensed production fonts through an explicit private mechanism.** The
-  source faces and generated woff2 files are intentionally gitignored, so a
-  clean checkout cannot assemble them. Choose an authenticated build-time fetch,
-  private artifact, or other explicit delivery path before launch.
+- **Ship licensed production fonts through a private repository + build-time
+  generation.** Direction ratified 2026-08-30; the plan, the impact-site
+  inventory, and the verification contract (including the negative test: a
+  build without fonts must fail, never ship fontless) are in
+  `font-delivery-spec.md`. Payoff when done: CI measures real font bytes for
+  the first time, the 404-driven failures disappear, and PRs merge without
+  the admin bypass. Subsetting stays — settled, no license archaeology.
 
 ## Page weight
 

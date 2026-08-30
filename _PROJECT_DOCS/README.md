@@ -11,6 +11,9 @@ history owns deleted plans and completion ledgers.
 - [page-weight.md](page-weight.md) — page-weight measurements, settled
   reasoning, and the verification methods that prove a weight change did not
   alter the design. Companion to ADR 0006.
+- [font-delivery-spec.md](font-delivery-spec.md) — plan and verification
+  contract for delivering the licensed fonts to CI through a private
+  repository; closes the CI-measures-fiction gap.
 
 ## Current contracts
 
