@@ -113,6 +113,22 @@ defmodule PortfolioWeb.Router do
   end
 
   # Catch-all route for unmatched paths
+  if Application.compile_env(:portfolio, :typography_bench, false) do
+    scope "/typography-bench", PortfolioWeb do
+      pipe_through :browser
+      get "/", TypographyBenchController, :index
+      get "/manifest", TypographyBenchController, :manifest
+      get "/specimen", TypographyBenchController, :specimen
+    end
+
+    # Static harness scripts need no session; the browser pipeline rejects
+    # JavaScript script-tag responses through its CSRF protection.
+    scope "/typography-bench", PortfolioWeb do
+      get "/bench.js", TypographyBenchController, :script
+      get "/measure.js", TypographyBenchController, :measure_script
+    end
+  end
+
   scope "/", PortfolioWeb do
     pipe_through :browser
     get "/up/", UpController, :index
