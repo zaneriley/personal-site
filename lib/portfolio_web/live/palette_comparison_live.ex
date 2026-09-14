@@ -301,8 +301,10 @@ defmodule PortfolioWeb.PaletteComparisonLive do
       </style>
 
       <header class="pc__header">
-        <p class="pc__header-title">Palette Comparison</p>
-        <p class="pc__header-desc">
+        <p data-typography-calibration class="pc__header-title">
+          Palette Comparison
+        </p>
+        <p data-typography-calibration class="pc__header-desc">
           Same markup, same token names — different mode values. Semantic slots proposed for the full system.
         </p>
       </header>
@@ -453,9 +455,11 @@ defmodule PortfolioWeb.PaletteComparisonLive do
         <.signature class="pc__logo" />
 
         <div>
-          <p class="pc__eyebrow">Product designer · Tokyo</p>
+          <p data-typography-calibration class="pc__eyebrow">
+            Product designer · Tokyo
+          </p>
           <h2 class="pc__title">Work that holds its ground</h2>
-          <p class="pc__body">
+          <p data-typography-calibration class="pc__body">
             Strategy, visual design, and code — across Google Search, Maps,
             and a decade of products that people actually use.
           </p>
@@ -466,7 +470,9 @@ defmodule PortfolioWeb.PaletteComparisonLive do
           <div class="pc__tile" style="background: var(--surface-primary)">
             <span class="pc__tile-label">Primary</span>
             <strong class="pc__tile-heading">Header</strong>
-            <p class="pc__tile-body">Body copy stays readable here.</p>
+            <p data-typography-calibration class="pc__tile-body">
+              Body copy stays readable here.
+            </p>
             <a class="pc__tile-link">Link</a>
           </div>
           <div
@@ -475,13 +481,17 @@ defmodule PortfolioWeb.PaletteComparisonLive do
           >
             <span class="pc__tile-label">Midpoint</span>
             <strong class="pc__tile-heading">Header</strong>
-            <p class="pc__tile-body">Body copy stays readable here.</p>
+            <p data-typography-calibration class="pc__tile-body">
+              Body copy stays readable here.
+            </p>
             <a class="pc__tile-link">Link</a>
           </div>
           <div class="pc__tile" style="background: var(--surface-secondary)">
             <span class="pc__tile-label">Secondary</span>
             <strong class="pc__tile-heading">Header</strong>
-            <p class="pc__tile-body">Body copy stays readable here.</p>
+            <p data-typography-calibration class="pc__tile-body">
+              Body copy stays readable here.
+            </p>
             <a class="pc__tile-link">Link</a>
           </div>
         </div>
@@ -491,7 +501,7 @@ defmodule PortfolioWeb.PaletteComparisonLive do
           <pre class="pc__token-block">{@token_readout}</pre>
         </details>
 
-        <p :if={@notes} class="pc__notes">{@notes}</p>
+        <p :if={@notes} data-typography-calibration class="pc__notes">{@notes}</p>
       </div>
     </section>
     """

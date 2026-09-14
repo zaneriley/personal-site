@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { latinLeadingCSS } from "./tailwind/line-height";
 
 const config: Config = {
   content: [
@@ -92,19 +93,18 @@ const config: Config = {
     },
   ],
   theme: {
-    // Line-height comes from the generated baseline-grid values (--lh-en-*, see
-    // generate-type-tokens.ts / line-height.ts) — one leading relationship, snapped
-    // to the 7px grid — NOT flat per-size ratios. The optical-adjustment margins
-    // read the same --lh-en-*, so rendered leading and the trim math agree.
-    // CJK overrides line-height via html[lang="ja"] * (app.css).
+    // Snap once at the actual fluid size, using the selected face's cap metric.
+    // Typography's trim consumes the resulting length through lh units.
+    // CJK components instead add the fixed half-paragraph-body gap (app.css).
     fontSize: {
-      "2xs": ["var(--fs-2xs)", { lineHeight: "var(--lh-en-2xs)" }],
-      "1xs": ["var(--fs-1xs)", { lineHeight: "var(--lh-en-1xs)" }],
-      md: ["var(--fs-md)", { lineHeight: "var(--lh-en-md)" }],
-      "1xl": ["var(--fs-1xl)", { lineHeight: "var(--lh-en-1xl)" }],
-      "2xl": ["var(--fs-2xl)", { lineHeight: "var(--lh-en-2xl)" }],
-      "3xl": ["var(--fs-3xl)", { lineHeight: "var(--lh-en-3xl)" }],
-      "4xl": ["var(--fs-4xl)", { lineHeight: "var(--lh-en-4xl)" }],
+      "2xs": ["var(--fs-2xs)", { lineHeight: latinLeadingCSS }],
+      "3xs": ["var(--fs-3xs)", { lineHeight: latinLeadingCSS }],
+      "1xs": ["var(--fs-1xs)", { lineHeight: latinLeadingCSS }],
+      md: ["var(--fs-md)", { lineHeight: latinLeadingCSS }],
+      "1xl": ["var(--fs-1xl)", { lineHeight: latinLeadingCSS }],
+      "2xl": ["var(--fs-2xl)", { lineHeight: latinLeadingCSS }],
+      "3xl": ["var(--fs-3xl)", { lineHeight: latinLeadingCSS }],
+      "4xl": ["var(--fs-4xl)", { lineHeight: latinLeadingCSS }],
     },
     spacing: {
       "3xs": "var(--space-3xs)",

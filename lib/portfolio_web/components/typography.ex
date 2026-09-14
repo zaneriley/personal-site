@@ -112,45 +112,43 @@ defmodule PortfolioWeb.Components.Typography do
   attr :dropcap, :boolean, default: false
   attr :class, :string, default: nil
   attr :locale, :string, default: nil
+  attr :rest, :global
   slot :inner_block, required: true
 
   alias PortfolioWeb.Components.TypographyHelpers
 
   def typography(assigns) do
-    # Calculate base classes first
     all_classes = TypographyHelpers.build_class_names(assigns)
+    optical_vars = TypographyHelpers.generate_optical_style(assigns)
 
-    # --- FIX: Call the helper with the assigns map ---
-    # Get the map of variable names (or nil) from the helper
-    # Correct call
-    optical_vars_map = TypographyHelpers.generate_optical_style(assigns)
-
-    # Construct the inline style string based on the returned map
-    optical_style_attr =
-      if optical_vars_map do
-        # Build style string parts safely, joining with spaces
-        [
-          "--_lh: var(#{optical_vars_map.lh_var});",
-          "--_dt: var(#{optical_vars_map.dt_var});",
-          "--_db: var(#{optical_vars_map.db_var});"
-        ]
-        |> Enum.join(" ")
+    optical_style =
+      if optical_vars do
+        "--type-cap: var(#{optical_vars.cap_var}); " <>
+          "--type-trim-start: var(#{optical_vars.trim_start_var}); " <>
+          "--type-trim-end: var(#{optical_vars.trim_end_var});"
       else
-        # Return empty string if no correction should be applied
         ""
       end
 
+    locale = assigns.locale || Gettext.get_locale(PortfolioWeb.Gettext)
+
     assigns =
       assigns
-      |> assign(:all_classes, all_classes)
-      # Add the dynamically generated style string to assigns
-      |> assign(:optical_style_attr, optical_style_attr)
-      # Static class remains for CSS rule targeting
+      |> assign(:all_classes, ["typography", all_classes])
+      |> assign(:optical_style_attr, optical_style)
+      |> assign(:text_script, if(locale == "ja", do: "cjk", else: "latin"))
       |> assign(:optical_adjustment_class, "optical-adjustment")
 
     ~H"""
-    <.dynamic_tag tag_name={@tag} id={@id} class={@all_classes}>
-      <span class={@optical_adjustment_class} style={@optical_style_attr}>
+    <.dynamic_tag
+      tag_name={@tag}
+      id={@id}
+      class={@all_classes}
+      data-text-script={@text_script}
+      style={@optical_style_attr}
+      {@rest}
+    >
+      <span class={@optical_adjustment_class}>
         <%= if @dropcap do %>
           <% text =
             render_slot(@inner_block)

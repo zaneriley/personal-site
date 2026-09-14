@@ -602,11 +602,13 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
       <div class="shader-sketch__layout">
         <section class="shader-sketch__canvas">
           <header class="shader-sketch__intro">
-            <p class="shader-sketch__eyebrow">Color grade system sketch</p>
+            <p data-typography-calibration class="shader-sketch__eyebrow">
+              Color grade system sketch
+            </p>
             <h1 class="shader-sketch__title">
               Role palettes with diagnostic ramps
             </h1>
-            <p class="shader-sketch__lead">
+            <p data-typography-calibration class="shader-sketch__lead">
               Tune white and black points, surface color, reading ink, and action ink
               as separate relationships, then scrub the in-between state. The ramps
               show whether the supporting scale still behaves.
@@ -619,19 +621,19 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
           >
             <article class="shader-sketch__material" data-tone="white">
               <h2 class="shader-sketch__material-title">Absolute white</h2>
-              <p class="shader-sketch__material-note">
+              <p data-typography-calibration class="shader-sketch__material-note">
                 Reserved endpoint. Use as a special material, not the normal page ceiling.
               </p>
             </article>
             <article class="shader-sketch__material" data-tone="black">
               <h2 class="shader-sketch__material-title">Absolute black</h2>
-              <p class="shader-sketch__material-note">
+              <p data-typography-calibration class="shader-sketch__material-note">
                 Reserved endpoint. Useful for masks, hard depth, or rare full-stop contrast.
               </p>
             </article>
             <article class="shader-sketch__material">
               <h2 class="shader-sketch__material-title">Current state</h2>
-              <p class="shader-sketch__material-note">
+              <p data-typography-calibration class="shader-sketch__material-note">
                 Mode position: {@controls.mode_position}%.
                 Tween curve: {@controls.tween_curve}.
               </p>
@@ -655,8 +657,10 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
                   ></span>
                 </div>
                 <div class="shader-sketch__grade-sample" style={grade.style}>
-                  <p class="shader-sketch__grade-title">The quiet page</p>
-                  <p class="shader-sketch__grade-body">
+                  <p data-typography-calibration class="shader-sketch__grade-title">
+                    The quiet page
+                  </p>
+                  <p data-typography-calibration class="shader-sketch__grade-body">
                     Body text, links, rules, and muted details need to survive
                     the grade together.
                   </p>
@@ -664,11 +668,13 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
                     Read the self portrait
                   </a>
                   <div class="shader-sketch__grade-rule"></div>
-                  <p class="shader-sketch__grade-muted">
+                  <p data-typography-calibration class="shader-sketch__grade-muted">
                     Metadata, dates, and soft labels.
                   </p>
                 </div>
-                <p class="shader-sketch__grade-meta">{grade.meta}</p>
+                <p data-typography-calibration class="shader-sketch__grade-meta">
+                  {grade.meta}
+                </p>
               </article>
             </div>
           </section>
@@ -689,7 +695,7 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
 
         <aside class="shader-sketch__controls">
           <h2 class="shader-sketch__controls-title">Role controls</h2>
-          <p class="shader-sketch__controls-note">
+          <p data-typography-calibration class="shader-sketch__controls-note">
             Tune endpoints, surface color, reading ink, and action ink separately. The
             generated ramps stay below as diagnostics.
           </p>
@@ -792,9 +798,15 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
           class="shader-sketch__swatch"
           style={shade.style}
         >
-          <p class="shader-sketch__swatch-name">{shade.name}</p>
-          <p class="shader-sketch__swatch-value">{shade.value}</p>
-          <p class="shader-sketch__swatch-step">{shade.step_label}</p>
+          <p data-typography-calibration class="shader-sketch__swatch-name">
+            {shade.name}
+          </p>
+          <p data-typography-calibration class="shader-sketch__swatch-value">
+            {shade.value}
+          </p>
+          <p data-typography-calibration class="shader-sketch__swatch-step">
+            {shade.step_label}
+          </p>
           <div class="shader-sketch__badges">
             <span :for={badge <- shade.badges} class="shader-sketch__badge">
               {badge}

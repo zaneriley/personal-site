@@ -43,11 +43,13 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
     "1xl" => "text-1xl",
     "md" => "text-md",
     "1xs" => "text-1xs",
-    "2xs" => "text-2xs"
+    "2xs" => "text-2xs",
+    "3xs" => "text-3xs"
     # Add other sizes as needed
   }
 
   @color_classes %{
+    "inherit" => "text-inherit",
     "main" => "text-main",
     "callout" => "text-callout",
     "deemphasized" => "text-deemphasized",
@@ -106,6 +108,11 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
   }
 
   # --- Public API ---
+
+  @doc "Supported logical font roles and component size labels."
+  @spec options() :: %{fonts: [String.t()], sizes: [String.t()]}
+  def options,
+    do: %{fonts: Map.keys(@font_variants), sizes: Map.keys(@size_classes)}
 
   @doc """
   Builds a string of CSS class names based on the provided typography-related options using a pipeline.
@@ -260,43 +267,32 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
   @doc """
   Determines the names of CSS variables needed for optical correction based on assigns.
 
-  Returns a map with `:lh_var`, `:dt_var`, and `:db_var` keys containing the
-  variable names (e.g., "--lh-en-md", "--cheee-small-distance-top") if optical
-  correction should apply (Latin locale, known font metrics). Otherwise, returns `nil`.
-
-  ## Parameters
-
-    - `assigns` - A map containing typography options (see `@moduledoc`).
-
-  ## Returns
-
-    - `%{lh_var: String.t(), dt_var: String.t(), db_var: String.t()}` | `nil`
+  Returns the face's cap-height and outer-trim variable names for Latin text.
+  CJK uses the shared ideographic-body trim in CSS and returns `nil`.
   """
   @spec generate_optical_style(map()) ::
-          %{lh_var: String.t(), dt_var: String.t(), db_var: String.t()} | nil
+          map() | nil
   def generate_optical_style(assigns) do
     effective_locale = determine_locale(assigns, nil)
 
-    # Optical correction currently only applies to Latin script ('en')
+    # Latin needs face-specific metrics; CJK uses the shared body trim in CSS.
     if effective_locale == "en" do
       logical_font_key = determine_font_key(assigns, effective_locale)
       metric_key = get_metric_key(logical_font_key)
 
       # Only proceed if we have a valid metric key for the font
       if metric_key do
-        size_key = assigns[:size] || "md"
-
-        lh_var = "--lh-#{effective_locale}-#{size_key}"
-        dt_var = "--#{metric_key}-distance-top"
-        db_var = "--#{metric_key}-distance-bottom"
-
-        %{lh_var: lh_var, dt_var: dt_var, db_var: db_var}
+        %{
+          cap_var: "--#{metric_key}-cap",
+          trim_start_var: "--#{metric_key}-trim-start",
+          trim_end_var: "--#{metric_key}-trim-end"
+        }
       else
         # Valid locale ('en'), but no metric key found for the font
         nil
       end
     else
-      # Not an English locale, no correction applied
+      # CJK correction is shared rather than face-specific
       nil
     end
   end

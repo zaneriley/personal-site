@@ -99,9 +99,14 @@ defmodule PortfolioWeb.Components.CodeBlock do
     ~H"""
     <div class="code-block">
       <div class="code-block-header">
-        <p :if={@path} class="code-block-filename">
+        <Typography.typography
+          :if={@path}
+          tag="p"
+          size="2xs"
+          class="code-block-filename"
+        >
           <span :if={@path.dir} class="code-block-dir">{@path.dir}</span><span class="code-block-name">{@path.name}</span>
-        </p>
+        </Typography.typography>
         <Typography.typography
           :if={is_nil(@path) && @language}
           tag="span"

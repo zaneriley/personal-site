@@ -813,15 +813,17 @@ defmodule PortfolioWeb.ColorSketchLive do
           <main class="color-sketch__sample">
             <article class="color-sketch__copy">
               <.signature style="max-width: 100%; margin-bottom: 2.5rem;" />
-              <p class="color-sketch__eyebrow">Light color sketch</p>
+              <p data-typography-calibration class="color-sketch__eyebrow">
+                Light color sketch
+              </p>
               <h1 class="color-sketch__title">
                 A quiet cloud layer for the work
               </h1>
-              <p class="color-sketch__lead">
+              <p data-typography-calibration class="color-sketch__lead">
                 The background should feel blue before it feels decorative. The text has to stay warm
                 enough to belong to the writing, while links get a sharper signal without becoming neon.
               </p>
-              <p class="color-sketch__body">
+              <p data-typography-calibration class="color-sketch__body">
                 This is only a sketch surface: two background colors, three independent text colors,
                 and the actual SVG shape and texture values that make the surface more or less present.
               </p>
@@ -841,9 +843,11 @@ defmodule PortfolioWeb.ColorSketchLive do
                     class="color-sketch__stress-tile"
                     style={sample.style}
                   >
-                    <p class="color-sketch__stress-name">{sample.label}</p>
+                    <p data-typography-calibration class="color-sketch__stress-name">
+                      {sample.label}
+                    </p>
                     <strong class="color-sketch__stress-heading">Header</strong>
-                    <p class="color-sketch__stress-body">
+                    <p data-typography-calibration class="color-sketch__stress-body">
                       Body copy should stay calm and readable.
                     </p>
                     <span class="color-sketch__stress-link">Inline link</span>
@@ -865,10 +869,10 @@ defmodule PortfolioWeb.ColorSketchLive do
           <aside class="color-sketch__controls">
             <div>
               <h2 class="color-sketch__controls-title">Light palette sketch</h2>
-              <p class="color-sketch__controls-note">
+              <p data-typography-calibration class="color-sketch__controls-note">
                 Judge the samples, then tune surface, text color, light and shadow, and grain.
               </p>
-              <p class="color-sketch__workflow">
+              <p data-typography-calibration class="color-sketch__workflow">
                 1 Preview · 2 Stress test · 3 Readability · 4 Adjust · 5 Export
               </p>
             </div>
@@ -880,9 +884,15 @@ defmodule PortfolioWeb.ColorSketchLive do
               <h3 id="contrast-check-title" class="color-sketch__section-title">
                 Readability
               </h3>
-              <p class="color-sketch__status-title">{@palette_status.summary}</p>
-              <p class="color-sketch__status-text">{@palette_status.guidance}</p>
-              <p class="color-sketch__status-text">{@palette_status.supporting}</p>
+              <p data-typography-calibration class="color-sketch__status-title">
+                {@palette_status.summary}
+              </p>
+              <p data-typography-calibration class="color-sketch__status-text">
+                {@palette_status.guidance}
+              </p>
+              <p data-typography-calibration class="color-sketch__status-text">
+                {@palette_status.supporting}
+              </p>
               <details class="color-sketch__details">
                 <summary>Contrast details</summary>
                 <div
@@ -901,7 +911,7 @@ defmodule PortfolioWeb.ColorSketchLive do
                   </span>
                 </div>
               </details>
-              <p class="color-sketch__contrast-note">
+              <p data-typography-calibration class="color-sketch__contrast-note">
                 WCAG 2.2 is the hard signal. APCA/Lc is guidance while WCAG 3
                 contrast remains unsettled.
               </p>
@@ -1082,7 +1092,7 @@ defmodule PortfolioWeb.ColorSketchLive do
       <div class="color-sketch__control-stack">
         <.range_input :for={field <- @fields} field={field} controls={@controls} />
       </div>
-      <p class="color-sketch__readout">
+      <p data-typography-calibration class="color-sketch__readout">
         {@readout}
       </p>
     </fieldset>

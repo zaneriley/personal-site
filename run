@@ -130,7 +130,8 @@ function lint:shell {
 }
 
 function elixir:lint {
-  # Lint Elixir code
+  # Lint HEEx typography and Elixir code
+  mix lint.typography
   mix credo
 }
 

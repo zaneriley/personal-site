@@ -1,7 +1,12 @@
 <section id="main-content" class="mx-auto max-w-5xl px-6 py-12">
-  <p class="mb-2 text-sm uppercase tracking-wide text-color-suppressed">
+  <.typography
+    tag="p"
+    size="1xs"
+    color="suppressed"
+    class="mb-2 uppercase tracking-wide"
+  >
     Content publication
-  </p>
+  </.typography>
   <h1 class="mb-8 text-3xl font-semibold text-color-main">
     {@entry.status}
   </h1>
@@ -36,12 +41,14 @@
       Structured path errors
     </h2>
     <%= if path_errors(@entry) == [] do %>
-      <p class="text-color-suppressed">No structured path errors recorded.</p>
+      <.typography tag="p" color="suppressed">
+        No structured path errors recorded.
+      </.typography>
     <% else %>
       <ul class="space-y-4">
         <li :for={error <- path_errors(@entry)}>
           <code class="block break-all text-sm">{error_path(error)}</code>
-          <p>{error_reason(error)}</p>
+          <.typography tag="p">{error_reason(error)}</.typography>
         </li>
       </ul>
     <% end %>

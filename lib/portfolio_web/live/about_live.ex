@@ -32,12 +32,16 @@ defmodule PortfolioWeb.AboutLive do
       <div class="space-y-4">
         <h2 class="text-2xl font-semibold">Experience</h2>
         <div class="space-y-2">
-          <p class="font-medium">Google - Senior Product Designer</p>
-          <p class="">2018 - Present</p>
+          <.typography tag="p" weight="bold">
+            Google - Senior Product Designer
+          </.typography>
+          <.typography tag="p" class="">2018 - Present</.typography>
         </div>
         <div class="space-y-2">
-          <p class="font-medium">NerdWallet - Lead Designer</p>
-          <p class="">2015 - 2018</p>
+          <.typography tag="p" weight="bold">
+            NerdWallet - Lead Designer
+          </.typography>
+          <.typography tag="p" class="">2015 - 2018</.typography>
         </div>
       </div>
     </div>

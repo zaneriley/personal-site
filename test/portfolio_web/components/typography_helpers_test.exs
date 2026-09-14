@@ -5,15 +5,15 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
 
   alias PortfolioWeb.Components.TypographyHelpers
 
-  describe "get_optical_variable_names/1 (or equivalent helper)" do
+  describe "generate_optical_style/1" do
     test "returns correct variable names for default font/size in 'en' locale" do
       # size defaults to "md", font defaults to "flexa" for "en"
       assigns = %{locale: "en"}
 
       expected = %{
-        lh_var: "--lh-en-md",
-        dt_var: "--gt-flexa-trial-vf-distance-top",
-        db_var: "--gt-flexa-trial-vf-distance-bottom"
+        cap_var: "--gt-flexa-trial-vf-cap",
+        trim_start_var: "--gt-flexa-trial-vf-trim-start",
+        trim_end_var: "--gt-flexa-trial-vf-trim-end"
       }
 
       assert TypographyHelpers.generate_optical_style(assigns) == expected
@@ -23,9 +23,9 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
       assigns = %{font: "cheee", size: "2xl", locale: "en"}
 
       expected = %{
-        lh_var: "--lh-en-2xl",
-        dt_var: "--cheee-small-distance-top",
-        db_var: "--cheee-small-distance-bottom"
+        cap_var: "--cheee-small-cap",
+        trim_start_var: "--cheee-small-trim-start",
+        trim_end_var: "--cheee-small-trim-end"
       }
 
       assert TypographyHelpers.generate_optical_style(assigns) == expected
@@ -33,21 +33,21 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
       assigns = %{font: "cardinal", size: "1xs", locale: "en"}
 
       expected = %{
-        lh_var: "--lh-en-1xs",
-        dt_var: "--cardinal-fruit-web-medium-trial-distance-top",
-        db_var: "--cardinal-fruit-web-medium-trial-distance-bottom"
+        cap_var: "--cardinal-fruit-web-medium-trial-cap",
+        trim_start_var: "--cardinal-fruit-web-medium-trial-trim-start",
+        trim_end_var: "--cardinal-fruit-web-medium-trial-trim-end"
       }
 
       assert TypographyHelpers.generate_optical_style(assigns) == expected
     end
 
-    test "returns nil/empty map for 'ja' locale (optical correction disabled)" do
+    test "uses shared body trim rather than face metrics for 'ja'" do
       assigns = %{font: "cheee", size: "md", locale: "ja"}
       assert TypographyHelpers.generate_optical_style(assigns) in [nil, %{}]
 
       # Font maps to noto-sans-jp metric key
       assigns = %{font: "noto", size: "md", locale: "ja"}
-      # Still disabled for 'ja'
+      # CJK correction lives in the shared CSS rule
       assert TypographyHelpers.generate_optical_style(assigns) in [nil, %{}]
     end
 
@@ -61,9 +61,9 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
       assigns = %{size: "1xl", locale: "en"}
 
       expected = %{
-        lh_var: "--lh-en-1xl",
-        dt_var: "--gt-flexa-trial-vf-distance-top",
-        db_var: "--gt-flexa-trial-vf-distance-bottom"
+        cap_var: "--gt-flexa-trial-vf-cap",
+        trim_start_var: "--gt-flexa-trial-vf-trim-start",
+        trim_end_var: "--gt-flexa-trial-vf-trim-end"
       }
 
       assert TypographyHelpers.generate_optical_style(assigns) == expected
@@ -72,9 +72,9 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
       assigns = %{font: "cheee", locale: "en"}
 
       expected = %{
-        lh_var: "--lh-en-md",
-        dt_var: "--cheee-small-distance-top",
-        db_var: "--cheee-small-distance-bottom"
+        cap_var: "--cheee-small-cap",
+        trim_start_var: "--cheee-small-trim-start",
+        trim_end_var: "--cheee-small-trim-end"
       }
 
       assert TypographyHelpers.generate_optical_style(assigns) == expected
@@ -83,9 +83,9 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
       assigns = %{font: "cheee", size: "md"}
 
       expected = %{
-        lh_var: "--lh-en-md",
-        dt_var: "--cheee-small-distance-top",
-        db_var: "--cheee-small-distance-bottom"
+        cap_var: "--cheee-small-cap",
+        trim_start_var: "--cheee-small-trim-start",
+        trim_end_var: "--cheee-small-trim-end"
       }
 
       assert TypographyHelpers.generate_optical_style(assigns) == expected
