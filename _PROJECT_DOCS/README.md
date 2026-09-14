@@ -17,6 +17,9 @@ history owns deleted plans and completion ledgers.
 
 ## Current contracts
 
+- [footer-weather-design.md](footer-weather-design.md) — proposed weather
+  experience, domain boundaries, file ownership and success criteria; the
+  WeatherAPI provider direction is accepted, the detailed design is proposed.
 - [content-authoring-contract.md](content-authoring-contract.md) — fields and
   syntax the separate content repository may publish.
 - [feeds-spec.md](feeds-spec.md) — feed taxonomy, URLs, entry mapping, and

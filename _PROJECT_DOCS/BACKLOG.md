@@ -241,7 +241,21 @@ handling and regression checks**.
 - **Repair the grid mobile-first across the site.** Base placement is missing
   on several 12-column layouts, and nav/main/footer do not share one constrained
   container. Define base stacking and align all three surfaces through the
-  existing grid tokens.
+  existing grid tokens. Phone review on 2026-09-12: the homepage layout is
+  substantially broken. Z needs to design the mobile grid; implement that
+  layout and verify the homepage at phone widths before extending the pass
+  across the site.
+- **Design the mobile navigation.** Raised in the 2026-09-12 phone review.
+  Resolve how navigation fits and operates on small screens, including access
+  to the theme switcher and language choice. Verify the resulting interaction
+  on a phone, including touch targets and keyboard/focus behavior.
+- **Investigate the missing sun/moon transition on mobile.** In the
+  2026-09-12 phone review, theme switching worked but the intended animation
+  was absent or appeared too slow to load. The cause is unverified; reproduce
+  on the phone and distinguish input handling, reduced-motion preferences,
+  asset loading, and rendering performance before choosing a fix. Match the
+  prototype's intended transition for touch interaction while preserving
+  reduced-motion behavior. Desktop verification does not close this item.
 - **Bring the footer spec sheets back to the mock.** Revisit padding,
   proportions, border/inset treatment, status-dot placement, narrow wrapping,
   and label-column width. Load GT Flexa Mono or choose a deliberate substitute.
@@ -260,9 +274,56 @@ handling and regression checks**.
   HTML" question touches the same LiveView/session design — adjudicate them
   with each other in view, not separately.
 - **Replace display-only footer status with owned live data.** Give temperature,
-  deploy identity/status, node health, operating cost, and Tokyo weather bounded
+  deploy identity/status, node health, and operating cost bounded
   cached owners while retaining explicit assigns for deterministic tests and
-  degraded operation.
+  degraded operation. Tokyo weather is scoped separately below.
+- **Finish the Tokyo footer weather system using WeatherAPI's free plan.**
+  Implemented locally: shared ETS observation, asynchronous 15-minute refresh,
+  explicit condition translation, 30-minute fresh / two-hour expiry policy,
+  server-composed Cheee temperature with Z's optical values, isolated LiveView,
+  and finite digit-update motion with reduced-motion/offscreen cancellation.
+  Verified: 16 Elixir tests, 54 JS tests (11 existing skips), and the unchanged
+  release-shaped performance budgets with a populated three-digit negative
+  temperature and the largest weather SVG. Readable content: 682–869 ms;
+  measured CLS: 0 on all contracted routes. SVGs are inline; the existing seal's
+  path encoding was optimized to keep HTML under its ratchet.
+  Remaining: configure the API key and verify a real observation and phone
+  motion. Font optimization stays a global task.
+  See [the proposed design](footer-weather-design.md) for the experience,
+  domain/file boundaries, motion, live behavior and acceptance criteria.
+  Direction accepted by Z on 2026-09-13. Fetch one shared Tokyo reading on the
+  server every 15 minutes, independently of visitor traffic; keep the API key
+  server-side and weather requests out of page rendering. At continuous
+  polling this is 2,880 scheduled calls per 30-day month before retries.
+  Preserve source time and last successful fetch separately. Use a bounded,
+  timestamped last-known reading during outages, then hide unavailable weather;
+  a provider failure must not break the page. Choose the stale cutoff during
+  implementation. Provider references: [pricing](https://www.weatherapi.com/pricing.aspx),
+  [terms](https://www.weatherapi.com/terms.aspx), and
+  [condition/API documentation](https://www.weatherapi.com/docs/).
+  Map documented condition codes explicitly to the local SVGs and localized
+  condition text, including unknown/missing data; use Tokyo daylight for
+  day/night variants, independently of the site theme. Verify mapping, outage
+  behavior, and the rendered footer on a phone in both themes. Keep sample
+  assigns deterministic for tests. Required missing artwork is Z's task below,
+  not a reason to substitute a misleading icon.
+- **Create the missing weather icons — Z owns the artwork.** Add fog/mist and
+  freezing-precipitation artwork to the Figma weather collection, then import
+  optimized SVGs through the existing asset pipeline. During the WeatherAPI
+  condition-code mapping, inventory whether sleet/ice pellets and other
+  distinctions need separate artwork and hand that exact list to Z. Assume Z
+  will supply the missing icons; use accurate condition text until they arrive.
+  The adapter now distinguishes fog, mist, freezing fog, freezing rain, sleet,
+  and ice pellets. The current provider table also contains haze, dust, smoke,
+  and smog; these need an artwork decision too. All currently render as text.
+  Unknown/unavailable data must never default to sunshine. The existing
+  snowflake and wind assets still need deliberate semantic roles.
+- **Allow a future local weather station to supplement the API.** Z may later
+  add outdoor measurements; WeatherAPI remains the initial source and can
+  cover gaps. Keep source and observation time explicit so future station
+  readings can coexist with API conditions without misrepresenting freshness
+  or provenance. Defer station hardware, ingestion, and source-precedence rules
+  until that work is requested; no station dependency for the initial footer.
 - **Decide navigation taxonomy before launch.** `Case Studies`/`Self` versus
   `Work`/`About` affects labels, routes, SEO redirects, locale slugs, modules,
   and content types. Because robots currently disallow indexing, a route change
@@ -290,6 +351,36 @@ handling and regression checks**.
 
 ## Typography, color, and font pipeline
 
+- **Automatically derive Cheee's site-wide subset during the build.** Z
+  clarified that glyph coverage must follow the evolving design automatically,
+  rather than relying on a manually inventoried character list or a separate
+  weather font. Extend the existing `assets/fonts/generate-fonts.mjs` owner;
+  it currently applies one broad static charset to every face. Establish an
+  automated text-coverage source spanning routes, locales and relevant UI
+  states, with explicit character coverage for dynamic values such as signed
+  temperatures in C/F. A crawl of currently visible pages alone is insufficient
+  for unpublished/new content and unvisited states; the implementation must
+  handle content-only publication and retain conservative coverage where
+  exhaustiveness cannot be proved. Regenerate as part of the owning build or
+  publication workflow, and verify glyph coverage and render parity. Measure
+  the shared subset's effect on initial-page and first-visible-footer rendering
+  before introducing inline fonts or extra subsets. This supersedes manual
+  fixed-string inventory as the implementation approach for Cheee.
+- **Correct font weights throughout the interface, especially body text.**
+  Phone review on 2026-09-12: much of the type appears too thin. Audit rendered
+  faces, variable-font axes, and weight mappings against the intended design;
+  establish readable body weights and a deliberate hierarchy. Verify on the
+  phone in both themes rather than treating successful font loading as proof
+  of visual correctness.
+- **Define and apply a coherent color system in both themes.** Phone review
+  on 2026-09-12: the current light/dark color application is broken, and Figma
+  is more aesthetically pleasing. Critique the rendered site against the
+  latest Figma design to determine how colors should be assigned to surfaces,
+  text, borders, emphasis, and interactive states. Establish those semantic
+  roles before adjusting individual colors, then verify the resulting
+  hierarchy and contrast in light and dark mode. Coordinate with the
+  interactive-state and mock-fidelity passes rather than making isolated
+  palette fixes.
 - **Fix dark-footer `--neutral-25` contrast and adjudicate the light edge.** The
   dark footer remains 2.84:1 at small text. Commit `57c86fd` moved light from
   3.53:1 to the measured mock value, 4.49:1—effectively on, but fractionally
