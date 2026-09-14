@@ -199,3 +199,151 @@ html[data-theme="light"] .footer-surface {
   color: var(--text-color-suppressed);
   line-height: 1.3;
 }
+
+/* The mark is fully composed in HTML. Only changed glyphs animate after a
+   live patch; font loading remains owned by the site's typography pipeline. */
+.footer-weather {
+  --weather-icon-offset: calc(var(--latin-fs-4xl) + var(--space-1xs));
+  --weather-text-indent: var(--weather-icon-offset);
+
+  color: var(--text-color-main);
+  text-align: left;
+  min-block-size: 10rem;
+}
+
+.weather-heading {
+  --cjk-lh: 1;
+
+  color: var(--neutral-25);
+  margin-inline-start: var(--weather-text-indent);
+  line-height: 1;
+}
+
+.weather-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  /* Use 4xl artwork beside 2xl numerals, vertically centered as a pair.
+     Spacing comes from the shared spacing scale, independently of type. */
+  font-size: var(--latin-fs-2xl);
+  gap: var(--space-1xs);
+  padding-inline-start: var(--weather-icon-offset);
+  margin-block-start: 0;
+  min-block-size: 1em;
+  line-height: 1;
+}
+
+.weather-icon-slot {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  display: inline-flex;
+  inline-size: var(--latin-fs-4xl);
+  block-size: var(--latin-fs-4xl);
+
+  /* Cheee's visible numerals sit below the center of its typographic line box. */
+  transform: translateY(calc(-50% + 0.18em));
+}
+
+/* Export dimensions describe the source canvas, not the rendered artwork. */
+.weather-icon-slot > svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.weather-temperature {
+  /* This Latin numeral artwork keeps its baseline even within Japanese prose. */
+  --cjk-lh: 1;
+
+  /* Numerals and cloud share the same illustration color in the reference. */
+  color: var(--neutral-50);
+  display: inline-flex;
+  align-items: baseline;
+  font-size: var(--latin-fs-2xl);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.weather-digits,
+.weather-suffix {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.weather-digit {
+  display: inline-block;
+  transform-origin: 50% 85%;
+}
+
+.weather-suffix {
+  /* Fixed suffix advance keeps the last digit anchored for both C and F. */
+  flex: 0 0 1em;
+  inline-size: 1em;
+  margin-inline-start: 0.02em;
+}
+
+.weather-degree,
+.weather-minus {
+  display: inline-block;
+  inline-size: 0.3em;
+  block-size: 1em;
+  overflow: visible;
+}
+
+.weather-minus {
+  inline-size: 0.42em;
+  margin-inline-end: 0.1em;
+}
+
+.weather-unit-slot {
+  display: inline-block;
+}
+
+.weather-unit {
+  font-size: 0.82em;
+}
+
+.weather-unavailable {
+  font-size: var(--fs-2xs);
+}
+
+.weather-credit {
+  --cjk-lh: 1;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  inline-size: fit-content;
+  margin: 0;
+  margin-block-start: var(--space-md);
+  margin-inline-start: var(--weather-text-indent);
+  padding: 0;
+  min-block-size: 1.5rem;
+  font-size: var(--fs-3xs);
+  font-weight: 430;
+  line-height: 1;
+  color: var(--neutral-25);
+  text-decoration: none;
+}
+
+.weather-credit:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.weather-credit:focus-visible {
+  outline: 0.125rem solid currentcolor;
+  outline-offset: 0.125rem;
+}
+
+@media (width >= 64rem) {
+  /* The text starts on column 10; column 9 gives the hanging icon its own room. */
+  .footer-surface .footer-weather {
+    --weather-text-indent: 0;
+  }
+
+  .footer-surface .weather-mark {
+    margin-inline-start: calc(-1 * var(--weather-icon-offset));
+  }
+}

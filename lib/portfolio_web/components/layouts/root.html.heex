@@ -276,7 +276,21 @@
       <PortfolioWeb.Components.Footer.site_footer
         user_locale={@user_locale}
         current_year={@current_year}
-      />
+      >
+        <:weather>
+          <%= if assigns[:conn] do %>
+            {Phoenix.Component.live_render(
+              @conn,
+              PortfolioWeb.WeatherLive,
+              session: %{"user_locale" => @user_locale}
+            )}
+          <% else %>
+            <PortfolioWeb.Components.Weather.weather snapshot={
+              Portfolio.Weather.current()
+            } />
+          <% end %>
+        </:weather>
+      </PortfolioWeb.Components.Footer.site_footer>
     <% end %>
   </body>
 </html>

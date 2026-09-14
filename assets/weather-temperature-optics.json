@@ -1,0 +1,24 @@
+{
+  "schema": "weather-temperature-optics/v1",
+  "font": "Cheee Small",
+  "system": "anchored-alternation",
+  "units": ["C", "F"],
+  "degreeXEm": 0.01,
+  "degreeYEm": -0.065,
+  "degreeScale": 1.4,
+  "degreeStrokeScale": 1.475,
+  "unitGapEm": -0.035,
+  "derived": {
+    "degreeCenterXEm": 0.16,
+    "degreeCenterYEm": -0.665,
+    "degreeRadiusEm": 0.119,
+    "degreeStrokeEm": 0.08113,
+    "degreeAdvanceEm": 0.3,
+    "lastDigitHopFollow": 0.5
+  },
+  "review": {
+    "sample": "24°F",
+    "fontSizePx": 32,
+    "surface": "dark"
+  }
+}

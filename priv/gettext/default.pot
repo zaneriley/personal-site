@@ -441,3 +441,87 @@ msgstr ""
 
 msgid "Toggle light and dark mode"
 msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Tokyo"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Weather unavailable"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Earlier report"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Reported"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Clear"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Partly cloudy"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Cloudy"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Rain"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Snow"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Thunderstorms"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Mist"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Fog"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Freezing fog"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Freezing rain"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Sleet"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Ice pellets"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Haze"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Dust"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Smoke"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Smog"
+msgstr ""
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Conditions unavailable"
+msgstr ""

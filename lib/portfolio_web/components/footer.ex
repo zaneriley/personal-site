@@ -12,12 +12,11 @@ defmodule PortfolioWeb.Components.Footer do
   """
   use PortfolioWeb, :html
 
-  # Static facts for the Server sheet + the Tokyo weather mark. The live-data
-  # backlog item in AGENTS.md owns these future sources:
+  # Static facts for the Server sheet. The live-data item in
+  # _PROJECT_DOCS/BACKLOG.md owns these future sources:
   #   * temp       -> Raspberry Pi thermal zone (/sys/class/thermal/thermal_zone*/temp)
   #   * deploy     -> real build/git short SHA (release stamp / compile_env)
   #   * node_up    -> healthcheck (we already serve /up)
-  #   * tokyo_temp -> weather API, cached
   # The markup reads this map, so wiring real data later never touches the HEEx.
   @default_status %{
     node_name: "Raspberry Pi 3B",
@@ -25,20 +24,19 @@ defmodule PortfolioWeb.Components.Footer do
     stack: "Elixir | Phoenix",
     temp: "45.2°C",
     cost: "$0.12/day",
-    deploy: "passing :: 8f3a12",
-    # Number only; the "°c" unit is presentational (rendered in the markup).
-    tokyo_temp: "24"
+    deploy: "passing :: 8f3a12"
   }
 
   @doc """
   Renders the site footer.
 
-  `status` carries the (currently static) server/weather facts; see
+  `status` carries the (currently static) server facts; see
   `@default_status` and the repository backlog for the live-data plan.
   """
   attr :user_locale, :string, default: "en"
   attr :current_year, :integer, required: true
   attr :status, :map, default: @default_status
+  slot :weather
 
   def site_footer(assigns) do
     ~H"""
@@ -179,20 +177,14 @@ defmodule PortfolioWeb.Components.Footer do
           </.spec_sheet>
         </section>
 
-        <%!-- Now in Tokyo: a mono eyebrow (matching the footer links) over the
-           temperature — Cheee is reserved for the temp value itself, not this
-           label. --%>
-        <section class="col-span-full lg:col-span-2 lg:col-start-11 lg:text-right">
-          <p class="footer-eyebrow footer-muted">{gettext("Now in Tokyo")}</p>
-          <%!-- A live temperature and the specialized persona mark (each digit
-             off-kilter) belong to the footer-data backlog item. Cheee in BOTH
-             locales — this numeric mark must NOT take the cheee->Noto JP
-             substitution that the typography component applies to header text.
-             Plain element with the design-system tokens, matching the other footer
-             data values. --%>
-          <p class="font-cheee text-main text-2xl">
-            {@status.tokyo_temp}°<span class="text-1xl">c</span>
-          </p>
+        <section class="col-span-full lg:col-span-3 lg:col-start-10">
+          <%= if @weather != [] do %>
+            {render_slot(@weather)}
+          <% else %>
+            <PortfolioWeb.Components.Weather.weather snapshot={
+              Portfolio.Weather.current()
+            } />
+          <% end %>
         </section>
 
         <%!-- Bottom bar: copyright · links · back-to-top --%>

@@ -5,11 +5,13 @@ import topbar from "topbar";
 
 import { initCloudSurface } from "./cloud-surface";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
+import WeatherHook from "./hooks/weather_hook";
 import { themeController } from "./theme-switcher";
 
 // Define hooks before using them
 const Hooks = {
   ThemeSwitcher: ThemeSwitcherHook,
+  Weather: WeatherHook,
 };
 
 const csrfToken = document

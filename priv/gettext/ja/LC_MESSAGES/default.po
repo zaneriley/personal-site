@@ -430,3 +430,87 @@ msgstr "ダークモード"
 
 msgid "Toggle light and dark mode"
 msgstr "ライトモードとダークモードを切り替える"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Tokyo"
+msgstr "東京"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Weather unavailable"
+msgstr "天気情報を取得できません"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Earlier report"
+msgstr "前回の観測"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Reported"
+msgstr "観測時刻"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Clear"
+msgstr "晴れ"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Partly cloudy"
+msgstr "晴れ時々曇り"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Cloudy"
+msgstr "曇り"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Rain"
+msgstr "雨"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Snow"
+msgstr "雪"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Thunderstorms"
+msgstr "雷雨"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Mist"
+msgstr "もや"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Fog"
+msgstr "霧"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Freezing fog"
+msgstr "着氷性の霧"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Freezing rain"
+msgstr "着氷性の雨"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Sleet"
+msgstr "みぞれ"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Ice pellets"
+msgstr "凍雨"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Haze"
+msgstr "煙霧"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Dust"
+msgstr "砂じん"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Smoke"
+msgstr "煙"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Smog"
+msgstr "スモッグ"
+
+#: lib/portfolio_web/components/weather.ex
+msgid "Conditions unavailable"
+msgstr "天気の詳細不明"
