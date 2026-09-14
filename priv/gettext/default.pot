@@ -435,3 +435,9 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Zane Riley — the work"
 msgstr ""
+
+msgid "Dark mode"
+msgstr ""
+
+msgid "Toggle light and dark mode"
+msgstr ""

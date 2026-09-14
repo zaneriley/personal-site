@@ -8,6 +8,7 @@
 @import url("./_grid.css");
 @import url("./_code.css");
 @import url("./_footer.css");
+@import url("./_theme-switcher.css");
 
 @property --fantazio-rotate {
   syntax: "<angle>";

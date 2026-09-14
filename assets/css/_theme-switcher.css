@@ -1,0 +1,54 @@
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  place-self: center end;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-color-main);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.theme-toggle:not([data-ready]) {
+  visibility: hidden;
+}
+
+.theme-toggle:focus-visible {
+  outline: 0.125rem solid currentcolor;
+  outline-offset: 0.1875rem;
+}
+
+@media (forced-colors: active) {
+  .theme-toggle {
+    color: ButtonText;
+  }
+
+  .theme-toggle svg {
+    forced-color-adjust: none;
+  }
+}
+
+.theme-toggle:active svg {
+  transform: scale(0.96);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-toggle:hover {
+    background: color-mix(in srgb, currentcolor 10%, transparent);
+  }
+}
+
+html[data-theme-motion="instant"] .surface-fill,
+html[data-theme-motion="instant"] .surface-layer {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle:active svg {
+    transform: none;
+  }
+}

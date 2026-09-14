@@ -14,18 +14,17 @@
          assets/js/cloud-surface.ts disarms (restoring them) if WebGL fails. --%>
     <script>
       (function () {
-        try {
-          var d = document.documentElement;
-          d.classList.add("clouds-armed");
-          var t = localStorage.getItem("theme");
-          if (t === "light" || t === "dark") {
-            d.setAttribute("data-theme", t);
-          } else {
-            var light = window.matchMedia &&
-              window.matchMedia("(prefers-color-scheme: light)").matches;
-            d.setAttribute("data-theme", light ? "light" : "dark");
-          }
-        } catch (e) {}
+        var d = document.documentElement;
+        d.classList.add("clouds-armed");
+        var t;
+        try { t = localStorage.getItem("theme"); } catch (e) {}
+        if (t === "light" || t === "dark") {
+          d.setAttribute("data-theme", t);
+        } else {
+          var light = window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: light)").matches;
+          d.setAttribute("data-theme", light ? "light" : "dark");
+        }
       })();
     </script>
     <.live_title>

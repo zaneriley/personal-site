@@ -424,3 +424,9 @@ msgstr "ゼイン・ライリー — すべて"
 #, elixir-autogen, elixir-format
 msgid "Zane Riley — the work"
 msgstr "ゼイン・ライリー — 作品"
+
+msgid "Dark mode"
+msgstr "ダークモード"
+
+msgid "Toggle light and dark mode"
+msgstr "ライトモードとダークモードを切り替える"

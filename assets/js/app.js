@@ -5,6 +5,7 @@ import topbar from "topbar";
 
 import { initCloudSurface } from "./cloud-surface";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
+import { themeController } from "./theme-switcher";
 
 // Define hooks before using them
 const Hooks = {
@@ -53,6 +54,7 @@ window.addEventListener("phx:page-loading-stop", () => {
     ?.classList.remove("phx-page-loading");
 });
 
+themeController();
 liveSocket.connect();
 
 // Light-mode cloud surface. Static markup in the root layout, outside the
