@@ -58,7 +58,7 @@ defmodule PortfolioWeb.Components.Footer do
             tag="h2"
             size="1xs"
             font="cheee"
-            class="footer-section-head"
+            class="footer-section-head mb-1xs"
           >
             {gettext("Colophon")}
           </.typography>
@@ -119,7 +119,7 @@ defmodule PortfolioWeb.Components.Footer do
             tag="h2"
             size="1xs"
             font="cheee"
-            class="footer-section-head"
+            class="footer-section-head mb-1xs"
           >
             {gettext("Server")}
           </.typography>
@@ -191,9 +191,10 @@ defmodule PortfolioWeb.Components.Footer do
         <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
           <.typography
             tag="span"
+            font="mono"
             size="2xs"
             locale={@user_locale}
-            class="footer-copyright col-span-full lg:col-span-2"
+            class="caps footer-copyright col-span-full lg:col-span-2"
           >
             © 2011 – {@current_year}
           </.typography>
@@ -205,35 +206,80 @@ defmodule PortfolioWeb.Components.Footer do
             <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
                suffix is a secondary annotation, so it sits one colour down from the
                link label. Leading space lives in the EN msgid; JP uses fullwidth （）. --%>
-            <.link href="#" class="footer-eyebrow">
-              {gettext("Resume")}<span class="footer-muted">{gettext(" (PDF)")}</span>
+            <.link href="#" class="footer-link">
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                color="inherit"
+                locale={@user_locale}
+                class="caps"
+              >
+                {gettext("Resume")}<span class="footer-muted">{gettext(" (PDF)")}</span>
+              </.typography>
             </.link>
-            <.link href="mailto:hello@zaneriley.com" class="footer-eyebrow">
-              {gettext("Email")}
+            <.link href="mailto:hello@zaneriley.com" class="footer-link">
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                color="inherit"
+                locale={@user_locale}
+                class="caps"
+              >
+                {gettext("Email")}
+              </.typography>
             </.link>
             <.link
               href="https://github.com/zaneriley"
               target="_blank"
               rel="noopener"
-              class="footer-eyebrow"
+              class="footer-link"
             >
-              {gettext("Github")}
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                color="inherit"
+                locale={@user_locale}
+                class="caps"
+              >
+                {gettext("Github")}
+              </.typography>
             </.link>
             <.link
               href="https://www.linkedin.com/in/zaneriley/"
               target="_blank"
               rel="noopener"
-              class="footer-eyebrow"
+              class="footer-link"
             >
-              {gettext("LinkedIn")}
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                color="inherit"
+                locale={@user_locale}
+                class="caps"
+              >
+                {gettext("LinkedIn")}
+              </.typography>
             </.link>
           </nav>
 
           <a
             href="#main-content"
-            class="footer-eyebrow col-span-full lg:col-start-11 lg:col-end-13 lg:text-right"
+            class="footer-link col-span-full lg:col-start-11 lg:col-end-13 lg:text-right"
           >
-            ↑ {gettext("Go to top")}
+            <.typography
+              tag="span"
+              font="mono"
+              size="2xs"
+              color="inherit"
+              locale={@user_locale}
+              class="caps"
+            >
+              ↑ {gettext("Go to top")}
+            </.typography>
           </a>
         </div>
       </footer>

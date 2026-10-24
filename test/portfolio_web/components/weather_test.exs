@@ -58,7 +58,7 @@ defmodule PortfolioWeb.Components.WeatherTest do
       assert [_] =
                Floki.find(
                  tree,
-                 "p.weather-heading.font-gt-flexa-mono.text-2xs > .optical-adjustment"
+                 "h2.weather-heading.font-cheee.text-1xs > .optical-adjustment"
                )
 
       assert html =~ "Partly cloudy"

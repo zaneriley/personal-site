@@ -43,10 +43,10 @@ defmodule PortfolioWeb.Components.Weather do
       data-freshness={@snapshot.freshness}
     >
       <.typography
-        tag="p"
-        font="mono"
-        size="2xs"
-        class="footer-eyebrow weather-heading"
+        tag="h2"
+        font="cheee"
+        size="1xs"
+        class="footer-section-head weather-heading mb-1xs"
       >
         {gettext("Tokyo")}
       </.typography>

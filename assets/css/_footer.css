@@ -63,31 +63,26 @@ html[data-theme="light"] .footer-surface {
   }
 }
 
-/* Action eyebrow — section headers, links, go-to-top. The cool emphasis grey
-   (Figma neutral/50), set at the smallest mono rung. */
-.footer-eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+/* Footer navigation color. The Typography component owns the text treatment. */
+.footer-link {
   color: var(--neutral-50);
 }
 
-/* Cheee section headers (Colophon / Server) take the same emphasis grey as the
-   action eyebrows; overrides the typography component's default cheee colour. */
+/* Cheee section headers (Colophon / Server / Tokyo) take the same emphasis grey as the
+   footer links; overrides the typography component's default cheee colour. */
 .footer-section-head {
   color: var(--neutral-50);
 }
 
 /* Quiet meta — "Now in Tokyo", the "(PDF)" suffix: one step down from the
-   action greys (Figma neutral/25). Defined after .footer-eyebrow so it wins
+   action greys (Figma neutral/25). Defined after .footer-link so it wins
    the colour on shared elements. */
 .footer-muted {
   color: var(--neutral-25);
 }
 
-/* Copyright — quiet grey override on top of the typography component's
-   size/optical-correction. GT Flexa (not mono), sentence case. */
+/* Copyright shares the footer links' mono typography and caps tracking,
+   with a quieter color. Slashed zeros come from the global font features. */
 .footer-copyright {
   color: var(--neutral-25);
 }
@@ -212,11 +207,7 @@ html[data-theme="light"] .footer-surface {
 }
 
 .weather-heading {
-  --cjk-lh: 1;
-
-  color: var(--neutral-25);
   margin-inline-start: var(--weather-text-indent);
-  line-height: 1;
 }
 
 .weather-mark {

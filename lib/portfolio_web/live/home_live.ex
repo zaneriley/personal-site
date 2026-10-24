@@ -60,56 +60,68 @@ defmodule PortfolioWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <section class="hero mb-3xl flex flex-col gap-2xl lg:flex-row lg:items-start lg:justify-between">
+    <section class="hero mt-1xl mb-3xl flex flex-col gap-2xl lg:flex-row lg:items-start lg:justify-between">
       <div class="hero-lede">
         <.signature class="block max-w-[34rem] mb-1xl" />
-        <%= if @user_locale == "ja" do %>
-          <%!-- JP hero (Option A): rooted/editorial; 東京 in Noto Serif JP is the
+        <div class="hero-copy grid gap-1xs">
+          <%= if @user_locale == "ja" do %>
+            <%!-- JP hero (Option A): rooted/editorial; 東京 in Noto Serif JP is the
                emphasis — the JP twin of the EN Cardinal-caps. Copy is composed
                per-locale (bespoke), not a gettext translation of the EN. --%>
-          <.typography locale={@user_locale} tag="p" font="flexa" size="2xl">
-            プロダクトデザイナー（<img
-              src={~p"/images/logos/google-g.svg"}
-              alt="Google"
-              class="inline-block h-[0.85em] w-auto align-baseline"
-            />）
-          </.typography>
-          <.typography locale={@user_locale} tag="p" size="1xl">
-            拠点は<span class="font-noto-serif-jp font-bold">東京</span>、以前はサンフランシスコ
-          </.typography>
-          <%!-- DRAFT JP tagline — needs native review (register/idiom). --%>
-          <.typography locale={@user_locale} tag="p" size="md">
-            15年以上、戦略・デザイン・コード——手段を選ばず、デジタルプロダクトをつくってきました。
-          </.typography>
-        <% else %>
-          <%!-- "Product designer" = callout (absolute white), 2xl. WEIGHT IS WRONG:
+            <.typography locale={@user_locale} tag="p" font="flexa" size="2xl">
+              プロダクトデザイナー（<img
+                src={~p"/images/logos/google-g.svg"}
+                alt="Google"
+                class="inline-block h-[0.85em] w-auto align-baseline"
+              />）
+            </.typography>
+            <.typography locale={@user_locale} tag="p" size="1xl">
+              拠点は<span class="font-noto-serif-jp font-bold">東京</span>、以前はサンフランシスコ
+            </.typography>
+            <%!-- DRAFT JP tagline — needs native review (register/idiom). --%>
+            <.typography locale={@user_locale} tag="p" size="md">
+              15年以上、戦略・デザイン・コード——手段を選ばず、デジタルプロダクトをつくってきました。
+            </.typography>
+          <% else %>
+            <%!-- "Product designer" = callout (absolute white), 2xl. WEIGHT IS WRONG:
                mock wants 427, which is neither our 2xl regular (208) nor 2xl bold
                (478) — the weight system needs a pass (see _PROJECT_DOCS/BACKLOG.md +
                /weight-calibration). "at" + connective + body are one rung down
                (the soft tier); only the cities are main. G mark on the baseline. --%>
-          <.typography locale={@user_locale} tag="p" size="2xl">
-            <span class="text-callout">Product designer</span>
-            <span class="text-md fw-flexa-md text-deemphasized">at</span>
-            <img
-              src={~p"/images/logos/google-g.svg"}
-              alt="Google"
-              class="inline-block h-[0.85em] w-auto align-baseline"
-            />
-          </.typography>
-          <.typography locale={@user_locale} tag="p" size="md" color="deemphasized">
-            Based in
-            <span class="font-cardinal-fruit caps font-bold text-main">
-              Tokyo
-            </span>
-            &amp; previously
-            <span class="font-cardinal-fruit caps font-bold text-main">
-              San Francisco
-            </span>
-          </.typography>
-          <.typography locale={@user_locale} tag="p" size="md" color="deemphasized">
-            +15 years experience in making digital products using strategy, design, code or whatever else it takes
-          </.typography>
-        <% end %>
+            <.typography locale={@user_locale} tag="p" size="2xl">
+              <span class="text-callout">Product designer</span>
+              <span class="text-md fw-flexa-md text-deemphasized">at</span>
+              <img
+                src={~p"/images/logos/google-g.svg"}
+                alt="Google"
+                class="inline-block h-[0.85em] w-auto align-baseline"
+              />
+            </.typography>
+            <.typography
+              locale={@user_locale}
+              tag="p"
+              size="md"
+              color="deemphasized"
+            >
+              Based in
+              <span class="font-cardinal-fruit caps font-bold text-main">
+                Tokyo
+              </span>
+              &amp; previously
+              <span class="font-cardinal-fruit caps font-bold text-main">
+                San Francisco
+              </span>
+            </.typography>
+            <.typography
+              locale={@user_locale}
+              tag="p"
+              size="md"
+              color="deemphasized"
+            >
+              +15 years experience in making digital products using strategy, design, code or whatever else it takes
+            </.typography>
+          <% end %>
+        </div>
       </div>
 
       <%!-- Portrait — DRAFT stub. TODO(hero): srcset/responsive pipeline + the
@@ -124,12 +136,18 @@ defmodule PortfolioWeb.HomeLive do
     </section>
 
     <div>
-      <.typography locale={@user_locale} tag="h2" size="1xs" font="cheee">
+      <.typography
+        locale={@user_locale}
+        tag="h2"
+        size="1xs"
+        font="cheee"
+        class="mb-md"
+      >
         {ngettext("Case Study", "Case Studies", 2)}
       </.typography>
-      <div class="space-y-md">
+      <div class="grid gap-2xl">
         <%= for case_study <- @case_studies do %>
-          <div class="space-y-3xs">
+          <div class="grid gap-1xs">
             <.link
               navigate={~p"/#{@user_locale}/case-study/#{case_study.url}"}
               aria-label={
