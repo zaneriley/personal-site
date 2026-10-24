@@ -1,36 +1,36 @@
 alias Portfolio.Repo
-alias Portfolio.Content.Schemas.CaseStudy
+alias Portfolio.Content.Schemas.Project
 alias Portfolio.Content.Schemas.Note
 alias Portfolio.Content.MarkdownRendering.CustomParser
 
-case_studies = [
+projects = [
   %{
-    title: "Case Study 1",
-    url: "case-study-1",
+    title: "Project 1",
+    url: "project-1",
     role: "Developer",
     timeline: "2021",
     read_time: 15,
     platforms: ["Web", "Mobile"],
-    introduction: "Introduction to Case Study 1",
-    file_path: "/content/case-study/test-case-study/en.md",
+    introduction: "Introduction to Project 1",
+    file_path: "/content/work/test-project/en.md",
     locale: "en",
-    content: "# this ia a case study",
+    content: "# this ia a project",
     company: "Company A",
     sort_order: 1,
     is_draft: false,
     published_at: NaiveDateTime.utc_now()
   },
   %{
-    title: "Case Study 2",
-    url: "case-study-2",
+    title: "Project 2",
+    url: "project-2",
     role: "Project Manager",
     timeline: "2022",
     read_time: 10,
     platforms: ["Web"],
-    introduction: "Introduction to Case Study 2",
-    file_path: "/content/case-study/test-case-study/en.md",
+    introduction: "Introduction to Project 2",
+    file_path: "/content/work/test-project/en.md",
     locale: "en",
-    content: "# this ia a case study",
+    content: "# this ia a project",
     company: "Company B",
     sort_order: 2,
     is_draft: false,
@@ -63,14 +63,14 @@ notes = [
   }
 ]
 
-Enum.each(case_studies, fn case_study ->
-  case %CaseStudy{} |> CaseStudy.changeset(case_study) |> Repo.insert() do
+Enum.each(projects, fn project ->
+  case %Project{} |> Project.changeset(project) |> Repo.insert() do
     {:ok, inserted} ->
-      IO.puts("Inserted case study: #{inserted.title}")
+      IO.puts("Inserted project: #{inserted.title}")
 
     {:error, changeset} ->
       IO.puts(
-        "Failed to insert case study: #{case_study.title}. Errors: #{inspect(changeset.errors)}"
+        "Failed to insert project: #{project.title}. Errors: #{inspect(changeset.errors)}"
       )
   end
 end)

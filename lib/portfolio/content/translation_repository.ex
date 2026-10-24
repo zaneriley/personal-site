@@ -3,7 +3,7 @@ defmodule Portfolio.Content.TranslationRepository do
   Stores and retrieves translations for content items in the Portfolio application.
 
   This module provides functionality to create, update, and retrieve translations
-  for various content types such as Notes and Case Studies. It interacts with the
+  for various content types such as Notes and Projects. It interacts with the
   Translation schema and handles multilingual content persistence.
 
   Key features:
@@ -16,7 +16,7 @@ defmodule Portfolio.Content.TranslationRepository do
   """
   import Ecto.Query
 
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.TranslatableFields
@@ -24,7 +24,7 @@ defmodule Portfolio.Content.TranslationRepository do
 
   require Logger
 
-  @type content :: Note.t() | CaseStudy.t()
+  @type content :: Note.t() | Project.t()
   @type translation_result :: {:ok, [Translation.t()]} | {:error, any()}
 
   @supported_locales Application.compile_env(:portfolio, :supported_locales)
@@ -33,7 +33,7 @@ defmodule Portfolio.Content.TranslationRepository do
   Creates or updates translations for a content item.
 
   ## Parameters
-    - content: The content item (Note or CaseStudy)
+    - content: The content item (Note or Project)
     - locale: String representing the locale of the translations
     - attrs: Map of attributes containing the translated values
 
@@ -65,7 +65,7 @@ defmodule Portfolio.Content.TranslationRepository do
 
   ## Parameters
   - `content_id`: The ID of the content item.
-  - `content_type`: The type of the content ("note" or "case_study").
+  - `content_type`: The type of the content ("note" or "project").
   - `locale`: The locale of the translations to fetch.
 
   ## Returns
@@ -117,7 +117,7 @@ defmodule Portfolio.Content.TranslationRepository do
 
   ## Parameters
     - content_ids: List of content IDs
-    - content_type: The type of the content ("note" or "case_study")
+    - content_type: The type of the content ("note" or "project")
     - locale: The locale of the translations to fetch
 
   ## Returns

@@ -1,4 +1,4 @@
-defmodule PortfolioWeb.CaseStudyLive.ShowTest do
+defmodule PortfolioWeb.WorkLive.ShowTest do
   # Not async: setup clears the global content cache, which is shared state.
   use PortfolioWeb.ConnCase
 
@@ -12,50 +12,53 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
     setup do
       Portfolio.DataCase.clear_cache()
 
-      case_study =
-        case_study_fixture(%{
-          "content" =>
-            "## Case study heading\n\nA paragraph with **bold** text."
+      project =
+        project_fixture(%{
+          "content" => "## Project heading\n\nA paragraph with **bold** text."
         })
 
-      case_study = Repo.preload(case_study, :translations)
-      %{case_study: case_study}
+      project = Repo.preload(project, :translations)
+      %{project: project}
     end
 
-    test "renders the case study body with markdown compiled to HTML", %{
+    test "renders the project body with markdown compiled to HTML", %{
       conn: conn,
-      case_study: case_study
+      project: project
     } do
-      {:ok, _view, html} = live(conn, ~p"/en/work/#{case_study.url}")
+      {:ok, view, html} = live(conn, ~p"/en/work/#{project.url}")
 
-      assert html =~ "Case Study"
-      assert html =~ case_study.title
-      assert html =~ case_study.introduction
-      assert html =~ "Case study heading"
+      assert html =~ "Project"
+      assert html =~ project.title
+      assert html =~ project.introduction
+      assert html =~ "Project heading"
       assert html =~ "<strong>"
-      refute html =~ "We ran into an issue loading this case study"
+
+      assert page_title(view) =~
+               "Product design case study: #{project.title} |"
+
+      refute html =~ "We ran into an issue loading this project"
       refute html =~ "&lt;p&gt;"
-      refute html =~ "## Case study heading"
+      refute html =~ "## Project heading"
     end
 
     test "renders Japanese translation when locale is ja", %{conn: conn} do
-      case_study = case_study_fixture()
+      project = project_fixture()
 
       {:ok, _} =
-        TranslationRepository.create_or_update_translations(case_study, "ja", %{
+        TranslationRepository.create_or_update_translations(project, "ja", %{
           "title" => "日本語のタイトル",
           "introduction" => "日本語の紹介"
         })
 
-      _case_study = Repo.preload(case_study, :translations, force: true)
+      _project = Repo.preload(project, :translations, force: true)
 
-      {:ok, _view, html} = live(conn, ~p"/ja/work/#{case_study.url}")
+      {:ok, _view, html} = live(conn, ~p"/ja/work/#{project.url}")
 
       assert html =~ "日本語のタイトル"
       assert html =~ "日本語の紹介"
     end
 
-    test "raises LiveError for a non-existent case study", %{conn: conn} do
+    test "raises LiveError for a non-existent project", %{conn: conn} do
       assert_raise PortfolioWeb.LiveError, fn ->
         live(conn, ~p"/en/work/non-existent-url")
       end
@@ -71,14 +74,14 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
 
     test "emits Open Graph and Twitter Card meta tags", %{
       conn: conn,
-      case_study: case_study
+      project: project
     } do
-      {:ok, _view, html} = live(conn, ~p"/en/work/#{case_study.url}")
+      {:ok, _view, html} = live(conn, ~p"/en/work/#{project.url}")
 
       assert html =~ ~r/<meta property="og:title" content="[^"]+"/
       assert html =~ ~s(<meta property="og:type" content="article")
       assert html =~ ~s(<meta property="og:url" content=")
-      assert html =~ "/en/work/#{case_study.url}\""
+      assert html =~ "/en/work/#{project.url}\""
       assert html =~ ~s(/images/og-default.png)
       assert html =~ ~s(<meta property="og:locale" content="en")
       assert html =~ ~s(<meta property="og:locale:alternate" content="ja")

@@ -16,7 +16,7 @@ defmodule Portfolio.Content.FileManagement.Promoter do
 
   alias Portfolio.Content
   alias Portfolio.Content.FileManagement.Reader
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Types
   alias Portfolio.Repo
@@ -35,7 +35,7 @@ defmodule Portfolio.Content.FileManagement.Promoter do
           errors: [promotion_error()]
         }
 
-  @content_schemas [Note, CaseStudy]
+  @content_schemas [Note, Project]
 
   @doc """
   Promotes every Markdown file under the content base path and prunes missing

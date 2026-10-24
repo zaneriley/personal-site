@@ -3,7 +3,7 @@ defmodule Portfolio.Content do
   The primary interface for managing content entries within the Portfolio application.
 
   This context module acts as a facade, providing a consistent API for interacting
-  with different types of content, primarily `Note` and `CaseStudy` records.
+  with different types of content, primarily `Note` and `Project` records.
   It orchestrates operations across specialized sub-modules responsible for
   database interactions (`Records`), content compilation (`Compiler`), data assembly
   (`EntryAssembler`), file-based ingestion (`Source`), and translation management
@@ -22,12 +22,12 @@ defmodule Portfolio.Content do
   This module provides functions to:
 
   *   **List Content:**
-      *   `list/3`: Retrieve lists of published `Note` or `CaseStudy` items,
+      *   `list/3`: Retrieve lists of published `Note` or `Project` items,
           optionally sorted and localized with merged translation data.
           (`list(content_type, opts \\ [], locale \\ nil)`)
 
   *   **Retrieve Content:**
-      *   `get!/2`: Fetch a single `Note` or `CaseStudy` by its ID or URL slug.
+      *   `get!/2`: Fetch a single `Note` or `Project` by its ID or URL slug.
           Returns the content struct (with `compiled_content` often containing
           the processed AST) or raises `Ecto.NoResultsError` if not found,
           or `Portfolio.Content.InvalidContentTypeError` for bad types.
@@ -38,16 +38,16 @@ defmodule Portfolio.Content do
           (`get_with_translations(content_type, id_or_url, locale)`)
 
   *   **Modify Content:**
-      *   `create/2`: Create a new `Note` or `CaseStudy` from attributes. Returns
+      *   `create/2`: Create a new `Note` or `Project` from attributes. Returns
           `{:ok, content}` or `{:error, changeset | reason}`.
           (`create(content_type, attrs)`)
-      *   `update/3`: Update an existing `Note` or `CaseStudy`. Returns
+      *   `update/3`: Update an existing `Note` or `Project`. Returns
           `{:ok, content}` or `{:error, changeset | reason}`.
           (`update(content_type, content_struct, attrs)`)
-      *   `delete/2`: Delete a `Note` or `CaseStudy`. Returns `{:ok, content}` or
+      *   `delete/2`: Delete a `Note` or `Project`. Returns `{:ok, content}` or
           `{:error, changeset}`.
           (`delete(content_type, content_struct)`)
-      *   `change/3`: Generate an `Ecto.Changeset` for a `Note` or `CaseStudy`,
+      *   `change/3`: Generate an `Ecto.Changeset` for a `Note` or `Project`,
           useful for forms. Returns `changeset` or `{:error, :invalid_content_type}`.
           (`change(content_type, content_struct_or_map, attrs \\ %{})`)
 
@@ -62,7 +62,7 @@ defmodule Portfolio.Content do
 
   Functions typically require a `content_type` argument, which should be one of the
   atoms or strings defined in `Portfolio.Content.Types` (e.g., `"note"`, `:note`,
-  `"case_study"`, `:case_study`).
+  `"project"`, `:project`).
 
   ## Translations
 
@@ -84,7 +84,7 @@ defmodule Portfolio.Content do
   alias Portfolio.Content.EntryAssembler
   alias Portfolio.Content.Publishing
   alias Portfolio.Content.PublicRead.Scope
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.PublicationLedgerEntry
   alias Portfolio.Content.Types
@@ -219,7 +219,7 @@ defmodule Portfolio.Content do
   Lists content items of a specific type with optional sorting and locale.
 
   ## Parameters
-    - type: The content type ("note" or "case_study")
+    - type: The content type ("note" or "project")
     - opts: Keyword list of options (e.g., [sort_by: :published_at, sort_order: :desc])
     - locale: The locale for translations (optional)
 
@@ -227,21 +227,21 @@ defmodule Portfolio.Content do
     - List of content items with merged translations
   """
   @spec list(content_type(), keyword(), String.t() | nil) ::
-          [Note.t()] | [CaseStudy.t()]
+          [Note.t()] | [Project.t()]
   def list(type, opts \\ [], locale \\ nil) do
     locale = locale || Application.get_env(:portfolio, :default_locale, nil)
     EntryAssembler.list_assembled_entries(type, opts, locale)
   end
 
   @doc """
-  Retrieves a content item (Note or CaseStudy) by its type and identifier.
+  Retrieves a content item (Note or Project) by its type and identifier.
 
   ## Parameters
-    - type: The content type ("note" or "case_study")
+    - type: The content type ("note" or "project")
     - id_or_url: The unique identifier (ID or URL) of the content item
 
   ## Returns
-    - The content item (Note or CaseStudy) if found
+    - The content item (Note or Project) if found
 
   ## Raises
     - Ecto.NoResultsError: If no content is found
@@ -252,14 +252,14 @@ defmodule Portfolio.Content do
       iex> Content.get!("note", "my-note-url")
       %Note{...}
 
-      iex> Content.get!("case_study", "non-existent-id")
+      iex> Content.get!("project", "non-existent-id")
       ** (Ecto.NoResultsError)
 
       iex> Content.get!("invalid_type", "some-id")
       ** (InvalidContentTypeError)
   """
   @spec get!(content_type(), content_identifier()) ::
-          Note.t() | CaseStudy.t() | no_return()
+          Note.t() | Project.t() | no_return()
   def get!(type, id_or_url) do
     Logger.debug(
       "Attempting to fetch #{type} with identifier: #{inspect(id_or_url)}"
@@ -281,7 +281,7 @@ defmodule Portfolio.Content do
   normal content lookup for those.
   """
   @spec get_alias_redirect(Scope.t(), content_type(), content_url()) ::
-          {:ok, Note.t() | CaseStudy.t()}
+          {:ok, Note.t() | Project.t()}
           | {:error, :not_found | :ambiguous_alias | :invalid_content_type}
   def get_alias_redirect(%Scope{} = scope, type, alias_url)
       when is_binary(alias_url) do
@@ -289,7 +289,7 @@ defmodule Portfolio.Content do
   end
 
   @spec fetch_content(content_type(), content_identifier()) ::
-          Note.t() | CaseStudy.t() | no_return()
+          Note.t() | Project.t() | no_return()
   defp fetch_content(type, id_or_url) do
     # Fetch content directly from Records
     content = Records.get_content_by_id_or_url(type, id_or_url)
@@ -312,7 +312,7 @@ defmodule Portfolio.Content do
   end
 
   @spec create(content_type(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, term()}
+          {:ok, Note.t() | Project.t()} | {:error, term()}
   def create(type, attrs) do
     Logger.debug(
       "Create called with type: #{inspect(type)}, attrs: #{inspect(attrs)}"
@@ -339,8 +339,8 @@ defmodule Portfolio.Content do
     end
   end
 
-  @spec update(content_type(), Note.t() | CaseStudy.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, term()}
+  @spec update(content_type(), Note.t() | Project.t(), map()) ::
+          {:ok, Note.t() | Project.t()} | {:error, term()}
   def update(_type, content, attrs) do
     # Use a transaction to ensure consistency
     result =
@@ -395,13 +395,13 @@ defmodule Portfolio.Content do
     end
   end
 
-  @spec delete(content_type(), Note.t() | CaseStudy.t()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  @spec delete(content_type(), Note.t() | Project.t()) ::
+          {:ok, Note.t() | Project.t()} | {:error, Ecto.Changeset.t()}
   def delete(_type, content) do
     Records.delete_content(content)
   end
 
-  @spec change(content_type(), Note.t() | CaseStudy.t() | map(), map()) ::
+  @spec change(content_type(), Note.t() | Project.t() | map(), map()) ::
           Ecto.Changeset.t() | {:error, :invalid_content_type}
   def change(type, content, attrs \\ %{}) do
     Logger.debug("Content.change called with:")
@@ -435,7 +435,7 @@ defmodule Portfolio.Content do
   Retrieves content with its translations and compiled content.
 
   ## Parameters
-  - `content_type`: The type of content to retrieve ("note" or "case_study").
+  - `content_type`: The type of content to retrieve ("note" or "project").
   - `identifier`: The unique identifier (URL or ID) of the content.
   - `locale`: The locale of the translations to fetch.
 
@@ -445,13 +445,13 @@ defmodule Portfolio.Content do
 
   ## Examples
 
-      iex> Content.get_with_translations("case_study", "my-case-study", "en")
-      {:ok, %CaseStudy{...}, %{"title" => "Translated Title", ...}, "Translated Title"}
+      iex> Content.get_with_translations("project", "my-project", "en")
+      {:ok, %Project{...}, %{"title" => "Translated Title", ...}, "Translated Title"}
 
       iex> Content.get_with_translations("note", 123, "fr")
       {:ok, %Note{...}, %{"content" => "Contenu traduit", ...}, "<p>Contenu traduit</p>"}
 
-      iex> Content.get_with_translations("case_study", "non-existent", "en")
+      iex> Content.get_with_translations("project", "non-existent", "en")
       {:error, :not_found}
   """
 
@@ -460,7 +460,7 @@ defmodule Portfolio.Content do
           content_identifier(),
           String.t()
         ) ::
-          {:ok, Note.t() | CaseStudy.t(), map(), EarmarkParser.ast()}
+          {:ok, Note.t() | Project.t(), map(), EarmarkParser.ast()}
           | {:error, atom()}
   def get_with_translations(content_type, identifier, locale) do
     EntryAssembler.get_assembled_entry(content_type, identifier, locale)
@@ -473,7 +473,7 @@ defmodule Portfolio.Content do
   after performing some basic logging. It handles both atom and string content types.
 
   ## Parameters
-    - content_type: The type of content (e.g., :note, :case_study, "note", or "case_study").
+    - content_type: The type of content (e.g., :note, :project, "note", or "project").
     - attrs: Map of attributes to upsert the content with, including "url" and "locale".
 
   ## Returns
@@ -485,11 +485,11 @@ defmodule Portfolio.Content do
       iex> Content.upsert_from_file(:note, %{"url" => "my-note", "locale" => "en", "title" => "My Note"})
       {:ok, %Note{...}}
 
-      iex> Content.upsert_from_file("case_study", %{"url" => "my-case-study", "locale" => "fr", "title" => "Mon Étude de Cas"})
-      {:ok, %CaseStudy{...}}
+      iex> Content.upsert_from_file("project", %{"url" => "my-project", "locale" => "fr", "title" => "Mon Étude de Cas"})
+      {:ok, %Project{...}}
   """
   @spec upsert_from_file(atom() | String.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, any()}
+          {:ok, Note.t() | Project.t()} | {:error, any()}
   def upsert_from_file(content_type, attrs) when is_atom(content_type) do
     upsert_from_file(Atom.to_string(content_type), attrs)
   end

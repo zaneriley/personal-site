@@ -19,19 +19,19 @@ defmodule PortfolioWeb.Plugs.ContentAliasRedirectTest do
       assert redirected_to(conn, 301) == ~p"/en/note/#{note.url}"
     end
 
-    test "redirects a case study alias to the canonical case study URL", %{
+    test "redirects a project alias to the canonical project URL", %{
       conn: conn
     } do
-      case_study =
-        case_study_fixture(%{
-          "url" => "renamed-case-study",
-          "aliases" => ["old-case-study"]
+      project =
+        project_fixture(%{
+          "url" => "renamed-project",
+          "aliases" => ["old-project"]
         })
 
-      conn = get(conn, ~p"/en/work/old-case-study")
+      conn = get(conn, ~p"/en/work/old-project")
 
       assert redirected_to(conn, 301) ==
-               ~p"/en/work/#{case_study.url}"
+               ~p"/en/work/#{project.url}"
     end
 
     test "leaves a pure deleted note URL as the existing 404 behavior", %{

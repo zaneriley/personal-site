@@ -3,7 +3,7 @@
   "text_policy": {
     "forbidden_visible_text": [
       "We ran into an issue loading this note",
-      "We ran into an issue loading this case study",
+      "We ran into an issue loading this project",
       "We encountered an error while preparing",
       "Phoenix.Router.NoRouteError",
       "Plug.Conn.WrapperError",
@@ -120,9 +120,9 @@
       "label": "work-index",
       "path": "/en/work",
       "allowed_statuses": [200],
-      "required_body_text": ["Case Studies"],
+      "required_body_text": ["Work"],
       "browser": {
-        "required_visible_text": ["Case Studies"]
+        "required_visible_text": ["Work"]
       }
     },
     {
@@ -135,12 +135,12 @@
       }
     },
     {
-      "label": "published-sample-case-study",
-      "path": "/en/work/prod-build-smoke-case-study",
+      "label": "published-sample-project",
+      "path": "/en/work/prod-build-smoke-project",
       "allowed_statuses": [200],
-      "required_body_text": ["Prod Build Smoke Case Study"],
+      "required_body_text": ["Prod Build Smoke Project"],
       "browser": {
-        "required_visible_text": ["Prod Build Smoke Case Study"]
+        "required_visible_text": ["Prod Build Smoke Project"]
       }
     },
     {

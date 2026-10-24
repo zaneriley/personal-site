@@ -1,6 +1,6 @@
 ---
-title: "Test case study. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと ！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ YAHAHAHA!"
-url: "testing-case-study"
+title: "Test project. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと ！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ YAHAHAHA!"
+url: "testing-project"
 company: "Company A"
 role: "Lead designer"
 timeline: "Test Timeline"

@@ -1,4 +1,4 @@
-defmodule PortfolioWeb.CaseStudyLive.Show do
+defmodule PortfolioWeb.WorkLive.Show do
   require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
@@ -30,17 +30,17 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
 
     unless valid_slug?(url), do: raise(PortfolioWeb.LiveError)
 
-    case Content.get_with_translations("case_study", url, user_locale) do
-      {:ok, case_study, translations, body_ast}
+    case Content.get_with_translations("project", url, user_locale) do
+      {:ok, project, translations, body_ast}
       when is_list(body_ast) ->
         {page_title, introduction} =
-          set_page_metadata(case_study, translations)
+          set_page_metadata(project, translations)
 
-        share_meta = build_share_metadata(socket, case_study, translations)
+        share_meta = build_share_metadata(socket, project, translations)
 
         {:noreply,
          assign(socket,
-           case_study: case_study,
+           project: project,
            translations: translations,
            body_ast: body_ast,
            page_title: page_title,
@@ -52,7 +52,7 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
         raise PortfolioWeb.LiveError
 
       {:error, :compilation_failed} ->
-        raise "case_study content compilation failed for slug=#{url}, locale=#{user_locale}"
+        raise "project content compilation failed for slug=#{url}, locale=#{user_locale}"
     end
   end
 
@@ -60,14 +60,13 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     Regex.match?(~r/^[a-z0-9-]+$/i, slug)
   end
 
-  defp set_page_metadata(case_study, translations) do
-    title = translations["title"] || case_study.title
-    introduction = translations["introduction"] || case_study.introduction
+  defp set_page_metadata(project, translations) do
+    title = translations["title"] || project.title
+    introduction = translations["introduction"] || project.introduction
 
     page_title =
-      "#{title} - " <>
-        gettext("Case Study") <>
-        " | " <>
+      gettext("Product design case study") <>
+        ": #{title} | " <>
         gettext("Zane Riley | Product Design Portfolio")
 
     Logger.debug("Set page title: #{page_title}")
@@ -76,14 +75,14 @@ defmodule PortfolioWeb.CaseStudyLive.Show do
     {page_title, introduction}
   end
 
-  defp build_share_metadata(socket, case_study, translations) do
+  defp build_share_metadata(socket, project, translations) do
     share_title =
-      translations["share_title"] || case_study.share_title ||
-        translations["title"] || case_study.title
+      translations["share_title"] || project.share_title ||
+        translations["title"] || project.title
 
     share_description =
-      translations["share_description"] || case_study.share_description ||
-        translations["introduction"] || case_study.introduction ||
+      translations["share_description"] || project.share_description ||
+        translations["introduction"] || project.introduction ||
         socket.assigns.page_description
 
     ShareMetadata.build(

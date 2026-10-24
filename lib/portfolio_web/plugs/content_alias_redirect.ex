@@ -15,7 +15,7 @@ defmodule PortfolioWeb.Plugs.ContentAliasRedirect do
 
   @content_segments %{
     "note" => "note",
-    "work" => "case_study"
+    "work" => "project"
   }
 
   @spec init(keyword()) :: keyword()

@@ -17,8 +17,8 @@ Two-tier model — a curated default plus opt-in narrower/wider streams
 
 | Feed | Contents | Audience promise |
 |---|---|---|
-| **main** | every entry whose `main_feed` is true (defaults: all case studies, no notes) | "the substantial work, low volume" — the default subscription |
-| **case-studies** | all published case studies | only the portfolio work |
+| **main** | every entry whose `main_feed` is true (defaults: all projects, no notes) | "the substantial work, low volume" — the default subscription |
+| **work** | all published projects | only the portfolio work |
 | **notes** | all published notes | the full notes stream, volume and all |
 | **everything** | union of all published entries | the explicit opt-in firehose [p300] |
 
@@ -28,9 +28,9 @@ Membership in **main** is an editorial decision per entry, Molly White-style
 promotion [p302], generalized to both content types:
 
 - Frontmatter key: **`main_feed: true | false`** (authoring contract).
-- Defaults when absent: **case studies `true`, notes `false`.**
+- Defaults when absent: **projects `true`, notes `false`.**
 - So: promoting a long-form note = `main_feed: true` on that note; demoting an
-  off-topic case study = `main_feed: false`. The default path requires no
+  off-topic project = `main_feed: false`. The default path requires no
   authoring at all.
 
 Schema: one boolean column per content type (nullable, null = type default at
@@ -48,7 +48,7 @@ Content is bilingual; feeds mirror the page-route structure:
 ```
 /:locale/feeds                      HTML — the /feeds discovery page
 /:locale/feeds/main.xml             Atom
-/:locale/feeds/case-studies.xml     Atom
+/:locale/feeds/work.xml             Atom
 /:locale/feeds/notes.xml            Atom
 /:locale/feeds/everything.xml       Atom
 /feed.xml                           301 → /en/feeds/main.xml (convention alias)
@@ -98,10 +98,10 @@ readers punish [p209]. Each is a test:
 2. All URLs in the feed — links AND inside content HTML — are absolute.
 3. Dates are valid RFC 3339; `updated` never precedes `published`.
 4. A note with `main_feed: true` appears in main; without it, it doesn't;
-   a case study with `main_feed: false` disappears from main. Defaults hold
+   a project with `main_feed: false` disappears from main. Defaults hold
    when the key is absent.
 5. Drafts and unpublished entries appear in no feed.
-6. Content HTML survives sanitization: a case study containing a code block
+6. Content HTML survives sanitization: a project containing a code block
    renders as readable (if unstyled) code in a reader — token spans degrade
    to plain text, never to broken markup.
 7. A locale's feeds contain only entries rendered in that locale: an entry
@@ -121,7 +121,7 @@ Consistent with the dormant-ecosystem finding [p200, p201, p202]: **hand-rolled
 in Phoenix** — no feed library. The design to port is Tableau's named-feed
 registry [p201]:
 
-- **The feed names (`main`, `case-studies`, `notes`, `everything`) are the
+- **The feed names (`main`, `work`, `notes`, `everything`) are the
   contract between two registries**, split on the Content/Web boundary:
   - **Content owns membership**: a named feed-listing API
     (`Content.list_for_feed(feed, locale)`-shaped) that owns the `main_feed`

@@ -1,13 +1,13 @@
-defmodule Portfolio.Content.Schemas.CaseStudy do
+defmodule Portfolio.Content.Schemas.Project do
   @moduledoc """
-  Defines the schema and behavior for case studies in the Portfolio application.
-  Extends BaseSchema with additional fields specific to case studies.
+  Defines the schema and behavior for projects in the Portfolio application.
+  Extends BaseSchema with additional fields specific to projects.
   """
   require Logger
 
   use Portfolio.Content.Schemas.BaseSchema,
-    schema_name: "case_studies",
-    translatable_type: "case_study",
+    schema_name: "projects",
+    translatable_type: "project",
     additional_fields: [:company, :role, :timeline, :platforms, :sort_order],
     do: [
       field(:company, :string),
@@ -18,17 +18,17 @@ defmodule Portfolio.Content.Schemas.CaseStudy do
     ]
 
   @typedoc """
-  The CaseStudy type.
+  The Project type.
   """
   @type t :: %__MODULE__{}
 
   def custom_render(content) do
-    # Add any CaseStudy-specific rendering logic here
+    # Add any Project-specific rendering logic here
     content
   end
 
-  def changeset(case_study, attrs) do
-    case_study
+  def changeset(project, attrs) do
+    project
     |> super(attrs)
     |> validate_required([:company, :role, :timeline, :platforms, :sort_order])
   end

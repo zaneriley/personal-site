@@ -31,15 +31,6 @@ msgstr ""
 msgid "Body"
 msgstr "本文"
 
-#: lib/portfolio_web/live/case_study_live/show.ex:69
-#: lib/portfolio_web/live/case_study_live/show.html.heex:6
-#: lib/portfolio_web/live/home_live.ex:146
-#, elixir-autogen, elixir-format
-msgid "Case Study"
-msgid_plural "Case Studies"
-msgstr[0] "ケーススタディ"
-msgstr[1] "ケーススタディ"
-
 #: lib/portfolio_web/components/footer.ex:63
 #, elixir-autogen, elixir-format
 msgid "Colophon"
@@ -110,7 +101,7 @@ msgstr "トップへ戻る"
 msgid "Headers"
 msgstr "見出し"
 
-#: lib/portfolio_web/components/navigation.ex:103
+#: lib/portfolio_web/components/navigation.ex:101
 #, elixir-autogen, elixir-format
 msgid "Language switcher"
 msgstr "言語切替"
@@ -146,7 +137,7 @@ msgstr ""
 msgid "Node"
 msgstr "ノード"
 
-#: lib/portfolio_web/components/navigation.ex:78
+#: lib/portfolio_web/components/navigation.ex:76
 #: lib/portfolio_web/live/note_live/show.ex:51
 #: lib/portfolio_web/live/note_live/show.html.heex:11
 #, elixir-autogen, elixir-format
@@ -155,7 +146,7 @@ msgid_plural "Notes"
 msgstr[0] "メモ"
 msgstr[1] "メモ"
 
-#: lib/portfolio_web/live/case_study_live/show.html.heex:41
+#: lib/portfolio_web/live/work_live/show.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "Platform"
 msgid_plural "Platforms"
@@ -192,7 +183,7 @@ msgstr ""
 msgid "Return to homepage"
 msgstr ""
 
-#: lib/portfolio_web/live/case_study_live/show.html.heex:28
+#: lib/portfolio_web/live/work_live/show.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr "役割"
@@ -244,7 +235,7 @@ msgstr ""
 msgid "Temp"
 msgstr "温度"
 
-#: lib/portfolio_web/live/case_study_live/show.html.heex:34
+#: lib/portfolio_web/live/work_live/show.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Timeline"
 msgstr "タイムライン"
@@ -285,8 +276,8 @@ msgstr ""
 msgid "Zane Riley Portfolio Logo"
 msgstr "ゼイン・ライリー ポートフォリオのロゴ"
 
-#: lib/portfolio_web/live/case_study_live/show.ex:71
 #: lib/portfolio_web/live/note_live/show.ex:53
+#: lib/portfolio_web/live/work_live/show.ex:70
 #, elixir-autogen, elixir-format
 msgid "Zane Riley | Product Design Portfolio"
 msgstr "ゼイン・ライリー | プロダクトデザインポートフォリオ"
@@ -328,11 +319,6 @@ msgstr "（PDF）"
 msgid "Resume"
 msgstr "履歴書"
 
-#: lib/portfolio_web/feeds.ex:53
-#, elixir-autogen, elixir-format
-msgid "Case studies and selected long-form notes. Low volume — the default subscription."
-msgstr "ケーススタディと選りすぐりの長文ノート。低頻度 — 標準の購読です。"
-
 #: lib/portfolio_web/components/code_block.ex:121
 #, elixir-autogen, elixir-format
 msgid "Copy code"
@@ -354,11 +340,6 @@ msgstr "公開された全エントリー — 選んで購読する全量フィ�
 msgid "Feeds"
 msgstr "フィード"
 
-#: lib/portfolio_web/feeds.ex:57
-#, elixir-autogen, elixir-format
-msgid "Only the case studies."
-msgstr "ケーススタディのみ。"
-
 #: lib/portfolio_web/live/feeds_live.ex:30
 #, elixir-autogen, elixir-format
 msgid "Subscribe in any feed reader. Pick the stream that matches the volume you want — each feed describes itself."
@@ -368,11 +349,6 @@ msgstr "お好きなフィードリーダーで購読できます。受け取り
 #, elixir-autogen, elixir-format
 msgid "Zane Riley — all notes"
 msgstr "ゼイン・ライリー — すべてのノート"
-
-#: lib/portfolio_web/feeds.ex:45
-#, elixir-autogen, elixir-format
-msgid "Zane Riley — case studies"
-msgstr "ゼイン・ライリー — ケーススタディ"
 
 #: lib/portfolio_web/feeds.ex:47
 #, elixir-autogen, elixir-format
@@ -499,7 +475,9 @@ msgstr "スモッグ"
 msgid "Conditions unavailable"
 msgstr "天気の詳細不明"
 
-#: lib/portfolio_web/components/navigation.ex:63
+#: lib/portfolio_web/components/navigation.ex:61
+#: lib/portfolio_web/live/home_live.ex:146
+#: lib/portfolio_web/live/work_live/index.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "Work"
 msgstr "実績"
@@ -509,7 +487,32 @@ msgstr "実績"
 msgid "Main navigation"
 msgstr "メインナビゲーション"
 
-#: lib/portfolio_web/components/navigation.ex:93
+#: lib/portfolio_web/components/navigation.ex:91
 #, elixir-autogen, elixir-format
 msgid "About"
 msgstr "プロフィール"
+
+#: lib/portfolio_web/feeds.ex:57
+#, elixir-autogen, elixir-format
+msgid "Only the projects."
+msgstr "プロジェクトのみ。"
+
+#: lib/portfolio_web/live/work_live/show.ex:68
+#, elixir-autogen, elixir-format
+msgid "Product design case study"
+msgstr "プロダクトデザインのケーススタディ"
+
+#: lib/portfolio_web/live/work_live/show.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "Project"
+msgstr "プロジェクト"
+
+#: lib/portfolio_web/feeds.ex:53
+#, elixir-autogen, elixir-format
+msgid "Projects and selected long-form notes. Low volume — the default subscription."
+msgstr "プロジェクトと選りすぐりの長文ノート。低頻度 — 標準の購読です。"
+
+#: lib/portfolio_web/feeds.ex:45
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — projects"
+msgstr "ゼイン・ライリー — プロジェクト"

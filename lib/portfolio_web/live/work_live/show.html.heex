@@ -3,23 +3,23 @@
     <div class="flex items-center space-x-2">
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         <.link navigate={~p"/#{@user_locale}"}>
-          {ngettext("Case Study", "Case Studies", 1)}
+          {gettext("Project")}
         </.link>
       </.typography>
       <span aria-hidden="true">
         <Heroicons.chevron_double_right class="inline-block h-md w-md" />
       </span>
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        {@translations["company"] || @case_study.company}
+        {@translations["company"] || @project.company}
       </.typography>
     </div>
   </nav>
   <!-- Title -->
   <.typography locale={@user_locale} tag="h1" size="4xl" font="cardinal">
-    {@translations["title"] || @case_study.title}
+    {@translations["title"] || @project.title}
   </.typography>
   <.typography locale={@user_locale} tag="h2" size="1xl" dropcap={true}>
-    {@translations["introduction"] || @case_study.introduction}
+    {@translations["introduction"] || @project.introduction}
   </.typography>
   <!-- Meta Information -->
   <div class="grid grid-cols-12">
@@ -27,16 +27,16 @@
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         {gettext("Role")}
       </.typography>
-      <br />{@translations["role"] || @case_study.role}
+      <br />{@translations["role"] || @project.role}
     </span>
     <span class="col-span-3">
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         {gettext("Timeline")}
       </.typography>
-      <br />{@translations["timeline"] || @case_study.timeline}
+      <br />{@translations["timeline"] || @project.timeline}
     </span>
     <div class="col-span-3">
-      <% platforms = @translations["platforms"] || @case_study.platforms %>
+      <% platforms = @translations["platforms"] || @project.platforms %>
       <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
         {ngettext("Platform", "Platforms", length(platforms))}
       </.typography>
@@ -49,9 +49,9 @@
   </div>
 
   <.content_metadata
-    read_time={@translations["read_time"] || @case_study.read_time}
-    word_count={@translations["word_count"] || @case_study.word_count}
-    updated_at={@translations["updated_at"] || @case_study.updated_at}
+    read_time={@translations["read_time"] || @project.read_time}
+    word_count={@translations["word_count"] || @project.word_count}
+    updated_at={@translations["updated_at"] || @project.updated_at}
     user_locale={@user_locale}
   />
   <!-- Main Content -->

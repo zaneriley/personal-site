@@ -1,4 +1,4 @@
-defmodule PortfolioWeb.CaseStudyLive.FormComponent do
+defmodule PortfolioWeb.WorkLive.FormComponent do
   use PortfolioWeb, :live_component
   alias Portfolio.Content
 
@@ -14,7 +14,7 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
 
       <.simple_form
         for={@form}
-        id="case_study-form"
+        id="project-form"
         phx-target={@myself}
         phx-submit="save"
       >
@@ -55,7 +55,7 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
         <.input field={@form[:introduction]} type="text" label="Introduction" />
         <.input field={@form[:content]} type="textarea" label="Content" />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Case study</.button>
+          <.button phx-disable-with="Saving...">Save Project</.button>
         </:actions>
       </.simple_form>
     </div>
@@ -63,8 +63,8 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   end
 
   @impl true
-  def update(%{case_study: case_study} = assigns, socket) do
-    changeset = Content.change("case_study", case_study)
+  def update(%{project: project} = assigns, socket) do
+    changeset = Content.change("project", project)
 
     {:ok,
      socket
@@ -73,57 +73,57 @@ defmodule PortfolioWeb.CaseStudyLive.FormComponent do
   end
 
   @impl true
-  def handle_event("validate", %{"case_study" => case_study_params}, socket) do
+  def handle_event("validate", %{"project" => project_params}, socket) do
     changeset =
-      Content.change("case_study", socket.assigns.case_study, case_study_params)
+      Content.change("project", socket.assigns.project, project_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event("save", %{"case_study" => case_study_params}, socket) do
-    save_case_study(socket, socket.assigns.action, case_study_params)
+  def handle_event("save", %{"project" => project_params}, socket) do
+    save_project(socket, socket.assigns.action, project_params)
   end
 
-  defp save_case_study(socket, :edit, case_study_params) do
+  defp save_project(socket, :edit, project_params) do
     case Content.update(
-           "case_study",
-           socket.assigns.case_study,
-           case_study_params
+           "project",
+           socket.assigns.project,
+           project_params
          ) do
-      {:ok, case_study} ->
-        notify_parent({:saved, case_study})
+      {:ok, project} ->
+        notify_parent({:saved, project})
 
         {:noreply,
          socket
-         |> put_flash(:info, "Case study updated successfully")
+         |> put_flash(:info, "Project updated successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
 
       {:error, reason} ->
-        Logger.error("Failed to update case study: #{inspect(reason)}")
-        {:noreply, put_flash(socket, :error, "Case study could not be updated")}
+        Logger.error("Failed to update project: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Project could not be updated")}
     end
   end
 
-  defp save_case_study(socket, :new, case_study_params) do
-    case Content.create("case_study", case_study_params) do
-      {:ok, case_study} ->
-        notify_parent({:saved, case_study})
+  defp save_project(socket, :new, project_params) do
+    case Content.create("project", project_params) do
+      {:ok, project} ->
+        notify_parent({:saved, project})
 
         {:noreply,
          socket
-         |> put_flash(:info, "Case study created successfully")
+         |> put_flash(:info, "Project created successfully")
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
 
       {:error, reason} ->
-        Logger.error("Failed to create case study: #{inspect(reason)}")
-        {:noreply, put_flash(socket, :error, "Case study could not be created")}
+        Logger.error("Failed to create project: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Project could not be created")}
     end
   end
 

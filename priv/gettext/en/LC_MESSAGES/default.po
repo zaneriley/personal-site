@@ -31,15 +31,6 @@ msgstr ""
 msgid "Body"
 msgstr ""
 
-#: lib/portfolio_web/live/case_study_live/show.ex:69
-#: lib/portfolio_web/live/case_study_live/show.html.heex:6
-#: lib/portfolio_web/live/home_live.ex:146
-#, elixir-autogen, elixir-format
-msgid "Case Study"
-msgid_plural "Case Studies"
-msgstr[0] "Case Study"
-msgstr[1] "Case Studies"
-
 #: lib/portfolio_web/components/footer.ex:63
 #, elixir-autogen, elixir-format
 msgid "Colophon"
@@ -110,7 +101,7 @@ msgstr ""
 msgid "Headers"
 msgstr ""
 
-#: lib/portfolio_web/components/navigation.ex:103
+#: lib/portfolio_web/components/navigation.ex:101
 #, elixir-autogen, elixir-format
 msgid "Language switcher"
 msgstr "Language switcher"
@@ -146,7 +137,7 @@ msgstr ""
 msgid "Node"
 msgstr "Note"
 
-#: lib/portfolio_web/components/navigation.ex:78
+#: lib/portfolio_web/components/navigation.ex:76
 #: lib/portfolio_web/live/note_live/show.ex:51
 #: lib/portfolio_web/live/note_live/show.html.heex:11
 #, elixir-autogen, elixir-format
@@ -155,7 +146,7 @@ msgid_plural "Notes"
 msgstr[0] "Note"
 msgstr[1] "Notes"
 
-#: lib/portfolio_web/live/case_study_live/show.html.heex:41
+#: lib/portfolio_web/live/work_live/show.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "Platform"
 msgid_plural "Platforms"
@@ -192,7 +183,7 @@ msgstr ""
 msgid "Return to homepage"
 msgstr ""
 
-#: lib/portfolio_web/live/case_study_live/show.html.heex:28
+#: lib/portfolio_web/live/work_live/show.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr "Role"
@@ -244,7 +235,7 @@ msgstr ""
 msgid "Temp"
 msgstr ""
 
-#: lib/portfolio_web/live/case_study_live/show.html.heex:34
+#: lib/portfolio_web/live/work_live/show.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Timeline"
 msgstr "Timeline"
@@ -285,8 +276,8 @@ msgstr ""
 msgid "Zane Riley Portfolio Logo"
 msgstr "Zane Riley Portfolio Logo"
 
-#: lib/portfolio_web/live/case_study_live/show.ex:71
 #: lib/portfolio_web/live/note_live/show.ex:53
+#: lib/portfolio_web/live/work_live/show.ex:70
 #, elixir-autogen, elixir-format
 msgid "Zane Riley | Product Design Portfolio"
 msgstr "Zane Riley | Product Design Portfolio"
@@ -329,11 +320,6 @@ msgstr ""
 msgid "Resume"
 msgstr ""
 
-#: lib/portfolio_web/feeds.ex:53
-#, elixir-autogen, elixir-format
-msgid "Case studies and selected long-form notes. Low volume — the default subscription."
-msgstr ""
-
 #: lib/portfolio_web/components/code_block.ex:121
 #, elixir-autogen, elixir-format
 msgid "Copy code"
@@ -355,11 +341,6 @@ msgstr ""
 msgid "Feeds"
 msgstr ""
 
-#: lib/portfolio_web/feeds.ex:57
-#, elixir-autogen, elixir-format
-msgid "Only the case studies."
-msgstr ""
-
 #: lib/portfolio_web/live/feeds_live.ex:30
 #, elixir-autogen, elixir-format
 msgid "Subscribe in any feed reader. Pick the stream that matches the volume you want — each feed describes itself."
@@ -368,11 +349,6 @@ msgstr ""
 #: lib/portfolio_web/feeds.ex:46
 #, elixir-autogen, elixir-format
 msgid "Zane Riley — all notes"
-msgstr ""
-
-#: lib/portfolio_web/feeds.ex:45
-#, elixir-autogen, elixir-format
-msgid "Zane Riley — case studies"
 msgstr ""
 
 #: lib/portfolio_web/feeds.ex:47
@@ -500,7 +476,9 @@ msgstr "Smog"
 msgid "Conditions unavailable"
 msgstr "Conditions unavailable"
 
-#: lib/portfolio_web/components/navigation.ex:63
+#: lib/portfolio_web/components/navigation.ex:61
+#: lib/portfolio_web/live/home_live.ex:146
+#: lib/portfolio_web/live/work_live/index.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "Work"
 msgstr "Work"
@@ -510,7 +488,32 @@ msgstr "Work"
 msgid "Main navigation"
 msgstr "Main navigation"
 
-#: lib/portfolio_web/components/navigation.ex:93
+#: lib/portfolio_web/components/navigation.ex:91
 #, elixir-autogen, elixir-format
 msgid "About"
 msgstr "About"
+
+#: lib/portfolio_web/feeds.ex:57
+#, elixir-autogen, elixir-format
+msgid "Only the projects."
+msgstr ""
+
+#: lib/portfolio_web/live/work_live/show.ex:68
+#, elixir-autogen, elixir-format
+msgid "Product design case study"
+msgstr ""
+
+#: lib/portfolio_web/live/work_live/show.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "Project"
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:53
+#, elixir-autogen, elixir-format
+msgid "Projects and selected long-form notes. Low volume — the default subscription."
+msgstr ""
+
+#: lib/portfolio_web/feeds.ex:45
+#, elixir-autogen, elixir-format
+msgid "Zane Riley — projects"
+msgstr ""

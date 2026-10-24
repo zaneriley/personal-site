@@ -58,7 +58,7 @@ defmodule Portfolio.Content.TranslationTest do
     end
 
     test "get_translations fetches translations for Japanese locale" do
-      case_study = ContentFixtures.case_study_fixture()
+      project = ContentFixtures.project_fixture()
 
       attrs = %{
         "title" => "日本語のタイトル",
@@ -67,15 +67,15 @@ defmodule Portfolio.Content.TranslationTest do
       }
 
       TranslationRepository.create_or_update_translations(
-        case_study,
+        project,
         "ja",
         attrs
       )
 
       translations =
         TranslationRepository.get_translations(
-          case_study.id,
-          "case_study",
+          project.id,
+          "project",
           "ja"
         )
 
@@ -90,19 +90,19 @@ defmodule Portfolio.Content.TranslationTest do
     end
 
     test "get_content_with_translations returns content with Japanese translations" do
-      case_study = ContentFixtures.case_study_fixture()
+      project = ContentFixtures.project_fixture()
       attrs = %{"title" => "翻訳されたタイトル", "content" => "翻訳されたコンテンツ"}
 
       TranslationRepository.create_or_update_translations(
-        case_study,
+        project,
         "ja",
         attrs
       )
 
       {:ok, content, translations, ast_result} =
-        Content.get_with_translations("case_study", case_study.url, "ja")
+        Content.get_with_translations("project", project.url, "ja")
 
-      assert content.id == case_study.id
+      assert content.id == project.id
 
       # Extract text from potentially AST-formatted title
       title_text = AstTestHelpers.extract_text(translations["title"])

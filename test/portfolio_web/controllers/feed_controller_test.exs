@@ -10,7 +10,7 @@ defmodule PortfolioWeb.FeedControllerTest do
     test "serves the main feed as Atom with the curated entries", %{conn: conn} do
       note = note_fixture(%{"main_feed" => true, "title" => "Promoted note"})
       _quiet = note_fixture(%{"title" => "Quiet note"})
-      cs = case_study_fixture(%{"title" => "A case study"})
+      cs = project_fixture(%{"title" => "A project"})
 
       conn = get(conn, "/en/feeds/main.xml")
 
@@ -19,7 +19,7 @@ defmodule PortfolioWeb.FeedControllerTest do
       assert body =~ ~s(<feed xmlns="http://www.w3.org/2005/Atom")
       assert body =~ ~s(xml:lang="en")
       assert body =~ "Promoted note"
-      assert body =~ "A case study"
+      assert body =~ "A project"
       refute body =~ "Quiet note"
       assert body =~ note.id
       assert body =~ cs.id
@@ -121,7 +121,7 @@ defmodule PortfolioWeb.FeedControllerTest do
       assert DateTime.compare(upd, pub) in [:gt, :eq]
     end
 
-    test "a code block in a case study degrades to readable code, never broken markup",
+    test "a code block in a project degrades to readable code, never broken markup",
          %{
            conn: conn
          } do
@@ -222,7 +222,7 @@ defmodule PortfolioWeb.FeedControllerTest do
     } do
       html = conn |> get("/en/feeds") |> html_response(200)
 
-      for feed <- [:main, :case_studies, :notes, :everything] do
+      for feed <- [:main, :work, :notes, :everything] do
         assert html =~ PortfolioWeb.Feeds.title(feed)
         assert html =~ PortfolioWeb.Feeds.path(feed, "en")
       end

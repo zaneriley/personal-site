@@ -12,7 +12,7 @@ defmodule Portfolio.Content.Entry.Records do
 
   alias Portfolio.Content.Entry.AstSerialization
   alias Portfolio.Content.PublicRead.Scope
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.Types
@@ -52,20 +52,20 @@ defmodule Portfolio.Content.Entry.Records do
   ## Returns
     - An Ecto.Changeset
   """
-  @spec apply_changeset(Note.t() | CaseStudy.t() | struct(), map()) ::
+  @spec apply_changeset(Note.t() | Project.t() | struct(), map()) ::
           Ecto.Changeset.t()
   def apply_changeset(%Note{} = note, attrs), do: Note.changeset(note, attrs)
 
-  def apply_changeset(%CaseStudy{} = case_study, attrs),
-    do: CaseStudy.changeset(case_study, attrs)
+  def apply_changeset(%Project{} = project, attrs),
+    do: Project.changeset(project, attrs)
 
   def apply_changeset(struct, attrs) when is_struct(struct) do
     case struct.__struct__ do
       Note ->
         Note.changeset(struct, attrs)
 
-      CaseStudy ->
-        CaseStudy.changeset(struct, attrs)
+      Project ->
+        Project.changeset(struct, attrs)
 
       _ ->
         raise ArgumentError,
@@ -84,7 +84,7 @@ defmodule Portfolio.Content.Entry.Records do
     - {:error, changeset} if there's an error
   """
   @spec insert_content(Ecto.Changeset.t()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, Note.t() | Project.t()} | {:error, Ecto.Changeset.t()}
   def insert_content(changeset) do
     Repo.insert(changeset)
   end
@@ -100,8 +100,8 @@ defmodule Portfolio.Content.Entry.Records do
     - {:ok, updated_content} if successful
     - {:error, changeset} if there's an error
   """
-  @spec update_content_attributes(Note.t() | CaseStudy.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  @spec update_content_attributes(Note.t() | Project.t(), map()) ::
+          {:ok, Note.t() | Project.t()} | {:error, Ecto.Changeset.t()}
   def update_content_attributes(content, attrs) do
     content
     |> apply_changeset(attrs)
@@ -119,8 +119,8 @@ defmodule Portfolio.Content.Entry.Records do
     - {:ok, updated_content} if successful
     - {:error, changeset} if there's an error
   """
-  @spec update_stored_ast(Note.t() | CaseStudy.t(), list()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  @spec update_stored_ast(Note.t() | Project.t(), list()) ::
+          {:ok, Note.t() | Project.t()} | {:error, Ecto.Changeset.t()}
   def update_stored_ast(content, ast) when is_list(ast) do
     serialized_ast = AstSerialization.serialize_ast(ast)
 
@@ -143,8 +143,8 @@ defmodule Portfolio.Content.Entry.Records do
     - {:ok, deleted_content} if successful
     - {:error, changeset} if there's an error
   """
-  @spec delete_content(Note.t() | CaseStudy.t()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, Ecto.Changeset.t()}
+  @spec delete_content(Note.t() | Project.t()) ::
+          {:ok, Note.t() | Project.t()} | {:error, Ecto.Changeset.t()}
   def delete_content(%{publication_generation_id: generation_id} = content)
       when is_binary(generation_id) do
     changeset =
@@ -190,7 +190,7 @@ defmodule Portfolio.Content.Entry.Records do
     - ArgumentError if id_or_url format is invalid
   """
   @spec get_content_by_id_or_url(content_type(), id_or_url()) ::
-          Note.t() | CaseStudy.t()
+          Note.t() | Project.t()
   def get_content_by_id_or_url(content_type, id_or_url) do
     case get_schema(content_type) do
       {:ok, schema} ->
@@ -229,7 +229,7 @@ defmodule Portfolio.Content.Entry.Records do
   already published URL.
   """
   @spec get_content_by_alias(Scope.t(), content_type(), String.t()) ::
-          {:ok, Note.t() | CaseStudy.t()}
+          {:ok, Note.t() | Project.t()}
           | {:error, :not_found | :ambiguous_alias | :invalid_content_type}
   def get_content_by_alias(
         %Scope{publication_generation_id: nil},
@@ -269,7 +269,7 @@ defmodule Portfolio.Content.Entry.Records do
     - Ecto.NoResultsError if no content is found
   """
   @spec fetch_content_items([binary()], content_type()) ::
-          {:ok, [Note.t()] | [CaseStudy.t()]}
+          {:ok, [Note.t()] | [Project.t()]}
   def fetch_content_items(ids, content_type) do
     content_schema = Types.get_schema(content_type)
     query = from(c in content_schema, where: c.id in ^ids)
@@ -290,7 +290,7 @@ defmodule Portfolio.Content.Entry.Records do
   ## Returns
     - A list of content entries
   """
-  @spec list_contents(content_type(), keyword()) :: [Note.t()] | [CaseStudy.t()]
+  @spec list_contents(content_type(), keyword()) :: [Note.t()] | [Project.t()]
   def list_contents(content_type, opts \\ []) do
     case Types.get_schema(content_type) do
       {:error, :invalid_content_type} ->

@@ -1,8 +1,8 @@
-defmodule PortfolioWeb.CaseStudyLive.Index do
+defmodule PortfolioWeb.WorkLive.Index do
   use PortfolioWeb, :live_view
   require Logger
   alias Portfolio.Content
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   import PortfolioWeb.LiveHelpers
   import PortfolioWeb.Components.PortfolioItemList
 
@@ -16,15 +16,15 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
     env = Application.get_env(:portfolio, :environment)
 
     Logger.debug(
-      "Case study index mounted with locale: #{socket.assigns.user_locale}"
+      "Project index mounted with locale: #{socket.assigns.user_locale}"
     )
 
-    case_studies = Content.list("case_study", [], socket.assigns.user_locale)
+    projects = Content.list("project", [], socket.assigns.user_locale)
 
     {:ok,
      socket
      |> assign(:env, env)
-     |> stream(:case_studies, case_studies)}
+     |> stream(:projects, projects)}
   end
 
   @impl true
@@ -34,54 +34,54 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
   end
 
   defp apply_action(socket, :edit, %{"url" => _url}) do
-    case_studies = Content.list("case_study", [], socket.assigns.user_locale)
+    projects = Content.list("project", [], socket.assigns.user_locale)
 
     socket
-    |> assign(:page_title, "Listing Case studies")
-    |> assign(:case_study, nil)
-    |> stream(:case_studies, case_studies)
+    |> assign(:page_title, "Listing Projects")
+    |> assign(:project, nil)
+    |> stream(:projects, projects)
   end
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Case study")
-    |> assign(:case_study, %CaseStudy{})
+    |> assign(:page_title, "New Project")
+    |> assign(:project, %Project{})
   end
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "Listing Case studies")
-    |> assign(:case_study, nil)
+    |> assign(:page_title, "Listing Projects")
+    |> assign(:project, nil)
   end
 
   @impl true
   def handle_info(
-        {PortfolioWeb.CaseStudyLive.FormComponent, {:saved, case_study}},
+        {PortfolioWeb.WorkLive.FormComponent, {:saved, project}},
         socket
       ) do
-    {:noreply, stream_insert(socket, :case_studies, case_study)}
+    {:noreply, stream_insert(socket, :projects, project)}
   end
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     try do
-      case_study = Content.get!("case_study", id)
+      project = Content.get!("project", id)
 
-      case Content.delete("case_study", case_study) do
+      case Content.delete("project", project) do
         {:ok, _} ->
-          {:noreply, stream_delete(socket, :case_studies, case_study)}
+          {:noreply, stream_delete(socket, :projects, project)}
 
         {:error, reason} ->
           {:noreply,
            put_flash(
              socket,
              :error,
-             "Failed to delete case study: #{inspect(reason)}"
+             "Failed to delete project: #{inspect(reason)}"
            )}
       end
     rescue
       Ecto.NoResultsError ->
-        {:noreply, put_flash(socket, :error, "Case study not found")}
+        {:noreply, put_flash(socket, :error, "Project not found")}
 
       e in Portfolio.Content.InvalidContentTypeError ->
         {:noreply, put_flash(socket, :error, e.message)}
@@ -89,9 +89,7 @@ defmodule PortfolioWeb.CaseStudyLive.Index do
       e ->
         require Logger
 
-        Logger.error(
-          "Unexpected error while deleting case study: #{inspect(e)}"
-        )
+        Logger.error("Unexpected error while deleting project: #{inspect(e)}")
 
         {:noreply, put_flash(socket, :error, "An unexpected error occurred")}
     end

@@ -1,6 +1,6 @@
 ---
-title: "Prod Build Smoke Case Study"
-url: "prod-build-smoke-case-study"
+title: "Prod Build Smoke Project"
+url: "prod-build-smoke-project"
 company: "Portfolio CI"
 role: "Performance fixture"
 timeline: "2026"
@@ -11,6 +11,6 @@ published_at: "2026-05-09T00:00:00Z"
 is_draft: false
 ---
 
-# Prod Build Smoke Case Study
+# Prod Build Smoke Project
 
-This case study exists so the production build gate exercises a stable detail page.
+This project exists so the production build gate exercises a stable detail page.

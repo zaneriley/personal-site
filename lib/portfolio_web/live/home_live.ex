@@ -22,17 +22,17 @@ defmodule PortfolioWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    case_studies =
+    projects =
       Content.list(
-        "case_study",
+        "project",
         [sort_by: :sort_order, sort_order: :desc],
         socket.assigns.user_locale
       )
 
-    Logger.debug("Case studies: #{inspect(case_studies)}")
+    Logger.debug("Projects: #{inspect(projects)}")
 
     socket =
-      assign(socket, case_studies: case_studies)
+      assign(socket, projects: projects)
 
     {:ok, socket}
   end
@@ -42,17 +42,17 @@ defmodule PortfolioWeb.HomeLive do
     socket =
       PortfolioWeb.LiveHelpers.handle_locale_and_path(socket, params, uri)
 
-    # Re-fetch the case studies with the updated locale
-    case_studies =
+    # Re-fetch the projects with the updated locale
+    projects =
       Content.list(
-        "case_study",
+        "project",
         [sort_by: :sort_order, sort_order: :desc],
         socket.assigns.user_locale
       )
 
     socket =
       socket
-      |> assign(case_studies: case_studies)
+      |> assign(projects: projects)
 
     {:noreply, socket}
   end
@@ -143,37 +143,33 @@ defmodule PortfolioWeb.HomeLive do
         font="cheee"
         class="mb-md"
       >
-        {ngettext("Case Study", "Case Studies", 2)}
+        {gettext("Work")}
       </.typography>
       <div class="grid gap-2xl">
-        <%= for case_study <- @case_studies do %>
+        <%= for project <- @projects do %>
           <div class="grid gap-1xs">
             <.link
-              navigate={~p"/#{@user_locale}/work/#{case_study.url}"}
+              navigate={~p"/#{@user_locale}/work/#{project.url}"}
               aria-label={
                 gettext("Read more about %{title}",
-                  title: case_study.translations["title"] || case_study.title
+                  title: project.translations["title"] || project.title
                 )
               }
-              title={case_study.translations["title"] || case_study.title}
+              title={project.translations["title"] || project.title}
             >
               <.typography locale={@user_locale} tag="h3" size="2xl" font="cardinal">
-                {case_study.translations["title"] || case_study.title}
+                {project.translations["title"] || project.title}
               </.typography>
             </.link>
             <.typography locale={@user_locale} tag="p" size="2xs">
-              {case_study.translations["introduction"] ||
-                case_study.introduction}
+              {project.translations["introduction"] ||
+                project.introduction}
             </.typography>
             <.content_metadata
-              read_time={
-                case_study.translations["read_time"] || case_study.read_time
-              }
-              word_count={
-                case_study.translations["word_count"] || case_study.word_count
-              }
+              read_time={project.translations["read_time"] || project.read_time}
+              word_count={project.translations["word_count"] || project.word_count}
               character_count={
-                case_study.translations["word_count"] || case_study.word_count
+                project.translations["word_count"] || project.word_count
               }
               user_locale={@user_locale}
             />

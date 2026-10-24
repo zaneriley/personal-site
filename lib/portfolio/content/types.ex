@@ -23,9 +23,9 @@ defmodule Portfolio.Content.Types do
         slugs: ["notes", "note"],
         path: Path.join(content_base_path(), "note")
       },
-      "case_study" => %{
-        slugs: ["case-studies", "case_study", "case-study"],
-        path: Path.join(content_base_path(), "case-study")
+      "project" => %{
+        slugs: ["work", "project"],
+        path: Path.join(content_base_path(), "work")
       }
     }
   end
@@ -124,7 +124,7 @@ defmodule Portfolio.Content.Types do
   ## Examples
 
       iex> Portfolio.Content.Types.all_types()
-      ["note", "case_study"]
+      ["note", "project"]
 
   """
   @spec all_types() :: [content_type()]
@@ -188,12 +188,12 @@ defmodule Portfolio.Content.Types do
 
         Portfolio.Content.Schemas.Note
 
-      "case_study" ->
+      "project" ->
         Logger.debug(
-          "Found case study schema, returning: #{inspect(Portfolio.Content.Schemas.CaseStudy)}"
+          "Found project schema, returning: #{inspect(Portfolio.Content.Schemas.Project)}"
         )
 
-        Portfolio.Content.Schemas.CaseStudy
+        Portfolio.Content.Schemas.Project
 
       _ ->
         {:error, :invalid_content_type}

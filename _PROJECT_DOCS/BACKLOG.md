@@ -287,17 +287,20 @@ handling and regression checks**.
   cached owners while retaining explicit assigns for deterministic tests and
   degraded operation. Tokyo weather is scoped separately under **Theme toggle,
   footer weather, and weather icons**.
-- **Decided 2026-10-24: the navigation reads Work / Notes / About.** Z chose
-  this for hiring readers and search. Public pages are `/:locale/work`,
-  `/:locale/work/:url`, and `/:locale/about`; the Japanese labels are 実績 and
-  プロフィール, and paths stay English in both locales. The old `/case-studies`,
-  `/case-study/:url`, and `/self` paths now return 404 with no redirect,
-  because the site has never been deployed or indexed, so no outside links can
-  point at them. "Case study" stays the word for the content itself: the home
-  page section, the index page heading, the Atom feed name
-  (`case-studies.xml`), the content type, the content-repository folder, and
-  the module names. The development-only admin routes under
-  `/admin/case-study` are unchanged.
+- **Decided 2026-10-24: one name per thing — Work for the collection, project
+  for one item.** Z chose this for hiring readers and search. The menu reads
+  Work / Notes / About (Japanese 実績 / メモ / プロフィール); public pages are
+  `/:locale/work`, `/:locale/work/:url`, and `/:locale/about`, with English
+  paths in both locales. The feed is `work.xml`, the content type is
+  `project` (table `projects`, schema `Portfolio.Content.Schemas.Project`,
+  pages `PortfolioWeb.WorkLive.*`), the dev-only admin pages are under
+  `/admin/work`, and the content repository keeps projects in `work/`. The
+  only remaining "case study" wording is each project page's title,
+  "Product design case study: <project>", because that is the phrase people
+  search for. The old `/case-studies`, `/case-study/:url`, `/self`, and
+  `case-studies.xml` addresses return 404 with no redirect, because the site
+  has never been deployed or indexed. Historical records (old migrations, the
+  changelog, and the measurement table in `page-weight.md`) keep the old names.
 - **Stop shipping the design sketch pages to visitors.** The router scope
   holding `/weight-calibration`, `/color-tokens`, `/code-block`, `/hdr-lab`,
   `/color-sketch`, `/shader-scale-sketch`, `/palette-comparison`, and

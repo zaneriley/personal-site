@@ -4,24 +4,24 @@ defmodule Portfolio.Content.FileManagement.ReaderTest do
   alias Portfolio.Content.Types
   import ExUnit.CaptureLog
 
-  @test_file_path "test/support/fixtures/case-study/testing-case-study/en.md"
-  @malformed_file_path "test/support/fixtures/case-study/testing-case-study-malformed/en.md"
+  @test_file_path "test/support/fixtures/work/testing-project/en.md"
+  @malformed_file_path "test/support/fixtures/work/testing-project-malformed/en.md"
 
   describe "read_markdown_file/1" do
     test "reads valid markdown file successfully" do
       path = @test_file_path
       assert {:ok, content_type, attrs} = Reader.read_markdown_file(path)
 
-      assert content_type == "case_study"
+      assert content_type == "project"
       assert is_map(attrs)
       assert Map.has_key?(attrs, "content")
       assert Map.has_key?(attrs, "file_path")
       assert Map.has_key?(attrs, "locale")
 
       assert attrs["title"] ==
-               "Test case study. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと ！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ YAHAHAHA!"
+               "Test project. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと ！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ YAHAHAHA!"
 
-      assert attrs["url"] == "testing-case-study"
+      assert attrs["url"] == "testing-project"
       assert attrs["platforms"] == ["List", "of", "strings"]
       assert attrs["content"] =~ "# Heading Level 1"
     end
@@ -50,7 +50,7 @@ defmodule Portfolio.Content.FileManagement.ReaderTest do
     end
 
     test "handles frontmatter with various data types" do
-      assert {:ok, "case_study", attrs} =
+      assert {:ok, "project", attrs} =
                Reader.read_markdown_file(@test_file_path)
 
       assert is_integer(attrs["read_time"])

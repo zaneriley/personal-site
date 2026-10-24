@@ -8,7 +8,7 @@ This ADR records the navigation/motion architecture direction surfaced by the 20
 
 ## Context
 
-This site uses Phoenix LiveView partly because public navigation should feel continuous and app-like: pages should not feel like disconnected document loads when moving between the homepage, case studies, and notes.
+This site uses Phoenix LiveView partly because public navigation should feel continuous and app-like: pages should not feel like disconnected document loads when moving between the homepage, work, and notes.
 
 That goal now has to be balanced against the resource-frugality work. The first-time visitor model makes cold mobile performance the hard floor. LiveView has a JavaScript and WebSocket cost, and the current browser budget work surfaced enough shipped JS that "use LiveView because we already have it" is not a sufficient argument.
 

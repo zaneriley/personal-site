@@ -547,7 +547,7 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
               Inline code like <code class="dbs__code">def render/1</code>
               borrows a coding accent.
             </p>
-            <a href="#" class="dbs__link">Read the case study</a>
+            <a href="#" class="dbs__link">Read the project</a>
           </div>
 
           <div class="dbs__accents">

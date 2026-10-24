@@ -428,9 +428,9 @@ if ! curl -fsS "http://127.0.0.1:${HOST_PORT}/en/note/prod-build-smoke-note" |
     exit 1
 fi
 
-if ! curl -fsS "http://127.0.0.1:${HOST_PORT}/en/work/prod-build-smoke-case-study" |
-    grep -F "Prod Build Smoke Case Study" >/dev/null; then
-    echo "fatal: prod-build smoke case study did not render accepted live content" >&2
+if ! curl -fsS "http://127.0.0.1:${HOST_PORT}/en/work/prod-build-smoke-project" |
+    grep -F "Prod Build Smoke Project" >/dev/null; then
+    echo "fatal: prod-build smoke project did not render accepted live content" >&2
     exit 1
 fi
 

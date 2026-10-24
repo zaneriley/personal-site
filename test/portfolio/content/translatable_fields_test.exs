@@ -1,7 +1,7 @@
 defmodule Portfolio.Content.TranslatableFieldsTest do
   use ExUnit.Case, async: true
 
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.TranslatableFields
 
@@ -19,8 +19,8 @@ defmodule Portfolio.Content.TranslatableFieldsTest do
              ]
     end
 
-    test "uses explicit case study translation policy" do
-      assert TranslatableFields.translatable_fields(CaseStudy) == [
+    test "uses explicit project translation policy" do
+      assert TranslatableFields.translatable_fields(Project) == [
                :title,
                :content,
                :introduction,
@@ -42,8 +42,8 @@ defmodule Portfolio.Content.TranslatableFieldsTest do
                :share_image_direction
              )
 
-      refute TranslatableFields.translatable_field?(CaseStudy, :url)
-      refute TranslatableFields.translatable_field?(CaseStudy, :platforms)
+      refute TranslatableFields.translatable_field?(Project, :url)
+      refute TranslatableFields.translatable_field?(Project, :platforms)
     end
   end
 end

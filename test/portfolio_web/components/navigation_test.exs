@@ -36,8 +36,15 @@ defmodule PortfolioWeb.NavigationTest do
              destinations(html)
   end
 
-  test "the old case study and self paths no longer exist", %{conn: conn} do
-    for path <- ["/en/case-studies", "/en/case-study/anything", "/en/self"] do
+  test "the old case study, self, and feed paths no longer exist", %{
+    conn: conn
+  } do
+    for path <- [
+          "/en/case-studies",
+          "/en/case-study/anything",
+          "/en/self",
+          "/en/feeds/case-studies.xml"
+        ] do
       assert conn |> get(path) |> response(404)
     end
   end

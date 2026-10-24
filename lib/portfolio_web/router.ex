@@ -85,10 +85,10 @@ defmodule PortfolioWeb.Router do
         live "/note/:url/edit", NoteLive.Index, :edit
         live "/note/:url/show/edit", NoteLive.Show, :edit
 
-        live "/case-study/new", CaseStudyLive.Index, :new
-        live "/case-study/:url/edit", CaseStudyLive.Index, :edit
-        live "/case-study/:url", CaseStudyLive.Show, :show
-        live "/case-study/:url/show/edit", CaseStudyLive.Show, :edit
+        live "/work/new", WorkLive.Index, :new
+        live "/work/:url/edit", WorkLive.Index, :edit
+        live "/work/:url", WorkLive.Show, :show
+        live "/work/:url/show/edit", WorkLive.Show, :edit
       end
 
       # Keep non-LiveView routes outside the live_session
@@ -153,8 +153,8 @@ defmodule PortfolioWeb.Router do
       live "/palette-comparison", PaletteComparisonLive, :index
       live "/dark-background-sketch", DarkBackgroundSketchLive, :index
       live "/kitchen-sink", KitchenSinkLive, :index
-      live "/work", CaseStudyLive.Index, :index
-      live "/work/:url", CaseStudyLive.Show, :show
+      live "/work", WorkLive.Index, :index
+      live "/work/:url", WorkLive.Show, :show
       live "/notes", NoteLive.Index, :index
       live "/note/:url", NoteLive.Show, :show
       live "/about", AboutLive, :index

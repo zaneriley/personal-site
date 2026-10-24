@@ -16,9 +16,9 @@ defmodule Portfolio.Content.FeedsTest do
       assert length(ids) == 1
     end
 
-    test "a case study is in the main feed by default; demoting removes it" do
-      default_in = case_study_fixture()
-      demoted = case_study_fixture(%{"main_feed" => false})
+    test "a project is in the main feed by default; demoting removes it" do
+      default_in = project_fixture()
+      demoted = project_fixture(%{"main_feed" => false})
 
       ids = ids_for(:main, "en")
 
@@ -59,10 +59,10 @@ defmodule Portfolio.Content.FeedsTest do
 
   describe "list_for_feed/2 — the everything feed" do
     test "merges both types by recency and caps after the merge" do
-      # 12 notes and 12 case studies with strictly interleaved recency
+      # 12 notes and 12 projects with strictly interleaved recency
       for i <- 1..12 do
         note_fixture(%{"published_at" => at_minute(2 * i)})
-        case_study_fixture(%{"published_at" => at_minute(2 * i + 1)})
+        project_fixture(%{"published_at" => at_minute(2 * i + 1)})
       end
 
       entries = Content.list_for_feed(:everything, "en")

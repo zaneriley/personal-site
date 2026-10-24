@@ -1,7 +1,7 @@
 defmodule Portfolio.Content.Schemas.BaseSchemaTest do
   use Portfolio.DataCase
 
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
 
   defmodule TestSchemaDefault do
@@ -18,7 +18,7 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
   end
 
   describe "base schema" do
-    test "common fields are present in Note and CaseStudy" do
+    test "common fields are present in Note and Project" do
       common_fields = [
         {:id, :binary_id},
         {:title, :string},
@@ -38,7 +38,7 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
 
       assert Enum.all?(common_fields, fn {field, type} ->
                Note.__schema__(:type, field) == type &&
-                 CaseStudy.__schema__(:type, field) == type
+                 Project.__schema__(:type, field) == type
              end)
     end
 
@@ -57,7 +57,7 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
           "sort_order" => 1
         })
 
-      cs_cs = CaseStudy.changeset(%CaseStudy{}, cs_attrs)
+      cs_cs = Project.changeset(%Project{}, cs_attrs)
       assert cs_cs.valid?
       assert Ecto.Changeset.get_change(cs_cs, :main_feed) == false
     end
@@ -125,7 +125,7 @@ defmodule Portfolio.Content.Schemas.BaseSchemaTest do
 
     test "translatable_type returns correct string" do
       assert Note.translatable_type() == "note"
-      assert CaseStudy.translatable_type() == "case_study"
+      assert Project.translatable_type() == "project"
     end
 
     test "schema_name is required" do

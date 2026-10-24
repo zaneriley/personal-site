@@ -1,8 +1,8 @@
 ---
 index: 100
-title: "Test case study. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと
+title: "Test project. Emoji: 👋 Numbers: 1234567890 Japanese: いろはにほへと
     ！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱ｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂ"
-url: "testing-case-study-malformed"
+url: "testing-project-malformed"
 role: "Lead designer"
 timeline: "Test Timeline"
 read_time: 14
