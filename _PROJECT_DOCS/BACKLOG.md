@@ -101,6 +101,17 @@ handling and regression checks**.
   here that does not mean abandoning LiveView, which is ADR 0002's separate and
   unratified question.
 
+- **Get CSS and JS back under budget before 2026-11-30.** PR #110 (header
+  rework, sun/moon toggle, footer weather) pushed every contracted route to
+  10,733 compressed CSS bytes against the 10,000 ratchet and 52,098 JS bytes
+  against 52,000. Z approved carrying this as two dated exceptions in
+  `ci/contracts/routes.json`; they expire 2026-11-30, after which the gate
+  fails. Needed: about 750 compressed CSS bytes and 100 JS bytes. Candidates:
+  the hide-on-scroll header styles in `_navigation.css`, the footer and
+  weather styles in `_footer.css`, the toggle styles in `_theme-switcher.css`,
+  and the navigation and weather hooks. Remove each exception when its number
+  is back under the ratchet; do not extend them.
+
 ## Asset handling and regression checks
 
 - **Give images the same treatment fonts already have.** Fonts have a generator
@@ -155,14 +166,11 @@ handling and regression checks**.
   installed on this machine, so none of it runs at all. A check that always
   passes is worse than no check, because it occupies the place where a real one
   would go.
-- **Make the gate enforce expiry dates on recorded exceptions.** ADR 0006's
-  ratchets made the gate green by construction, so the original urgency here is
-  gone — but the `exceptions` list in `routes.json` is still the sanctioned way
-  to carry a deliberate overrun, and the gate does not yet read a date from an
-  entry or fail when one expires or its number drifts upward. Until it does, an
-  exception is a permanent amnesty, which is the failure mode that lets
-  quarantine lists grow forever. Small gate change; do it before the first real
-  exception is ever added.
+- **Done 2026-10-24: the gate applies dated budget exceptions.** An entry in
+  `exceptions` names one `max_*` budget, the overrun it allows, the routes
+  (or `"all"`), when it was recorded, when it expires, and why. While active
+  it replaces that ceiling, so any further growth still fails; once expired
+  it fails the run. Incomplete entries fail the run too.
 - **Fix what CI measures before trusting it.** Font files are deliberately not
   committed, so a CI checkout has none and all five requests return 404. CI
   therefore reports `font_bytes: 0` and undercounts total page weight by 42–80%

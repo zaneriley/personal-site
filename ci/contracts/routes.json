@@ -77,7 +77,24 @@
       "max_fcp_ms": 1400,
       "max_cls": 0.1
     },
-    "exceptions": []
+    "exceptions": [
+      {
+        "budget": "max_css_bytes",
+        "allowed": 10733,
+        "routes": "all",
+        "recorded": "2026-10-24",
+        "expires": "2026-11-30",
+        "reason": "New phone header, sun/moon theme toggle, and footer weather landed together (PR #110). Approved by Z; cut back under 10000 before expiry. See BACKLOG.md, Page weight."
+      },
+      {
+        "budget": "max_js_bytes",
+        "allowed": 52098,
+        "routes": "all",
+        "recorded": "2026-10-24",
+        "expires": "2026-11-30",
+        "reason": "Navigation hook, theme toggle motion, and weather digit motion landed together (PR #110). Approved by Z; cut back under 52000 before expiry. See BACKLOG.md, Page weight."
+      }
+    ]
   },
   "routes": [
     {
