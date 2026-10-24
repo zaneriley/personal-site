@@ -6,14 +6,25 @@ defmodule PortfolioWeb.TypographyBenchController do
   alias PortfolioWeb.TypographyBenchHTML
 
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def index(conn, _params),
-    do: html(conn, File.read!("assets/typography-bench/index.html"))
+  def index(conn, _params) do
+    conn
+    |> put_resp_content_type("text/html")
+    |> send_file(200, "assets/typography-bench/index.html")
+  end
 
   @spec script(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def script(conn, _params), do: javascript(conn, "bench.js")
+  def script(conn, _params) do
+    conn
+    |> put_resp_content_type("text/javascript")
+    |> send_file(200, "assets/typography-bench/bench.js")
+  end
 
   @spec measure_script(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def measure_script(conn, _params), do: javascript(conn, "measure.js")
+  def measure_script(conn, _params) do
+    conn
+    |> put_resp_content_type("text/javascript")
+    |> send_file(200, "assets/typography-bench/measure.js")
+  end
 
   @spec manifest(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def manifest(conn, _params) do
@@ -24,8 +35,7 @@ defmodule PortfolioWeb.TypographyBenchController do
       |> List.flatten()
 
     metrics = File.read!("assets/tailwind/font-metrics.json") |> Jason.decode!()
-    artifacts = Enum.map(Path.wildcard("assets/static/fonts/*"), &identity/1)
-    sources = Enum.map(Path.wildcard("assets/fonts/src/*"), &identity/1)
+    audit = font_audit()
 
     json(conn, %{
       options: TypographyHelpers.options(),
@@ -36,10 +46,10 @@ defmodule PortfolioWeb.TypographyBenchController do
       stress_cases:
         Enum.map(TypographyBenchHTML.stress_cases(), &Map.drop(&1, [:text])),
       metrics: metrics,
-      artifacts: artifacts,
-      sources: sources,
+      artifacts: font_files(audit, "generated"),
+      sources: font_files(audit, "source"),
       font_css: File.read!("assets/css/_fontface.generated.css"),
-      font_audit: font_audit(),
+      font_audit: audit,
       limitations: [
         "Source/artifact raster parity is not measured yet",
         "Canvas ink is a single-run diagnostic, not DOM ink",
@@ -73,10 +83,11 @@ defmodule PortfolioWeb.TypographyBenchController do
 
     Gettext.put_locale(PortfolioWeb.Gettext, assigns.locale)
 
-    html(
-      conn,
-      TypographyBenchHTML.specimen(assigns) |> Phoenix.HTML.Safe.to_iodata()
-    )
+    conn
+    |> put_root_layout(false)
+    |> put_layout(false)
+    |> put_view(TypographyBenchHTML)
+    |> render(:specimen, assigns)
   end
 
   defp choose(params, key, values, default) do
@@ -84,21 +95,14 @@ defmodule PortfolioWeb.TypographyBenchController do
     if value in values, do: value, else: default
   end
 
-  defp javascript(conn, filename) do
-    conn
-    |> put_resp_content_type("text/javascript")
-    |> send_resp(200, File.read!("assets/typography-bench/#{filename}"))
+  # File identities come from the audit script's report, so the bench never
+  # reads font files itself. Before the audit runs, report that instead.
+  defp font_files(%{"records" => records}, stage) do
+    for %{"stage" => ^stage} = record <- records,
+        do: Map.take(record, ["file", "bytes", "sha256"])
   end
 
-  defp identity(path) do
-    bytes = File.read!(path)
-
-    %{
-      file: Path.basename(path),
-      bytes: byte_size(bytes),
-      sha256: :crypto.hash(:sha256, bytes) |> Base.encode16(case: :lower)
-    }
-  end
+  defp font_files(not_run, _stage), do: not_run
 
   defp font_audit do
     case File.read(".tmp/typography-bench/font-audit.json") do

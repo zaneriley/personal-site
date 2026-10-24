@@ -14,7 +14,9 @@ responses during rapid changes. Orange outlines identify components; blue
 guides identify each baseline or ideographic body bottom. Neither traces glyph ink.
 
 The manifest joins the component's supported roles/sizes with generated size
-tokens, stored metrics, font-face CSS, and file hashes. The matrix covers all
+tokens, stored metrics, font-face CSS, and file hashes. File hashes come from
+the audit report (`audit-fonts.mjs`, below); rerun it after regenerating fonts,
+because the bench does not read font files itself. The matrix covers all
 font roles × selected sizes × regular/bold roles × locales × sample strings at
 one chosen width/theme/browser. Unsupported component sizes and unverified
 fonts remain findings. Continuous sizes, all font pairs, all browsers, and
