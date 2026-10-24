@@ -24,7 +24,7 @@ defmodule PortfolioWeb.Components.TypographyTest do
 
   defp get_optical_style(html_fragment) do
     with {:ok, doc} <- Floki.parse_fragment(html_fragment),
-         [span | _] <- Floki.find(doc, "span.optical-adjustment"),
+         [span | _] <- Floki.find(doc, ".typography"),
          [style | _] <- Floki.attribute(span, "style") do
       style
     else
@@ -43,6 +43,33 @@ defmodule PortfolioWeb.Components.TypographyTest do
   end
 
   describe "typography component rendering behavior" do
+    test "preserves global HTML attributes on the semantic text element" do
+      assigns = %{}
+
+      html =
+        rendered_to_string(~H"""
+        <Typography.typography
+          tag="p"
+          id="description"
+          aria-live="polite"
+          data-context="status"
+          lang="en"
+        >
+          Status message
+        </Typography.typography>
+        """)
+
+      tree = Floki.parse_fragment!(html)
+
+      assert [_] =
+               Floki.find(
+                 tree,
+                 "p#description[aria-live=polite][data-context=status][lang=en]"
+               )
+
+      assert tree |> Floki.text() |> String.trim() == "Status message"
+    end
+
     test "renders English defaults with Latin optical trim variables" do
       rendered = render_typography(%{locale: "en"}, "Default English Text")
 
@@ -53,9 +80,12 @@ defmodule PortfolioWeb.Components.TypographyTest do
       assert rendered =~ "Default English Text"
 
       assert style_attr = get_optical_style(rendered)
-      assert style_attr =~ "--_lh: var(--lh-en-md);"
-      assert style_attr =~ "--_dt: var(--gt-flexa-trial-vf-distance-top);"
-      assert style_attr =~ "--_db: var(--gt-flexa-trial-vf-distance-bottom);"
+      assert style_attr =~ "--type-cap: var(--gt-flexa-trial-vf-cap);"
+
+      assert style_attr =~
+               "--type-trim-start: var(--gt-flexa-trial-vf-trim-start);"
+
+      assert style_attr =~ "--type-trim-end: var(--gt-flexa-trial-vf-trim-end);"
     end
 
     test "renders Japanese text with Noto classes and no Latin optical trim variables" do

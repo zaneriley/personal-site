@@ -150,7 +150,7 @@ defmodule Portfolio.Content.Entry.Compiler do
   Compiles content in multiple languages using available translations.
 
   ## Parameters
-    - content_entry: The content entry (e.g., Note or CaseStudy)
+    - content_entry: The content entry (e.g., Note or Project)
     - opts: Options for compilation
 
   ## Returns

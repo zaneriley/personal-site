@@ -85,10 +85,10 @@ defmodule PortfolioWeb.Router do
         live "/note/:url/edit", NoteLive.Index, :edit
         live "/note/:url/show/edit", NoteLive.Show, :edit
 
-        live "/case-study/new", CaseStudyLive.Index, :new
-        live "/case-study/:url/edit", CaseStudyLive.Index, :edit
-        live "/case-study/:url", CaseStudyLive.Show, :show
-        live "/case-study/:url/show/edit", CaseStudyLive.Show, :edit
+        live "/work/new", WorkLive.Index, :new
+        live "/work/:url/edit", WorkLive.Index, :edit
+        live "/work/:url", WorkLive.Show, :show
+        live "/work/:url/show/edit", WorkLive.Show, :edit
       end
 
       # Keep non-LiveView routes outside the live_session
@@ -113,6 +113,22 @@ defmodule PortfolioWeb.Router do
   end
 
   # Catch-all route for unmatched paths
+  if Application.compile_env(:portfolio, :typography_bench, false) do
+    scope "/typography-bench", PortfolioWeb do
+      pipe_through :browser
+      get "/", TypographyBenchController, :index
+      get "/manifest", TypographyBenchController, :manifest
+      get "/specimen", TypographyBenchController, :specimen
+    end
+
+    # Static harness scripts need no session; the browser pipeline rejects
+    # JavaScript script-tag responses through its CSRF protection.
+    scope "/typography-bench", PortfolioWeb do
+      get "/bench.js", TypographyBenchController, :script
+      get "/measure.js", TypographyBenchController, :measure_script
+    end
+  end
+
   scope "/", PortfolioWeb do
     pipe_through :browser
     get "/up/", UpController, :index
@@ -137,11 +153,11 @@ defmodule PortfolioWeb.Router do
       live "/palette-comparison", PaletteComparisonLive, :index
       live "/dark-background-sketch", DarkBackgroundSketchLive, :index
       live "/kitchen-sink", KitchenSinkLive, :index
-      live "/case-studies", CaseStudyLive.Index, :index
-      live "/case-study/:url", CaseStudyLive.Show, :show
+      live "/work", WorkLive.Index, :index
+      live "/work/:url", WorkLive.Show, :show
       live "/notes", NoteLive.Index, :index
       live "/note/:url", NoteLive.Show, :show
-      live "/self", AboutLive, :index
+      live "/about", AboutLive, :index
     end
   end
 

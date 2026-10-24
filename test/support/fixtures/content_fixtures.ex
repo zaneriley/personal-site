@@ -1,10 +1,10 @@
 defmodule Portfolio.ContentFixtures do
   @moduledoc """
   Provides fixture functions for creating test data related to content entities.
-  Includes functions for generating Note and CaseStudy fixtures with realistic default attributes.
+  Includes functions for generating Note and Project fixtures with realistic default attributes.
   """
   alias Portfolio.Content.Publishing
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.Translation
   alias Portfolio.Content.TranslatableFields
@@ -56,10 +56,10 @@ defmodule Portfolio.ContentFixtures do
   end
 
   @doc """
-  Creates a case study with dynamic and realistic default attributes that can be overridden.
+  Creates a project with dynamic and realistic default attributes that can be overridden.
   """
-  def case_study_fixture(attrs \\ %{}, opts \\ []) do
-    Logger.debug("Creating case study fixture")
+  def project_fixture(attrs \\ %{}, opts \\ []) do
+    Logger.debug("Creating project fixture")
 
     sequence = System.unique_integer([:positive])
 
@@ -67,32 +67,32 @@ defmodule Portfolio.ContentFixtures do
       fixture_publication_generation(opts)
 
     default_attrs = %{
-      "title" => "Case Study #{sequence}",
+      "title" => "Project #{sequence}",
       "content" =>
-        "Detailed exploration of case study #{sequence}, covering all aspects of the project.",
+        "Detailed exploration of project #{sequence}, covering all aspects of the project.",
       "locale" => "en",
-      "url" => "case-study-#{sequence}",
+      "url" => "project-#{sequence}",
       "company" => "Company #{sequence}",
       "role" => "Role #{sequence}",
       "timeline" => "2020 - #{2020 + rem(sequence, 10)}",
       "platforms" => ["Web", "Mobile"],
       "sort_order" => sequence,
-      "introduction" => "Introduction for case study #{sequence}",
+      "introduction" => "Introduction for project #{sequence}",
       "read_time" => 5 + rem(sequence, 10),
-      "file_path" => "priv/content/case_studies/case_study_#{sequence}.md",
+      "file_path" => "priv/content/projects/project_#{sequence}.md",
       "published_at" => ~N[2023-01-01 00:00:00],
       "is_draft" => false
     }
 
     string_attrs = for {key, val} <- attrs, into: %{}, do: {to_string(key), val}
 
-    case_study =
-      %CaseStudy{publication_generation_id: publication_generation_id}
-      |> CaseStudy.changeset(Map.merge(default_attrs, string_attrs))
+    project =
+      %Project{publication_generation_id: publication_generation_id}
+      |> Project.changeset(Map.merge(default_attrs, string_attrs))
       |> Repo.insert!()
 
     maybe_accept_fixture_generation(
-      case_study,
+      project,
       publication_generation_id,
       content_sha,
       accept_generation?
@@ -100,13 +100,13 @@ defmodule Portfolio.ContentFixtures do
 
     if opts[:translations] do
       Enum.each(opts[:translations], fn {locale, trans_attrs} ->
-        translation_fixture(case_study, locale, trans_attrs)
+        translation_fixture(project, locale, trans_attrs)
       end)
     end
 
-    Logger.debug("Case study created: #{inspect(case_study)}")
+    Logger.debug("Project created: #{inspect(project)}")
 
-    case_study
+    project
   end
 
   def translation_fixture(content, locale, attrs \\ %{}) do

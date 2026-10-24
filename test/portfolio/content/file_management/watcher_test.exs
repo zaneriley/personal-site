@@ -2,11 +2,11 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
   use Portfolio.DataCase
 
   alias Portfolio.Content.FileManagement.Watcher
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Types
   alias Portfolio.Repo
 
-  @test_file_path "test/support/fixtures/case-study/testing-case-study/en.md"
+  @test_file_path "test/support/fixtures/work/testing-project/en.md"
 
   describe "handle_info/2" do
     test "ignores direct markdown file changes without mutating content" do
@@ -17,7 +17,7 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
       assert Watcher.handle_info({:file_event, self(), {path, events}}, state) ==
                {:noreply, state}
 
-      assert Repo.aggregate(CaseStudy, :count) == 0
+      assert Repo.aggregate(Project, :count) == 0
     end
 
     test "returns cleanly for deleted markdown events" do
@@ -50,7 +50,7 @@ defmodule Portfolio.Content.FileManagement.WatcherTest do
 
     test "ignores hidden markdown files" do
       state = %Watcher{watcher_pid: self()}
-      path = Path.join(Types.get_path("case_study"), ".hidden.md")
+      path = Path.join(Types.get_path("project"), ".hidden.md")
       events = [:modified]
 
       assert Watcher.handle_info({:file_event, self(), {path, events}}, state) ==

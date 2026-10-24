@@ -1,5 +1,7 @@
 import Config
 
+config :portfolio, :typography_bench, true
+
 config :portfolio, PortfolioWeb.Endpoint,
   # Bind the same env-driven port as prod (see runtime.exs) — the prod block
   # there is gated by config_env(), so dev needs its own wire-up or it falls

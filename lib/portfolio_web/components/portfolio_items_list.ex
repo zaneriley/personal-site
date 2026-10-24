@@ -1,6 +1,6 @@
 defmodule PortfolioWeb.Components.PortfolioItemList do
   @moduledoc """
-  Renders a list of items, intended for full ist of different schemas (case studies, notes, etc)
+  Renders a list of items, intended for full ist of different schemas (projects, notes, etc)
 
   """
   use Phoenix.Component

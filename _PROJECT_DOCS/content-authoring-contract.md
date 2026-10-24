@@ -13,7 +13,7 @@ Use optional `share_*` fields to control how a content page should appear when s
 
 The app owns the explicit mapping from these fields into runtime output:
 
-- Ingestion persists the fields on notes and case studies.
+- Ingestion persists the fields on notes and projects.
 - A future share-image workflow can use `share_image_direction` as human/editorial input, then emit an image asset.
 - The future metadata renderer maps the final title, description, image URL, and image alt into Open Graph and Twitter tags.
 - Production smoke checks should validate the rendered metadata and image URL once generation exists.
@@ -24,10 +24,10 @@ Do not author `og_*`, `twitter_*`, or `og:image` fields in content files. Those 
 
 `main_feed: true | false` in frontmatter controls whether an entry appears in
 the curated main Atom feed (see `_PROJECT_DOCS/feeds-spec.md`). Defaults when
-the key is absent: **case studies are in, notes are out**. So the only times
+the key is absent: **projects are in, notes are out**. So the only times
 to write the key are promoting a long-form note into the main feed
-(`main_feed: true`) or keeping an off-topic case study out of it
-(`main_feed: false`). Section feeds (notes, case-studies) and the everything
+(`main_feed: true`) or keeping an off-topic project out of it
+(`main_feed: false`). Section feeds (notes, work) and the everything
 feed ignore this key — they always carry their full stream.
 
 ## Fenced Code Blocks
@@ -50,7 +50,7 @@ the path the snippet comes from:
 
 ## Rename / Alias Frontmatter
 
-Use optional `aliases` frontmatter when a published note or case study has been renamed and the old URL should keep working.
+Use optional `aliases` frontmatter when a published note or project has been renamed and the old URL should keep working.
 
 Example:
 
@@ -60,7 +60,7 @@ aliases:
   - "old-note-slug"
 ```
 
-The aliases are content-type local. A note alias redirects from `/en/note/old-note-slug` to `/en/note/new-note-slug`; a case-study alias redirects within `/en/case-study/...`.
+The aliases are content-type local. A note alias redirects from `/en/note/old-note-slug` to `/en/note/new-note-slug`; a project alias redirects within `/en/work/...`.
 
 Alias rules:
 

@@ -63,7 +63,7 @@ defmodule PortfolioWeb.SetLocalePlugTest do
       conn: conn
     } do
       conn = I18nHelpers.set_accept_language_header(conn, "ja")
-      conn = get(conn, "/case-studies/")
+      conn = get(conn, "/work/")
       # Assuming "en" is the default locale
       assert get_session(conn, "user_locale") == "ja"
     end
@@ -84,7 +84,7 @@ defmodule PortfolioWeb.SetLocalePlugTest do
     end
 
     test "handles URLs with multiple path segments", %{conn: conn} do
-      conn = get(conn, "/en/case-studies/")
+      conn = get(conn, "/en/work/")
       assert get_session(conn, "user_locale") == "en"
     end
 

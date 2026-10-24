@@ -61,11 +61,11 @@ defmodule PortfolioWeb.LocaleRedirectionTest do
     end
 
     test "redirects unsupported locale to default locale", %{conn: conn} do
-      conn = get(conn, "/xyz/case-study/helping-people-find-healthcare")
+      conn = get(conn, "/xyz/work/helping-people-find-healthcare")
 
       assert_redirected_to(
         conn,
-        "/#{@default_locale}/case-study/helping-people-find-healthcare"
+        "/#{@default_locale}/work/helping-people-find-healthcare"
       )
     end
 

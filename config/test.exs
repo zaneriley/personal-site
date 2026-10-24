@@ -1,5 +1,7 @@
 import Config
 
+config :portfolio, :typography_bench, true
+
 test_log_level =
   case System.get_env("PORTFOLIO_TEST_LOG_LEVEL") do
     "debug" -> :debug

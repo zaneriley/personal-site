@@ -6,8 +6,10 @@
 @import url("./_type-tokens.generated.css");
 @import url("./_type-utilities.css");
 @import url("./_grid.css");
+@import url("./_navigation.css");
 @import url("./_code.css");
 @import url("./_footer.css");
+@import url("./_theme-switcher.css");
 
 @property --fantazio-rotate {
   syntax: "<angle>";
@@ -82,20 +84,42 @@ body {
   font-style: normal;
 }
 
-/* Optical Adjustment for Vertical Alignment */
-.optical-adjustment {
-  /* Use inline-block to allow margins to apply */
+/* Trim the block's outer edges without changing its internal baseline distances.
+   Factors are generated from calibrated face metrics, not per-size offsets. */
+.typography {
+  display: flow-root;
+
+  --type-trim-start: 0.4;
+  --type-trim-end: 0.3;
+}
+
+.typography:is(span, a) {
   display: inline-block;
+}
 
-  /* Apply top and bottom margins based on locally scoped variables */
+.typography::before,
+.typography::after {
+  content: "";
+  display: table;
+}
 
-  /* lh = snapped line height (unitless) */
+.typography::before {
+  margin-bottom: calc(var(--type-trim-start) * 1em - 0.5lh);
+}
 
-  /* dt = distance-top (unitless factor of em) */
+.typography::after {
+  margin-top: calc(var(--type-trim-end) * 1em - 0.5lh);
+}
 
-  /* db = distance-bottom (unitless factor of em) */
-  margin-top: calc(((var(--_lh) - 1) * -0.5em) + (var(--_dt) * 1em));
-  margin-bottom: calc(((var(--_lh) - 1) * -0.5em) + (var(--_db) * 1em));
+.optical-adjustment {
+  display: inline;
+}
+
+.typography[data-text-script="cjk"] {
+  --type-trim-start: 0.5;
+  --type-trim-end: 0.5;
+
+  line-height: calc(1em + var(--cjk-interline-gap));
 }
 
 /* Japanese (:lang(ja)) typographic foundation. The Latin-calibrated knobs (the
@@ -113,8 +137,6 @@ html[lang="ja"] {
 /* The * Latin OT features (oldstyle figures, slashed zero) are wrong for the
    Latin/numerals embedded in JP ("+15", "Google"); reset to JP-relevant ones. */
 html[lang="ja"] * {
-  /* biome-ignore lint/complexity/noImportantStyles: locale-wide CJK leading must override per-component Latin line-height utilities */
-  line-height: var(--cjk-lh) !important;
   font-feature-settings:
     "kern" 1,
     "palt" 1;
@@ -137,4 +159,8 @@ html[lang="ja"] .hero-lede {
     text-justify: inter-character;
     text-align-last: left;
   }
+}
+
+html[lang="ja"] body {
+  line-height: var(--cjk-lh);
 }

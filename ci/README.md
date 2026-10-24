@@ -30,6 +30,11 @@ not the preferred DX.
 
 - `./run ci:format` asks, "is formatting/style shape acceptable?"
 - `./run ci:lint` asks, "do static lint gates pass?"
+  Its Elixir lint step rejects raw `<p>` in `.heex` templates and `~H` sigils;
+  use `<.typography tag="p">` instead. Run this check alone with
+  `./run mix lint.typography`. Raw calibration specimens require an explicit
+  `data-typography-calibration` attribute in a named calibration file; the
+  checker owns that allowlist. Markdown content is outside this source check.
 - `./run ci:test` asks, "do Elixir and JS tests pass?"
 - `./run ci:types` asks, "does static type analysis pass?"
 - `./run ci:security` asks, "does the security scan pass?"

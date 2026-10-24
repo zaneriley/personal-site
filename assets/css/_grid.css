@@ -4,8 +4,9 @@
    choices; everything else is computed, so the whole grid regenerates from a
    single knob. Speaks the same language as --space-* (see _type-tokens.generated.css).
 
-   Ladder (consecutive --space-* rungs):
-     paragraph gap = md   →  page-inset = 1xl (one rung above)  →  gutter = 2xl
+   Mobile ladder (consecutive --space-* rungs):
+     page-inset = 1xs → paragraph spacing = md → horizontal gutter = 1xl
+   Wider layouts retain page-inset = 1xl and horizontal gutter = 2xl.
    Derivation:
      1 measure = 4 of 12 columns
      content-cap = 3·reading-measure + 2·gutter   (the 9 inner gutters live
@@ -17,8 +18,8 @@
 :root {
   /* --- the only hand-set values --- */
   --reading-measure: 50ch; /* seed: narrowest comfortable prose line */
-  --gutter: var(--space-2xl); /* rung choice: one above page-inset */
-  --page-inset: 1ch; /* mobile: claw reading width back from reader-mode */
+  --gutter: var(--space-1xl); /* one rung above paragraph spacing */
+  --page-inset: var(--space-1xs); /* one rung below paragraph spacing */
   --columns: 4; /* mobile = 1 measure (4 cols); steps to 8 then 12 below */
 
   /* --- derived --- */
@@ -26,12 +27,10 @@
   --column: calc((var(--reading-measure) - 3 * var(--gutter)) / 4);
 }
 
-/* Column count steps with width (content-driven): 4 (mobile, 1 measure) → 8 →
-   12 (3 measures). The gutter stays 2xl throughout; fewer columns are what keep
-   11 big gutters from overflowing a narrow screen. page-inset also climbs off
-   the mobile 1ch onto the ladder (one rung above paragraph gap). */
+/* Retain the existing column transitions while exploring mobile spacing. */
 @media (width >= 40rem) {
   :root {
+    --gutter: var(--space-2xl);
     --page-inset: var(--space-1xl);
     --columns: 8;
   }
@@ -50,7 +49,7 @@
 .reading-grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-  gap: var(--gutter);
+  gap: var(--space-2xl) var(--gutter);
   max-width: var(--content-cap);
   padding-inline: var(--page-inset);
   margin-inline: auto;

@@ -215,7 +215,7 @@
             <span class="chip" id="chip-drl">CSS dynamic-range-limit</span>
             <span class="chip" id="chip-decode">PQ PNG decode</span>
           </div>
-          <p class="note">
+          <p data-typography-calibration class="note">
             Live — re-checks when you drag the window to another display or the OS
             changes headroom (brightness slider, low-power mode). If
             <strong>PQ PNG decode</strong>
@@ -244,7 +244,11 @@
               <figcaption>{nits} nits<br />break the display</figcaption>
             </figure>
           </div>
-          <p class="note" style="margin-block-start: var(--space-md)">
+          <p
+            data-typography-calibration
+            class="note"
+            style="margin-block-start: var(--space-md)"
+          >
             Without display headroom the browser tone-maps rather than clips —
             measured in SDR Chromium: 203&nbsp;→&nbsp;187, 400&nbsp;→&nbsp;223,
             800&nbsp;→&nbsp;248, 1300&nbsp;→&nbsp;255 (of 255). A highlight rolloff
@@ -282,7 +286,11 @@
           <div class="ramp-labels">
             <span :for={nits <- @ramp_bands}>{nits}</span>
           </div>
-          <p class="note" style="margin-block-start: var(--space-2xs)">
+          <p
+            data-typography-calibration
+            class="note"
+            style="margin-block-start: var(--space-2xs)"
+          >
             Count the distinct bands: the last visible step ≈ this display's current
             headroom. Drag the window between displays or move the brightness slider
             and watch bands appear and disappear — the reason the grammar rule is <strong>HDR is amplitude, never information</strong>.
@@ -355,7 +363,11 @@
               </figcaption>
             </figure>
           </div>
-          <p class="note" style="margin-block-start: var(--space-md)">
+          <p
+            data-typography-calibration
+            class="note"
+            style="margin-block-start: var(--space-md)"
+          >
             Toggle the theme: in dark the light orb carries even in SDR (the crush
             leaves 9% under absolute white); in light the surface already grazes the
             ceiling, so the light orb <strong>needs</strong>
@@ -377,7 +389,7 @@
                 <img class="glow" src="/images/hdr-lab/orb-light.png" alt="" />
                 <PortfolioWeb.Components.Identity.hanko id="hdr-cast" />
               </button>
-              <p class="note">
+              <p data-typography-calibration class="note">
                 Hover / focus the hanko: opacity and dynamic-range-limit transition
                 together. Tiny area, event-driven, settles back — the signature
                 spell.
@@ -398,7 +410,7 @@
                 <a href="#">Notes</a>
                 <a href="#">Self</a>
               </nav>
-              <p class="note">
+              <p data-typography-calibration class="note">
                 The one sanctioned <em>standing</em>
                 use: constrained tier only —
                 barely beyond white, never the full cast.
@@ -407,7 +419,7 @@
 
             <div class="card">
               <h3>Arrival</h3>
-              <p class="note">
+              <p data-typography-calibration class="note">
                 <a href="#arrival">Jump to #arrival ↓</a>
                 — a fragment landing blooms
                 once, then settles to a faint standing glow.
@@ -419,7 +431,9 @@
                   alt=""
                 />
                 <h3>You were sent here</h3>
-                <p class="note"><a href="#">reset</a></p>
+                <p data-typography-calibration class="note">
+                  <a href="#">reset</a>
+                </p>
               </div>
             </div>
           </div>
@@ -427,7 +441,7 @@
 
         <section>
           <h2>5 · Notes</h2>
-          <p class="note">
+          <p data-typography-calibration class="note">
             These assets are PQ-encoded PNGs with a cICP chunk — real HDR in
             Chromium, authored by <code>hdr-prototype/generate_assets.py</code>
             with

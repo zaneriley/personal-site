@@ -16,22 +16,22 @@
   "cardinal-fruit-web-medium-trial": {
     "unitsPerEm": 1000,
     "capHeight": 0.75,
-    "ascent": 1.02,
-    "descent": -0.32,
+    "ascent": 1,
+    "descent": -0.318,
     "xHeight": 0.5
   },
   "cardinal-fruit-web-medium-italic-trial": {
     "unitsPerEm": 1000,
     "capHeight": 0.75,
-    "ascent": 1.02,
-    "descent": -0.32,
+    "ascent": 1,
+    "descent": -0.318,
     "xHeight": 0.5
   },
   "gt-flexa-trial-vf": {
     "unitsPerEm": 1000,
     "capHeight": 0.7,
-    "ascent": 0.982,
-    "descent": -0.233,
+    "ascent": 0.8,
+    "descent": -0.2,
     "xHeight": 0.46
   }
 }

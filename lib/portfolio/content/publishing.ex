@@ -10,7 +10,7 @@ defmodule Portfolio.Content.Publishing do
   import Ecto.Query
 
   alias Portfolio.Content.PublicationControl.Scope
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.Schemas.PublicationGeneration
   alias Portfolio.Content.Schemas.PublicationLedgerEntry
@@ -680,7 +680,7 @@ defmodule Portfolio.Content.Publishing do
 
   defp live_generation_has_published_content?(generation_id) do
     live_content_exists?(Note, generation_id) ||
-      live_content_exists?(CaseStudy, generation_id)
+      live_content_exists?(Project, generation_id)
   end
 
   defp live_content_exists?(schema, generation_id) do

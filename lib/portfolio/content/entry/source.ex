@@ -11,7 +11,7 @@ defmodule Portfolio.Content.Entry.Source do
 
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.Records
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.TranslationRepository
   alias Portfolio.Content.Types
@@ -29,7 +29,7 @@ defmodule Portfolio.Content.Entry.Source do
   For non-default locales, it creates or updates translations.
 
   ## Parameters
-    - content_type: An atom or string representing the type of content ("note" or "case_study")
+    - content_type: An atom or string representing the type of content ("note" or "project")
     - attrs: Map of attributes including "url", "locale", and other content fields
 
   ## Returns
@@ -37,7 +37,7 @@ defmodule Portfolio.Content.Entry.Source do
     - {:error, changeset} if there was an error
   """
   @spec upsert_from_file(content_type() | String.t(), map()) ::
-          {:ok, Note.t() | CaseStudy.t()} | {:error, term()}
+          {:ok, Note.t() | Project.t()} | {:error, term()}
   def upsert_from_file(content_type, attrs) when is_atom(content_type) do
     upsert_from_file(Atom.to_string(content_type), attrs)
   end
@@ -195,8 +195,8 @@ defmodule Portfolio.Content.Entry.Source do
   # Apply the appropriate changeset for the content type
   defp apply_changeset(%Note{} = note, attrs), do: Note.changeset(note, attrs)
 
-  defp apply_changeset(%CaseStudy{} = case_study, attrs),
-    do: CaseStudy.changeset(case_study, attrs)
+  defp apply_changeset(%Project{} = project, attrs),
+    do: Project.changeset(project, attrs)
 
   defp publication_generation_id(attrs) do
     attrs[:trusted_publication_generation_id]

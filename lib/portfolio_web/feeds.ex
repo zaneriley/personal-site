@@ -17,7 +17,7 @@ defmodule PortfolioWeb.Feeds do
 
   @path_segments %{
     "main" => :main,
-    "case-studies" => :case_studies,
+    "work" => :work,
     "notes" => :notes,
     "everything" => :everything
   }
@@ -42,7 +42,7 @@ defmodule PortfolioWeb.Feeds do
   @doc "Subscriber-facing title for a feed (translated)."
   @spec title(atom()) :: String.t()
   def title(:main), do: gettext("Zane Riley — the work")
-  def title(:case_studies), do: gettext("Zane Riley — case studies")
+  def title(:work), do: gettext("Zane Riley — projects")
   def title(:notes), do: gettext("Zane Riley — all notes")
   def title(:everything), do: gettext("Zane Riley — everything")
 
@@ -51,10 +51,10 @@ defmodule PortfolioWeb.Feeds do
   def description(:main),
     do:
       gettext(
-        "Case studies and selected long-form notes. Low volume — the default subscription."
+        "Projects and selected long-form notes. Low volume — the default subscription."
       )
 
-  def description(:case_studies), do: gettext("Only the case studies.")
+  def description(:work), do: gettext("Only the projects.")
 
   def description(:notes),
     do: gettext("Every note, short and long. Higher volume.")
@@ -86,7 +86,7 @@ defmodule PortfolioWeb.Feeds do
     section =
       cond do
         String.ends_with?(request_path, "/notes") -> [:notes]
-        String.ends_with?(request_path, "/case-studies") -> [:case_studies]
+        String.ends_with?(request_path, "/work") -> [:work]
         true -> []
       end
 

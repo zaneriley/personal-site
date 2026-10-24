@@ -106,7 +106,7 @@ assert_contains "${script_dir}/runtime-viability.sh" "curl -L -sS -o"
 routes_file="${script_dir}/../contracts/routes.json"
 assert_json "${routes_file}" '.schema_version == 1'
 assert_json "${routes_file}" '.routes | any(.path == "/en/note/prod-build-smoke-note" and (.required_body_text | index("Prod Build Smoke Note")))'
-assert_json "${routes_file}" '.routes | any(.path == "/en/case-study/prod-build-smoke-case-study" and (.required_body_text | index("Prod Build Smoke Case Study")))'
+assert_json "${routes_file}" '.routes | any(.path == "/en/work/prod-build-smoke-project" and (.required_body_text | index("Prod Build Smoke Project")))'
 assert_json "${routes_file}" '.routes | any(.path == "/en/note/this-route-cannot-exist-xyzzy" and (.allowed_statuses | index(404)))'
 assert_json "${routes_file}" '.text_policy.forbidden_visible_text | index("We ran into an issue loading this note")'
 assert_json "${routes_file}" '.text_policy.forbidden_html_text | index("web:8000")'

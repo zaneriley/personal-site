@@ -17,6 +17,8 @@ defmodule PortfolioWeb.CoreComponents do
   use Phoenix.Component
   use Gettext, backend: PortfolioWeb.Gettext
 
+  import PortfolioWeb.Components.Typography, only: [typography: 1]
+
   alias Phoenix.LiveView.JS
 
   @doc """
@@ -88,9 +90,14 @@ defmodule PortfolioWeb.CoreComponents do
                   <h1 id={"#{@id}-title"}>
                     {render_slot(@title)}
                   </h1>
-                  <p :if={@subtitle != []} id={"#{@id}-description"}>
+                  <.typography
+                    :if={@subtitle != []}
+                    tag="p"
+                    color="inherit"
+                    id={"#{@id}-description"}
+                  >
                     {render_slot(@subtitle)}
-                  </p>
+                  </.typography>
                 </header>
                 {render_slot(@inner_block)}
                 <div :if={@confirm != [] or @cancel != []}>
@@ -165,7 +172,7 @@ defmodule PortfolioWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <p :if={@title}>
+      <.typography :if={@title} tag="p" color="inherit">
         <Heroicons.information_circle
           :if={@kind == :info}
           mini
@@ -186,8 +193,8 @@ defmodule PortfolioWeb.CoreComponents do
           mini
           class="inline-block h-1xs w-1xs"
         />> {@title}
-      </p>
-      <p>{msg}</p>
+      </.typography>
+      <.typography tag="p" color="inherit">{msg}</.typography>
       <button :if={@close} type="button" aria-label={gettext("close")}>
         <Heroicons.x_mark solid />
       </button>
@@ -459,11 +466,11 @@ defmodule PortfolioWeb.CoreComponents do
 
   def error(assigns) do
     ~H"""
-    <p>
+    <.typography tag="p" color="inherit">
       <Heroicons.exclamation_circle mini class="inline-block h-1xs w-1xs" />
       <Heroicons.exclamation_circle mini class="inline-block h-1xs w-1xs" />
       {render_slot(@inner_block)}
-    </p>
+    </.typography>
     """
   end
 
@@ -486,9 +493,9 @@ defmodule PortfolioWeb.CoreComponents do
         <h1>
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []}>
+        <.typography :if={@subtitle != []} tag="p" color="inherit">
           {render_slot(@subtitle)}
-        </p>
+        </.typography>
       </div>
       <div>{render_slot(@actions)}</div>
     </header>

@@ -2,20 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import type { WeightConfig } from "./configs/type-config";
 import {
-  cjkSpaceConfig,
   cjkTypeConfig,
   flexaWeightConfig,
-  latinSpaceConfig,
   latinTypeConfig,
+  spacingMultipliers,
 } from "./configs/type-config";
 
-import {
-  assignLabels,
-  calculateTypeScale,
-  generateSpaceCSSVariables,
-  generateTypeCSSVariables,
-} from "./font-size";
-import { calculateLineHeight } from "./line-height";
+import { generateTypeCSSVariables } from "./font-size";
 
 const debugLog = (...args: unknown[]): void => {
   if (process.env.TYPE_SCALE_DEBUG === "1") {
@@ -30,12 +23,11 @@ type ScriptType = (typeof SUPPORTED_SCRIPTS)[number];
 
 interface ScriptConfig {
   type: typeof latinTypeConfig;
-  space: typeof latinSpaceConfig;
 }
 
 const scriptConfigs: Record<ScriptType, ScriptConfig> = {
-  latin: { type: latinTypeConfig, space: latinSpaceConfig },
-  cjk: { type: cjkTypeConfig, space: cjkSpaceConfig },
+  latin: { type: latinTypeConfig },
+  cjk: { type: cjkTypeConfig },
 };
 
 // Define FontMetrics type based on font-metrics.json structure
@@ -91,10 +83,16 @@ function generateScriptVariables(script: ScriptType) {
     script,
   );
 
-  const spaceVars = namespaceVariables(
-    generateSpaceCSSVariables(config.space),
-    script,
-  );
+  const base =
+    script === "latin"
+      ? config.type.lineHeightConfig.paragraphLeading
+      : config.type.lineHeightConfig.paragraphSize;
+  const spaceVars = Object.entries(spacingMultipliers)
+    .map(
+      ([label, multiplier]) =>
+        `  --${script}-space-${label}: calc(${base / 16}rem * ${multiplier});`,
+    )
+    .join("\n");
 
   return { typeVars, spaceVars };
 }
@@ -110,14 +108,13 @@ export function generateSemanticVariables(
   const config = scriptConfigs[script];
   const {
     type: { typeLabels },
-    space: { spaceLabels },
   } = config;
 
   const typeVars = typeLabels
     .map((label) => `  --fs-${label}: var(--${script}-fs-${label});`)
     .join("\n");
 
-  const spaceVars = spaceLabels
+  const spaceVars = Object.keys(spacingMultipliers)
     .map((label) => `  --space-${label}: var(--${script}-space-${label});`)
     .join("\n");
 
@@ -140,7 +137,10 @@ function generateFontMetricsCSS(metricsData: FontMetricsData): string {
       const capAscentDiff = (metrics.ascent - metrics.capHeight).toFixed(4);
       const descentAbs = Math.abs(metrics.descent).toFixed(4);
 
-      return `  --${font}-distance-top: ${capAscentDiff};
+      return `  --${font}-cap: ${metrics.capHeight};
+  --${font}-trim-start: ${(metrics.capHeight + (Math.abs(metrics.descent) - metrics.ascent) / 2).toFixed(4)};
+  --${font}-trim-end: ${((metrics.ascent - Math.abs(metrics.descent)) / 2).toFixed(4)};
+  --${font}-distance-top: ${capAscentDiff};
   --${font}-distance-bottom: ${descentAbs};`; // Fix: Use distance-bottom
     })
     .join("\n");
@@ -153,33 +153,16 @@ function generateFontMetricsCSS(metricsData: FontMetricsData): string {
  * @returns Generated line height CSS variables
  */
 function generateLatinLineHeightCSS(): string {
-  const typeScale = calculateTypeScale(latinTypeConfig);
-  const labeledSizes = assignLabels(
-    typeScale.map((tsResult) => ({
-      step: tsResult.step,
-      minFontSize: tsResult.minFontSize, // Keep minFontSize for calculation
-      label: "", // Placeholder label, will be assigned by assignLabels
-    })),
-    latinTypeConfig.typeLabels,
-  );
-
-  const lineHeightVars = labeledSizes
-    .map((size) => {
-      // Find the original TypeStepResult to get minFontSize accurately
-      const originalStep = typeScale.find((s) => s.step === size.step);
-      if (!originalStep) return ""; // Should not happen
-
-      const snappedLineHeight = calculateLineHeight(
-        latinTypeConfig.lineHeightConfig,
-        originalStep.minFontSize, // Use minFontSize (pixels)
-      );
-      // Use the label assigned by assignLabels
-      return `  --lh-en-${size.label}: ${snappedLineHeight.toFixed(4)};`;
-    })
-    .filter(Boolean) // Remove empty strings if any step wasn't found
-    .join("\n");
-
-  return lineHeightVars;
+  const config = latinTypeConfig.lineHeightConfig;
+  return [
+    `  --latin-interline-gap: ${((config.paragraphLeading - config.referenceCapHeight * config.paragraphSize) / 16).toFixed(4)}rem;`,
+    `  --latin-leading-unit: ${config.paragraphLeading / config.subdivision / 16}rem;`,
+    `  --cjk-interline-gap: ${cjkTypeConfig.lineHeightConfig.paragraphSize / 2 / 16}rem;`,
+    ...latinTypeConfig.typeLabels.map(
+      (label) =>
+        `  --lh-en-${label}: round(nearest, calc(${config.referenceCapHeight} * var(--latin-fs-${label}) + var(--latin-interline-gap)), var(--latin-leading-unit));`,
+    ),
+  ].join("\n");
 }
 
 /**
@@ -222,6 +205,9 @@ export function generateCSS(): string {
   const semanticVars = generateSemanticVariables("latin");
   const semanticCJKVars = generateSemanticVariables("cjk");
   // Load metrics here and pass to the function
+  // Calibrated browser metrics: GT Flexa A/D = .8/.2; Cardinal = 1/.318.
+  // The fontkit extractor misreads these faces (ADR 0004). This input must not
+  // be blindly replaced with source-table metrics or fallback-face descriptors.
   const actualFontMetrics = require("./font-metrics.json") as FontMetricsData;
   const fontMetricsVars = generateFontMetricsCSS(actualFontMetrics); // Pass loaded data
   const flexaWeightVars = generateFlexaWeightCSS(flexaWeightConfig);
@@ -241,7 +227,7 @@ ${latinVars.spaceVars}
 
   /* CJK Typography Variables */
 ${cjkVars.typeVars}
-  --cjk-lh: calc(1em + 1rem);
+  --cjk-lh: calc(1em + var(--cjk-interline-gap));
 
   /* CJK Spacing Variables */
 ${cjkVars.spaceVars}
@@ -308,18 +294,4 @@ if (require.main === module) {
     console.error(error);
     process.exit(1);
   }
-}
-
-// Add the generateScales function
-export function generateScales() {
-  const latinTypeVars = generateTypeCSSVariables(latinTypeConfig);
-  const latinSpaceVars = generateSpaceCSSVariables(latinSpaceConfig);
-  const cjkTypeVars = generateTypeCSSVariables(cjkTypeConfig);
-  const cjkSpaceVars = generateSpaceCSSVariables(cjkSpaceConfig);
-
-  // Combine the strings instead of spreading
-  return {
-    typeSizes: `${latinTypeVars}\n${cjkTypeVars}`,
-    spaceSizes: `${latinSpaceVars}\n${cjkSpaceVars}`,
-  };
 }

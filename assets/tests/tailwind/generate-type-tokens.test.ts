@@ -25,32 +25,6 @@ vi.mock("node:fs", async (importOriginal) => {
   };
 });
 
-// --- Updated Font Metrics Mock ---
-// Mock the font metrics import based on the new strategy
-vi.mock("../../tailwind/font-metrics.json", () => ({
-  default: {
-    // Use the structure and values from the user's example
-    // NOTE: The actual implementation uses ascent/capHeight/descent directly,
-    // so the values here should reflect that input format if generateCSS reads them.
-    // The generateFontMetricsCSS function expects unitsPerEm, capHeight, ascent, descent.
-    // Let's use the previous mock structure which aligns with the implementation's expected input.
-    "test-font-a": {
-      unitsPerEm: 1000,
-      capHeight: 700,
-      ascent: 1000,
-      descent: -200,
-      xHeight: 500,
-    },
-    "test-font-b": {
-      unitsPerEm: 2048,
-      capHeight: 1434,
-      ascent: 2048,
-      descent: -410,
-      xHeight: 1024,
-    },
-  },
-}));
-
 // --- Test Subject ---
 import fs from "node:fs";
 import * as generateTypeTokensModule from "../../tailwind/generate-type-tokens";
@@ -98,7 +72,7 @@ describe("generateCSS Output Contract", () => {
     expect(generatedCSS).toMatch(/--cheee-small-distance-top:\s*0\.5240;/);
     expect(generatedCSS).toMatch(/--noto-sans-jp-distance-top:\s*0\.4270;/);
     expect(generatedCSS).toMatch(
-      /--cardinal-fruit-web-medium-trial-distance-top:\s*0\.2700;/,
+      /--cardinal-fruit-web-medium-trial-distance-top:\s*0\.2500;/,
     );
     // Check against duplication (simple count check for one key)
     const topMatches = generatedCSS.match(/--cheee-small-distance-top:/g);
@@ -110,29 +84,26 @@ describe("generateCSS Output Contract", () => {
     expect(generatedCSS).toMatch(/--cheee-small-distance-bottom:\s*0\.2380;/);
     expect(generatedCSS).toMatch(/--noto-sans-jp-distance-bottom:\s*0\.2880;/);
     expect(generatedCSS).toMatch(
-      /--cardinal-fruit-web-medium-trial-distance-bottom:\s*0\.3200;/,
+      /--cardinal-fruit-web-medium-trial-distance-bottom:\s*0\.3180;/,
     );
   });
 
-  it("should contain --lh-en-{size} variables with valid positive numbers", () => {
-    // Check a few examples based on default latinTypeConfig labels ('md', '4xl', '1xs' etc.)
-    expect(generatedCSS).toMatch(/--lh-en-md:\s*\d+(\.\d+)?;/);
-    expect(generatedCSS).toMatch(/--lh-en-4xl:\s*\d+(\.\d+)?;/);
-    expect(generatedCSS).toMatch(/--lh-en-1xs:\s*\d+(\.\d+)?;/);
-
-    // Extract and check if a value is positive (example for 'md')
-    const matchMd = generatedCSS.match(/--lh-en-md:\s*(\d+(\.\d+)?);/);
-    expect(matchMd).not.toBeNull();
-    if (matchMd) {
-      expect(Number.parseFloat(matchMd[1])).toBeGreaterThan(0);
+  it("keeps leading live at every generated size, including 6xl", () => {
+    for (const size of ["3xs", "md", "4xl", "6xl", "7xl"]) {
+      expect(generatedCSS).toContain(
+        `--lh-en-${size}: round(nearest, calc(0.7 * var(--latin-fs-${size}) + var(--latin-interline-gap)), var(--latin-leading-unit));`,
+      );
     }
+    expect(generatedCSS).toContain(
+      "--cjk-lh: calc(1em + var(--cjk-interline-gap));",
+    );
+    expect(generatedCSS).toContain("--cjk-interline-gap: 0.6875rem;");
+  });
 
-    // Extract and check another value ('1xs')
-    const match1xs = generatedCSS.match(/--lh-en-1xs:\s*(\d+(\.\d+)?);/);
-    expect(match1xs).not.toBeNull();
-    if (match1xs) {
-      expect(Number.parseFloat(match1xs[1])).toBeGreaterThan(0);
-    }
+  it("anchors layout spacing to the paragraph separately for each script", () => {
+    expect(generatedCSS).toContain("--latin-space-md: calc(1.75rem * 1);");
+    expect(generatedCSS).toContain("--cjk-space-md: calc(1.375rem * 1);");
+    expect(generatedCSS).toContain("--latin-space-3xs: calc(1.75rem * 0.125);");
   });
 
   it("should derive the GT Flexa optical weight rungs from the knobs", () => {

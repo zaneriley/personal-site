@@ -15,7 +15,7 @@ defmodule PortfolioWeb.Plugs.ContentAliasRedirect do
 
   @content_segments %{
     "note" => "note",
-    "case-study" => "case_study"
+    "work" => "project"
   }
 
   @spec init(keyword()) :: keyword()
@@ -69,8 +69,8 @@ defmodule PortfolioWeb.Plugs.ContentAliasRedirect do
     |> with_query_string(query_string)
   end
 
-  defp redirect_path("case-study", locale, url, query_string) do
-    ~p"/#{locale}/case-study/#{url}"
+  defp redirect_path("work", locale, url, query_string) do
+    ~p"/#{locale}/work/#{url}"
     |> with_query_string(query_string)
   end
 

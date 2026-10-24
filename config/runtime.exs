@@ -2,6 +2,13 @@ import Config
 
 config :portfolio, environment: config_env()
 
+config :portfolio,
+       :weather_api_key,
+       if(config_env() == :test,
+         do: nil,
+         else: System.get_env("WEATHER_API_KEY")
+       )
+
 config :portfolio, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
 config :portfolio,

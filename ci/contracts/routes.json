@@ -3,7 +3,7 @@
   "text_policy": {
     "forbidden_visible_text": [
       "We ran into an issue loading this note",
-      "We ran into an issue loading this case study",
+      "We ran into an issue loading this project",
       "We encountered an error while preparing",
       "Phoenix.Router.NoRouteError",
       "Plug.Conn.WrapperError",
@@ -77,7 +77,24 @@
       "max_fcp_ms": 1400,
       "max_cls": 0.1
     },
-    "exceptions": []
+    "exceptions": [
+      {
+        "budget": "max_css_bytes",
+        "allowed": 10733,
+        "routes": "all",
+        "recorded": "2026-10-24",
+        "expires": "2026-11-30",
+        "reason": "New phone header, sun/moon theme toggle, and footer weather landed together (PR #110). Approved by Z; cut back under 10000 before expiry. See BACKLOG.md, Page weight."
+      },
+      {
+        "budget": "max_js_bytes",
+        "allowed": 52098,
+        "routes": "all",
+        "recorded": "2026-10-24",
+        "expires": "2026-11-30",
+        "reason": "Navigation hook, theme toggle motion, and weather digit motion landed together (PR #110). Approved by Z; cut back under 52000 before expiry. See BACKLOG.md, Page weight."
+      }
+    ]
   },
   "routes": [
     {
@@ -117,12 +134,12 @@
       }
     },
     {
-      "label": "case-studies-index",
-      "path": "/en/case-studies",
+      "label": "work-index",
+      "path": "/en/work",
       "allowed_statuses": [200],
-      "required_body_text": ["Case Studies"],
+      "required_body_text": ["Work"],
       "browser": {
-        "required_visible_text": ["Case Studies"]
+        "required_visible_text": ["Work"]
       }
     },
     {
@@ -135,17 +152,17 @@
       }
     },
     {
-      "label": "published-sample-case-study",
-      "path": "/en/case-study/prod-build-smoke-case-study",
+      "label": "published-sample-project",
+      "path": "/en/work/prod-build-smoke-project",
       "allowed_statuses": [200],
-      "required_body_text": ["Prod Build Smoke Case Study"],
+      "required_body_text": ["Prod Build Smoke Project"],
       "browser": {
-        "required_visible_text": ["Prod Build Smoke Case Study"]
+        "required_visible_text": ["Prod Build Smoke Project"]
       }
     },
     {
       "label": "about",
-      "path": "/en/self",
+      "path": "/en/about",
       "allowed_statuses": [200],
       "required_body_text": ["About"],
       "browser": {

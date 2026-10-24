@@ -1,0 +1,25 @@
+<.header>
+  {gettext("Work")}
+</.header>
+
+<.portfolio_item_list
+  items={@streams.projects}
+  navigate_to={fn item -> ~p"/#{@user_locale}/work/#{item.url}" end}
+  user_locale={@user_locale}
+/>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="project-modal"
+  show
+  on_cancel={JS.patch(~p"/#{@user_locale}/work")}
+>
+  <.live_component
+    module={PortfolioWeb.WorkLive.FormComponent}
+    id={@project.id || :new}
+    title={@page_title}
+    action={@live_action}
+    project={@project}
+    patch={~p"/#{@user_locale}/work"}
+  />
+</.modal>

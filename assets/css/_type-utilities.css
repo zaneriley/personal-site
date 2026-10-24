@@ -78,6 +78,14 @@
   font-weight: var(--fw-flexa-2xs-bold);
 }
 
+.fw-flexa-3xs {
+  font-weight: var(--fw-flexa-3xs);
+}
+
+.fw-flexa-3xs-bold {
+  font-weight: var(--fw-flexa-3xs-bold);
+}
+
 /* Caps: uppercase ALWAYS carries the caps tracking token — use this instead of a
    bare `uppercase` so the two never drift apart. (Cheee headers are caps via the
    FONT, not this; the footer mono labels are a separate caps register.) */

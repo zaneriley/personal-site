@@ -4,11 +4,16 @@ import { LiveSocket } from "phoenix_live_view";
 import topbar from "topbar";
 
 import { initCloudSurface } from "./cloud-surface";
+import NavigationHook from "./hooks/navigation_hook";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
+import WeatherHook from "./hooks/weather_hook";
+import { themeController } from "./theme-switcher";
 
 // Define hooks before using them
 const Hooks = {
   ThemeSwitcher: ThemeSwitcherHook,
+  Weather: WeatherHook,
+  Navigation: NavigationHook,
 };
 
 const csrfToken = document
@@ -53,6 +58,7 @@ window.addEventListener("phx:page-loading-stop", () => {
     ?.classList.remove("phx-page-loading");
 });
 
+themeController();
 liveSocket.connect();
 
 // Light-mode cloud surface. Static markup in the root layout, outside the

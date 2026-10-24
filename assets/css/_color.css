@@ -170,7 +170,8 @@ html[data-theme="dark"] {
   /* Footer panel — a solid surface the footer paints over the page gradient
      (Figma bg/90). Its own token: it tracks the code bg in dark, but sits
      lighter than it in light mode. */
-  --footer-bg: oklch(27.48% 0.0091 285.78deg);
+  --surface-panel: oklch(27.48% 0.0091 285.78deg);
+  --footer-bg: var(--surface-panel);
 
   /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:
      brighter on dark, deeper on light. Same idea as the dark "bright" sibling
@@ -196,6 +197,10 @@ html[data-theme="dark"] {
      (the measured-exact x1.31 read too subtle in situ). Still holds L and H. */
   --signature-1: #f0e2ed;
   --signature-2: #cdadc6;
+
+  /* Flat illustration paint keeps the authored pink without the signature's
+     grain compensation. Light mode shares the existing light art palette. */
+  --illustration-warm: #c7b0c2;
   --signature-3: #9099e4;
   --signature-4: #4f6fa9;
   --signature-kana: #656a8c;
@@ -257,11 +262,13 @@ html[data-theme="light"] {
   --neutral-50: oklch(45% 0.11 278deg);
 
   /* Figma light footer bg #E8EEF7 — measured, not eyeballed. */
-  --footer-bg: oklch(94.7% 0.014 258deg);
+  --surface-panel: oklch(94.7% 0.014 258deg);
+  --footer-bg: var(--surface-panel);
 
   /* signature wordmark — light re-grade (mint → teal → blue → indigo) */
   --signature-1: #b5d7bd;
   --signature-2: #71c6e5;
+  --illustration-warm: var(--signature-2);
   --signature-3: #2aa7cf;
   --signature-4: #4f589b;
   --signature-kana: #9f8c90;
@@ -300,11 +307,13 @@ html[data-theme="light"] {
     /* neutral ramp — light (same as html[data-theme="light"]) */
     --neutral-25: oklch(53.32% 0.0379 277.61deg);
     --neutral-50: oklch(45% 0.11 278deg);
-    --footer-bg: oklch(94.7% 0.014 258deg);
+    --surface-panel: oklch(94.7% 0.014 258deg);
+    --footer-bg: var(--surface-panel);
 
     /* signature wordmark — light re-grade (same as html[data-theme="light"]) */
     --signature-1: #b5d7bd;
     --signature-2: #71c6e5;
+    --illustration-warm: var(--signature-2);
     --signature-3: #2aa7cf;
     --signature-4: #4f589b;
     --signature-kana: #9f8c90;

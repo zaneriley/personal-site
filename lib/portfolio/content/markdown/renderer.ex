@@ -59,7 +59,7 @@ defmodule Portfolio.Content.Markdown.Renderer do
 
   ## Parameters
     * `content` - The markdown content to render
-    * `content_type` - The type of content (:note, :case_study, etc.)
+    * `content_type` - The type of content (:note, :project, etc.)
     * `options` - Options to control rendering behavior
 
   ## Options
@@ -98,7 +98,7 @@ defmodule Portfolio.Content.Markdown.Renderer do
   ## Parameters
     * `content` - The markdown content to render
     * `content_id` - Unique identifier for the content, used for cache keys
-    * `content_type` - The type of content (:note, :case_study, etc.)
+    * `content_type` - The type of content (:note, :project, etc.)
     * `options` - Options to control rendering behavior
 
   ## Options

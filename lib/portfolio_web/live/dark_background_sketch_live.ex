@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.DarkBackgroundSketchLive do
   @moduledoc false
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.Identity
 
   alias Phoenix.LiveView.Socket
@@ -224,15 +225,10 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
           max-width: 32rem;
         }
 
-        .dbs__eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          margin: 0 0 0.75rem;
-          font-size: 0.7rem;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
+        .dbs__label {
+
+          margin: 0 0 var(--space-1xs);
+
           color: var(--t-secondary);
         }
 
@@ -511,31 +507,47 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
 
         <div class="dbs__sample">
           <.signature class="dbs__logo" />
-          <p class="dbs__eyebrow">
+          <.typography
+            tag="p"
+            font="flexa"
+            size="2xs"
+            weight="bold"
+            color="inherit"
+            class="caps dbs__label"
+          >
             Dark theme · in situ
             <span class="dbs__chip">contrast = worst case across gradient</span>
-          </p>
+          </.typography>
           <h1 class="dbs__title">A smarter way to remember students' names</h1>
-          <p class="dbs__lead">
+          <p data-typography-calibration class="dbs__lead">
             The real tokens, applied: heading in warm white, body in neutral, and
             <a href="#" class="dbs__link">links in neutral-50</a>
             that brighten to
             <span class="dbs__inline-hover">neutral-50-bright</span>
             on hover. Surfaces are drawn from the background ramp.
           </p>
-          <p class="dbs__meta">
+          <p data-typography-calibration class="dbs__meta">
             Secondary text uses neutral-25 — and the verdict below shows it can't carry body copy here.
           </p>
 
           <div class="dbs__card">
-            <p class="dbs__eyebrow">Nested surface · bg-90</p>
+            <.typography
+              tag="p"
+              font="flexa"
+              size="2xs"
+              weight="bold"
+              color="inherit"
+              class="caps dbs__label"
+            >
+              Nested surface · bg-90
+            </.typography>
             <h2 class="dbs__card-title">Layered surface</h2>
-            <p class="dbs__card-body">
+            <p data-typography-calibration class="dbs__card-body">
               Cards lift on bg-90 / bg-80 so depth reads without introducing new hues.
               Inline code like <code class="dbs__code">def render/1</code>
               borrows a coding accent.
             </p>
-            <a href="#" class="dbs__link">Read the case study</a>
+            <a href="#" class="dbs__link">Read the project</a>
           </div>
 
           <div class="dbs__accents">
@@ -546,7 +558,9 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
           </div>
 
           <div class="dbs__contrast">
-            <p class="dbs__token-label">Readability (worst case vs bg-80)</p>
+            <p data-typography-calibration class="dbs__token-label">
+              Readability (worst case vs bg-80)
+            </p>
             <div
               :for={{role, hex, ratio, tag} <- @text_contrast}
               class="dbs__contrast-row"
@@ -560,7 +574,7 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
 
           <div class="dbs__tokens">
             <div :for={{group, swatches} <- @token_groups} class="dbs__token-group">
-              <p class="dbs__token-label">{group}</p>
+              <p data-typography-calibration class="dbs__token-label">{group}</p>
               <div class="dbs__token-row">
                 <div :for={{name, hex, bright} <- swatches} class="dbs__token">
                   <span
@@ -586,24 +600,28 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
 
       <aside class="dbs__controls">
         <.form for={%{}} as={:sketch} phx-change="update">
-          <p class="dbs__h">Base fill</p>
+          <p data-typography-calibration class="dbs__h">Base fill</p>
           <.text_row field="base" controls={@controls} />
 
-          <p class="dbs__h">Gradient 1 · {@controls["g1_type"]}</p>
+          <p data-typography-calibration class="dbs__h">
+            Gradient 1 · {@controls["g1_type"]}
+          </p>
           <.choice_row field="g1_type" controls={@controls} />
           <.geometry field_prefix="g1" controls={@controls} />
           <.choice_row field="g1_blend" controls={@controls} />
           <.range_row field="g1_opacity" controls={@controls} />
           <.stops layer="g1" controls={@controls} />
 
-          <p class="dbs__h">Gradient 2 · {@controls["g2_type"]}</p>
+          <p data-typography-calibration class="dbs__h">
+            Gradient 2 · {@controls["g2_type"]}
+          </p>
           <.choice_row field="g2_type" controls={@controls} />
           <.geometry field_prefix="g2" controls={@controls} />
           <.choice_row field="g2_blend" controls={@controls} />
           <.range_row field="g2_opacity" controls={@controls} />
           <.stops layer="g2" controls={@controls} />
 
-          <p class="dbs__h">Grain</p>
+          <p data-typography-calibration class="dbs__h">Grain</p>
           <.range_row field="tex_size" controls={@controls} />
           <.range_row field="tex_opacity" controls={@controls} />
           <.choice_row field="tex_blend" controls={@controls} />

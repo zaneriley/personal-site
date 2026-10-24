@@ -15,7 +15,7 @@ defmodule Portfolio do
 
   Currently, the main context provided by Portfolio is:
 
-  *   `Portfolio.Content`: Manages all aspects of content entries (Notes, Case Studies),
+  *   `Portfolio.Content`: Manages all aspects of content entries (Notes, Projects),
       including their creation, retrieval from files or database, compilation
       (Markdown processing, AST generation), and translation handling.
 

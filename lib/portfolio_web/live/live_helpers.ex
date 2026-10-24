@@ -41,6 +41,10 @@ defmodule PortfolioWeb.LiveHelpers do
                          "Portfolio of Zane Riley, a Product Designer based in Tokyo with over 10 years of experience."
                        )
 
+  # Embedded views (the footer weather) own their assigns and have no route metadata.
+  def on_mount(:default, :not_mounted_at_router, _session, socket),
+    do: {:cont, socket}
+
   def on_mount(:default, params, session, socket) do
     socket = setup_common_assigns(socket, params, session)
     {:cont, socket}

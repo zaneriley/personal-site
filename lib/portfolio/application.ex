@@ -25,6 +25,8 @@ defmodule Portfolio.Application do
       # Other services that don't have critical dependencies
       Portfolio.Cache,
       {Finch, name: Portfolio.Finch},
+      {Task.Supervisor, name: Portfolio.WeatherTasks},
+      Portfolio.Weather,
       PortfolioWeb.Endpoint
     ]
 

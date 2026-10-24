@@ -6,7 +6,7 @@ defmodule Portfolio.Content.TranslatableFields do
   should be translated for each content type in the Portfolio application.
   """
 
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
 
   @type schema :: module()
@@ -23,8 +23,8 @@ defmodule Portfolio.Content.TranslatableFields do
     :share_image_direction,
     :share_image_alt
   ]
-  @case_study_translatable_fields (@note_translatable_fields -- [:url]) ++
-                                    [:company, :role, :timeline]
+  @project_translatable_fields (@note_translatable_fields -- [:url]) ++
+                                 [:company, :role, :timeline]
 
   @doc """
   Returns a list of translatable fields for a given schema.
@@ -44,7 +44,7 @@ defmodule Portfolio.Content.TranslatableFields do
 
   ## Examples
 
-      iex> Portfolio.Content.TranslatableFields.translatable_fields(Portfolio.Content.Schemas.CaseStudy)
+      iex> Portfolio.Content.TranslatableFields.translatable_fields(Portfolio.Content.Schemas.Project)
       [
         :title,
         :content,
@@ -71,7 +71,7 @@ defmodule Portfolio.Content.TranslatableFields do
       ]
   """
   @spec translatable_fields(schema()) :: [field()]
-  def translatable_fields(CaseStudy), do: @case_study_translatable_fields
+  def translatable_fields(Project), do: @project_translatable_fields
   def translatable_fields(Note), do: @note_translatable_fields
   def translatable_fields(schema), do: default_translatable_fields(schema)
 
@@ -89,10 +89,10 @@ defmodule Portfolio.Content.TranslatableFields do
 
   ## Examples
 
-      iex> TranslatableFields.translatable_field?(Portfolio.Content.Schemas.CaseStudy, :title)
+      iex> TranslatableFields.translatable_field?(Portfolio.Content.Schemas.Project, :title)
       true
 
-      iex> TranslatableFields.translatable_field?(Portfolio.Content.Schemas.CaseStudy, :read_time)
+      iex> TranslatableFields.translatable_field?(Portfolio.Content.Schemas.Project, :read_time)
       false
   """
   @spec translatable_field?(schema(), field()) :: boolean()

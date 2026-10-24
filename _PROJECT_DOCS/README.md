@@ -17,6 +17,13 @@ history owns deleted plans and completion ledgers.
 
 ## Current contracts
 
+- [footer-weather-design.md](footer-weather-design.md) — weather experience,
+  domain boundaries, file ownership and success criteria. Implemented locally;
+  its **Local implementation** section records what was built and where it
+  departs from the original proposal.
+- [../assets/weather-icons.md](../assets/weather-icons.md) — weather icon
+  provenance, the Figma node mapping, export steps, and why the theme toggle's
+  sun/moon is separate geometry.
 - [content-authoring-contract.md](content-authoring-contract.md) — fields and
   syntax the separate content repository may publish.
 - [feeds-spec.md](feeds-spec.md) — feed taxonomy, URLs, entry mapping, and

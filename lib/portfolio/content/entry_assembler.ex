@@ -8,7 +8,7 @@ defmodule Portfolio.Content.EntryAssembler do
 
   alias Portfolio.Content.Entry.Compiler
   alias Portfolio.Content.Entry.Records
-  alias Portfolio.Content.Schemas.CaseStudy
+  alias Portfolio.Content.Schemas.Project
   alias Portfolio.Content.Schemas.Note
   alias Portfolio.Content.TranslationRepository
   alias Portfolio.Content.Types
@@ -21,7 +21,7 @@ defmodule Portfolio.Content.EntryAssembler do
   Retrieves content with its translations for a specific locale.
 
   ## Parameters
-    - content_type: The type of content ("note" or "case_study")
+    - content_type: The type of content ("note" or "project")
     - id_or_url: Integer ID or String URL of the content
     - locale: The locale for translations
 
@@ -34,7 +34,7 @@ defmodule Portfolio.Content.EntryAssembler do
           String.t() | integer(),
           String.t()
         ) ::
-          {:ok, Note.t() | CaseStudy.t(), map(), list()} | {:error, atom()}
+          {:ok, Note.t() | Project.t(), map(), list()} | {:error, atom()}
   def get_assembled_entry(content_type, id_or_url, locale) do
     Logger.debug(
       "Fetching #{content_type} with translations for locale: #{locale}"
@@ -78,7 +78,7 @@ defmodule Portfolio.Content.EntryAssembler do
   Lists content with translations for a specific locale.
 
   ## Parameters
-    - content_type: The type of content ("note" or "case_study")
+    - content_type: The type of content ("note" or "project")
     - opts: Options for sorting and filtering
     - locale: The locale for translations
 
@@ -86,7 +86,7 @@ defmodule Portfolio.Content.EntryAssembler do
     - List of content items with merged translations
   """
   @spec list_assembled_entries(content_type(), keyword(), String.t()) ::
-          [Note.t()] | [CaseStudy.t()]
+          [Note.t()] | [Project.t()]
   def list_assembled_entries(content_type, opts \\ [], locale \\ "en") do
     # Get base content items
     contents = Records.list_contents(content_type, opts)

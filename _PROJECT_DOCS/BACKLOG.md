@@ -101,6 +101,17 @@ handling and regression checks**.
   here that does not mean abandoning LiveView, which is ADR 0002's separate and
   unratified question.
 
+- **Get CSS and JS back under budget before 2026-11-30.** PR #110 (header
+  rework, sun/moon toggle, footer weather) pushed every contracted route to
+  10,733 compressed CSS bytes against the 10,000 ratchet and 52,098 JS bytes
+  against 52,000. Z approved carrying this as two dated exceptions in
+  `ci/contracts/routes.json`; they expire 2026-11-30, after which the gate
+  fails. Needed: about 750 compressed CSS bytes and 100 JS bytes. Candidates:
+  the hide-on-scroll header styles in `_navigation.css`, the footer and
+  weather styles in `_footer.css`, the toggle styles in `_theme-switcher.css`,
+  and the navigation and weather hooks. Remove each exception when its number
+  is back under the ratchet; do not extend them.
+
 ## Asset handling and regression checks
 
 - **Give images the same treatment fonts already have.** Fonts have a generator
@@ -155,14 +166,11 @@ handling and regression checks**.
   installed on this machine, so none of it runs at all. A check that always
   passes is worse than no check, because it occupies the place where a real one
   would go.
-- **Make the gate enforce expiry dates on recorded exceptions.** ADR 0006's
-  ratchets made the gate green by construction, so the original urgency here is
-  gone — but the `exceptions` list in `routes.json` is still the sanctioned way
-  to carry a deliberate overrun, and the gate does not yet read a date from an
-  entry or fail when one expires or its number drifts upward. Until it does, an
-  exception is a permanent amnesty, which is the failure mode that lets
-  quarantine lists grow forever. Small gate change; do it before the first real
-  exception is ever added.
+- **Done 2026-10-24: the gate applies dated budget exceptions.** An entry in
+  `exceptions` names one `max_*` budget, the overrun it allows, the routes
+  (or `"all"`), when it was recorded, when it expires, and why. While active
+  it replaces that ceiling, so any further growth still fails; once expired
+  it fails the run. Incomplete entries fail the run too.
 - **Fix what CI measures before trusting it.** Font files are deliberately not
   committed, so a CI checkout has none and all five requests return 404. CI
   therefore reports `font_bytes: 0` and undercounts total page weight by 42–80%
@@ -241,7 +249,30 @@ handling and regression checks**.
 - **Repair the grid mobile-first across the site.** Base placement is missing
   on several 12-column layouts, and nav/main/footer do not share one constrained
   container. Define base stacking and align all three surfaces through the
-  existing grid tokens.
+  existing grid tokens. Phone review on 2026-09-12: the homepage layout is
+  substantially broken. Z needs to design the mobile grid; implement that
+  layout and verify the homepage at phone widths before extending the pass
+  across the site.
+- **Design the mobile navigation.** Raised in the 2026-09-12 phone review.
+  Resolve how navigation fits and operates on small screens, including access
+  to the theme switcher and language choice. Verify the resulting interaction
+  on a phone, including touch targets and keyboard/focus behavior.
+- **Verify the navigation and footer rework on a phone.** Written 2026-09-15
+  to 09-17, committed on `feat/theme-weather-icons`, not yet reviewed on a
+  phone. What changed: the header (`navigation.ex`, `assets/css/_navigation.css`)
+  keeps one source order — home, destinations, controls. Below 64rem it uses
+  two rows on six columns: logo and the theme/language controls on top, the
+  destinations underneath. From 64rem it is one row on the twelve-column grid.
+  Every link has a 44px minimum target and a visible focus ring. A hook
+  (`assets/js/hooks/navigation_hook.ts`) hides the sticky header while
+  scrolling down and brings it back on scroll up; the hide/show distances are
+  starting values that its own comment says to tune in phone review. The mobile
+  page inset and gutter were reduced in `_grid.css`, which its comment calls
+  exploratory. Footer links, the copyright line, and the Tokyo heading now take
+  their type from the Typography component instead of footer CSS. The labels
+  and routes were later renamed to Work and About (see the decided taxonomy
+  item below). This is a first pass at **Design the mobile navigation** above
+  and does not close it.
 - **Bring the footer spec sheets back to the mock.** Revisit padding,
   proportions, border/inset treatment, status-dot placement, narrow wrapping,
   and label-column width. Load GT Flexa Mono or choose a deliberate substitute.
@@ -260,13 +291,24 @@ handling and regression checks**.
   HTML" question touches the same LiveView/session design — adjudicate them
   with each other in view, not separately.
 - **Replace display-only footer status with owned live data.** Give temperature,
-  deploy identity/status, node health, operating cost, and Tokyo weather bounded
+  deploy identity/status, node health, and operating cost bounded
   cached owners while retaining explicit assigns for deterministic tests and
-  degraded operation.
-- **Decide navigation taxonomy before launch.** `Case Studies`/`Self` versus
-  `Work`/`About` affects labels, routes, SEO redirects, locale slugs, modules,
-  and content types. Because robots currently disallow indexing, a route change
-  is cheapest before launch; do not make a label-only partial rename.
+  degraded operation. Tokyo weather is scoped separately under **Theme toggle,
+  footer weather, and weather icons**.
+- **Decided 2026-10-24: one name per thing — Work for the collection, project
+  for one item.** Z chose this for hiring readers and search. The menu reads
+  Work / Notes / About (Japanese 実績 / メモ / プロフィール); public pages are
+  `/:locale/work`, `/:locale/work/:url`, and `/:locale/about`, with English
+  paths in both locales. The feed is `work.xml`, the content type is
+  `project` (table `projects`, schema `Portfolio.Content.Schemas.Project`,
+  pages `PortfolioWeb.WorkLive.*`), the dev-only admin pages are under
+  `/admin/work`, and the content repository keeps projects in `work/`. The
+  only remaining "case study" wording is each project page's title,
+  "Product design case study: <project>", because that is the phrase people
+  search for. The old `/case-studies`, `/case-study/:url`, `/self`, and
+  `case-studies.xml` addresses return 404 with no redirect, because the site
+  has never been deployed or indexed. Historical records (old migrations, the
+  changelog, and the measurement table in `page-weight.md`) keep the old names.
 - **Stop shipping the design sketch pages to visitors.** The router scope
   holding `/weight-calibration`, `/color-tokens`, `/code-block`, `/hdr-lab`,
   `/color-sketch`, `/shader-scale-sketch`, `/palette-comparison`, and
@@ -288,8 +330,108 @@ handling and regression checks**.
   them to the character set in `assets/fonts/generate-fonts.mjs` or replace them
   with characters already covered.
 
+## Theme toggle, footer weather, and weather icons
+
+Where these stand, so nobody has to reconstruct it from history. Commits named
+here are on the `feat/theme-weather-icons` branch; none of this is on
+`origin/main` yet. Asset provenance and the Figma mapping live in
+`assets/weather-icons.md`; the weather design contract is
+`footer-weather-design.md`.
+
+**Done (in code, with tests):**
+
+- **Sun/moon theme toggle** (`61713ba`). One binary control replaces the old
+  light/dark/system choices. It follows the operating-system theme until the
+  visitor picks one. The morph is a finite spring (`assets/js/sun-moon-motion.ts`)
+  over 24×24 paths in `assets/js/sun-moon-paths.json`, taken from the sun/moon
+  prototype — not from the Figma weather icons. Reduced motion and hidden tabs
+  skip straight to the end state.
+- **Live Tokyo weather in the footer** (`4cf391b`, designed in `28a6444`).
+  Server-side WeatherAPI fetch every 15 minutes into a shared in-memory cache;
+  pages never wait on the provider. Readings go stale after 30 minutes and
+  disappear after two hours. Condition codes map explicitly to icons or text.
+  The temperature uses Cheee with Z's selected optical values. Changed digits
+  animate once for 240 ms and stop. Performance budgets passed unchanged.
+- **Weather icon set.** Ten SVGs from the Figma weather collection in
+  `assets/static/images/weather/`, re-centered and optimized, inlined so they
+  follow the theme colors. Mapping to Figma nodes is in `assets/weather-icons.md`.
+
+**Open:**
+
+- **Turn on real weather and check it on a phone.** `WEATHER_API_KEY` is read in
+  `config/runtime.exs` but is not set in the local `.env`, so no real
+  observation has been shown yet. Set it in the private runtime environment,
+  confirm a real reading renders, then review the digit motion and slow-font
+  appearance on a physical phone in both themes. Font optimization stays a
+  global task. Background: WeatherAPI Free plan, accepted by Z on 2026-09-13;
+  2,880 scheduled calls per 30-day month before retries. Provider references:
+  [pricing](https://www.weatherapi.com/pricing.aspx),
+  [terms](https://www.weatherapi.com/terms.aspx),
+  [condition/API documentation](https://www.weatherapi.com/docs/).
+- **Decide on the weather greeting animation.** The design proposes a single
+  short greeting the first time the weather scrolls into view. It was deferred
+  pending phone review and is not built.
+- **Create the missing weather icons — Z owns the artwork.** The code already
+  distinguishes fog, mist, freezing fog, freezing rain, sleet, ice pellets,
+  haze, dust, smoke, and smog; all of these currently show condition text with
+  no icon. Decide which need their own artwork, draw them in the Figma weather
+  collection, then export and optimize them the way `assets/weather-icons.md`
+  describes. Unknown or unavailable data must never default to sunshine. The
+  existing `snowflake.svg` and `wind.svg` are not mapped to any condition yet
+  and need deliberate roles.
+- **Rename the stale layers in the Figma weather collection (Z).**
+  Figma node `4113:955` in file `zDOcBhnjTDCWmc6OFgeoUc` still uses old layer
+  names for half its icons (the sun layer is called "snowflake"). Until they
+  are renamed, the table in `assets/weather-icons.md` is the only reliable
+  mapping. The theme toggle's morph paths are separate geometry and are not in
+  that collection.
+- **Investigate the missing sun/moon toggle animation on mobile.** This was
+  reported before `61713ba` replaced the toggle, so first recheck it against
+  the new toggle. In the 2026-09-12 phone review, theme switching worked but the intended animation
+  was absent or appeared too slow to load. The cause is unverified; reproduce
+  on the phone and distinguish input handling, reduced-motion preferences,
+  asset loading, and rendering performance before choosing a fix. Match the
+  prototype's intended transition for touch interaction while preserving
+  reduced-motion behavior. Desktop verification does not close this item.
+- **Allow a future local weather station to supplement the API.** Z may later
+  add outdoor measurements; WeatherAPI remains the initial source and can
+  cover gaps. Keep source and observation time explicit so future station
+  readings can coexist with API conditions without misrepresenting freshness
+  or provenance. Defer station hardware, ingestion, and source-precedence rules
+  until that work is requested; no station dependency for the initial footer.
+
 ## Typography, color, and font pipeline
 
+- **Automatically derive Cheee's site-wide subset during the build.** Z
+  clarified that glyph coverage must follow the evolving design automatically,
+  rather than relying on a manually inventoried character list or a separate
+  weather font. Extend the existing `assets/fonts/generate-fonts.mjs` owner;
+  it currently applies one broad static charset to every face. Establish an
+  automated text-coverage source spanning routes, locales and relevant UI
+  states, with explicit character coverage for dynamic values such as signed
+  temperatures in C/F. A crawl of currently visible pages alone is insufficient
+  for unpublished/new content and unvisited states; the implementation must
+  handle content-only publication and retain conservative coverage where
+  exhaustiveness cannot be proved. Regenerate as part of the owning build or
+  publication workflow, and verify glyph coverage and render parity. Measure
+  the shared subset's effect on initial-page and first-visible-footer rendering
+  before introducing inline fonts or extra subsets. This supersedes manual
+  fixed-string inventory as the implementation approach for Cheee.
+- **Correct font weights throughout the interface, especially body text.**
+  Phone review on 2026-09-12: much of the type appears too thin. Audit rendered
+  faces, variable-font axes, and weight mappings against the intended design;
+  establish readable body weights and a deliberate hierarchy. Verify on the
+  phone in both themes rather than treating successful font loading as proof
+  of visual correctness.
+- **Define and apply a coherent color system in both themes.** Phone review
+  on 2026-09-12: the current light/dark color application is broken, and Figma
+  is more aesthetically pleasing. Critique the rendered site against the
+  latest Figma design to determine how colors should be assigned to surfaces,
+  text, borders, emphasis, and interactive states. Establish those semantic
+  roles before adjusting individual colors, then verify the resulting
+  hierarchy and contrast in light and dark mode. Coordinate with the
+  interactive-state and mock-fidelity passes rather than making isolated
+  palette fixes.
 - **Fix dark-footer `--neutral-25` contrast and adjudicate the light edge.** The
   dark footer remains 2.84:1 at small text. Commit `57c86fd` moved light from
   3.53:1 to the measured mock value, 4.49:1—effectively on, but fractionally

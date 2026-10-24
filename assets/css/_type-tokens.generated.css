@@ -64,70 +64,18 @@
 
   --latin-fs-1xs: 1.0577rem; /* 16.9232px */
   --latin-fs-2xs: 0.8136rem; /* 13.0176px */
+  --latin-fs-3xs: 0.6259rem; /* 10.0144px */
 
   /* Latin Spacing Variables */
-  --latin-space-5xl: clamp(
-    7.5938rem,
-    -1.6652rem +
-    46.2946vi,
-    40rem
-  ); /* min: 121.5px, max: 640px */
-
-  --latin-space-4xl: clamp(
-    5.0625rem,
-    0.7946rem +
-    21.3393vi,
-    20rem
-  ); /* min: 81px, max: 320px */
-
-  --latin-space-3xl: clamp(
-    3.375rem,
-    1.4821rem +
-    9.4643vi,
-    10rem
-  ); /* min: 54px, max: 160px */
-
-  --latin-space-2xl: clamp(
-    2.25rem,
-    1.4643rem +
-    3.9286vi,
-    5rem
-  ); /* min: 36px, max: 80px */
-
-  --latin-space-1xl: clamp(
-    1.5rem,
-    1.2143rem +
-    1.4286vi,
-    2.5rem
-  ); /* min: 24px, max: 40px */
-
-  --latin-space-md: clamp(
-    1rem,
-    0.9286rem +
-    0.3571vi,
-    1.25rem
-  ); /* min: 16px, max: 20px */
-
-  --latin-space-1xs: clamp(
-    0.625rem,
-    0.6786rem +
-    -0.0595vi,
-    0.6667rem
-  ); /* min: 10.6667px, max: 10px */
-
-  --latin-space-2xs: clamp(
-    0.3125rem,
-    0.4821rem +
-    -0.1885vi,
-    0.4444rem
-  ); /* min: 7.1111px, max: 5px */
-
-  --latin-space-3xs: clamp(
-    0.1563rem,
-    0.3363rem +
-    -0.2001vi,
-    0.2963rem
-  ); /* min: 4.7407px, max: 2.5px */
+  --latin-space-3xs: calc(1.75rem * 0.125);
+  --latin-space-2xs: calc(1.75rem * 0.25);
+  --latin-space-1xs: calc(1.75rem * 0.5);
+  --latin-space-md: calc(1.75rem * 1);
+  --latin-space-1xl: calc(1.75rem * 1.5);
+  --latin-space-2xl: calc(1.75rem * 2);
+  --latin-space-3xl: calc(1.75rem * 3);
+  --latin-space-4xl: calc(1.75rem * 4);
+  --latin-space-5xl: calc(1.75rem * 6);
 
   /* CJK Typography Variables */
   --cjk-fs-7xl: clamp(
@@ -188,95 +136,106 @@
 
   --cjk-fs-1xs: 1.0577rem; /* 16.9232px */
   --cjk-fs-2xs: 0.8136rem; /* 13.0176px */
-  --cjk-lh: calc(1em + 1rem);
+  --cjk-fs-3xs: 0.6259rem; /* 10.0144px */
+  --cjk-lh: calc(1em + var(--cjk-interline-gap));
 
   /* CJK Spacing Variables */
-  --cjk-space-5xl: clamp(
-    7.5938rem,
-    -1.6652rem +
-    46.2946vi,
-    40rem
-  ); /* min: 121.5px, max: 640px */
-
-  --cjk-space-4xl: clamp(
-    5.0625rem,
-    0.7946rem +
-    21.3393vi,
-    20rem
-  ); /* min: 81px, max: 320px */
-
-  --cjk-space-3xl: clamp(
-    3.375rem,
-    1.4821rem +
-    9.4643vi,
-    10rem
-  ); /* min: 54px, max: 160px */
-
-  --cjk-space-2xl: clamp(
-    2.25rem,
-    1.4643rem +
-    3.9286vi,
-    5rem
-  ); /* min: 36px, max: 80px */
-
-  --cjk-space-1xl: clamp(
-    1.5rem,
-    1.2143rem +
-    1.4286vi,
-    2.5rem
-  ); /* min: 24px, max: 40px */
-
-  --cjk-space-md: clamp(
-    1rem,
-    0.9286rem +
-    0.3571vi,
-    1.25rem
-  ); /* min: 16px, max: 20px */
-
-  --cjk-space-1xs: clamp(
-    0.625rem,
-    0.6786rem +
-    -0.0595vi,
-    0.6667rem
-  ); /* min: 10.6667px, max: 10px */
-
-  --cjk-space-2xs: clamp(
-    0.3125rem,
-    0.4821rem +
-    -0.1885vi,
-    0.4444rem
-  ); /* min: 7.1111px, max: 5px */
-
-  --cjk-space-3xs: clamp(
-    0.1563rem,
-    0.3363rem +
-    -0.2001vi,
-    0.2963rem
-  ); /* min: 4.7407px, max: 2.5px */
+  --cjk-space-3xs: calc(1.375rem * 0.125);
+  --cjk-space-2xs: calc(1.375rem * 0.25);
+  --cjk-space-1xs: calc(1.375rem * 0.5);
+  --cjk-space-md: calc(1.375rem * 1);
+  --cjk-space-1xl: calc(1.375rem * 1.5);
+  --cjk-space-2xl: calc(1.375rem * 2);
+  --cjk-space-3xl: calc(1.375rem * 3);
+  --cjk-space-4xl: calc(1.375rem * 4);
+  --cjk-space-5xl: calc(1.375rem * 6);
 
   /* Latin Line Heights (Snapped) */
-  --lh-en-7xl: 0.3774;
-  --lh-en-6xl: 0;
-  --lh-en-5xl: 0.3197;
-  --lh-en-4xl: 0.5754;
-  --lh-en-3xl: 0.8286;
-  --lh-en-2xl: 0.9943;
-  --lh-en-1xl: 1.1269;
-  --lh-en-md: 1.2727;
-  --lh-en-1xs: 1.4477;
-  --lh-en-2xs: 1.4787;
+  --latin-interline-gap: 0.7875rem;
+  --latin-leading-unit: 0.4375rem;
+  --cjk-interline-gap: 0.6875rem;
+  --lh-en-7xl: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-7xl) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-6xl: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-6xl) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-5xl: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-5xl) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-4xl: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-4xl) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-3xl: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-3xl) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-2xl: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-2xl) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-1xl: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-1xl) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-md: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-md) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-1xs: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-1xs) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-2xs: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-2xs) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
+  --lh-en-3xs: round(
+    nearest,
+    calc(0.7 * var(--latin-fs-3xs) + var(--latin-interline-gap)),
+    var(--latin-leading-unit)
+  );
 
   /* Font Metrics */
+  --cheee-small-cap: 0.64;
+  --cheee-small-trim-start: 0.177;
+  --cheee-small-trim-end: 0.463;
   --cheee-small-distance-top: 0.524;
   --cheee-small-distance-bottom: 0.238;
+  --noto-sans-jp-cap: 0.733;
+  --noto-sans-jp-trim-start: 0.297;
+  --noto-sans-jp-trim-end: 0.436;
   --noto-sans-jp-distance-top: 0.427;
   --noto-sans-jp-distance-bottom: 0.288;
-  --cardinal-fruit-web-medium-trial-distance-top: 0.27;
-  --cardinal-fruit-web-medium-trial-distance-bottom: 0.32;
-  --cardinal-fruit-web-medium-italic-trial-distance-top: 0.27;
-  --cardinal-fruit-web-medium-italic-trial-distance-bottom: 0.32;
-  --gt-flexa-trial-vf-distance-top: 0.282;
-  --gt-flexa-trial-vf-distance-bottom: 0.233;
+  --cardinal-fruit-web-medium-trial-cap: 0.75;
+  --cardinal-fruit-web-medium-trial-trim-start: 0.409;
+  --cardinal-fruit-web-medium-trial-trim-end: 0.341;
+  --cardinal-fruit-web-medium-trial-distance-top: 0.25;
+  --cardinal-fruit-web-medium-trial-distance-bottom: 0.318;
+  --cardinal-fruit-web-medium-italic-trial-cap: 0.75;
+  --cardinal-fruit-web-medium-italic-trial-trim-start: 0.409;
+  --cardinal-fruit-web-medium-italic-trial-trim-end: 0.341;
+  --cardinal-fruit-web-medium-italic-trial-distance-top: 0.25;
+  --cardinal-fruit-web-medium-italic-trial-distance-bottom: 0.318;
+  --gt-flexa-trial-vf-cap: 0.7;
+  --gt-flexa-trial-vf-trim-start: 0.4;
+  --gt-flexa-trial-vf-trim-end: 0.3;
+  --gt-flexa-trial-vf-distance-top: 0.1;
+  --gt-flexa-trial-vf-distance-bottom: 0.2;
 
   /* GT Flexa Optical Weight (derived from flexaWeightConfig) */
   --fw-flexa-4xl: 148;
@@ -286,6 +245,7 @@
   --fw-flexa-md: 268;
   --fw-flexa-1xs: 298;
   --fw-flexa-2xs: 328;
+  --fw-flexa-3xs: 358;
   --fw-flexa-4xl-bold: 338;
   --fw-flexa-3xl-bold: 408;
   --fw-flexa-2xl-bold: 478;
@@ -293,6 +253,7 @@
   --fw-flexa-md-bold: 618;
   --fw-flexa-1xs-bold: 688;
   --fw-flexa-2xs-bold: 758;
+  --fw-flexa-3xs-bold: 828;
 
   /* Semantic Variables (Default to Latin) */
   --fs-7xl: var(--latin-fs-7xl);
@@ -305,15 +266,16 @@
   --fs-md: var(--latin-fs-md);
   --fs-1xs: var(--latin-fs-1xs);
   --fs-2xs: var(--latin-fs-2xs);
-  --space-5xl: var(--latin-space-5xl);
-  --space-4xl: var(--latin-space-4xl);
-  --space-3xl: var(--latin-space-3xl);
-  --space-2xl: var(--latin-space-2xl);
-  --space-1xl: var(--latin-space-1xl);
-  --space-md: var(--latin-space-md);
-  --space-1xs: var(--latin-space-1xs);
-  --space-2xs: var(--latin-space-2xs);
+  --fs-3xs: var(--latin-fs-3xs);
   --space-3xs: var(--latin-space-3xs);
+  --space-2xs: var(--latin-space-2xs);
+  --space-1xs: var(--latin-space-1xs);
+  --space-md: var(--latin-space-md);
+  --space-1xl: var(--latin-space-1xl);
+  --space-2xl: var(--latin-space-2xl);
+  --space-3xl: var(--latin-space-3xl);
+  --space-4xl: var(--latin-space-4xl);
+  --space-5xl: var(--latin-space-5xl);
 }
 
 /* CJK Overrides */
@@ -329,13 +291,14 @@ html[lang="ja"] {
   --fs-md: var(--cjk-fs-md);
   --fs-1xs: var(--cjk-fs-1xs);
   --fs-2xs: var(--cjk-fs-2xs);
-  --space-5xl: var(--cjk-space-5xl);
-  --space-4xl: var(--cjk-space-4xl);
-  --space-3xl: var(--cjk-space-3xl);
-  --space-2xl: var(--cjk-space-2xl);
-  --space-1xl: var(--cjk-space-1xl);
-  --space-md: var(--cjk-space-md);
-  --space-1xs: var(--cjk-space-1xs);
-  --space-2xs: var(--cjk-space-2xs);
+  --fs-3xs: var(--cjk-fs-3xs);
   --space-3xs: var(--cjk-space-3xs);
+  --space-2xs: var(--cjk-space-2xs);
+  --space-1xs: var(--cjk-space-1xs);
+  --space-md: var(--cjk-space-md);
+  --space-1xl: var(--cjk-space-1xl);
+  --space-2xl: var(--cjk-space-2xl);
+  --space-3xl: var(--cjk-space-3xl);
+  --space-4xl: var(--cjk-space-4xl);
+  --space-5xl: var(--cjk-space-5xl);
 }

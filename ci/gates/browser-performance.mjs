@@ -93,6 +93,7 @@ async function measureRoute(browserInstance, routeBudget) {
   const routeConfig = {
     ...(budget.defaults ?? {}),
     ...routeBudget,
+    ...exceptionCeilings(budget.exceptions, routeBudget.path),
   };
   const url = new URL(routeConfig.path, `${baseUrl}/`).toString();
   const routeFailures = [];
@@ -814,6 +815,23 @@ function normalizePerformanceContract(routeContract) {
   };
 }
 
+// An active exception replaces one byte or timing ceiling with the recorded
+// overrun, so the route may carry that overrun and nothing more. Expired
+// exceptions are never applied; validateBudget fails the run on them.
+function exceptionCeilings(exceptions, routePath) {
+  const today = new Date();
+
+  return Object.fromEntries(
+    (exceptions ?? [])
+      .filter(
+        (exception) =>
+          new Date(`${exception.expires}T23:59:59Z`) >= today &&
+          (exception.routes === "all" || exception.routes?.includes(routePath)),
+      )
+      .map((exception) => [exception.budget, exception.allowed]),
+  );
+}
+
 function validateBudget(budgetConfig, budgetFailures) {
   const today = new Date();
 
@@ -854,13 +872,31 @@ function validateBudget(budgetConfig, budgetFailures) {
   }
 
   for (const exception of budgetConfig.exceptions ?? []) {
-    if (!exception.expires) {
+    const complete =
+      typeof exception.budget === "string" &&
+      exception.budget.startsWith("max_") &&
+      Number.isFinite(exception.allowed) &&
+      /^\d{4}-\d{2}-\d{2}$/.test(exception.recorded ?? "") &&
+      /^\d{4}-\d{2}-\d{2}$/.test(exception.expires ?? "") &&
+      typeof exception.reason === "string" &&
+      exception.reason.length > 0 &&
+      (exception.routes === "all" || Array.isArray(exception.routes));
+
+    if (!complete) {
+      budgetFailures.push({
+        route: "budget",
+        code: "invalid_budget_exception",
+        problem:
+          "Budget exception needs budget (max_*), allowed, recorded, expires, reason, and routes",
+        observed: exception,
+        allowed: "complete dated exception",
+      });
       continue;
     }
 
     if (new Date(`${exception.expires}T23:59:59Z`) < today) {
       budgetFailures.push({
-        route: exception.route ?? exception.path ?? "unknown",
+        route: exception.budget,
         code: "expired_budget_exception",
         problem: "Browser performance budget exception expired",
         observed: exception.expires,

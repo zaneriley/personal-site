@@ -3,9 +3,9 @@ defmodule Portfolio.Content.Feeds do
   Which entries belong to each syndication feed — the Content-owned half of
   the feeds contract (`_PROJECT_DOCS/feeds-spec.md`).
 
-  The four feed names (`:main`, `:case_studies`, `:notes`, `:everything`) are
+  The four feed names (`:main`, `:work`, `:notes`, `:everything`) are
   the contract shared with the web layer: this module owns membership — the
-  `main_feed` type defaults (case studies in, notes out), publication
+  `main_feed` type defaults (projects in, notes out), publication
   filtering (inherited from `Records.list_contents/2`), the strict locale
   promise (an entry without a ja translation appears in no ja feed), and
   cross-type merge-then-cap ordering. The web layer owns titles, routes, and
@@ -21,12 +21,12 @@ defmodule Portfolio.Content.Feeds do
 
   # Feed name → the type queries it unions. The membership filter encodes the
   # ratified type defaults: a bare note is out of main (only :promoted notes
-  # appear); a bare case study is in (only explicit demotion removes it).
+  # appear); a bare project is in (only explicit demotion removes it).
   @feeds %{
-    main: [{"note", :promoted}, {"case_study", :not_demoted}],
-    case_studies: [{"case_study", :all}],
+    main: [{"note", :promoted}, {"project", :not_demoted}],
+    work: [{"project", :all}],
     notes: [{"note", :all}],
-    everything: [{"note", :all}, {"case_study", :all}]
+    everything: [{"note", :all}, {"project", :all}]
   }
 
   @doc """

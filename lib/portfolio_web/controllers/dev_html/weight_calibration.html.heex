@@ -94,7 +94,7 @@
       <div class="wcal__wrap">
         <aside class="wcal__controls">
           <h1>Weight calibration</h1>
-          <p class="wcal__lede">
+          <p data-typography-calibration class="wcal__lede">
             Tune GT Flexa's optical weight curve by eye. The sliders set the live
             <code>--fw-flexa-*</code>
             tokens; everything below consumes them.
@@ -143,7 +143,7 @@
               step="1"
               value="15"
             />
-            <p class="wcal__lede">
+            <p data-typography-calibration class="wcal__lede">
               + = smaller sizes get heavier (hold apparent weight)
             </p>
           </div>
@@ -172,7 +172,7 @@
               step="1"
               value="0"
             />
-            <p class="wcal__lede">
+            <p data-typography-calibration class="wcal__lede">
               how much the bold delta itself drifts by size
             </p>
           </div>
@@ -205,7 +205,7 @@
           <div class="wcal__situ font-gt-flexa">
             <div class="situ-card situ-hero">
               <h3>Home hero</h3>
-              <p style="font-size:var(--fs-2xl)">
+              <p data-typography-calibration style="font-size:var(--fs-2xl)">
                 <span
                   class="text-callout"
                   style="font-weight:var(--fw-flexa-2xl-bold)"
@@ -223,6 +223,7 @@
                 </span>
               </p>
               <p
+                data-typography-calibration
                 class="text-main"
                 style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)"
               >
@@ -242,6 +243,7 @@
                 </span>
               </p>
               <p
+                data-typography-calibration
                 class="text-main"
                 style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)"
               >
@@ -252,19 +254,34 @@
 
             <div class="situ-card situ-ks">
               <h3>Kitchen sink (one family, all sizes)</h3>
-              <p style="font-size:var(--fs-4xl);font-weight:var(--fw-flexa-4xl)">
+              <p
+                data-typography-calibration
+                style="font-size:var(--fs-4xl);font-weight:var(--fw-flexa-4xl)"
+              >
                 Display 4xl
               </p>
-              <p style="font-size:var(--fs-3xl);font-weight:var(--fw-flexa-3xl)">
+              <p
+                data-typography-calibration
+                style="font-size:var(--fs-3xl);font-weight:var(--fw-flexa-3xl)"
+              >
                 Heading 3xl
               </p>
-              <p style="font-size:var(--fs-2xl);font-weight:var(--fw-flexa-2xl)">
+              <p
+                data-typography-calibration
+                style="font-size:var(--fs-2xl);font-weight:var(--fw-flexa-2xl)"
+              >
                 Heading 2xl
               </p>
-              <p style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)">
+              <p
+                data-typography-calibration
+                style="font-size:var(--fs-1xl);font-weight:var(--fw-flexa-1xl)"
+              >
                 Subhead 1xl
               </p>
-              <p style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)">
+              <p
+                data-typography-calibration
+                style="font-size:var(--fs-md);font-weight:var(--fw-flexa-md)"
+              >
                 Body copy at md. The quick brown fox, and an
                 <strong style="font-weight:var(--fw-flexa-md-bold)">
                   inline bold run
@@ -272,12 +289,14 @@
                 inside regular text to check the emphasis step at reading size.
               </p>
               <p
+                data-typography-calibration
                 class="dim"
                 style="font-size:var(--fs-1xs);font-weight:var(--fw-flexa-1xs)"
               >
                 Caption 1xs — metadata, timestamps, <strong style="font-weight:var(--fw-flexa-1xs-bold)">a bold label</strong>.
               </p>
               <p
+                data-typography-calibration
                 class="dim"
                 style="font-size:var(--fs-2xs);font-weight:var(--fw-flexa-2xs)"
               >

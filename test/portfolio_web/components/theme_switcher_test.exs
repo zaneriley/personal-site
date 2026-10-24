@@ -1,36 +1,26 @@
 defmodule PortfolioWeb.Components.ThemeSwitcherTest do
   use PortfolioWeb.ConnCase, async: true
   import Phoenix.LiveViewTest
-  use Gettext, backend: PortfolioWeb.Gettext
-  alias Floki
 
   alias PortfolioWeb.Components.ThemeSwitcher
 
-  describe "rendering" do
-    test "renders correctly with default theme" do
+  describe "theme_switcher/1" do
+    test "renders one named binary button with decorative artwork" do
       html = render_component(&ThemeSwitcher.theme_switcher/1, %{})
-
-      assert html =~ "<fieldset"
-      # Additional assertions...
+      tree = Floki.parse_fragment!(html)
+      assert [_] = Floki.find(tree, "button[type=button][aria-pressed=false]")
+      assert Floki.attribute(tree, "button", "aria-label") == ["Dark mode"]
+      assert Floki.find(tree, "input") == []
+      assert [_] = Floki.find(tree, "svg[aria-hidden=true]")
+      assert Floki.attribute(tree, "button", "phx-update") == ["ignore"]
     end
 
-    test "renders with specified theme selected" do
-      for selected_theme <- ["light", "dark", "system"] do
-        html =
-          render_component(&ThemeSwitcher.theme_switcher/1, %{class: "my-class"})
+    test "namespaces SVG mask references for different instances" do
+      html =
+        render_component(&ThemeSwitcher.theme_switcher/1, %{id: "footer-theme"})
 
-        # Assertions to check if the correct theme is selected
-        assert html =~ "value=\"#{selected_theme}\""
-      end
-    end
-  end
-
-  describe "accessibility" do
-    test "uses semantic HTML elements for accessibility" do
-      html = render_component(&ThemeSwitcher.theme_switcher/1, %{})
-
-      # Assertions for accessibility features
-      assert html =~ "<legend class=\"sr-only\">"
+      assert html =~ ~s(id="footer-theme-face")
+      assert html =~ ~s|mask="url(#footer-theme-face)"|
     end
   end
 end
