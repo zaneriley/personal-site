@@ -117,8 +117,8 @@
       }
     },
     {
-      "label": "case-studies-index",
-      "path": "/en/case-studies",
+      "label": "work-index",
+      "path": "/en/work",
       "allowed_statuses": [200],
       "required_body_text": ["Case Studies"],
       "browser": {
@@ -136,7 +136,7 @@
     },
     {
       "label": "published-sample-case-study",
-      "path": "/en/case-study/prod-build-smoke-case-study",
+      "path": "/en/work/prod-build-smoke-case-study",
       "allowed_statuses": [200],
       "required_body_text": ["Prod Build Smoke Case Study"],
       "browser": {
@@ -145,7 +145,7 @@
     },
     {
       "label": "about",
-      "path": "/en/self",
+      "path": "/en/about",
       "allowed_statuses": [200],
       "required_body_text": ["About"],
       "browser": {

@@ -49,16 +49,14 @@ defmodule PortfolioWeb.Navigation do
           <ul>
             <li>
               <.link
-                navigate={~p"/#{@user_locale}/case-studies"}
-                aria-current={if @section == "case-studies", do: "page"}
+                navigate={~p"/#{@user_locale}/work"}
+                aria-current={if @section == "work", do: "page"}
               >
                 <.typography
                   locale={@user_locale}
                   tag="span"
                   size="md"
-                  weight={
-                    if @section == "case-studies", do: "bold", else: "regular"
-                  }
+                  weight={if @section == "work", do: "bold", else: "regular"}
                 >
                   {gettext("Work")}
                 </.typography>
@@ -81,16 +79,16 @@ defmodule PortfolioWeb.Navigation do
             </li>
             <li>
               <.link
-                navigate={~p"/#{@user_locale}/self"}
-                aria-current={if @section == "self", do: "page"}
+                navigate={~p"/#{@user_locale}/about"}
+                aria-current={if @section == "about", do: "page"}
               >
                 <.typography
                   locale={@user_locale}
                   tag="span"
                   size="md"
-                  weight={if @section == "self", do: "bold", else: "regular"}
+                  weight={if @section == "about", do: "bold", else: "regular"}
                 >
-                  {gettext("Self")}
+                  {gettext("About")}
                 </.typography>
               </.link>
             </li>

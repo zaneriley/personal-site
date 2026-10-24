@@ -103,7 +103,7 @@ defmodule PortfolioWeb.FeedXML do
     section =
       case module.translatable_type() do
         "note" -> "note"
-        "case_study" -> "case-study"
+        "case_study" -> "work"
       end
 
     "/#{locale}/#{section}/#{entry.url}"

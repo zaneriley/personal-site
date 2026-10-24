@@ -261,8 +261,10 @@ handling and regression checks**.
   starting values that its own comment says to tune in phone review. The mobile
   page inset and gutter were reduced in `_grid.css`, which its comment calls
   exploratory. Footer links, the copyright line, and the Tokyo heading now take
-  their type from the Typography component instead of footer CSS. This is a
-  first pass at **Design the mobile navigation** above and does not close it.
+  their type from the Typography component instead of footer CSS. The labels
+  and routes were later renamed to Work and About (see the decided taxonomy
+  item below). This is a first pass at **Design the mobile navigation** above
+  and does not close it.
 - **Bring the footer spec sheets back to the mock.** Revisit padding,
   proportions, border/inset treatment, status-dot placement, narrow wrapping,
   and label-column width. Load GT Flexa Mono or choose a deliberate substitute.
@@ -285,15 +287,17 @@ handling and regression checks**.
   cached owners while retaining explicit assigns for deterministic tests and
   degraded operation. Tokyo weather is scoped separately under **Theme toggle,
   footer weather, and weather icons**.
-- **Decide navigation taxonomy before launch.** `Case Studies`/`Self` versus
-  `Work`/`About` affects labels, routes, SEO redirects, locale slugs, modules,
-  and content types. Because robots currently disallow indexing, a route change
-  is cheapest before launch; do not make a label-only partial rename.
-  **Needs Z's decision now:** the navigation rework above renamed the visible
-  label from "Case Studies" to "Work" (Japanese 実績) while the route is still
-  `/case-studies` and the home page heading still says "Case Studies" — exactly
-  the label-only partial rename this item warns against. Either decide the
-  taxonomy and rename everything, or revert the label.
+- **Decided 2026-10-24: the navigation reads Work / Notes / About.** Z chose
+  this for hiring readers and search. Public pages are `/:locale/work`,
+  `/:locale/work/:url`, and `/:locale/about`; the Japanese labels are 実績 and
+  プロフィール, and paths stay English in both locales. The old `/case-studies`,
+  `/case-study/:url`, and `/self` paths now return 404 with no redirect,
+  because the site has never been deployed or indexed, so no outside links can
+  point at them. "Case study" stays the word for the content itself: the home
+  page section, the index page heading, the Atom feed name
+  (`case-studies.xml`), the content type, the content-repository folder, and
+  the module names. The development-only admin routes under
+  `/admin/case-study` are unchanged.
 - **Stop shipping the design sketch pages to visitors.** The router scope
   holding `/weight-calibration`, `/color-tokens`, `/code-block`, `/hdr-lab`,
   `/color-sketch`, `/shader-scale-sketch`, `/palette-comparison`, and

@@ -153,11 +153,11 @@ defmodule PortfolioWeb.Router do
       live "/palette-comparison", PaletteComparisonLive, :index
       live "/dark-background-sketch", DarkBackgroundSketchLive, :index
       live "/kitchen-sink", KitchenSinkLive, :index
-      live "/case-studies", CaseStudyLive.Index, :index
-      live "/case-study/:url", CaseStudyLive.Show, :show
+      live "/work", CaseStudyLive.Index, :index
+      live "/work/:url", CaseStudyLive.Show, :show
       live "/notes", NoteLive.Index, :index
       live "/note/:url", NoteLive.Show, :show
-      live "/self", AboutLive, :index
+      live "/about", AboutLive, :index
     end
   end
 

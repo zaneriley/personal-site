@@ -86,7 +86,7 @@ defmodule PortfolioWeb.Feeds do
     section =
       cond do
         String.ends_with?(request_path, "/notes") -> [:notes]
-        String.ends_with?(request_path, "/case-studies") -> [:case_studies]
+        String.ends_with?(request_path, "/work") -> [:case_studies]
         true -> []
       end
 

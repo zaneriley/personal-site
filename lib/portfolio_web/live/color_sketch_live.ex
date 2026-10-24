@@ -831,7 +831,7 @@ defmodule PortfolioWeb.ColorSketchLive do
                 This is only a sketch surface: two background colors, three independent text colors,
                 and the actual SVG shape and texture values that make the surface more or less present.
               </p>
-              <a href="/en/self" class="color-sketch__link">
+              <a href="/en/about" class="color-sketch__link">
                 Read the self portrait
               </a>
               <section

@@ -4,7 +4,7 @@
 
 <.portfolio_item_list
   items={@streams.case_studies}
-  navigate_to={fn item -> ~p"/#{@user_locale}/case-study/#{item.url}" end}
+  navigate_to={fn item -> ~p"/#{@user_locale}/work/#{item.url}" end}
   user_locale={@user_locale}
 />
 
@@ -12,7 +12,7 @@
   :if={@live_action in [:new, :edit]}
   id="case_study-modal"
   show
-  on_cancel={JS.patch(~p"/#{@user_locale}/case-studies")}
+  on_cancel={JS.patch(~p"/#{@user_locale}/work")}
 >
   <.live_component
     module={PortfolioWeb.CaseStudyLive.FormComponent}

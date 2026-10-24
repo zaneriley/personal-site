@@ -8,7 +8,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
   alias Portfolio.Content.TranslationRepository
   alias Portfolio.Repo
 
-  describe "GET /:locale/case-study/:url" do
+  describe "GET /:locale/work/:url" do
     setup do
       Portfolio.DataCase.clear_cache()
 
@@ -26,7 +26,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
       conn: conn,
       case_study: case_study
     } do
-      {:ok, _view, html} = live(conn, ~p"/en/case-study/#{case_study.url}")
+      {:ok, _view, html} = live(conn, ~p"/en/work/#{case_study.url}")
 
       assert html =~ "Case Study"
       assert html =~ case_study.title
@@ -49,7 +49,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
 
       _case_study = Repo.preload(case_study, :translations, force: true)
 
-      {:ok, _view, html} = live(conn, ~p"/ja/case-study/#{case_study.url}")
+      {:ok, _view, html} = live(conn, ~p"/ja/work/#{case_study.url}")
 
       assert html =~ "日本語のタイトル"
       assert html =~ "日本語の紹介"
@@ -57,7 +57,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
 
     test "raises LiveError for a non-existent case study", %{conn: conn} do
       assert_raise PortfolioWeb.LiveError, fn ->
-        live(conn, ~p"/en/case-study/non-existent-url")
+        live(conn, ~p"/en/work/non-existent-url")
       end
     end
 
@@ -65,7 +65,7 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
       # `foo_bar` fails the slug regex (underscore not in `[a-z0-9-]`),
       # so the LV raises before any DB lookup runs.
       assert_raise PortfolioWeb.LiveError, fn ->
-        live(conn, ~p"/en/case-study/foo_bar")
+        live(conn, ~p"/en/work/foo_bar")
       end
     end
 
@@ -73,12 +73,12 @@ defmodule PortfolioWeb.CaseStudyLive.ShowTest do
       conn: conn,
       case_study: case_study
     } do
-      {:ok, _view, html} = live(conn, ~p"/en/case-study/#{case_study.url}")
+      {:ok, _view, html} = live(conn, ~p"/en/work/#{case_study.url}")
 
       assert html =~ ~r/<meta property="og:title" content="[^"]+"/
       assert html =~ ~s(<meta property="og:type" content="article")
       assert html =~ ~s(<meta property="og:url" content=")
-      assert html =~ "/en/case-study/#{case_study.url}\""
+      assert html =~ "/en/work/#{case_study.url}\""
       assert html =~ ~s(/images/og-default.png)
       assert html =~ ~s(<meta property="og:locale" content="en")
       assert html =~ ~s(<meta property="og:locale:alternate" content="ja")

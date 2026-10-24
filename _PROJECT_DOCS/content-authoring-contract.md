@@ -60,7 +60,7 @@ aliases:
   - "old-note-slug"
 ```
 
-The aliases are content-type local. A note alias redirects from `/en/note/old-note-slug` to `/en/note/new-note-slug`; a case-study alias redirects within `/en/case-study/...`.
+The aliases are content-type local. A note alias redirects from `/en/note/old-note-slug` to `/en/note/new-note-slug`; a case-study alias redirects within `/en/work/...`.
 
 Alias rules:
 

@@ -28,10 +28,10 @@ defmodule PortfolioWeb.Plugs.ContentAliasRedirectTest do
           "aliases" => ["old-case-study"]
         })
 
-      conn = get(conn, ~p"/en/case-study/old-case-study")
+      conn = get(conn, ~p"/en/work/old-case-study")
 
       assert redirected_to(conn, 301) ==
-               ~p"/en/case-study/#{case_study.url}"
+               ~p"/en/work/#{case_study.url}"
     end
 
     test "leaves a pure deleted note URL as the existing 404 behavior", %{

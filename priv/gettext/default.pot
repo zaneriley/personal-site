@@ -218,11 +218,6 @@ msgstr ""
 msgid "SYSTEM: Zane's Design Portfolio"
 msgstr ""
 
-#: lib/portfolio_web/components/navigation.ex:93
-#, elixir-autogen, elixir-format
-msgid "Self"
-msgstr ""
-
 #: lib/portfolio_web/components/footer.ex:127
 #, elixir-autogen, elixir-format
 msgid "Self-hosted on my home server. Open source on Github."
@@ -523,4 +518,9 @@ msgstr ""
 #: lib/portfolio_web/components/navigation.ex:47
 #, elixir-autogen, elixir-format
 msgid "Main navigation"
+msgstr ""
+
+#: lib/portfolio_web/components/navigation.ex:93
+#, elixir-autogen, elixir-format
+msgid "About"
 msgstr ""

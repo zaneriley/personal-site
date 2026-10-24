@@ -149,7 +149,7 @@ defmodule PortfolioWeb.HomeLive do
         <%= for case_study <- @case_studies do %>
           <div class="grid gap-1xs">
             <.link
-              navigate={~p"/#{@user_locale}/case-study/#{case_study.url}"}
+              navigate={~p"/#{@user_locale}/work/#{case_study.url}"}
               aria-label={
                 gettext("Read more about %{title}",
                   title: case_study.translations["title"] || case_study.title
