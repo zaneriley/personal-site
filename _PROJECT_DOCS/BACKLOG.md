@@ -249,13 +249,20 @@ handling and regression checks**.
   Resolve how navigation fits and operates on small screens, including access
   to the theme switcher and language choice. Verify the resulting interaction
   on a phone, including touch targets and keyboard/focus behavior.
-- **Investigate the missing sun/moon transition on mobile.** In the
-  2026-09-12 phone review, theme switching worked but the intended animation
-  was absent or appeared too slow to load. The cause is unverified; reproduce
-  on the phone and distinguish input handling, reduced-motion preferences,
-  asset loading, and rendering performance before choosing a fix. Match the
-  prototype's intended transition for touch interaction while preserving
-  reduced-motion behavior. Desktop verification does not close this item.
+- **Verify the navigation and footer rework on a phone.** Written 2026-09-15
+  to 09-17, committed on `feat/theme-weather-icons`, not yet reviewed on a
+  phone. What changed: the header (`navigation.ex`, `assets/css/_navigation.css`)
+  keeps one source order — home, destinations, controls. Below 64rem it uses
+  two rows on six columns: logo and the theme/language controls on top, the
+  destinations underneath. From 64rem it is one row on the twelve-column grid.
+  Every link has a 44px minimum target and a visible focus ring. A hook
+  (`assets/js/hooks/navigation_hook.ts`) hides the sticky header while
+  scrolling down and brings it back on scroll up; the hide/show distances are
+  starting values that its own comment says to tune in phone review. The mobile
+  page inset and gutter were reduced in `_grid.css`, which its comment calls
+  exploratory. Footer links, the copyright line, and the Tokyo heading now take
+  their type from the Typography component instead of footer CSS. This is a
+  first pass at **Design the mobile navigation** above and does not close it.
 - **Bring the footer spec sheets back to the mock.** Revisit padding,
   proportions, border/inset treatment, status-dot placement, narrow wrapping,
   and label-column width. Load GT Flexa Mono or choose a deliberate substitute.
@@ -276,58 +283,17 @@ handling and regression checks**.
 - **Replace display-only footer status with owned live data.** Give temperature,
   deploy identity/status, node health, and operating cost bounded
   cached owners while retaining explicit assigns for deterministic tests and
-  degraded operation. Tokyo weather is scoped separately below.
-- **Finish the Tokyo footer weather system using WeatherAPI's free plan.**
-  Implemented locally: shared ETS observation, asynchronous 15-minute refresh,
-  explicit condition translation, 30-minute fresh / two-hour expiry policy,
-  server-composed Cheee temperature with Z's optical values, isolated LiveView,
-  and finite digit-update motion with reduced-motion/offscreen cancellation.
-  Verified: 16 Elixir tests, 54 JS tests (11 existing skips), and the unchanged
-  release-shaped performance budgets with a populated three-digit negative
-  temperature and the largest weather SVG. Readable content: 682–869 ms;
-  measured CLS: 0 on all contracted routes. SVGs are inline; the existing seal's
-  path encoding was optimized to keep HTML under its ratchet.
-  Remaining: configure the API key and verify a real observation and phone
-  motion. Font optimization stays a global task.
-  See [the proposed design](footer-weather-design.md) for the experience,
-  domain/file boundaries, motion, live behavior and acceptance criteria.
-  Direction accepted by Z on 2026-09-13. Fetch one shared Tokyo reading on the
-  server every 15 minutes, independently of visitor traffic; keep the API key
-  server-side and weather requests out of page rendering. At continuous
-  polling this is 2,880 scheduled calls per 30-day month before retries.
-  Preserve source time and last successful fetch separately. Use a bounded,
-  timestamped last-known reading during outages, then hide unavailable weather;
-  a provider failure must not break the page. Choose the stale cutoff during
-  implementation. Provider references: [pricing](https://www.weatherapi.com/pricing.aspx),
-  [terms](https://www.weatherapi.com/terms.aspx), and
-  [condition/API documentation](https://www.weatherapi.com/docs/).
-  Map documented condition codes explicitly to the local SVGs and localized
-  condition text, including unknown/missing data; use Tokyo daylight for
-  day/night variants, independently of the site theme. Verify mapping, outage
-  behavior, and the rendered footer on a phone in both themes. Keep sample
-  assigns deterministic for tests. Required missing artwork is Z's task below,
-  not a reason to substitute a misleading icon.
-- **Create the missing weather icons — Z owns the artwork.** Add fog/mist and
-  freezing-precipitation artwork to the Figma weather collection, then import
-  optimized SVGs through the existing asset pipeline. During the WeatherAPI
-  condition-code mapping, inventory whether sleet/ice pellets and other
-  distinctions need separate artwork and hand that exact list to Z. Assume Z
-  will supply the missing icons; use accurate condition text until they arrive.
-  The adapter now distinguishes fog, mist, freezing fog, freezing rain, sleet,
-  and ice pellets. The current provider table also contains haze, dust, smoke,
-  and smog; these need an artwork decision too. All currently render as text.
-  Unknown/unavailable data must never default to sunshine. The existing
-  snowflake and wind assets still need deliberate semantic roles.
-- **Allow a future local weather station to supplement the API.** Z may later
-  add outdoor measurements; WeatherAPI remains the initial source and can
-  cover gaps. Keep source and observation time explicit so future station
-  readings can coexist with API conditions without misrepresenting freshness
-  or provenance. Defer station hardware, ingestion, and source-precedence rules
-  until that work is requested; no station dependency for the initial footer.
+  degraded operation. Tokyo weather is scoped separately under **Theme toggle,
+  footer weather, and weather icons**.
 - **Decide navigation taxonomy before launch.** `Case Studies`/`Self` versus
   `Work`/`About` affects labels, routes, SEO redirects, locale slugs, modules,
   and content types. Because robots currently disallow indexing, a route change
   is cheapest before launch; do not make a label-only partial rename.
+  **Needs Z's decision now:** the navigation rework above renamed the visible
+  label from "Case Studies" to "Work" (Japanese 実績) while the route is still
+  `/case-studies` and the home page heading still says "Case Studies" — exactly
+  the label-only partial rename this item warns against. Either decide the
+  taxonomy and rename everything, or revert the label.
 - **Stop shipping the design sketch pages to visitors.** The router scope
   holding `/weight-calibration`, `/color-tokens`, `/code-block`, `/hdr-lab`,
   `/color-sketch`, `/shader-scale-sketch`, `/palette-comparison`, and
@@ -348,6 +314,76 @@ handling and regression checks**.
   Both render today in whatever font the visitor's device supplies. Either add
   them to the character set in `assets/fonts/generate-fonts.mjs` or replace them
   with characters already covered.
+
+## Theme toggle, footer weather, and weather icons
+
+Where these stand, so nobody has to reconstruct it from history. Commits named
+here are on the `feat/theme-weather-icons` branch; none of this is on
+`origin/main` yet. Asset provenance and the Figma mapping live in
+`assets/weather-icons.md`; the weather design contract is
+`footer-weather-design.md`.
+
+**Done (in code, with tests):**
+
+- **Sun/moon theme toggle** (`61713ba`). One binary control replaces the old
+  light/dark/system choices. It follows the operating-system theme until the
+  visitor picks one. The morph is a finite spring (`assets/js/sun-moon-motion.ts`)
+  over 24×24 paths in `assets/js/sun-moon-paths.json`, taken from the sun/moon
+  prototype — not from the Figma weather icons. Reduced motion and hidden tabs
+  skip straight to the end state.
+- **Live Tokyo weather in the footer** (`4cf391b`, designed in `28a6444`).
+  Server-side WeatherAPI fetch every 15 minutes into a shared in-memory cache;
+  pages never wait on the provider. Readings go stale after 30 minutes and
+  disappear after two hours. Condition codes map explicitly to icons or text.
+  The temperature uses Cheee with Z's selected optical values. Changed digits
+  animate once for 240 ms and stop. Performance budgets passed unchanged.
+- **Weather icon set.** Ten SVGs from the Figma weather collection in
+  `assets/static/images/weather/`, re-centered and optimized, inlined so they
+  follow the theme colors. Mapping to Figma nodes is in `assets/weather-icons.md`.
+
+**Open:**
+
+- **Turn on real weather and check it on a phone.** `WEATHER_API_KEY` is read in
+  `config/runtime.exs` but is not set in the local `.env`, so no real
+  observation has been shown yet. Set it in the private runtime environment,
+  confirm a real reading renders, then review the digit motion and slow-font
+  appearance on a physical phone in both themes. Font optimization stays a
+  global task. Background: WeatherAPI Free plan, accepted by Z on 2026-09-13;
+  2,880 scheduled calls per 30-day month before retries. Provider references:
+  [pricing](https://www.weatherapi.com/pricing.aspx),
+  [terms](https://www.weatherapi.com/terms.aspx),
+  [condition/API documentation](https://www.weatherapi.com/docs/).
+- **Decide on the weather greeting animation.** The design proposes a single
+  short greeting the first time the weather scrolls into view. It was deferred
+  pending phone review and is not built.
+- **Create the missing weather icons — Z owns the artwork.** The code already
+  distinguishes fog, mist, freezing fog, freezing rain, sleet, ice pellets,
+  haze, dust, smoke, and smog; all of these currently show condition text with
+  no icon. Decide which need their own artwork, draw them in the Figma weather
+  collection, then export and optimize them the way `assets/weather-icons.md`
+  describes. Unknown or unavailable data must never default to sunshine. The
+  existing `snowflake.svg` and `wind.svg` are not mapped to any condition yet
+  and need deliberate roles.
+- **Rename the stale layers in the Figma weather collection (Z).**
+  Figma node `4113:955` in file `zDOcBhnjTDCWmc6OFgeoUc` still uses old layer
+  names for half its icons (the sun layer is called "snowflake"). Until they
+  are renamed, the table in `assets/weather-icons.md` is the only reliable
+  mapping. The theme toggle's morph paths are separate geometry and are not in
+  that collection.
+- **Investigate the missing sun/moon toggle animation on mobile.** This was
+  reported before `61713ba` replaced the toggle, so first recheck it against
+  the new toggle. In the 2026-09-12 phone review, theme switching worked but the intended animation
+  was absent or appeared too slow to load. The cause is unverified; reproduce
+  on the phone and distinguish input handling, reduced-motion preferences,
+  asset loading, and rendering performance before choosing a fix. Match the
+  prototype's intended transition for touch interaction while preserving
+  reduced-motion behavior. Desktop verification does not close this item.
+- **Allow a future local weather station to supplement the API.** Z may later
+  add outdoor measurements; WeatherAPI remains the initial source and can
+  cover gaps. Keep source and observation time explicit so future station
+  readings can coexist with API conditions without misrepresenting freshness
+  or provenance. Defer station hardware, ingestion, and source-precedence rules
+  until that work is requested; no station dependency for the initial footer.
 
 ## Typography, color, and font pipeline
 

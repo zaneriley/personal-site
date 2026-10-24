@@ -1,9 +1,14 @@
 # Footer weather: a small sense of place
 
-Status: design proposal, 2026-09-13. WeatherAPI Free, a shared Tokyo reading
-every 15 minutes, and Z supplying missing artwork are accepted directions.
-The experience, freshness thresholds, motion and module shape below are
-proposals for implementation and review, not claims of shipped behavior.
+Status: written as a design proposal on 2026-09-13 and implemented locally the
+same day (commit `4cf391b`, on the `feat/theme-weather-icons` branch, not yet
+on `origin/main`). Accepted by Z: WeatherAPI Free, one shared Tokyo reading
+every 15 minutes, and Z supplying missing artwork. The sections before
+**Local implementation — 2026-09-13** are the original proposal; where they
+disagree with that section or the code (for example, the heading is "Tokyo",
+not "Now in Tokyo", and the first-view greeting is not built), the code wins.
+Open work is tracked in `BACKLOG.md` under **Theme toggle, footer weather, and
+weather icons**.
 
 ## Job in the portfolio
 

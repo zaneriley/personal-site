@@ -11,20 +11,32 @@ and the three authored color roles remain intact. Paths are optimized to two dec
 shared SVGO configuration. IDs are prefixed per icon; repeated inline instances
 still need instance-specific IDs if they use a clip path.
 
-The sun and moon are shared weather/theme assets. Their face paths retain
-`weather-sun-face` and `weather-moon-face` IDs for future animation work.
-The theme control now uses the original 24×24 morph artwork from the
-[Sun & moon prototype](https://sun-moon-motion.zaneriley.chatgpt.site), stored in
-`js/sun-moon-paths.json`. These static 28×28 weather assets remain separate
-from that normalized animation geometry. The prototype's original contour pairs
-are rounded to four decimal places at import; frame output uses three.
-`js/sun-moon-motion.ts` owns the interruptible spring and facial choreography.
-The binary control follows the OS until the user explicitly selects a theme.
+## Two separate sun/moon drawings
+
+There are two unrelated sets of sun and moon geometry. Do not swap one for the
+other.
+
+- **Weather artwork** — `static/images/weather/sun.svg` and `moon.svg`, 28×28,
+  exported from the Figma weather collection (nodes `4113:956` and `4113:965`).
+  Only the footer weather uses them. Their face paths keep the
+  `weather-sun-face` and `weather-moon-face` IDs in case the weather greeting
+  animation is built later; nothing references those IDs today.
+- **Theme toggle artwork** — `js/sun-moon-paths.json`, 24×24 contour pairs
+  normalized for morphing between sun and moon. It comes from the
+  [Sun & moon prototype](https://sun-moon-motion.zaneriley.chatgpt.site), not
+  from the Figma weather node. The prototype's contours are rounded to four
+  decimal places at import; animation frames are written with three.
+  `js/sun-moon-motion.ts` owns the interruptible spring and the face
+  choreography. The toggle follows the operating-system theme until the visitor
+  explicitly picks one.
 
 ## Source mapping
 
 [Figma weather collection](https://www.figma.com/design/zDOcBhnjTDCWmc6OFgeoUc/Zane-Riley-s-Product-Portfolio?node-id=4113-955).
-File names describe the visible artwork; some original layer names are stale.
+File names here describe the visible artwork. Half of the layer names in Figma
+are stale (for example, the sun is still called "snowflake"). The table below is
+the only mapping between the two; renaming the Figma layers is open and is Z's
+task in Figma. The theme toggle's morph paths are not in this collection.
 
 | Asset | Figma node | Original layer name |
 | --- | --- | --- |
@@ -38,6 +50,11 @@ File names describe the visible artwork; some original layer names are stale.
 | `snowflake.svg` | `4113:985` | snow |
 | `snow.svg` | `4113:987` | cloudy-snow |
 | `wind.svg` | `4118:1337` | windy |
+
+Conditions with no artwork yet (fog, mist, freezing precipitation, sleet, ice
+pellets, haze, dust, smoke, smog) render as condition text with no icon. The
+open artwork list lives in `_PROJECT_DOCS/BACKLOG.md`. `snowflake.svg` and
+`wind.svg` exist but no condition maps to them yet.
 
 Optimize just this collection from the repository root with the running JS container:
 
