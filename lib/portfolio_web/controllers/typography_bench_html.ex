@@ -187,9 +187,9 @@ UI・UX・AI — デザインシステム"
             font="mono"
             size="2xs"
             locale={@locale}
-            data-part="eyebrow"
+            data-part="category"
           >
-            {@copy.eyebrow}
+            {@copy.category}
           </.typography>
           <.typography
             tag="h1"
@@ -337,7 +337,7 @@ UI・UX・AI — デザインシステム"
 
   defp article_copy("ja") do
     %{
-      eyebrow: "READING STUDY · 読むための余白",
+      category: "READING STUDY · 読むための余白",
       title: "文字と文字のあいだに",
       lede: "大きな見出しから小さな注釈まで。日本語と English が同じページに並ぶとき、余白はどう感じられるだろう。",
       metadata: "組版サンプル · 2026年9月14日 · 約3分",
@@ -361,7 +361,7 @@ UI・UX・AI — デザインシステム"
 
   defp article_copy(_) do
     %{
-      eyebrow: "READING STUDY · 読むための余白",
+      category: "READING STUDY · 読むための余白",
       title: "The space between words",
       lede:
         "From a large heading to a quiet footnote: a reading study for English, 日本語, and the space that holds them together.",

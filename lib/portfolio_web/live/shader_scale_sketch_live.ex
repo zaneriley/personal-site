@@ -2,6 +2,7 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
   @moduledoc false
 
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Typography, only: [typography: 1]
 
   @control_specs %{
     shade_count: %{
@@ -223,7 +224,11 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
           max-width: 52rem;
         }
 
-        .shader-sketch__eyebrow,
+        .shader-sketch__label {
+          margin: 0;
+          color: var(--soft-ink);
+        }
+
         .shader-sketch__section-title {
           margin: 0;
           color: var(--soft-ink);
@@ -602,9 +607,16 @@ defmodule PortfolioWeb.ShaderScaleSketchLive do
       <div class="shader-sketch__layout">
         <section class="shader-sketch__canvas">
           <header class="shader-sketch__intro">
-            <p data-typography-calibration class="shader-sketch__eyebrow">
+            <.typography
+              tag="p"
+              font="flexa"
+              size="2xs"
+              weight="bold"
+              color="inherit"
+              class="caps shader-sketch__label"
+            >
               Color grade system sketch
-            </p>
+            </.typography>
             <h1 class="shader-sketch__title">
               Role palettes with diagnostic ramps
             </h1>

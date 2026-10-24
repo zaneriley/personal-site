@@ -2,6 +2,7 @@ defmodule PortfolioWeb.ColorSketchLive do
   @moduledoc false
 
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.Identity
 
   @control_specs %{
@@ -368,13 +369,10 @@ defmodule PortfolioWeb.ColorSketchLive do
           max-width: 52rem;
         }
 
-        .color-sketch__eyebrow {
-          margin: 0 0 0.75rem;
+        .color-sketch__label {
+          margin: 0 0 var(--space-1xs);
           color: color-mix(in oklch, var(--body-text) 68%, var(--bg-b));
-          font-size: 0.78rem;
-          letter-spacing: 0.14em;
-          line-height: 1.2;
-          text-transform: uppercase;
+
         }
 
         .color-sketch__title {
@@ -813,9 +811,15 @@ defmodule PortfolioWeb.ColorSketchLive do
           <main class="color-sketch__sample">
             <article class="color-sketch__copy">
               <.signature style="max-width: 100%; margin-bottom: 2.5rem;" />
-              <p data-typography-calibration class="color-sketch__eyebrow">
+              <.typography
+                tag="p"
+                font="flexa"
+                size="2xs"
+                color="inherit"
+                class="caps color-sketch__label"
+              >
                 Light color sketch
-              </p>
+              </.typography>
               <h1 class="color-sketch__title">
                 A quiet cloud layer for the work
               </h1>

@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.PaletteComparisonLive do
   @moduledoc false
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.Identity
 
   # Light: finalized sketch values
@@ -169,13 +170,10 @@ defmodule PortfolioWeb.PaletteComparisonLive do
           margin-bottom: 3rem;
         }
 
-        .pc__eyebrow {
+        .pc__description {
           color: var(--text-deemphasized);
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          margin-bottom: 0.75rem;
+
+          margin-bottom: var(--space-1xs);
         }
 
         .pc__title {
@@ -455,9 +453,16 @@ defmodule PortfolioWeb.PaletteComparisonLive do
         <.signature class="pc__logo" />
 
         <div>
-          <p data-typography-calibration class="pc__eyebrow">
+          <.typography
+            tag="p"
+            font="flexa"
+            size="2xs"
+            weight="bold"
+            color="inherit"
+            class="caps pc__description"
+          >
             Product designer · Tokyo
-          </p>
+          </.typography>
           <h2 class="pc__title">Work that holds its ground</h2>
           <p data-typography-calibration class="pc__body">
             Strategy, visual design, and code — across Google Search, Maps,

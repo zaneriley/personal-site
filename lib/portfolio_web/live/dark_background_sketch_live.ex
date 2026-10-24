@@ -1,6 +1,7 @@
 defmodule PortfolioWeb.DarkBackgroundSketchLive do
   @moduledoc false
   use Phoenix.LiveView, layout: false
+  import PortfolioWeb.Components.Typography, only: [typography: 1]
   import PortfolioWeb.Components.Identity
 
   alias Phoenix.LiveView.Socket
@@ -224,15 +225,10 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
           max-width: 32rem;
         }
 
-        .dbs__eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          margin: 0 0 0.75rem;
-          font-size: 0.7rem;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
+        .dbs__label {
+
+          margin: 0 0 var(--space-1xs);
+
           color: var(--t-secondary);
         }
 
@@ -511,10 +507,17 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
 
         <div class="dbs__sample">
           <.signature class="dbs__logo" />
-          <p data-typography-calibration class="dbs__eyebrow">
+          <.typography
+            tag="p"
+            font="flexa"
+            size="2xs"
+            weight="bold"
+            color="inherit"
+            class="caps dbs__label"
+          >
             Dark theme · in situ
             <span class="dbs__chip">contrast = worst case across gradient</span>
-          </p>
+          </.typography>
           <h1 class="dbs__title">A smarter way to remember students' names</h1>
           <p data-typography-calibration class="dbs__lead">
             The real tokens, applied: heading in warm white, body in neutral, and
@@ -528,9 +531,16 @@ defmodule PortfolioWeb.DarkBackgroundSketchLive do
           </p>
 
           <div class="dbs__card">
-            <p data-typography-calibration class="dbs__eyebrow">
+            <.typography
+              tag="p"
+              font="flexa"
+              size="2xs"
+              weight="bold"
+              color="inherit"
+              class="caps dbs__label"
+            >
               Nested surface · bg-90
-            </p>
+            </.typography>
             <h2 class="dbs__card-title">Layered surface</h2>
             <p data-typography-calibration class="dbs__card-body">
               Cards lift on bg-90 / bg-80 so depth reads without introducing new hues.
