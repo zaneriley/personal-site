@@ -3,6 +3,24 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.12](https://github.com/zaneriley/personal-site/compare/v0.4.11...v0.4.12) (2026-10-24)
+
+
+### Features
+
+* **navigation:** call the sections Work and About, with matching addresses ([d46fbc8](https://github.com/zaneriley/personal-site/commit/d46fbc8956b5eb93819f713be7c2a9e515293552))
+* **navigation:** make the header fit phones and step out of the way while reading ([b639957](https://github.com/zaneriley/personal-site/commit/b639957187cd379b2495bdde4e0309a16bad0c25))
+* **theme:** replace theme choices with a sun and moon toggle ([61713ba](https://github.com/zaneriley/personal-site/commit/61713ba14b82566d494c65b496fc24f87d26b332))
+* **typography:** add a private reading and spacing review bench ([283ad1c](https://github.com/zaneriley/personal-site/commit/283ad1c50c346117c0f40c0d35ddfc7cf9daf894))
+* **weather:** add live Tokyo weather to the footer ([4cf391b](https://github.com/zaneriley/personal-site/commit/4cf391b080602ded0b4d5cedd7a29c4ff7aea42b))
+
+
+### Bug Fixes
+
+* **footer:** give footer links and the Tokyo heading the same type as the rest of the site ([b4bf149](https://github.com/zaneriley/personal-site/commit/b4bf149efe74e6b3acd7dfd8e804e328c00a0570))
+* **typography-bench:** stop the dev bench from reading files by variable path ([62d46a9](https://github.com/zaneriley/personal-site/commit/62d46a9392073886709435f5c3950dcea46b2891))
+* **typography:** align text boxes and restore consistent spacing ([fb681ed](https://github.com/zaneriley/personal-site/commit/fb681ede86bb677a4ce1ecf08babfe239c16c8f0))
+
 ## [0.4.11](https://github.com/zaneriley/personal-site/compare/v0.4.10...v0.4.11) (2026-08-30)
 
 
