@@ -1,143 +1,151 @@
 defmodule PortfolioWeb.Navigation do
   @moduledoc """
-  Main site navigation livecomponent.
+  Site identity, primary destinations, and appearance/language controls.
 
-  Features:
-  - Logo
-  - Page navigation (Case Studies, Notes, About)
-  - EN/JA language switcher
-  - Active page highlighting
-  - Accessibility labels
-
-  Usage:
-      <.live_component module={PortfolioWeb.Navigation} id="nav" current_path={@current_path} user_locale={@locale} />
-
-  Assigns:
-  - `current_path`: Current URL path (default: "/")
-  - `user_locale`: User's locale (default: "en")
-
-  Requires gettext translations for navigation labels and language switcher text.
-
-  Helper functions:
-  - `active_class/2`: Determines active navigation item
-  - `build_localized_path/2`: Generates localized paths
+  One source order serves every layout: home, destinations, then controls.
+  CSS places the controls above the destinations when the header uses two rows.
   """
   use PortfolioWeb, :live_component
   import PortfolioWeb.Components.ThemeSwitcher
   import PortfolioWeb.Components.Typography
 
+  @impl true
   def update(assigns, socket) do
     socket =
       socket
       |> assign(assigns)
-      |> assign_new(:current_path, fn -> assigns[:current_path] || "/" end)
-      |> assign_new(:user_locale, fn -> assigns[:user_locale] || "en" end)
-      |> assign_new(:selected_theme, fn ->
-        assigns[:selected_theme] || "dark"
-      end)
+      |> assign_new(:current_path, fn -> "/" end)
+      |> assign_new(:user_locale, fn -> "en" end)
 
     {:ok, socket}
   end
 
+  @impl true
   def render(assigns) do
     assigns =
       assign(assigns,
         en_path: build_localized_path(assigns.current_path, "en"),
-        ja_path: build_localized_path(assigns.current_path, "ja")
+        ja_path: build_localized_path(assigns.current_path, "ja"),
+        section:
+          assigns.current_path
+          |> PortfolioWeb.Layouts.remove_locale_from_path()
+          |> section()
       )
 
     ~H"""
-    <nav role="banner" class="reading-grid items-center">
-      <%!-- Logo — col 1–2, the same 2-column slot as the footer's seal, so the
-           nav below starts on col 3, aligned with the footer's colophon. --%>
-      <.link
-        navigate={~p"/#{@user_locale}"}
-        class="col-span-1 sm:col-span-2"
-        aria-label={gettext("Zane Riley Portfolio Logo")}
-      >
-        <.hanko />
-      </.link>
-      <%!-- Primary nav — starts on col 3 (sm+), landing on the colophon line. --%>
-      <nav
-        role="navigation"
-        class="col-start-2 col-span-3 sm:col-start-3 sm:col-span-6"
-      >
-        <ul class="flex gap-md sm:gap-1xl">
-          <li>
-            <.link
-              navigate={~p"/#{@user_locale}/case-studies"}
-              class={active_class(@current_path, :case_studies)}
-            >
-              <.typography locale={@user_locale} tag="span" size="md">
-                {ngettext("Case Study", "Case Studies", 2)}
-              </.typography>
-            </.link>
-          </li>
-          <li>
-            <.link
-              navigate={~p"/#{@user_locale}/notes"}
-              class={active_class(@current_path, :notes)}
-            >
-              <.typography locale={@user_locale} tag="span" size="md">
-                {ngettext("Note", "Notes", 2)}
-              </.typography>
-            </.link>
-          </li>
-          <li>
-            <.link
-              navigate={~p"/#{@user_locale}/self"}
-              class={active_class(@current_path, :about)}
-            >
-              <.typography locale={@user_locale} tag="span" size="md">
-                {gettext("Self")}
-              </.typography>
-            </.link>
-          </li>
-        </ul>
-      </nav>
-      <%!-- Theme switcher --%>
-      <.theme_switcher class="col-span-2 lg:col-start-9" />
-      <%!-- Language switcher --%>
-      <nav
-        aria-label={gettext("Language switcher")}
-        class="col-span-2 lg:col-start-11 text-1xs"
-      >
-        <ul class="flex justify-end gap-md">
-          <li>
-            <.link
-              href={@en_path}
-              aria-label={gettext("Switch to English")}
-              aria-current={if @user_locale == "en", do: "page", else: "false"}
-              class={"#{if @user_locale == "en", do: "font-bold", else: ""}"}
-            >
-              <.typography locale={@user_locale} tag="span" size="1xs">
-                English
-              </.typography>
-            </.link>
-          </li>
-          <li>
-            <.link
-              href={@ja_path}
-              aria-label={gettext("Switch to Japanese")}
-              aria-current={if @user_locale == "ja", do: "page", else: "false"}
-              class={"#{if @user_locale == "ja", do: "font-bold", else: ""}"}
-            >
-              <.typography locale={@user_locale} tag="span" size="1xs">
-                日本語
-              </.typography>
-            </.link>
-          </li>
-        </ul>
-      </nav>
-    </nav>
+    <header id="site-header" class="site-header" phx-hook="Navigation">
+      <div class="reading-grid site-navigation">
+        <.link
+          navigate={~p"/#{@user_locale}"}
+          class="site-navigation-home"
+          aria-label={gettext("Zane Riley Portfolio Logo")}
+        >
+          <.hanko />
+        </.link>
+        <nav
+          class="site-navigation-destinations"
+          aria-label={gettext("Main navigation")}
+        >
+          <ul>
+            <li>
+              <.link
+                navigate={~p"/#{@user_locale}/case-studies"}
+                aria-current={if @section == "case-studies", do: "page"}
+              >
+                <.typography
+                  locale={@user_locale}
+                  tag="span"
+                  size="md"
+                  weight={
+                    if @section == "case-studies", do: "bold", else: "regular"
+                  }
+                >
+                  {gettext("Work")}
+                </.typography>
+              </.link>
+            </li>
+            <li>
+              <.link
+                navigate={~p"/#{@user_locale}/notes"}
+                aria-current={if @section == "notes", do: "page"}
+              >
+                <.typography
+                  locale={@user_locale}
+                  tag="span"
+                  size="md"
+                  weight={if @section == "notes", do: "bold", else: "regular"}
+                >
+                  {ngettext("Note", "Notes", 2)}
+                </.typography>
+              </.link>
+            </li>
+            <li>
+              <.link
+                navigate={~p"/#{@user_locale}/self"}
+                aria-current={if @section == "self", do: "page"}
+              >
+                <.typography
+                  locale={@user_locale}
+                  tag="span"
+                  size="md"
+                  weight={if @section == "self", do: "bold", else: "regular"}
+                >
+                  {gettext("Self")}
+                </.typography>
+              </.link>
+            </li>
+          </ul>
+        </nav>
+        <div class="site-navigation-controls">
+          <.theme_switcher />
+          <nav
+            class="site-navigation-languages"
+            aria-label={gettext("Language switcher")}
+          >
+            <ul>
+              <li>
+                <.link
+                  href={@en_path}
+                  lang="en"
+                  hreflang="en"
+                  aria-current={if @user_locale == "en", do: "true"}
+                >
+                  <.typography
+                    locale="en"
+                    tag="span"
+                    size="1xs"
+                    weight={if @user_locale == "en", do: "bold", else: "regular"}
+                  >
+                    English
+                  </.typography>
+                </.link>
+              </li>
+              <li>
+                <.link
+                  href={@ja_path}
+                  lang="ja"
+                  hreflang="ja"
+                  aria-current={if @user_locale == "ja", do: "true"}
+                >
+                  <.typography
+                    locale="ja"
+                    tag="span"
+                    size="1xs"
+                    weight={if @user_locale == "ja", do: "bold", else: "regular"}
+                  >
+                    日本語
+                  </.typography>
+                </.link>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </header>
     """
   end
 
-  defp active_class(current_path, page) do
-    if String.contains?(current_path, Atom.to_string(page)),
-      do: "font-bold",
-      else: ""
-  end
+  defp section(path), do: path |> String.split("/", trim: true) |> List.first()
 
   defp build_localized_path(current_path, locale) do
     base_path = PortfolioWeb.Layouts.remove_locale_from_path(current_path)

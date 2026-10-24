@@ -515,3 +515,11 @@ msgstr "Smog"
 #: lib/portfolio_web/components/weather.ex
 msgid "Conditions unavailable"
 msgstr "Conditions unavailable"
+
+#, elixir-autogen, elixir-format
+msgid "Work"
+msgstr "Work"
+
+#, elixir-autogen, elixir-format
+msgid "Main navigation"
+msgstr "Main navigation"

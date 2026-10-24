@@ -514,3 +514,11 @@ msgstr "スモッグ"
 #: lib/portfolio_web/components/weather.ex
 msgid "Conditions unavailable"
 msgstr "天気の詳細不明"
+
+#, elixir-autogen, elixir-format
+msgid "Work"
+msgstr "実績"
+
+#, elixir-autogen, elixir-format
+msgid "Main navigation"
+msgstr "メインナビゲーション"

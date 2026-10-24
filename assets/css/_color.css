@@ -170,7 +170,8 @@ html[data-theme="dark"] {
   /* Footer panel — a solid surface the footer paints over the page gradient
      (Figma bg/90). Its own token: it tracks the code bg in dark, but sits
      lighter than it in light mode. */
-  --footer-bg: oklch(27.48% 0.0091 285.78deg);
+  --surface-panel: oklch(27.48% 0.0091 285.78deg);
+  --footer-bg: var(--surface-panel);
 
   /* BRAND ACCENT — the link pushed for emphasis *away from* its surface:
      brighter on dark, deeper on light. Same idea as the dark "bright" sibling
@@ -261,7 +262,8 @@ html[data-theme="light"] {
   --neutral-50: oklch(45% 0.11 278deg);
 
   /* Figma light footer bg #E8EEF7 — measured, not eyeballed. */
-  --footer-bg: oklch(94.7% 0.014 258deg);
+  --surface-panel: oklch(94.7% 0.014 258deg);
+  --footer-bg: var(--surface-panel);
 
   /* signature wordmark — light re-grade (mint → teal → blue → indigo) */
   --signature-1: #b5d7bd;
@@ -305,7 +307,8 @@ html[data-theme="light"] {
     /* neutral ramp — light (same as html[data-theme="light"]) */
     --neutral-25: oklch(53.32% 0.0379 277.61deg);
     --neutral-50: oklch(45% 0.11 278deg);
-    --footer-bg: oklch(94.7% 0.014 258deg);
+    --surface-panel: oklch(94.7% 0.014 258deg);
+    --footer-bg: var(--surface-panel);
 
     /* signature wordmark — light re-grade (same as html[data-theme="light"]) */
     --signature-1: #b5d7bd;
