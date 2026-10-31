@@ -111,6 +111,10 @@ handling and regression checks**.
   weather styles in `_footer.css`, the toggle styles in `_theme-switcher.css`,
   and the navigation and weather hooks. Remove each exception when its number
   is back under the ratchet; do not extend them.
+  2026-10-31: the header language switch landed at no net CSS cost by moving
+  link and hero layout onto existing utilities and removing the unused
+  `.logo-monochrome` rule from `_color.css` (an employer-logo mask, never
+  called). Restore it from git history when a page first needs it.
 
 ## Asset handling and regression checks
 

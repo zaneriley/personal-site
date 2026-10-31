@@ -21,7 +21,8 @@ defmodule PortfolioWeb.Components.LanguageSwitch do
     assigns =
       assign(assigns,
         en_path: Layouts.localized_path(assigns.current_path, "en"),
-        ja_path: Layouts.localized_path(assigns.current_path, "ja")
+        ja_path: Layouts.localized_path(assigns.current_path, "ja"),
+        link_class: "relative flex items-center justify-center text-2xs"
       )
 
     ~H"""
@@ -45,6 +46,7 @@ defmodule PortfolioWeb.Components.LanguageSwitch do
         />
       </svg>
       <a
+        class={@link_class}
         href={@en_path}
         lang="en"
         hreflang="en"
@@ -54,6 +56,7 @@ defmodule PortfolioWeb.Components.LanguageSwitch do
         EN
       </a>
       <a
+        class={@link_class}
         href={@ja_path}
         lang="ja"
         hreflang="ja"

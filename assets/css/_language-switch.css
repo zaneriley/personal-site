@@ -31,14 +31,9 @@
 }
 
 .language-switch a {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   block-size: var(--tap-target);
   padding-inline: var(--space-1xs);
   color: var(--text-color-deemphasized);
-  font-size: var(--fs-2xs);
 }
 
 .language-switch a[aria-current] {

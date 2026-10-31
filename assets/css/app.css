@@ -168,15 +168,12 @@ html[lang="ja"] .hero {
 }
 
 .hero-identity {
-  display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: end;
-  gap: var(--space-md);
 }
 
 .hero-portrait {
   block-size: var(--space-3xl);
-  inline-size: auto;
 }
 
 @supports (text-justify: inter-character) {

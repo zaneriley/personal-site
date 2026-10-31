@@ -66,14 +66,14 @@ defmodule PortfolioWeb.HomeLive do
          gettext translation, so only the copy branches; the frame is shared. --%>
     <section class="hero mt-1xl mb-3xl">
       <.signature class="block max-w-[34rem] mb-1xl" />
-      <div class="hero-identity">
+      <div class="hero-identity grid gap-md">
         <.image
           src={~p"/images/portrait-arch.webp"}
           alt={gettext("Portrait of Zane Riley")}
           width="280"
           height="396"
           loading="eager"
-          class="hero-portrait"
+          class="hero-portrait w-auto"
         />
         <div class="hero-copy grid gap-1xs">
           <%= if @user_locale == "ja" do %>

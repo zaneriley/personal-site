@@ -52,7 +52,6 @@
 
 .site-navigation-destinations {
   grid-area: destinations;
-  min-inline-size: 0;
 }
 
 .site-navigation-destinations ul {
