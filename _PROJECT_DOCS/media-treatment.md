@@ -44,7 +44,7 @@ than sad. In practice:
   either a very shallow lintel (rise ≈ width ÷ 28) or a 3% corner radius.
 - **Background:** each screen sits on a generated field made from the
   screenshot's own pixels.
-- **Default field:** **Growth** (pending Z's pick). Pixel cells grow out from
+- **Default field:** **Growth** (Z picked it on 2026-10-31). Pixel cells grow out from
   the screen's edge, each taking its parent's color with a small shift.
   **Drag** is the alternate: the screen's content pulled outward in broken
   pixel runs, the same process as the photo edge.
