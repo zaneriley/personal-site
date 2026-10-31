@@ -10,6 +10,7 @@
 @import url("./_code.css");
 @import url("./_footer.css");
 @import url("./_theme-switcher.css");
+@import url("./_language-switch.css");
 
 @property --fantazio-rotate {
   syntax: "<angle>";
@@ -51,6 +52,18 @@ body {
   line-height: var(--lh-en-md);
   min-height: 100vh;
   hanging-punctuation: allow-end last; /* Safari only */
+}
+
+/* Interaction primitives, stated once. --tap-target is the minimum hit size
+   for anything you press (44px); the focus ring is the one keyboard focus
+   style for links and buttons. :where() keeps it overridable. */
+:root {
+  --tap-target: 2.75rem;
+}
+
+:where(a, button):focus-visible {
+  outline: 0.125rem solid currentcolor;
+  outline-offset: 0.1875rem;
 }
 
 .u-container {
@@ -142,15 +155,28 @@ html[lang="ja"] * {
     "palt" 1;
 }
 
-/* Hero lede measure is per-locale: Latin reads to ~36rem; Japanese is
-   character-counted (1em ≈ 1 fullwidth glyph) so ~30 chars = 30em — the Latin
-   `ch`/50ch measure would yield only ~25 kanji. */
-.hero-lede {
-  max-width: 36rem;
+/* Top lockup. The measure is per locale: Latin reads to ~36rem; Japanese is
+   character-counted (1em = 1 fullwidth glyph), so ~30 chars = 30em. The
+   portrait is three body lines tall (the 3xl space rung = 3 x the md line),
+   a small mark beside the role lines with its foot on the last one. */
+.hero {
+  max-inline-size: 36rem;
 }
 
-html[lang="ja"] .hero-lede {
+html[lang="ja"] .hero {
   max-inline-size: 30em;
+}
+
+.hero-identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: var(--space-md);
+}
+
+.hero-portrait {
+  block-size: var(--space-3xl);
+  inline-size: auto;
 }
 
 @supports (text-justify: inter-character) {

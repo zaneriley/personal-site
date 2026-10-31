@@ -1,0 +1,60 @@
+/* EN | 日本語: two fields meeting on an S-curve (components/language_switch.ex).
+   One body line tall (the md space rung), so it follows each language's own
+   scale; width comes from the labels, and the SVG stretches to fit with a
+   hairline stroke. Each link covers its half at full tap height. The current
+   language's field is filled, mixed from the text colour so both themes
+   follow. */
+.language-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: center;
+  block-size: var(--space-md);
+}
+
+.language-switch svg {
+  position: absolute;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.language-switch path {
+  fill: none;
+  stroke: color-mix(in oklch, currentcolor 32%, transparent);
+  vector-effect: non-scaling-stroke;
+}
+
+.language-switch path[data-current] {
+  fill: color-mix(in oklch, currentcolor 16%, transparent);
+}
+
+.language-switch a {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  block-size: var(--tap-target);
+  padding-inline: var(--space-1xs);
+  color: var(--text-color-deemphasized);
+  font-size: var(--fs-2xs);
+}
+
+.language-switch a[aria-current] {
+  color: var(--text-color-callout);
+}
+
+.language-switch a[lang="en"] {
+  font-family: var(--font-mono);
+}
+
+@media (forced-colors: active) {
+  .language-switch path {
+    stroke: CanvasText;
+  }
+
+  .language-switch path[data-current] {
+    fill: Highlight;
+  }
+}

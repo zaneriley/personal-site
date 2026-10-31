@@ -36,6 +36,23 @@ defmodule PortfolioWeb.NavigationTest do
              destinations(html)
   end
 
+  test "the language switch links to the same page in each language", %{
+    conn: conn
+  } do
+    {:ok, _view, html} = live(conn, ~p"/ja/about")
+
+    links =
+      html
+      |> Floki.parse_document!()
+      |> Floki.find(".language-switch a")
+      |> Enum.map(fn link ->
+        {link |> Floki.attribute("href") |> List.first(),
+         link |> Floki.attribute("aria-current") |> List.first()}
+      end)
+
+    assert links == [{"/en/about", nil}, {"/ja/about", "true"}]
+  end
+
   test "the old case study, self, and feed paths no longer exist", %{
     conn: conn
   } do

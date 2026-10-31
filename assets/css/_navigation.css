@@ -24,19 +24,21 @@
   }
 }
 
-/* The page field owns the inset and width cap. This header subdivides it into
-   six tracks until the existing twelve-column layout is available. */
+/* The page field owns the inset and width cap. Narrow: two rows, the seal
+   and controls above the destinations. Wide: one row on the page's columns,
+   the seal in the same two-column slot as the footer's, so the destinations
+   start on column 3, the footer colophon's line. */
 .site-navigation {
-  --navigation-gutter: var(--gutter);
-  --navigation-group-gap: var(--space-md);
-
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: var(--space-1xs) var(--navigation-gutter);
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "home controls"
+    "destinations destinations";
+  gap: var(--space-1xs) var(--gutter);
   align-items: center;
   padding-block: var(--space-2xs);
 }
 
-/* Enhancement only: the source order remains home, destinations, controls. */
+/* Enhancement only: the source order is home, destinations, controls. */
 @supports (reading-flow: grid-rows) {
   .site-navigation {
     reading-flow: grid-rows;
@@ -44,104 +46,58 @@
 }
 
 .site-navigation-home {
-  grid-column: 1;
-  grid-row: 1;
+  grid-area: home;
   justify-self: start;
 }
 
 .site-navigation-destinations {
-  grid-column: 1 / -1;
-  grid-row: 2;
+  grid-area: destinations;
   min-inline-size: 0;
 }
 
 .site-navigation-destinations ul {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--navigation-group-gap);
-}
-
-.site-navigation-destinations li {
-  flex: none;
+  gap: var(--space-md);
 }
 
 .site-navigation-controls {
-  grid-column: 3 / -1;
-  grid-row: 1;
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: center;
-  column-gap: var(--navigation-gutter);
-  min-inline-size: 0;
-}
-
-.site-navigation-controls > .theme-toggle {
-  grid-column: 1;
-  justify-self: start;
-}
-
-.site-navigation-languages {
-  grid-column: 3 / -1;
-}
-
-.site-navigation-controls > * {
-  flex: 0 1 auto;
-  min-inline-size: 0;
-}
-
-.site-navigation-languages ul {
+  grid-area: controls;
+  justify-self: end;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2xs);
 }
 
-.site-navigation-languages li {
-  display: flex;
-}
-
 .site-navigation a {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  min-block-size: 2.75rem;
-  min-inline-size: 2.75rem;
+  min-block-size: var(--tap-target);
+  min-inline-size: var(--tap-target);
   color: inherit;
 }
 
-.site-navigation-destinations a {
-  display: flex;
-}
-
-.site-navigation a:focus-visible {
-  outline: 0.125rem solid currentcolor;
-  outline-offset: var(--space-3xs);
-}
-
 @media (width >= 40rem) {
-  .site-navigation {
-    --navigation-group-gap: var(--space-1xl);
+  .site-navigation-destinations ul {
+    gap: var(--space-1xl);
   }
 }
 
 @media (width >= 64rem) {
   .site-navigation {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    grid-template-areas: none;
   }
 
   .site-navigation-home {
-    grid-column: 1 / 3;
+    grid-area: 1 / 1 / 2 / 3;
   }
 
   .site-navigation-destinations {
-    grid-column: 3 / 9;
-    grid-row: 1;
+    grid-area: 1 / 3 / 2 / 9;
   }
 
   .site-navigation-controls {
-    grid-column: 9 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: end;
-    gap: var(--navigation-group-gap);
+    grid-area: 1 / 9 / 2 / -1;
   }
 }

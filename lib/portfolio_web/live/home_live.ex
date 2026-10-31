@@ -2,6 +2,7 @@ defmodule PortfolioWeb.HomeLive do
   require Logger
   use PortfolioWeb, :live_view
   alias Portfolio.Content
+  import PortfolioWeb.Components.Image
   import PortfolioWeb.Components.Typography
   import PortfolioWeb.Components.ContentMetadata
 
@@ -60,14 +61,24 @@ defmodule PortfolioWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <section class="hero mt-1xl mb-3xl flex flex-col gap-2xl lg:flex-row lg:items-start lg:justify-between">
-      <div class="hero-lede">
-        <.signature class="block max-w-[34rem] mb-1xl" />
+    <%!-- Top lockup: signature, then the small arch portrait beside the role
+         lines, then the blurb. Copy is composed per locale (bespoke), not a
+         gettext translation, so only the copy branches; the frame is shared. --%>
+    <section class="hero mt-1xl mb-3xl">
+      <.signature class="block max-w-[34rem] mb-1xl" />
+      <div class="hero-identity">
+        <.image
+          src={~p"/images/portrait-arch.webp"}
+          alt={gettext("Portrait of Zane Riley")}
+          width="280"
+          height="396"
+          loading="eager"
+          class="hero-portrait"
+        />
         <div class="hero-copy grid gap-1xs">
           <%= if @user_locale == "ja" do %>
-            <%!-- JP hero (Option A): rooted/editorial; 東京 in Noto Serif JP is the
-               emphasis — the JP twin of the EN Cardinal-caps. Copy is composed
-               per-locale (bespoke), not a gettext translation of the EN. --%>
+            <%!-- 東京 in Noto Serif JP is the emphasis — the JP twin of the
+               EN Cardinal-caps. --%>
             <.typography locale={@user_locale} tag="p" font="flexa" size="2xl">
               プロダクトデザイナー（<img
                 src={~p"/images/logos/google-g.svg"}
@@ -78,16 +89,12 @@ defmodule PortfolioWeb.HomeLive do
             <.typography locale={@user_locale} tag="p" size="1xl">
               拠点は<span class="font-noto-serif-jp font-bold">東京</span>、以前はサンフランシスコ
             </.typography>
-            <%!-- DRAFT JP tagline — needs native review (register/idiom). --%>
-            <.typography locale={@user_locale} tag="p" size="md">
-              15年以上、戦略・デザイン・コード——手段を選ばず、デジタルプロダクトをつくってきました。
-            </.typography>
           <% else %>
             <%!-- "Product designer" = callout (absolute white), 2xl. WEIGHT IS WRONG:
                mock wants 427, which is neither our 2xl regular (208) nor 2xl bold
                (478) — the weight system needs a pass (see _PROJECT_DOCS/BACKLOG.md +
-               /weight-calibration). "at" + connective + body are one rung down
-               (the soft tier); only the cities are main. G mark on the baseline. --%>
+               /weight-calibration). "at" + connective are one rung down (the soft
+               tier); only the cities are main. G mark on the baseline. --%>
             <.typography locale={@user_locale} tag="p" size="2xl">
               <span class="text-callout">Product designer</span>
               <span class="text-md fw-flexa-md text-deemphasized">at</span>
@@ -112,27 +119,25 @@ defmodule PortfolioWeb.HomeLive do
                 San Francisco
               </span>
             </.typography>
-            <.typography
-              locale={@user_locale}
-              tag="p"
-              size="md"
-              color="deemphasized"
-            >
-              +15 years experience in making digital products using strategy, design, code or whatever else it takes
-            </.typography>
           <% end %>
         </div>
       </div>
-
-      <%!-- Portrait — DRAFT stub. TODO(hero): srcset/responsive pipeline + the
-           generated border treatment; swap the draft for the real asset. --%>
-      <img
-        src={~p"/images/portrait-draft.jpg"}
-        alt={gettext("Portrait of Zane Riley")}
-        width="468"
-        height="714"
-        class="hero-photo w-full max-w-[15rem] shrink-0 rounded-2xl lg:max-w-[17rem]"
-      />
+      <%= if @user_locale == "ja" do %>
+        <%!-- DRAFT JP tagline — needs native review (register/idiom). --%>
+        <.typography locale={@user_locale} tag="p" size="md" class="mt-md">
+          15年以上、戦略・デザイン・コード——手段を選ばず、デジタルプロダクトをつくってきました。
+        </.typography>
+      <% else %>
+        <.typography
+          locale={@user_locale}
+          tag="p"
+          size="md"
+          color="deemphasized"
+          class="mt-md"
+        >
+          +15 years experience in making digital products using strategy, design, code or whatever else it takes
+        </.typography>
+      <% end %>
     </section>
 
     <div>
