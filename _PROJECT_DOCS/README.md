@@ -24,6 +24,9 @@ history owns deleted plans and completion ledgers.
 - [../assets/weather-icons.md](../assets/weather-icons.md) — weather icon
   provenance, the Figma node mapping, export steps, and why the theme toggle's
   sun/moon is separate geometry.
+- [media-treatment.md](media-treatment.md) — photo and screen treatment
+  direction, current defaults, and the list of points to revisit. Prototypes
+  live in [../media-prototype/](../media-prototype/).
 - [content-authoring-contract.md](content-authoring-contract.md) — fields and
   syntax the separate content repository may publish.
 - [feeds-spec.md](feeds-spec.md) — feed taxonomy, URLs, entry mapping, and
