@@ -172,8 +172,9 @@ html[lang="ja"] .hero {
    Each threshold = the line's measured length in em x that rung's phone size.
    EN "Product designer at G" = 10.33em in GT Flexa:
      2xl (1.98rem) needs 20.45rem; 1xl (1.65rem) needs 17.05rem.
-   JA プロダクトデザイナー（G）≈ 11.85em (ten kana, two palt brackets, the G):
-     2xl needs 23.46rem; 1xl needs 19.55rem. */
+   JA プロダクトデザイナー（G）= 13.3em, measured in the dev site on
+   2026-11-03 (worst case across 360-430px phones):
+     2xl (1.98rem) needs 26.33rem; 1xl (1.65rem) needs 21.95rem. */
 .hero-role {
   white-space: nowrap;
 }
@@ -198,13 +199,13 @@ html[lang="ja"] .hero {
   }
 }
 
-@container (width < 23.46rem) {
+@container (width < 26.33rem) {
   html[lang="ja"] .hero .hero-role {
     font-size: var(--fs-1xl);
   }
 }
 
-@container (width < 19.55rem) {
+@container (width < 21.95rem) {
   html[lang="ja"] .hero .hero-role {
     font-size: var(--fs-md);
   }
