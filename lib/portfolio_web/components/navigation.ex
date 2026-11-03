@@ -2,10 +2,13 @@ defmodule PortfolioWeb.Navigation do
   @moduledoc """
   Site identity, primary destinations, and appearance/language controls.
 
-  One source order serves every layout: home, destinations, then controls.
-  CSS places the controls above the destinations when the header uses two rows.
+  One source order, home, destinations, controls, matches the wide layout
+  (one row). Narrow screens show two rows, home and controls above the
+  destinations; CSS moves the destinations down, and `reading-flow` follows
+  the rows where supported.
   """
   use PortfolioWeb, :live_component
+  import PortfolioWeb.Components.LanguageSwitch
   import PortfolioWeb.Components.ThemeSwitcher
   import PortfolioWeb.Components.Typography
 
@@ -24,8 +27,7 @@ defmodule PortfolioWeb.Navigation do
   def render(assigns) do
     assigns =
       assign(assigns,
-        en_path: build_localized_path(assigns.current_path, "en"),
-        ja_path: build_localized_path(assigns.current_path, "ja"),
+        destinations: destinations(assigns.user_locale),
         section:
           assigns.current_path
           |> PortfolioWeb.Layouts.remove_locale_from_path()
@@ -47,111 +49,43 @@ defmodule PortfolioWeb.Navigation do
           aria-label={gettext("Main navigation")}
         >
           <ul>
-            <li>
+            <li :for={{section, path, label} <- @destinations}>
               <.link
-                navigate={~p"/#{@user_locale}/work"}
-                aria-current={if @section == "work", do: "page"}
+                navigate={path}
+                aria-current={if @section == section, do: "page"}
               >
                 <.typography
                   locale={@user_locale}
                   tag="span"
                   size="md"
-                  weight={if @section == "work", do: "bold", else: "regular"}
+                  weight={if @section == section, do: "bold", else: "regular"}
                 >
-                  {gettext("Work")}
-                </.typography>
-              </.link>
-            </li>
-            <li>
-              <.link
-                navigate={~p"/#{@user_locale}/notes"}
-                aria-current={if @section == "notes", do: "page"}
-              >
-                <.typography
-                  locale={@user_locale}
-                  tag="span"
-                  size="md"
-                  weight={if @section == "notes", do: "bold", else: "regular"}
-                >
-                  {ngettext("Note", "Notes", 2)}
-                </.typography>
-              </.link>
-            </li>
-            <li>
-              <.link
-                navigate={~p"/#{@user_locale}/about"}
-                aria-current={if @section == "about", do: "page"}
-              >
-                <.typography
-                  locale={@user_locale}
-                  tag="span"
-                  size="md"
-                  weight={if @section == "about", do: "bold", else: "regular"}
-                >
-                  {gettext("About")}
+                  {label}
                 </.typography>
               </.link>
             </li>
           </ul>
         </nav>
         <div class="site-navigation-controls">
+          <.language_switch
+            current_path={@current_path}
+            current_locale={@user_locale}
+          />
           <.theme_switcher />
-          <nav
-            class="site-navigation-languages"
-            aria-label={gettext("Language switcher")}
-          >
-            <ul>
-              <li>
-                <.link
-                  href={@en_path}
-                  lang="en"
-                  hreflang="en"
-                  aria-current={if @user_locale == "en", do: "true"}
-                >
-                  <.typography
-                    locale="en"
-                    tag="span"
-                    size="1xs"
-                    weight={if @user_locale == "en", do: "bold", else: "regular"}
-                  >
-                    English
-                  </.typography>
-                </.link>
-              </li>
-              <li>
-                <.link
-                  href={@ja_path}
-                  lang="ja"
-                  hreflang="ja"
-                  aria-current={if @user_locale == "ja", do: "true"}
-                >
-                  <.typography
-                    locale="ja"
-                    tag="span"
-                    size="1xs"
-                    weight={if @user_locale == "ja", do: "bold", else: "regular"}
-                  >
-                    日本語
-                  </.typography>
-                </.link>
-              </li>
-            </ul>
-          </nav>
         </div>
       </div>
     </header>
     """
   end
 
-  defp section(path), do: path |> String.split("/", trim: true) |> List.first()
-
-  defp build_localized_path(current_path, locale) do
-    base_path = PortfolioWeb.Layouts.remove_locale_from_path(current_path)
-
-    if base_path == "/" do
-      "/#{locale}"
-    else
-      "/#{locale}#{base_path}"
-    end
+  # {section, path, label} for each destination, in `locale`.
+  defp destinations(locale) do
+    [
+      {"work", ~p"/#{locale}/work", gettext("Work")},
+      {"notes", ~p"/#{locale}/notes", ngettext("Note", "Notes", 2)},
+      {"about", ~p"/#{locale}/about", gettext("About")}
+    ]
   end
+
+  defp section(path), do: path |> String.split("/", trim: true) |> List.first()
 end

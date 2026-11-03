@@ -1,0 +1,759 @@
+<title>Grown Borders</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: a sketchbook. Intro, controls, then a wrapping grid of square specimens, each with its music counterpart. */
+:root {
+  --bg: oklch(24.5% 0.008 286deg);
+  --panel: oklch(21% 0.008 286deg);
+  --fg: oklch(93% 0.012 316deg);
+  --dim: oklch(74% 0.06 291deg);
+  --rule: oklch(34% 0.015 286deg);
+  --accent: oklch(78% 0.07 76deg);
+  --focus: oklch(80% 0.1 291deg);
+  --display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --body: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 28px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 6vw, 68px); line-height: .98; margin: 6px 0 0; text-wrap: balance; }
+.intro { display: flex; flex-direction: column; gap: 12px; max-width: 68ch; }
+.intro p { margin: 0; color: var(--dim); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; padding-block: 14px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.group > span { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-right: 4px; }
+button { font: 500 14px/1 var(--body); color: var(--fg); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 9px 14px; cursor: pointer; min-height: 36px; }
+button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+button:hover { border-color: var(--dim); }
+button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 34px 26px; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+canvas { width: 100%; height: auto; aspect-ratio: 1; display: block; background: var(--panel); border-radius: 6px; }
+figcaption { display: flex; flex-direction: column; gap: 4px; }
+.name { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.name h2 { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.05; margin: 0; }
+.name code { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .06em; white-space: nowrap; }
+figcaption p { margin: 0; color: var(--dim); font-size: 14px; }
+.crop, .full { display: flex; flex-direction: column; gap: 16px; }
+.crop-head { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; }
+.crop-head h2 { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0; }
+.crop-head p { margin: 0; color: var(--dim); }
+.crop-table { display: flex; flex-direction: column; gap: 26px; }
+.crop-row { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.crop-row h3 { font-family: var(--display); font-weight: 400; font-size: 24px; margin: 0; }
+.crop-cells { display: flex; flex-wrap: wrap; gap: 22px 28px; align-items: flex-end; }
+.crop-cells figure { gap: 8px; }
+.crop-cells canvas { width: auto; max-width: 100%; aspect-ratio: auto; background: none; border-radius: 0; }
+.shapes { gap: 28px 30px; }
+.group label { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+.group output { font-family: var(--mono); font-size: 12px; color: var(--fg); min-width: 4ch; font-variant-numeric: tabular-nums; }
+input[type=range] { accent-color: var(--accent); width: 140px; }
+input[type=range]:disabled { opacity: .4; }
+.seed-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.pick { all: unset; display: flex; flex-direction: column; gap: 8px; cursor: pointer; padding: 8px; border-radius: 8px; border: 1px solid transparent; }
+.pick[aria-pressed="true"] { border-color: var(--rule); background: var(--panel); }
+.pick:hover { border-color: var(--rule); }
+.pick:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.pick canvas { width: auto; max-width: 100%; aspect-ratio: auto; background: none; border-radius: 0; }
+.pick-label { font-size: 13px; color: var(--dim); }
+.pick[aria-pressed="true"] .pick-label { color: var(--fg); }
+.sheet { display: flex; flex-direction: column; gap: 18px; }
+.sheet-row { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 16px; align-items: center; padding-top: 14px; border-top: 1px solid var(--rule); }
+.sheet-name { margin: 0; font-family: var(--display); font-size: 22px; }
+.sheet-cells { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; min-width: 0; }
+.sheet-cells canvas { width: auto; max-width: 100%; aspect-ratio: auto; background: none; border-radius: 0; }
+@media (max-width: 560px) { .sheet-row { grid-template-columns: 1fr; } }
+.crop-cells.shapes figcaption { font-family: var(--body); font-size: 13px; letter-spacing: 0; color: var(--dim); max-width: 280px; }
+.crop-cells figcaption { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--accent); }
+.foot { color: var(--dim); font-size: 13px; border-top: 1px solid var(--rule); padding-top: 14px; max-width: 80ch; margin: 0; }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Sketch · media borders</p>
+    <h1>Borders grown from the image</h1>
+    <p>Each specimen treats the picture the way a Botanica track treats a piano: the picture itself stays untouched, and everything around it is made only from its own pixels, run through a machine process, and allowed to grow outward and settle.</p>
+  </header>
+
+  <div class="controls" role="group" aria-label="Sketch controls">
+    <div class="group"><span>Seed image</span>
+      <span id="seed-buttons" class="seed-buttons"></span>
+    </div>
+    <div class="group"><span>Light</span>
+      <button id="grade-on" aria-pressed="true" data-grade="1">Site grade</button>
+      <button id="grade-off" aria-pressed="false" data-grade="0">Raw</button>
+    </div>
+    <div class="group"><span>Growth</span>
+      <button id="regrow">Grow again</button>
+      <button id="reseed">New seed</button>
+    </div>
+  </div>
+
+  <section class="crop" aria-labelledby="shape-h">
+    <div class="crop-head"><h2 id="shape-h">Shapes and borders</h2><p>Your three picks. Width is set for a 240px image and scales with size unless you fix it. Actual size. Pick one to see it across every image below.</p></div>
+    <div class="controls" role="group" aria-label="Shape controls">
+      <div class="group"><span>Process</span>
+        <button id="proc-mix" aria-pressed="true" data-proc="mix">Layered</button>
+        <button id="proc-mosh" aria-pressed="false" data-proc="mosh">Datamosh</button>
+        <button id="proc-stretch" aria-pressed="false" data-proc="stretch">Stretch</button>
+      </div>
+      <div class="group"><span>Color</span>
+        <button id="tint-graded" aria-pressed="false" data-tint="graded">Seed, graded</button>
+        <button id="tint-seed" aria-pressed="false" data-tint="seed">Seed, raw</button>
+        <button id="tint-dusk" aria-pressed="true" data-tint="dusk">Dusk tint</button>
+        <button id="tint-moss" aria-pressed="false" data-tint="moss">Moss tint</button>
+      </div>
+      <div class="group"><label for="strength">Tint strength</label>
+        <input id="strength" type="range" min="0" max="100" value="100"><output id="strength-out" for="strength">100%</output>
+      </div>
+      <div class="group"><span>Size</span>
+        <button id="size-small" aria-pressed="false" data-size="small">Small card</button>
+        <button id="size-card" aria-pressed="true" data-size="card">Card</button>
+        <button id="size-figure" aria-pressed="false" data-size="figure">Figure</button>
+      </div>
+      <div class="group"><span>Width</span>
+        <button id="w12" aria-pressed="false" data-width="12">12</button>
+        <button id="w16" aria-pressed="true" data-width="16">16</button>
+        <button id="w24" aria-pressed="false" data-width="24">24</button>
+      </div>
+      <div class="group"><span>Border</span>
+        <button id="scale-on" aria-pressed="true" data-scale="1">Scales with size</button>
+        <button id="scale-off" aria-pressed="false" data-scale="0">Fixed</button>
+      </div>
+      <div class="group"><span>Screens</span>
+        <button id="screens-low" aria-pressed="true" data-screens="low">Barely curved</button>
+        <button id="screens-straight" aria-pressed="false" data-screens="straight">Straight</button>
+        <button id="screens-same" aria-pressed="false" data-screens="same">Same as photos</button>
+      </div>
+      <div class="group"><span>Wide images</span>
+        <button id="adapt-on" aria-pressed="true" data-adapt="1">Arch flattens</button>
+        <button id="adapt-off" aria-pressed="false" data-adapt="0">Keep arch</button>
+      </div>
+    </div>
+    <div class="crop-cells shapes" id="shapes"></div>
+  </section>
+
+  <section class="crop" aria-labelledby="sheet-h">
+    <div class="crop-head"><h2 id="sheet-h">Every image, every size</h2><p><span id="sheet-name">Arch, grown edge</span>, with the settings above. Small card, card and figure sizes, actual size.</p></div>
+    <div class="sheet" id="sheet"></div>
+  </section>
+
+  <section class="crop" aria-labelledby="crop-h">
+    <div class="crop-head"><h2 id="crop-h">As a border</h2><p>The three you picked, cropped tight to the picture. Shown at actual size.</p></div>
+    <div class="crop-table" id="crop"></div>
+  </section>
+
+  <section class="full" aria-labelledby="full-h">
+    <div class="crop-head"><h2 id="full-h">Full fields</h2><p>The uncropped processes, for reference.</p></div>
+    <div class="grid" id="grid" aria-label="Border specimens"></div>
+  </section>
+
+  <p class="foot">Sketch only. Border pixels are sampled from the seed image, never from a fixed palette. "Site grade" pulls whites and blacks in, the way the site's color tokens do. Reduced-motion settings skip the growth and show the settled state.</p>
+</div>
+
+<script>
+const SEEDS = [
+  { id: 'portrait', label: 'Portrait' },
+  { id: 'page', label: 'Case-study page', screen: true },
+  { id: 'terrain', label: 'Terrain' },
+  { id: 'leaves', label: 'Leaves' },
+  { id: 'crowd', label: 'Crowd' },
+  { id: 'pixel', label: 'Pixel game', screen: true },
+  { id: 'clinic', label: 'Doctor card', screen: true },
+  { id: 'home', label: 'Smart home', screen: true },
+];
+const IMAGES = __IMAGES__;
+
+const SPECIMENS = [
+  { id: 'granular', title: 'Granular scatter', music: 'granular synthesis',
+    note: 'Small grains are cut from the image’s edge and scattered outward. Grain size drifts, like a formant shift.' },
+  { id: 'mosh', title: 'Datamosh bloom', music: 'glitch, micro-edits',
+    note: 'Blocks of the image bleed outward along a slow current, the way a corrupted video frame drags old pixels forward.' },
+  { id: 'stretch', title: 'Stretch drone', music: 'paulstretch drone',
+    note: 'The outermost row of pixels is stretched into long, wavering strands, turning one instant into a sustained tone.' },
+  { id: 'swell', title: 'Reverse swell', music: 'reversed reverb tail',
+    note: 'Blurred echoes of the whole picture swell out behind it, like a reverb tail played backwards into the downbeat.' },
+  { id: 'mix', title: 'Layered', music: 'the whole track',
+    note: 'Stretched strands underneath, moshed blocks through the middle, a few loose grains on top. Each layer reaches a different distance.' },
+];
+
+let S = 480; // canvas resolution (shape cells size it per image)
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let state = { img: 'portrait', grade: true, seed: 7 };
+let loaded = {};
+let anim = null;
+
+// ---------- noise ----------
+function rng(seed) { let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+function hash(x, y, s) { const v = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return v - Math.floor(v); }
+function vnoise(x, y, s) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash(xi, yi, s), b = hash(xi + 1, yi, s), c = hash(xi, yi + 1, s), d = hash(xi + 1, yi + 1, s);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x, y, s) { return vnoise(x, y, s) * .55 + vnoise(x * 2.1, y * 2.1, s + 9) * .3 + vnoise(x * 4.3, y * 4.3, s + 17) * .15; }
+
+// ---------- grade ----------
+function gradePx(d, i) {
+  if (!state.grade) return;
+  // pull whites and blacks in, and tilt the shadows slightly toward the site's dusk violet
+  for (let k = 0; k < 3; k++) d[i + k] = 24 + d[i + k] * (196 / 255);
+  const l = (d[i] * .2126 + d[i + 1] * .7152 + d[i + 2] * .0722) / 255;
+  const t = Math.max(0, .45 - l) * .35;
+  d[i] += (44 - d[i]) * t; d[i + 1] += (38 - d[i + 1]) * t; d[i + 2] += (58 - d[i + 2]) * t;
+}
+
+// ---------- geometry ----------
+function fitRect(img) {
+  const maxW = S * .5, maxH = S * .6;
+  const k = Math.min(maxW / img.width, maxH / img.height);
+  const w = Math.round(img.width * k), h = Math.round(img.height * k);
+  return { x: Math.round((S - w) / 2), y: Math.round((S - h) / 2), w, h };
+}
+function outsideDist(x, y, r) {
+  const dx = Math.max(r.x - x, 0, x - (r.x + r.w - 1));
+  const dy = Math.max(r.y - y, 0, y - (r.y + r.h - 1));
+  return Math.hypot(dx, dy);
+}
+
+// Build a sampled copy of the image at canvas scale
+function baseLayer(img, r) {
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.drawImage(img, r.x, r.y, r.w, r.h);
+  return { canvas: c, data: x.getImageData(0, 0, S, S).data };
+}
+function sampleClamp(base, r, x, y) {
+  const cx = Math.min(r.x + r.w - 1, Math.max(r.x, Math.round(x)));
+  const cy = Math.min(r.y + r.h - 1, Math.max(r.y, Math.round(y)));
+  const i = (cy * S + cx) * 4; return [base.data[i], base.data[i + 1], base.data[i + 2]];
+}
+function blurred(img, size) {
+  const t = document.createElement('canvas'); t.width = size; t.height = Math.max(1, Math.round(size * img.height / img.width));
+  const tx = t.getContext('2d'); tx.imageSmoothingQuality = 'high'; tx.drawImage(img, 0, 0, t.width, t.height);
+  return t;
+}
+
+// ---------- layers: each returns ImageData-sized RGBA (alpha = presence) ----------
+function layerStretch(base, r, seed) {
+  const out = new Uint8ClampedArray(S * S * 4);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const d = outsideDist(x, y, r); if (d <= 0) continue;
+    // drift along the edge as the strand lengthens
+    const w = Math.sin(d * .045 + fbm(x * .02, y * .02, seed) * 6) * d * .22;
+    const horiz = (x < r.x || x >= r.x + r.w) && !(y < r.y || y >= r.y + r.h);
+    const [R, G, B] = sampleClamp(base, r, x + (horiz ? 0 : w), y + (horiz ? w : 0));
+    const i = (y * S + x) * 4; out[i] = R; out[i + 1] = G; out[i + 2] = B;
+    out[i + 3] = 255 * Math.max(0, 1 - d / 210) ** .7;
+  }
+  return out;
+}
+
+function boxBlur(d, rad) {
+  const t = new Float32Array(d.length), n = rad * 2 + 1;
+  for (let y = 0; y < S; y++) for (let c = 0; c < 4; c++) {
+    let acc = 0; for (let k = -rad; k <= rad; k++) acc += d[(y * S + Math.min(S - 1, Math.max(0, k))) * 4 + c];
+    for (let x = 0; x < S; x++) { t[(y * S + x) * 4 + c] = acc / n;
+      acc += d[(y * S + Math.min(S - 1, x + rad + 1)) * 4 + c] - d[(y * S + Math.max(0, x - rad)) * 4 + c]; }
+  }
+  for (let x = 0; x < S; x++) for (let c = 0; c < 4; c++) {
+    let acc = 0; for (let k = -rad; k <= rad; k++) acc += t[(Math.min(S - 1, Math.max(0, k)) * S + x) * 4 + c];
+    for (let y = 0; y < S; y++) { d[(y * S + x) * 4 + c] = acc / n;
+      acc += t[(Math.min(S - 1, y + rad + 1) * S + x) * 4 + c] - t[(Math.max(0, y - rad) * S + x) * 4 + c]; }
+  }
+}
+
+function layerPad(img, r, seed) {
+  const t = blurred(img, 6);
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+  x.drawImage(t, -S * .25, -S * .25, S * 1.5, S * 1.5);
+  const d = x.getImageData(0, 0, S, S).data; const rnd = rng(seed * 13 + 1);
+  for (let i = 0; i < d.length; i += 4) { const n = (rnd() - .5) * 34; d[i] += n; d[i + 1] += n; d[i + 2] += n; d[i + 3] = 255; }
+  return d;
+}
+
+function layerSwell(img, r, seed) {
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = true;
+  const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+  for (let k = 9; k >= 1; k--) {
+    const sc = 1 + k * .11, t = blurred(img, Math.max(4, Math.round(64 / k)));
+    x.globalAlpha = .55 - k * .035;
+    x.drawImage(t, cx - r.w * sc / 2, cy - r.h * sc / 2, r.w * sc, r.h * sc);
+  }
+  const d = x.getImageData(0, 0, S, S).data;
+  boxBlur(d, 9); boxBlur(d, 9);
+  for (let i = 3; i < d.length; i += 4) d[i] = Math.min(255, d[i] * 1.3);
+  return d;
+}
+
+function layerMosh(base, r, seed) {
+  // start from the stretched edge, then drag 8px blocks outward along a slow current, many passes
+  const buf = layerStretch(base, r, seed);
+  for (let i = 3; i < buf.length; i += 4) buf[i] = buf[i] ? 255 : 0;
+  const B = 8, cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+  const tmp = new Uint8ClampedArray(buf.length);
+  for (let pass = 0; pass < 14; pass++) {
+    tmp.set(buf);
+    for (let by = 0; by < S; by += B) for (let bx = 0; bx < S; bx += B) {
+      const mx = bx + B / 2, my = by + B / 2;
+      if (outsideDist(mx, my, r) <= 0) continue;
+      const ang = Math.atan2(my - cy, mx - cx) + (fbm(mx * .01, my * .01, seed + pass * .07) - .5) * 2.6;
+      const mag = 3 + fbm(mx * .03, my * .03, seed + 40) * 9;
+      const sx = Math.round(mx - Math.cos(ang) * mag - B / 2), sy = Math.round(my - Math.sin(ang) * mag - B / 2);
+      if (hash(bx, by, seed + pass) < .22) continue; // some blocks hold still, like an untouched frame
+      for (let j = 0; j < B; j++) for (let k = 0; k < B; k++) {
+        const tx = bx + k, ty = by + j, fx = sx + k, fy = sy + j;
+        if (tx >= S || ty >= S || fx < 0 || fy < 0 || fx >= S || fy >= S) continue;
+        if (outsideDist(tx, ty, r) <= 0) continue;
+        const ti = (ty * S + tx) * 4, fi = (fy * S + fx) * 4;
+        let R = tmp[fi], G = tmp[fi + 1], Bv = tmp[fi + 2], A = tmp[fi + 3];
+        if (outsideDist(fx, fy, r) <= 0) { R = base.data[fi]; G = base.data[fi + 1]; Bv = base.data[fi + 2]; A = 255; }
+        buf[ti] = R; buf[ti + 1] = G; buf[ti + 2] = Bv; buf[ti + 3] = A;
+      }
+    }
+  }
+  return buf;
+}
+
+function grainList(base, r, seed, count) {
+  const rnd = rng(seed * 31 + 5), out = [];
+  for (let n = 0; n < count; n++) {
+    const side = rnd() * (2 * r.w + 2 * r.h); let ex, ey, nx, ny;
+    if (side < r.w) { ex = r.x + side; ey = r.y; nx = 0; ny = -1; }
+    else if (side < 2 * r.w) { ex = r.x + side - r.w; ey = r.y + r.h; nx = 0; ny = 1; }
+    else if (side < 2 * r.w + r.h) { ex = r.x; ey = r.y + side - 2 * r.w; nx = -1; ny = 0; }
+    else { ex = r.x + r.w; ey = r.y + side - 2 * r.w - r.h; nx = 1; ny = 0; }
+    const s = Math.round(3 + rnd() ** 2 * 15);
+    const inset = 4 + rnd() * 26;
+    const sx = Math.round(ex - nx * inset - s / 2), sy = Math.round(ey - ny * inset - s / 2);
+    const dist = -Math.log(1 - rnd() * .985) * 46;
+    const jitter = (rnd() - .5) * (14 + dist * .9);
+    const dx = ex + nx * dist + (ny !== 0 ? jitter : 0) - s / 2 + (nx !== 0 ? (rnd() - .5) * 10 : 0);
+    const dy = ey + ny * dist + (nx !== 0 ? jitter : 0) - s / 2 + (ny !== 0 ? (rnd() - .5) * 10 : 0);
+    const scale = .6 + rnd() * 1.1; // formant: same material, different size
+    out.push({ sx, sy, s, dx, dy, ds: s * scale, dist });
+  }
+  return out;
+}
+
+// ---------- compose + reveal ----------
+function revealMask(r, seed) {
+  // per-pixel "time of arrival": distance divided by an organic reach, so growth is uneven like roots, not a frame
+  const m = new Float32Array(S * S);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const d = outsideDist(x, y, r);
+    m[y * S + x] = d <= 0 ? -1 : d / (0.45 + 0.85 * fbm(x * .012, y * .012, seed + 3));
+  }
+  return m;
+}
+
+function buildSpecimen(id, img, seed) {
+  const r = fitRect(img), base = baseLayer(img, r), mask = revealMask(r, seed);
+  const layers = [];
+  if (id === 'stretch') layers.push({ px: layerStretch(base, r, seed), reach: 1 });
+  if (id === 'swell') layers.push({ px: layerSwell(img, r, seed), reach: 1 });
+  if (id === 'mosh') layers.push({ px: layerMosh(base, r, seed), reach: 1 });
+  if (id === 'mix') {
+    layers.push({ px: layerStretch(base, r, seed + 2), reach: 1.25, alpha: .85 });
+    layers.push({ px: layerMosh(base, r, seed), reach: .62 });
+  }
+  const grains = (id === 'granular') ? grainList(base, r, seed, 900) : (id === 'mix') ? grainList(base, r, seed, 220) : [];
+  return { r, base, mask, layers, grains };
+}
+
+function draw(ctx, spec, g, img) {
+  // g: growth 0..1. Max arrival value ~ S/2
+  const MAXR = 260 * g;
+  const out = ctx.createImageData(S, S), o = out.data;
+  const bg = state.grade ? [33, 32, 38] : [22, 22, 24];
+  for (let i = 0; i < o.length; i += 4) { o[i] = bg[0]; o[i + 1] = bg[1]; o[i + 2] = bg[2]; o[i + 3] = 255; }
+  for (const L of spec.layers) {
+    const R = MAXR * L.reach, la = L.alpha ?? 1, px = L.px;
+    for (let p = 0, i = 0; p < spec.mask.length; p++, i += 4) {
+      const t = spec.mask[p]; if (t < 0 || !px[i + 3]) continue;
+      const edge = Math.min(1, Math.max(0, (R - t) / 18)); if (edge <= 0) continue;
+      const a = (px[i + 3] / 255) * edge * la;
+      o[i] += (px[i] - o[i]) * a; o[i + 1] += (px[i + 1] - o[i + 1]) * a; o[i + 2] += (px[i + 2] - o[i + 2]) * a;
+    }
+  }
+  for (let i = 0; i < o.length; i += 4) gradePx(o, i);
+  ctx.putImageData(out, 0, 0);
+  // grains: copied straight from the picture's edge pixels, then graded
+  if (spec.grains.length) {
+    const reach = MAXR * (spec.layers.length ? 1.15 : 1.25);
+    for (const q of spec.grains) {
+      if (q.dist > reach) continue;
+      ctx.globalAlpha = Math.max(0, 1 - q.dist / 230) * Math.min(1, (reach - q.dist) / 20);
+      ctx.drawImage(spec.gradedBase, q.sx, q.sy, q.s, q.s, q.dx, q.dy, q.ds, q.ds);
+    }
+    ctx.globalAlpha = 1;
+  }
+  // the picture itself, untouched
+  const r = spec.r; ctx.drawImage(img, r.x, r.y, r.w, r.h);
+}
+
+function gradedCanvas(base) {
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d'); const d = new ImageData(new Uint8ClampedArray(base.data), S, S);
+  for (let i = 0; i < d.data.length; i += 4) gradePx(d.data, i);
+  x.putImageData(d, 0, 0); return c;
+}
+
+// ---------- page ----------
+const grid = document.getElementById('grid');
+const views = SPECIMENS.map((s) => {
+  const fig = document.createElement('figure');
+  const cv = document.createElement('canvas'); cv.width = cv.height = S;
+  cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', `${s.title}: ${s.note}`);
+  const cap = document.createElement('figcaption');
+  cap.innerHTML = `<div class="name"><h2></h2><code></code></div><p></p>`;
+  cap.querySelector('h2').textContent = s.title;
+  cap.querySelector('code').textContent = s.music;
+  cap.querySelector('p').textContent = s.note;
+  fig.append(cv, cap); grid.append(fig);
+  return { s, ctx: cv.getContext('2d'), spec: null };
+});
+
+const WIDTHS = [2, 6, 12, 20];
+const CROP_IDS = ['stretch', 'mosh', 'mix'];
+const cropRoot = document.getElementById('crop');
+const cropRows = CROP_IDS.map((id) => {
+  const s = SPECIMENS.find((x) => x.id === id);
+  const row = document.createElement('div'); row.className = 'crop-row';
+  const h = document.createElement('h3'); h.textContent = s.title;
+  const cells = document.createElement('div'); cells.className = 'crop-cells';
+  const items = WIDTHS.map((w) => {
+    const fig = document.createElement('figure'); const cv = document.createElement('canvas');
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', `${s.title} border, ${w} pixels`);
+    const cap = document.createElement('figcaption'); cap.textContent = `${w}px`;
+    fig.append(cv, cap); cells.append(fig); return { w, cv, ctx: cv.getContext('2d') };
+  });
+  row.append(h, cells); cropRoot.append(row);
+  return { id, items };
+});
+const scratch = document.createElement('canvas'); scratch.width = scratch.height = S;
+const scratchCtx = scratch.getContext('2d');
+
+function drawCrops(g, img) {
+  for (const row of cropRows) {
+    const v = views.find((x) => x.s.id === row.id);
+    draw(scratchCtx, v.spec, g, img);
+    const r = v.spec.r;
+    for (const it of row.items) {
+      const w = it.w, cw = r.w + 2 * w, ch = r.h + 2 * w;
+      if (it.cv.width !== cw || it.cv.height !== ch) { it.cv.width = cw; it.cv.height = ch; it.cv.style.width = cw + 'px'; }
+      it.ctx.clearRect(0, 0, cw, ch);
+      it.ctx.drawImage(scratch, r.x - w, r.y - w, cw, ch, 0, 0, cw, ch);
+    }
+  }
+}
+
+function load(key) {
+  if (loaded[key]) return Promise.resolve(loaded[key]);
+  return new Promise((res) => { const im = new Image(); im.onload = () => { loaded[key] = im; res(im); }; im.src = IMAGES[key]; });
+}
+
+async function rebuild() {
+  const img = await load(state.img);
+  for (const v of views) { v.spec = buildSpecimen(v.s.id, img, state.seed); v.spec.gradedBase = gradedCanvas(v.spec.base); }
+  grow(img);
+}
+
+function grow(img) {
+  if (anim) cancelAnimationFrame(anim);
+  for (const v of views) v.spec.gradedBase = gradedCanvas(v.spec.base);
+  if (reduceMotion) { for (const v of views) draw(v.ctx, v.spec, 1, img); drawCrops(1, img); return; }
+  const t0 = performance.now(), dur = 5200;
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / dur);
+    const g = 1 - Math.pow(1 - t, 3); // settles, no overshoot
+    for (const v of views) draw(v.ctx, v.spec, g, img);
+    drawCrops(Math.min(1, g * 4), img);
+    if (t < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+
+function press(attr, val) {
+  document.querySelectorAll(`[data-${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[attr] === val)));
+}
+const seedButtons = document.getElementById('seed-buttons');
+for (const sd of SEEDS) { const b = document.createElement('button'); b.id = 'img-' + sd.id; b.dataset.img = sd.id; b.textContent = sd.label; b.setAttribute('aria-pressed', String(sd.id === state.img)); seedButtons.append(b);
+  b.addEventListener('click', () => { state.img = sd.id; press('img', state.img); rebuild(); renderShapes(); }); }
+document.querySelectorAll('[data-grade]').forEach((b) => b.addEventListener('click', () => { state.grade = b.dataset.grade === '1'; press('grade', b.dataset.grade); load(state.img).then(grow); }));
+document.getElementById('regrow').addEventListener('click', () => load(state.img).then(grow));
+document.getElementById('reseed').addEventListener('click', () => { state.seed += 1; shapeCache.clear(); rebuild(); renderAllShapes(); });
+
+// ================= Shapes × borders =================
+const SHAPE_CELLS = [
+  { id: 'arch-grown', inner: 'arch', outer: 'grown', label: 'Arch, grown edge' },
+  { id: 'shallow-grown', inner: 'shallow', outer: 'grown', label: 'Shallow arch, grown edge' },
+  { id: 'capsule-follow', inner: 'capsule', outer: 'follow', label: 'Capsule, border follows' },
+];
+const SIZES = [
+  { id: 'small', label: 'Small card', long: 140 },
+  { id: 'card', label: 'Card', long: 220 },
+  { id: 'figure', label: 'Figure', long: 380 },
+];
+const TINTS = {
+  dusk: [[34, 30, 48], [96, 82, 150], [178, 167, 237], [236, 220, 196]],
+  moss: [[14, 30, 28], [44, 92, 78], [126, 158, 112], [222, 200, 128]],
+};
+let shapeState = { proc: 'mix', tint: 'dusk', strength: 100, width: 16, size: 'card', pick: 'arch-grown', scale: true, adapt: true, screens: 'low' };
+const shapeCache = new Map();
+const BASE_S = 480;
+
+function shapePath(kind, x, y, w, h) {
+  const p = new Path2D();
+  if (kind === 'rect') { p.rect(x, y, w, h); return p; }
+  if (kind === 'lintel') { const s = Math.max(2, Math.min(w / 28, h * .06)), R = (w * w / 4 + s * s) / (2 * s); p.moveTo(x, y + h); p.lineTo(x, y + s); p.arc(x + w / 2, y + R, R, Math.atan2(s - R, -w / 2), Math.atan2(s - R, w / 2)); p.lineTo(x + w, y + h); p.closePath(); return p; }
+  if (kind === 'softrect') { const r = Math.max(3, Math.min(w, h) * .03); p.roundRect(x, y, w, h, r); return p; }
+  if (kind === 'arch' && shapeState.adapt && w > h * 1.05) kind = 'shallow'; // a full arch on a wide image turns into a half-circle
+  if (kind === 'arch') { const r = w / 2; p.moveTo(x, y + h); p.lineTo(x, y + r); p.arc(x + r, y + r, r, Math.PI, 0); p.lineTo(x + w, y + h); p.closePath(); return p; }
+  if (kind === 'shallow') { const s = Math.min(w / 6, h * .28), R = (w * w / 4 + s * s) / (2 * s); p.moveTo(x, y + h); p.lineTo(x, y + s); p.arc(x + w / 2, y + R, R, Math.atan2(s - R, -w / 2), Math.atan2(s - R, w / 2)); p.lineTo(x + w, y + h); p.closePath(); return p; }
+  if (kind === 'capsule' && w > h) { const r = h / 2; p.moveTo(x + r, y); p.lineTo(x + w - r, y); p.arc(x + w - r, y + r, r, -Math.PI / 2, Math.PI / 2); p.lineTo(x + r, y + h); p.arc(x + r, y + r, r, Math.PI / 2, Math.PI * 1.5); p.closePath(); return p; }
+  if (kind === 'capsule') { const r = Math.min(w, h) / 2; p.moveTo(x, y + h - r); p.lineTo(x, y + r); p.arc(x + w / 2, y + r, w / 2, Math.PI, 0); p.lineTo(x + w, y + h - r); p.arc(x + w / 2, y + h - r, w / 2, 0, Math.PI); p.closePath(); return p; }
+  throw new Error(kind);
+}
+function circleCenter(r) { const d = Math.min(r.w, r.h); return { cx: r.x + r.w / 2, cy: Math.max(r.y + d / 2, Math.min(r.y + r.h - d / 2, r.y + r.h * .42)), d }; }
+function clipInner(ctx, kind, r, ox, oy) {
+  if (kind === 'circle') { const { cx, cy, d } = circleCenter(r); ctx.beginPath(); ctx.arc(cx - ox, cy - oy, d / 2, 0, Math.PI * 2); ctx.clip(); }
+  else ctx.clip(shapePath(kind, r.x - ox, r.y - oy, r.w, r.h));
+}
+
+// Inside mask + nearest-inside-pixel map via jump flooding (on the current S)
+function shapeGeometry(kind, r) {
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.fillStyle = '#000'; clipInner(x, kind, r, 0, 0); x.fillRect(0, 0, S, S);
+  const a = x.getImageData(0, 0, S, S).data, N = S * S;
+  const inside = new Uint8Array(N); for (let i = 0; i < N; i++) inside[i] = a[i * 4 + 3] > 127 ? 1 : 0;
+  let near = new Int32Array(N).fill(-1); for (let i = 0; i < N; i++) if (inside[i]) near[i] = i;
+  let step = 1; while (step * 2 < S) step *= 2;
+  for (; step >= 1; step >>= 1) {
+    const nx = new Int32Array(near);
+    for (let y = 0; y < S; y++) for (let xx = 0; xx < S; xx++) {
+      const i = y * S + xx; let best = near[i], bd = best < 0 ? Infinity : (xx - best % S) ** 2 + (y - (best / S | 0)) ** 2;
+      for (let dy = -step; dy <= step; dy += step) { const Y = y + dy; if (Y < 0 || Y >= S) continue;
+        for (let dx = -step; dx <= step; dx += step) { const X = xx + dx; if (X < 0 || X >= S) continue;
+          const cand = near[Y * S + X]; if (cand < 0) continue;
+          const d = (xx - cand % S) ** 2 + (y - (cand / S | 0)) ** 2; if (d < bd) { bd = d; best = cand; } } }
+      nx[i] = best;
+    }
+    near = nx;
+  }
+  const dist = new Float32Array(N);
+  for (let i = 0; i < N; i++) { if (inside[i]) continue; const n = near[i]; dist[i] = Math.hypot(i % S - n % S, (i / S | 0) - (n / S | 0)); }
+  return { inside, near, dist, d: (X, Y) => { X = Math.round(X); Y = Math.round(Y); if (X < 0 || Y < 0 || X >= S || Y >= S) return 999; return dist[Y * S + X]; } };
+}
+
+function stretchG(base, G, seed) {
+  const out = new Uint8ClampedArray(S * S * 4);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const p = y * S + x, d = G.dist[p]; if (d <= 0) continue;
+    const n = G.near[p], nx = n % S, ny = n / S | 0;
+    const tx = -(y - ny) / d, ty = (x - nx) / d;
+    const w = Math.sin(d * .05 + fbm(x * .02, y * .02, seed) * 6) * d * .3;
+    let sx = Math.max(0, Math.min(S - 1, Math.round(nx + tx * w))), sy = Math.max(0, Math.min(S - 1, Math.round(ny + ty * w)));
+    let q = sy * S + sx; if (!G.inside[q]) q = G.near[q];
+    const i = p * 4, j = q * 4; out[i] = base.data[j]; out[i + 1] = base.data[j + 1]; out[i + 2] = base.data[j + 2]; out[i + 3] = 255;
+  }
+  return out;
+}
+
+function moshG(base, G, r, seed) {
+  const buf = stretchG(base, G, seed), B = 6, cx = r.x + r.w / 2, cy = r.y + r.h / 2, tmp = new Uint8ClampedArray(buf.length);
+  for (let pass = 0; pass < 10; pass++) {
+    tmp.set(buf);
+    for (let by = 0; by < S; by += B) for (let bx = 0; bx < S; bx += B) {
+      const mx = bx + B / 2, my = by + B / 2; if (G.d(mx, my) <= 0 || G.d(mx, my) > 70) continue;
+      if (hash(bx, by, seed + pass) < .25) continue;
+      const ang = Math.atan2(my - cy, mx - cx) + (fbm(mx * .01, my * .01, seed + pass * .07) - .5) * 2.6;
+      const mag = 2 + fbm(mx * .03, my * .03, seed + 40) * 7;
+      const sx = Math.round(mx - Math.cos(ang) * mag - B / 2), sy = Math.round(my - Math.sin(ang) * mag - B / 2);
+      for (let j = 0; j < B; j++) for (let k = 0; k < B; k++) {
+        const tx = bx + k, ty = by + j, fx = sx + k, fy = sy + j;
+        if (tx >= S || ty >= S || fx < 0 || fy < 0 || fx >= S || fy >= S) continue;
+        const tp = ty * S + tx; if (G.inside[tp]) continue;
+        const fp = fy * S + fx, ti = tp * 4, fi = fp * 4, src = G.inside[fp] ? base.data : tmp;
+        buf[ti] = src[fi]; buf[ti + 1] = src[fi + 1]; buf[ti + 2] = src[fi + 2]; buf[ti + 3] = 255;
+      }
+    }
+  }
+  return buf;
+}
+
+function tintField(px, G) {
+  const mode = shapeState.tint, k0 = shapeState.strength / 100, st = TINTS[mode];
+  const keep = state.grade; state.grade = true;
+  for (let p = 0, i = 0; p < G.inside.length; p++, i += 4) {
+    if (G.inside[p]) continue;
+    if (mode === 'seed') continue;
+    gradePx(px, i);
+    if (!st || k0 <= 0) continue;
+    const l = Math.min(.999, (px[i] * .2126 + px[i + 1] * .7152 + px[i + 2] * .0722) / 255) * (st.length - 1);
+    const k = Math.floor(l), f = l - k, A = st[k], Bc = st[k + 1];
+    for (let c = 0; c < 3; c++) px[i + c] += (A[c] + (Bc[c] - A[c]) * f - px[i + c]) * k0;
+  }
+  state.grade = keep;
+}
+
+// Screens and case-study images get a much flatter version of the same shape
+function innerFor(cell, key) {
+  const sd = SEEDS.find((x) => x.id === key);
+  if (!sd || !sd.screen || shapeState.screens === 'same') return cell.inner;
+  if (shapeState.screens === 'straight') return 'rect';
+  return cell.inner === 'capsule' ? 'softrect' : 'lintel';
+}
+function buildShapeField(cell, key, img, sizeId) {
+  const inner = innerFor(cell, key);
+  const ck = [key, state.seed, inner, shapeState.proc, sizeId, shapeState.adapt].join('|');
+  if (shapeCache.has(ck)) return shapeCache.get(ck);
+  const long = SIZES.find((s) => s.id === sizeId).long, k = long / Math.max(img.width, img.height);
+  const w = Math.round(img.width * k), h = Math.round(img.height * k), M = 80;
+  S = Math.max(w, h) + 2 * M;
+  const r = { x: Math.round((S - w) / 2), y: Math.round((S - h) / 2), w, h };
+  const base = baseLayer(img, r), G = shapeGeometry(inner, r);
+  let px;
+  if (shapeState.proc === 'stretch') px = stretchG(base, G, state.seed);
+  else if (shapeState.proc === 'mosh') px = moshG(base, G, r, state.seed);
+  else {
+    // stretched strands underneath, moshed blocks near the picture, a few loose grains on top
+    px = stretchG(base, G, state.seed + 2); const m = moshG(base, G, r, state.seed);
+    for (let p = 0, i = 0; p < S * S; p++, i += 4) { const lim = 8 + 12 * fbm((p % S) * .03, (p / S | 0) * .03, state.seed + 5); if (G.dist[p] < lim) { px[i] = m[i]; px[i + 1] = m[i + 1]; px[i + 2] = m[i + 2]; } }
+    const rnd = rng(state.seed * 7 + 3);
+    for (let n = 0; n < S * 1.2; n++) {
+      const p = Math.floor(rnd() * S * S); if (G.inside[p] || G.dist[p] > 34) continue;
+      const q = G.near[p], s = 2 + Math.floor(rnd() * 4);
+      for (let j = 0; j < s; j++) for (let kk = 0; kk < s; kk++) {
+        const tx = p % S + kk, ty = (p / S | 0) + j, fx = q % S + kk - 2, fy = (q / S | 0) + j - 2;
+        if (tx >= S || ty >= S || fx < 0 || fy < 0 || fx >= S || fy >= S) continue;
+        const ti = (ty * S + tx) * 4, fi = (fy * S + fx) * 4; px[ti] = base.data[fi]; px[ti + 1] = base.data[fi + 1]; px[ti + 2] = base.data[fi + 2];
+      }
+    }
+  }
+  for (let p = 0, i = 0; p < S * S; p++, i += 4) if (G.inside[p]) { px[i] = base.data[i]; px[i + 1] = base.data[i + 1]; px[i + 2] = base.data[i + 2]; px[i + 3] = 255; } // no black behind the picture's antialiased edge
+  const out = { r, G, px, N: S, inner }; S = BASE_S; shapeCache.set(ck, out); return out;
+}
+
+function innerPath(kind, r) {
+  if (kind !== 'circle') return shapePath(kind, r.x, r.y, r.w, r.h);
+  const { cx, cy, d } = circleCenter(r), p = new Path2D(); p.arc(cx, cy, d / 2, 0, Math.PI * 2); return p;
+}
+// The outer edge as a smooth vector path: walk the picture's outline, push each point out along its normal
+function outerEdge(kind, r, b, grown) {
+  const probe = document.createElement('canvas').getContext('2d'), path = innerPath(kind, r);
+  const cx = r.x + r.w / 2, cy = r.y + r.h / 2, raw = [], RAYS = 1440, far = Math.hypot(r.w, r.h);
+  for (let i = 0; i < RAYS; i++) {
+    const a = i / RAYS * Math.PI * 2, dx = Math.cos(a), dy = Math.sin(a); let lo = 0, hi = far;
+    for (let k = 0; k < 22; k++) { const m = (lo + hi) / 2; if (probe.isPointInPath(path, cx + dx * m, cy + dy * m)) lo = m; else hi = m; }
+    raw.push([cx + dx * lo, cy + dy * lo]);
+  }
+  // even spacing along the outline so wide shapes don't bunch up at the ends
+  const L = [0]; for (let i = 1; i <= RAYS; i++) { const A = raw[i - 1], B = raw[i % RAYS]; L.push(L[i - 1] + Math.hypot(B[0] - A[0], B[1] - A[1])); }
+  const n = Math.max(120, Math.round(L[RAYS] / 2)), pts = []; let j = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / n * L[RAYS]; while (L[j + 1] < t) j++;
+    const A = raw[j], B = raw[(j + 1) % RAYS], f = (t - L[j]) / (L[j + 1] - L[j] || 1);
+    pts.push([A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f]);
+  }
+  let out = pts.map((P, i) => {
+    const A = pts[(i - 3 + n) % n], B = pts[(i + 3) % n]; let nx = B[1] - A[1], ny = -(B[0] - A[0]); const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
+    if (nx * (P[0] - cx) + ny * (P[1] - cy) < 0) { nx = -nx; ny = -ny; }
+    const d = grown ? b * (.8 + fbm(P[0] * .025, P[1] * .025, state.seed + 11)) : b;
+    return [P[0] + nx * d, P[1] + ny * d];
+  });
+  for (let pass = 0; pass < 6; pass++) out = out.map((P, i) => { const A = out[(i - 1 + n) % n], B = out[(i + 1) % n]; return [(A[0] + 2 * P[0] + B[0]) / 4, (A[1] + 2 * P[1] + B[1]) / 4]; });
+  return (ox, oy) => {
+    const p = new Path2D(), m = (i) => { const A = out[i % n], B = out[(i + 1) % n]; return [(A[0] + B[0]) / 2 - ox, (A[1] + B[1]) / 2 - oy]; };
+    const s = m(0); p.moveTo(s[0], s[1]);
+    for (let i = 1; i <= n; i++) { const c = out[i % n], e = m(i); p.quadraticCurveTo(c[0] - ox, c[1] - oy, e[0], e[1]); }
+    p.closePath(); return p;
+  };
+}
+// k renders at k× pixel density (the field keeps its chunky pixels, the edges and the picture get crisper)
+function paintCell(cv, cell, key, img, sizeId, k = 1) {
+  const f = buildShapeField(cell, key, img, sizeId);
+  S = f.N;
+  const long = SIZES.find((z) => z.id === sizeId).long;
+  const { r, G } = f, b = shapeState.scale ? Math.max(6, Math.round(shapeState.width * long / 240)) : shapeState.width, pad = Math.ceil(b * 1.8) + 2;
+  const lift = cell.outer === 'arch' ? Math.round((r.w + 2 * b) / 2) : 0;
+  const px = new Uint8ClampedArray(f.px); tintField(px, G);
+  for (let i = 3; i < px.length; i += 4) px[i] = 255;
+  const fc = document.createElement('canvas'); fc.width = fc.height = S; fc.getContext('2d').putImageData(new ImageData(px, S, S), 0, 0);
+  const ox = r.x - pad, oy = r.y - pad - lift, cw = r.w + 2 * pad, ch = r.h + 2 * pad + lift;
+  cv.width = Math.round(cw * k); cv.height = Math.round(ch * k); cv.style.width = cw + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(k, 0, 0, k, 0, 0); ctx.clearRect(0, 0, cw, ch);
+  ctx.save();
+  if (cell.outer === 'rect' || cell.outer === 'arch') ctx.clip(shapePath(cell.outer, pad - b, pad - b, r.w + 2 * b, r.h + 2 * b + lift));
+  else if (cell.outer === 'follow' || cell.outer === 'grown') ctx.clip(outerEdge(f.inner, r, b, cell.outer === 'grown')(ox, oy));
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(fc, ox, oy, cw, ch, 0, 0, cw, ch);
+  ctx.restore();
+  ctx.save(); clipInner(ctx, f.inner, r, ox, oy); ctx.drawImage(img, r.x - ox, r.y - oy, r.w, r.h); ctx.restore();
+  S = BASE_S;
+}
+
+// ---- shape grid ----
+const shapeRoot = document.getElementById('shapes');
+const shapeViews = SHAPE_CELLS.map((cell) => {
+  const fig = document.createElement('figure'); fig.className = 'pickable';
+  const btn = document.createElement('button'); btn.className = 'pick'; btn.type = 'button';
+  btn.setAttribute('aria-pressed', String(cell.id === shapeState.pick));
+  const cv = document.createElement('canvas'); cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', cell.label);
+  const cap = document.createElement('span'); cap.className = 'pick-label'; cap.textContent = cell.label;
+  btn.append(cv, cap); fig.append(btn); shapeRoot.append(fig);
+  btn.addEventListener('click', () => { shapeState.pick = cell.id; shapeViews.forEach((v) => v.btn.setAttribute('aria-pressed', String(v.cell.id === cell.id))); renderSheet(); });
+  return { cell, cv, btn };
+});
+
+let shapeJob = 0;
+const tick = () => new Promise((res) => setTimeout(res, 0));
+async function renderShapes() {
+  const job = ++shapeJob, img = await load(state.img);
+  for (const v of shapeViews) { if (job !== shapeJob) return; paintCell(v.cv, v.cell, state.img, img, shapeState.size, Math.min(2, devicePixelRatio || 1)); await tick(); }
+}
+
+// ---- contact sheet: one treatment across every image and size ----
+const sheetRoot = document.getElementById('sheet');
+const sheetRows = SEEDS.map((seed) => {
+  const row = document.createElement('div'); row.className = 'sheet-row';
+  const name = document.createElement('p'); name.className = 'sheet-name'; name.textContent = seed.label;
+  const cells = document.createElement('div'); cells.className = 'sheet-cells';
+  const cvs = SIZES.map((sz) => { const cv = document.createElement('canvas'); cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', `${seed.label}, ${sz.label.toLowerCase()} size`); cells.append(cv); return { sz, cv }; });
+  row.append(name, cells); sheetRoot.append(row); return { seed, cvs };
+});
+let sheetJob = 0;
+async function renderSheet() {
+  const job = ++sheetJob, cell = SHAPE_CELLS.find((c) => c.id === shapeState.pick);
+  document.getElementById('sheet-name').textContent = cell.label;
+  for (const row of sheetRows) {
+    const img = await load(row.seed.id);
+    for (const c of row.cvs) { if (job !== sheetJob) return; paintCell(c.cv, cell, row.seed.id, img, c.sz.id, Math.min(2, devicePixelRatio || 1)); await tick(); }
+  }
+}
+
+function renderAllShapes() { renderShapes().then(renderSheet); }
+function pressShape(attr, val) { document.querySelectorAll(`[data-${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[attr] === String(val)))); }
+document.querySelectorAll('[data-proc]').forEach((b) => b.addEventListener('click', () => { shapeState.proc = b.dataset.proc; pressShape('proc', shapeState.proc); renderAllShapes(); }));
+document.querySelectorAll('[data-tint]').forEach((b) => b.addEventListener('click', () => { shapeState.tint = b.dataset.tint; pressShape('tint', shapeState.tint); document.getElementById('strength').disabled = !TINTS[shapeState.tint]; renderAllShapes(); }));
+document.querySelectorAll('[data-width]').forEach((b) => b.addEventListener('click', () => { shapeState.width = Number(b.dataset.width); pressShape('width', shapeState.width); renderAllShapes(); }));
+document.querySelectorAll('[data-screens]').forEach((b) => b.addEventListener('click', () => { shapeState.screens = b.dataset.screens; pressShape('screens', shapeState.screens); renderAllShapes(); }));
+document.querySelectorAll('[data-scale]').forEach((b) => b.addEventListener('click', () => { shapeState.scale = b.dataset.scale === '1'; pressShape('scale', b.dataset.scale); renderAllShapes(); }));
+document.querySelectorAll('[data-adapt]').forEach((b) => b.addEventListener('click', () => { shapeState.adapt = b.dataset.adapt === '1'; pressShape('adapt', b.dataset.adapt); renderAllShapes(); }));
+document.querySelectorAll('[data-size]').forEach((b) => b.addEventListener('click', () => { shapeState.size = b.dataset.size; pressShape('size', shapeState.size); renderShapes(); }));
+let strengthTimer = 0;
+document.getElementById('strength').addEventListener('input', (e) => {
+  shapeState.strength = Number(e.target.value); document.getElementById('strength-out').textContent = `${shapeState.strength}%`;
+  clearTimeout(strengthTimer); strengthTimer = setTimeout(renderAllShapes, 120);
+});
+
+rebuild(); renderAllShapes();
+</script>

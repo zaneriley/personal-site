@@ -323,11 +323,6 @@ html[data-theme="light"] .footer-surface {
   text-underline-offset: 0.15em;
 }
 
-.weather-credit:focus-visible {
-  outline: 0.125rem solid currentcolor;
-  outline-offset: 0.125rem;
-}
-
 @media (width >= 64rem) {
   /* The text starts on column 10; column 9 gives the hanging icon its own room. */
   .footer-surface .footer-weather {

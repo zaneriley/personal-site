@@ -1,0 +1,419 @@
+<title>Case Study Mock</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: a case-study page as the site would set it. One reading column, figures break wider. A small sticky bar switches treatments. */
+:root {
+  --bg: oklch(25.7% 0.006 286deg);
+  --bar: oklch(22% 0.008 286deg);
+  --fg: oklch(90.76% 0.0184 316.61deg);
+  --strong: oklch(97% 0.008 316deg);
+  --dim: oklch(76.32% 0.1 291.05deg);
+  --rule: oklch(35% 0.015 286deg);
+  --gold: oklch(77.77% 0.0704 75.85deg);
+  --focus: oklch(80% 0.1 291deg);
+  --display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --body: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bar); }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bar); border-bottom: 1px solid var(--rule); }
+.bar-in { max-width: 980px; margin: 0 auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.group > span { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-right: 2px; }
+button { font: 500 13px/1 var(--body); color: var(--fg); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 8px 12px; min-height: 34px; cursor: pointer; }
+button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+button:disabled { opacity: .4; cursor: default; }
+button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.note { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: .04em; }
+main { max-width: 980px; margin: 0 auto; padding-block: 56px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 28px; }
+.col { max-width: 640px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin: 0; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(42px, 7vw, 72px); line-height: .98; margin: 0; color: var(--strong); text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1.05; margin: 22px 0 0; color: var(--strong); text-wrap: balance; }
+p { margin: 0; }
+.lede { font-size: 20px; line-height: 1.5; color: var(--strong); }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px 20px; padding-block: 14px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.meta dt { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+.meta dd { margin: 2px 0 0; font-size: 15px; }
+figure { margin: 12px auto; display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+figure .media { display: flex; justify-content: center; width: 100%; }
+figure img, figure canvas { display: block; max-width: 100%; height: auto; }
+figcaption { max-width: 640px; width: 100%; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 14px; font-size: 14px; line-height: 1.5; color: var(--fg); }
+figcaption b { font-family: var(--mono); font-weight: 400; font-size: 11px; letter-spacing: .08em; color: var(--dim); padding-top: 3px; white-space: nowrap; }
+blockquote { margin: 8px 0; padding-left: 18px; border-left: 2px solid var(--gold); font-family: var(--display); font-size: 28px; line-height: 1.2; color: var(--strong); }
+.sample { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--dim); border: 1px dashed var(--rule); border-radius: 6px; padding: 8px 10px; }
+.lab { position: fixed; z-index: 6; right: 0; top: 0; bottom: 0; width: 320px; overflow-y: auto; background: var(--bar); border-left: 1px solid var(--rule); padding: calc(env(safe-area-inset-top, 0px) + 72px) max(16px, env(safe-area-inset-right, 0px)) 24px 16px; display: flex; flex-direction: column; gap: 16px; }
+.lab[hidden] { display: none; }
+.lab-head { display: flex; justify-content: space-between; align-items: center; }
+.lab-head strong { font-family: var(--display); font-weight: 400; font-size: 26px; color: var(--strong); }
+.lab-note { font-size: 13px; line-height: 1.45; color: var(--dim); }
+.lab-sec { display: flex; flex-direction: column; gap: 8px; }
+.lab-sec > span, .slider > span { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); display: flex; justify-content: space-between; }
+details summary { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); cursor: pointer; min-height: 28px; }
+details .chips { margin-top: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { padding: 7px 10px; min-height: 32px; }
+.swatches { display: flex; height: 14px; border-radius: 3px; overflow: hidden; }
+.swatches i { flex: 1; }
+.slider { display: flex; flex-direction: column; gap: 4px; }
+.slider output { color: var(--fg); }
+.slider input { width: 100%; accent-color: oklch(76.32% 0.1 291.05deg); min-height: 28px; }
+.lab-row { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (min-width: 1100px) { body.lab-open main { margin-right: 320px; margin-left: max(0px, calc((100vw - 320px - 980px) / 2)); } }
+@media (max-width: 760px) { .lab { top: auto; left: 0; width: auto; max-height: 52vh; border-left: 0; border-top: 1px solid var(--rule); padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); } body.lab-open main { padding-bottom: 56vh; } }
+[data-screen] { scroll-margin-top: 72px; }
+@media (max-width: 560px) { .bar-in { flex-wrap: nowrap; overflow-x: auto; gap: 14px; } .group { flex-wrap: nowrap; } .group > span { display: none; } .bar button { white-space: nowrap; }
+  .lab { max-height: 44vh; gap: 12px; } .lab .lab-note:first-of-type { display: none; } [data-screen] { scroll-margin-top: 64px; } figcaption { grid-template-columns: 1fr; gap: 4px; } body { font-size: 16px; } }
+</style>
+
+<div class="bar" role="group" aria-label="Treatment controls">
+  <div class="bar-in">
+    <div class="group"><span>Treatment</span>
+      <button id="t-on" data-t="on" aria-pressed="true">On</button>
+      <button id="t-off" data-t="off" aria-pressed="false">Off</button>
+    </div>
+    <div class="group"><span>Photo edge</span>
+      <button id="p-graded" data-p="graded" aria-pressed="true">Graded</button>
+      <button id="p-muted" data-p="muted" aria-pressed="false">Muted purple</button>
+      <button id="p-dusk" data-p="dusk" aria-pressed="false">Dusk purple</button>
+    </div>
+    <div class="group"><span>Screens</span>
+      <button id="lab-toggle" type="button" aria-expanded="false" aria-controls="lab">Field lab</button>
+    </div>
+  </div>
+</div>
+
+<aside id="lab" class="lab" hidden aria-label="Field lab">
+  <div class="lab-head"><strong>Field lab</strong><button id="lab-close" type="button" aria-label="Close field lab">Close</button></div>
+  <p class="lab-note">Changes every screen on the page. The pattern sits behind the screenshot, never on it.</p>
+  <div class="lab-sec"><span>Made from the screenshot</span><div class="chips" id="src-chips"></div></div>
+  <div class="lab-sec"><span>Noise fields that worked</span><div class="chips" id="gen-chips"></div></div>
+  <details class="lab-sec"><summary>Rejected patterns</summary><div class="chips" id="bad-chips"></div></details>
+  <div class="lab-sec"><span>Color way</span><div class="chips" id="pal-chips"></div><div class="swatches" id="swatches" aria-hidden="true"></div></div>
+  <label class="slider"><span>Grade <output id="o-grade"></output></span><input id="s-grade" type="range" min="0" max="100" step="1"></label>
+  <label class="slider"><span>Contrast <output id="o-range"></output></span><input id="s-range" type="range" min="0" max="100" step="1"></label>
+  <label class="slider"><span>Density <output id="o-density"></output></span><input id="s-density" type="range" min="10" max="90" step="1"></label>
+  <label class="slider"><span>Variation <output id="o-variation"></output></span><input id="s-variation" type="range" min="0" max="100" step="1"></label>
+  <label class="slider"><span>Margin <output id="o-pad"></output></span><input id="s-pad" type="range" min="4" max="24" step="1"></label>
+  <div class="lab-row"><button id="f-new" type="button">New seed</button><button id="f-reset" type="button">Reset</button><button id="f-copy" type="button">Copy settings</button></div>
+  <p class="lab-note" id="copy-note" aria-live="polite"></p>
+</aside>
+
+<main>
+  <div class="col">
+    <p class="sample">Sample copy at real length so the treatments can be judged in a reading flow. It isn't your case study.</p>
+    <p class="eyebrow">Case study · 2023</p>
+    <h1>Helping people find local healthcare</h1>
+    <p class="lede">A search experience for finding a nearby doctor who takes your insurance, rebuilt around the questions people actually ask before they book.</p>
+    <dl class="meta">
+      <div><dt>Role</dt><dd>Lead product designer</dd></div>
+      <div><dt>Team</dt><dd>2 designers, 6 engineers</dd></div>
+      <div><dt>Timeline</dt><dd>9 months</dd></div>
+      <div><dt>Platforms</dt><dd>Web, iOS, Android</dd></div>
+    </dl>
+  </div>
+
+  <figure>
+    <div class="media" data-photo="leaves"></div>
+    <figcaption><b>FIGURE № 1</b><span>Workshop wall from the first research week, photographed at the end of day three.</span></figcaption>
+  </figure>
+
+  <div class="col">
+    <h2>The problem</h2>
+    <p>Most people start looking for a doctor at a bad moment. They have just moved, or their plan changed, or something hurts. The existing flow asked them to pick a specialty, a radius and a network before showing a single result, and many sessions ended on that first form.</p>
+    <p>Interviews kept returning to the same three questions: will this person take my insurance, can I see them soon, and will they listen to me. The old results page answered the first one in small grey text and ignored the other two.</p>
+  </div>
+
+  <figure>
+    <div class="media" data-screen="clinic"></div>
+    <figcaption><b>FIGURE № 2</b><span>The result card after the redesign. Availability and insurance match sit above the fold, and the photo is real rather than a placeholder.</span></figcaption>
+  </figure>
+
+  <div class="col">
+    <h2>What we tried</h2>
+    <p>We cut the form to a single field and inferred the rest from location and plan. Early prototypes showed results immediately and let people narrow down afterwards, which tested better than any version of the up-front filter.</p>
+    <blockquote>“I just want to know if they can see me this week.”</blockquote>
+    <p>The design system work ran in parallel. The team had five slightly different blues and no shared rules for when to use them, so we wrote the color guidance alongside the product work and shipped both together.</p>
+  </div>
+
+  <figure>
+    <div class="media" data-screen="page"></div>
+    <figcaption><b>FIGURE № 3</b><span>Color guidance from the design system documentation, written during the project.</span></figcaption>
+  </figure>
+
+  <div class="col">
+    <p>Not everything was screens. Part of the research happened in clinics, and the people we met there shaped the tone of the whole product more than any metric did.</p>
+  </div>
+
+  <figure>
+    <div class="media" data-photo="portrait"></div>
+    <figcaption><b>FIGURE № 4</b><span>Field research in Shibuya. Portrait used as a stand-in for a research photo.</span></figcaption>
+  </figure>
+
+  <div class="col">
+    <h2>What shipped</h2>
+    <p>The new search launched on web first, then on both apps a quarter later. The first form disappeared entirely. People could still filter, but they did it after seeing real options, and fewer people gave up on the first screen.</p>
+    <p>A smaller follow-up brought the same pattern to the connected-home settings, where people faced the same wall of choices before seeing anything useful.</p>
+  </div>
+
+  <figure>
+    <div class="media" data-screen="home"></div>
+    <figcaption><b>FIGURE № 5</b><span>Connected-home settings, applying the same “results first” pattern.</span></figcaption>
+  </figure>
+
+  <figure>
+    <div class="media" data-photo="terrain"></div>
+    <figcaption><b>FIGURE № 6</b><span>Landscape texture used in the launch campaign.</span></figcaption>
+  </figure>
+
+  <div class="col">
+    <p class="note">Photos: grown edge from the image's own pixels, graded, or tinted at 70%. Screens: a generative field colored from the screenshot, graded and narrowed by default. The sample images are low-resolution crops, so some look soft at this size.</p>
+  </div>
+</main>
+
+<script>
+const RAW = __RAW__;
+const GROWN = __GROWN__;
+const STUDY = __STUDY__;
+const SRC = [['echo', 'Echo'], ['drag', 'Drag'], ['compress', 'Compression'], ['print', 'Print'], ['grow', 'Growth']];
+const OKS = [['dither', 'Dither'], ['bayer', 'Bayer field'], ['pixel', 'Pixel'], ['contour', 'Contours'], ['terrain', 'Terrain'], ['marble', 'Marble'], ['moire', 'Moiré']];
+const BAD = [['orbit', 'Orbit'], ['weave', 'Weave'], ['filament', 'Filament'], ['warp', 'Warp'], ['fold', 'Fold'], ['tiles', 'Tiles'], ['stipple', 'Stipple'], ['grain', 'Fine grain']];
+const GENS = [...SRC, ...OKS, ...BAD];
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const PALS = [['screenshot', 'From screenshot'], ['dusk', 'Dusk'], ['signature', 'Signature'], ['code', 'Code'], ['moss', 'Moss'], ['ink', 'Ink']];
+const FIXED = { ...Object.fromEntries(Object.entries(STUDY.palettes).map(([k, v]) => [k, v.map(hex)])),
+  moss: ['#16201e', '#d9d2b4', '#7e9e70', '#3f7f6c', '#c9a85c'].map(hex),
+  ink: ['#1c1b22', '#4a4660', '#8a84a8', '#cfc8df', '#e9e1d4'].map(hex) };
+const DEFAULTS = { t: 'on', p: 'graded', f: 'drag', pal: 'screenshot', grade: 100, range: 50, density: 50, variation: 50, pad: 18, seed: 3 };
+let mode = { ...DEFAULTS };
+try { Object.assign(mode, JSON.parse(localStorage.getItem('csm-lab2') || '{}')); } catch (e) {}
+function save() { try { localStorage.setItem('csm-lab2', JSON.stringify(mode)); } catch (e) {} }
+const loaded = {};
+function load(src) { if (loaded[src]) return Promise.resolve(loaded[src]); return new Promise((res) => { const i = new Image(); i.onload = () => { loaded[src] = i; res(i); }; i.src = src; }); }
+
+// ---- noise ----
+function hash(x, y, s) { const v = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return v - Math.floor(v); }
+function vnoise(x, y, s) { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash(xi, yi, s), b = hash(xi + 1, yi, s), c = hash(xi, yi + 1, s), d = hash(xi + 1, yi + 1, s); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }
+function fbm(x, y, s) { return vnoise(x, y, s) * .55 + vnoise(x * 2.1, y * 2.1, s + 9) * .3 + vnoise(x * 4.3, y * 4.3, s + 17) * .15; }
+
+// ---- palette from the screenshot itself, then pulled into the site's light ----
+function paletteFrom(img) {
+  const c = document.createElement('canvas'), w = 48, h = Math.max(1, Math.round(48 * img.height / img.width)); c.width = w; c.height = h;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0, w, h); const d = x.getImageData(0, 0, w, h).data, px = [];
+  for (let i = 0; i < d.length; i += 4) { const r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    px.push({ r, g, b, l: .2126 * r + .7152 * g + .0722 * b, sat: mx ? (mx - mn) / mx : 0 }); }
+  // prefer the image's colored pixels; screenshots are mostly white, which says little about them
+  const colored = px.filter((p) => p.sat > .18 && p.l > 30 && p.l < 235);
+  const src = colored.length > px.length * .06 ? colored : px;
+  src.sort((a, b) => a.l - b.l);
+  const q = [.06, .3, .55, .8, .96].map((t) => src[Math.min(src.length - 1, Math.floor(t * src.length))]);
+  const dark = [33, 30, 42];
+  return q.map((p, i) => {
+    const k = [.72, .45, .25, .12, .05][i]; // darker steps lean toward the site's dusk ground
+    return [p.r + (dark[0] - p.r) * k, p.g + (dark[1] - p.g) * k, p.b + (dark[2] - p.b) * k].map((v) => Math.round(24 + v * 196 / 255));
+  });
+}
+
+// Grade: darken each step into the site's range and swap most of its hue for the site's grey-violet.
+// Contrast: below 100, every step is pulled toward the palette's middle brightness.
+const luma = (c) => .2126 * c[0] + .7152 * c[1] + .0722 * c[2];
+function fieldPalette(pal) {
+  const g = mode.grade / 100;
+  let out = pal.map((c) => { const l = 30 + luma(c) * .62, t = [l * .97, l * .95, l * 1.1];
+    return c.map((v, k) => v + ((v * .35 + t[k] * .65) - v) * g); });
+  const mid = out.slice().sort((a, b) => luma(a) - luma(b))[2], pull = 1 - mode.range / 100;
+  return out.map((c) => c.map((v, k) => Math.round(v + (mid[k] - v) * pull)));
+}
+
+function drawField(ctx, W, H, pal, kind, seed) {
+  const cell = 3, sc = .0045 * (.4 + mode.density / 50), sorted = pal.slice().sort((a, b) => luma(a) - luma(b)); pal = sorted;
+  const w = Math.ceil(W / cell), h = Math.ceil(H / cell), im = ctx.createImageData(w, h), o = im.data;
+  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  if (kind === 'grain') {
+    ctx.fillStyle = `rgb(${pal[0]})`; ctx.fillRect(0, 0, W, H);
+    const step = Math.round(12 - mode.density / 10);
+    for (let y = step / 2; y < H; y += step) for (let x = step / 2 + ((y / step | 0) % 2) * step / 2; x < W; x += step) {
+      const v = fbm(x * sc * 1.3, y * sc * 1.3, seed); const idx = Math.min(4, 1 + Math.floor(v * 4));
+      ctx.fillStyle = `rgb(${pal[idx]})`; ctx.beginPath(); ctx.arc(x, y, .6 + v * 2.6, 0, Math.PI * 2); ctx.fill();
+    }
+    return;
+  }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const v = fbm(x * cell * sc, y * cell * sc, seed);
+    let idx;
+    if (kind === 'contour') { const bands = v * (5 + mode.variation / 10); idx = Math.floor(bands) % 4; if (bands % 1 < .12) idx = 4; }
+    else { const t = bayer[(y % 4) * 4 + (x % 4)] / 16, s = v * 3.2; idx = Math.min(4, Math.floor(s) + (s % 1 > t ? 1 : 0)); }
+    const c = pal[idx], i = (y * w + x) * 4; o[i] = c[0]; o[i + 1] = c[1]; o[i + 2] = c[2]; o[i + 3] = 255;
+  }
+  const t = document.createElement('canvas'); t.width = w; t.height = h; t.getContext('2d').putImageData(im, 0, 0);
+  ctx.imageSmoothingEnabled = false; ctx.drawImage(t, 0, 0, w * cell, h * cell);
+}
+
+
+// ---- fields made from the screenshot's own pixels ----
+// Every one samples the screen, pushes it through a machine process, then lands it on the pixel grid in the field's colors.
+function rampColor(pal, c) { // the screenshot's color re-lit by the palette, by brightness; grade sets how far
+  const sorted = pal.slice().sort((a, b) => luma(a) - luma(b)), l = Math.max(0, Math.min(.999, (luma(c) / 255) ** 1.3 * .8)) * (sorted.length - 1), k = Math.floor(l), f = l - k;
+  const r = sorted[k].map((v, i) => v + (sorted[k + 1][i] - v) * f), g = .55 + mode.grade / 100 * .45;
+  return r.map((v, i) => Math.round(c[i] + (v - c[i]) * g));
+}
+function sampler(img, w, h, blur) {
+  const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h));
+  const x = c.getContext('2d', { willReadFrequently: true }); if (blur) x.filter = `blur(${blur}px)`; x.drawImage(img, 0, 0, c.width, c.height);
+  const d = x.getImageData(0, 0, c.width, c.height).data, W = c.width, H = c.height;
+  return (u, v) => { const X = Math.max(0, Math.min(W - 1, u | 0)), Y = Math.max(0, Math.min(H - 1, v | 0)), i = (Y * W + X) * 4; return [d[i], d[i + 1], d[i + 2]]; };
+}
+const cellSize = () => Math.max(2, Math.round(12 - mode.density / 9));
+function gridPaint(ctx, W, H, cell, colorAt) {
+  const w = Math.ceil(W / cell), h = Math.ceil(H / cell), im = ctx.createImageData(w, h), o = im.data;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = colorAt(x, y, x * cell + cell / 2, y * cell + cell / 2), i = (y * w + x) * 4; o[i] = c[0]; o[i + 1] = c[1]; o[i + 2] = c[2]; o[i + 3] = 255; }
+  const t = document.createElement('canvas'); t.width = w; t.height = h; t.getContext('2d').putImageData(im, 0, 0);
+  ctx.imageSmoothingEnabled = false; ctx.drawImage(t, 0, 0, w * cell, h * cell);
+}
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+const SOURCE = {
+  // Echo: the screen blown up behind itself, softened, then dithered down to a few of the field's steps
+  echo(ctx, W, H, pal, img, R, seed) {
+    const cell = cellSize(), k = 1.15 + mode.variation / 100 * .8, sw = R.w * k * W / R.w, sh = sw * img.height / img.width;
+    const smp = sampler(img, sw, sh, 2 + mode.variation / 25), ox = (sw - W) / 2, oy = (sh - H) / 2;
+    const sorted = pal.slice().sort((a, b) => luma(a) - luma(b));
+    gridPaint(ctx, W, H, cell, (x, y, px, py) => { const c = rampColor(pal, smp(px + ox, py + oy)), l = luma(c) / 255 * 3.4, t = BAYER[(y % 4) * 4 + (x % 4)] / 16;
+      const i = Math.min(4, Math.floor(l) + (l % 1 > t ? 1 : 0)); return sorted[i].map((v, j) => Math.round(v * .7 + c[j] * .3)); });
+  },
+  // Drag: each cell outside the screen copies the nearest edge pixel, nudged sideways by noise, in broken runs
+  drag(ctx, W, H, pal, img, R, seed) {
+    const cell = cellSize(), smp = sampler(img, R.w, R.h, 0), v = mode.variation / 100;
+    gridPaint(ctx, W, H, cell, (x, y, px, py) => {
+      let u = px - R.x, w = py - R.y; const out = u < 0 || w < 0 || u > R.w || w > R.h;
+      const dx = u < 0 ? -u : u > R.w ? u - R.w : 0, dy = w < 0 ? -w : w > R.h ? w - R.h : 0, d = Math.max(dx, dy);
+      const run = Math.floor(d / (cell * (3 + 6 * fbm(px * .02, py * .02, seed)))), jit = (hash(run, Math.floor((dx ? py : px) / cell), seed) - .5) * v * 40 * Math.min(1, d / 40);
+      if (dx >= dy) w += jit; else u += jit;
+      // reach a little way into the screen so its content, not just its white edge, gets pulled out
+      const depth = (4 + fbm(px * .015, py * .015, seed + 2) * v * .45 * Math.min(R.w, R.h)) * (out ? 1 : 0);
+      if (dx >= dy && dx > 0) u = u < 0 ? depth : R.w - depth; else if (dy > 0) w = w < 0 ? depth : R.h - depth;
+      const c = smp(Math.max(1, Math.min(R.w - 2, u)), Math.max(1, Math.min(R.h - 2, w)));
+      const fade = Math.min(1, d / (Math.max(W, H) * .5)) * .55;
+      return rampColor(pal, c).map((q, j) => Math.round(q + (pal[0][j] - q) * fade * (out ? 1 : 0)));
+    });
+  },
+  // Compression: a blown-up copy crushed into 8x8 blocks that keep only their average and slope, smeared outward
+  compress(ctx, W, H, pal, img, R, seed) {
+    const cell = Math.max(2, Math.round(cellSize() / 2)), blk = 8, sw = W * (1.6 + mode.variation / 100), sh = sw * img.height / img.width, smp = sampler(img, sw / cell, sh / cell, 1);
+    const ox = (sw - W) / 2 / cell, oy = (sh - H) / 2 / cell, v = mode.variation / 100;
+    const blocks = {};
+    const blockAt = (bx, by) => { const key = bx + ',' + by; if (blocks[key]) return blocks[key];
+      // P-frame smear: some blocks reuse a neighbour's data instead of their own
+      let sx = bx, sy = by; if (hash(bx, by, seed) < v * .5) { sx += Math.round((hash(by, bx, seed + 3) - .5) * 4); sy -= 1 + Math.floor(hash(bx, by, seed + 5) * 3); }
+      const x0 = sx * blk + ox, y0 = sy * blk + oy, a = smp(x0 + 4, y0 + 4), r = smp(x0 + 7, y0 + 4), dn = smp(x0 + 4, y0 + 7);
+      return (blocks[key] = { a, gx: a.map((q, i) => (r[i] - q) / 4), gy: a.map((q, i) => (dn[i] - q) / 4) }); };
+    gridPaint(ctx, W, H, cell, (x, y) => { const b = blockAt(Math.floor(x / blk), Math.floor(y / blk)), fx = x % blk - 3.5, fy = y % blk - 3.5;
+      const c = b.a.map((q, i) => q + b.gx[i] * fx * .8 + b.gy[i] * fy * .8), out = rampColor(pal, c);
+      return out.map((q) => Math.round(q / 12) * 12); }); // coarse colour quantisation, like a starved encoder
+  },
+  // Print: two inks from the field, each an ordered-dither separation of a cropped detail, the second slightly off-register
+  print(ctx, W, H, pal, img, R, seed) {
+    const cell = cellSize(), sorted = pal.slice().sort((a, b) => luma(a) - luma(b)), paper = sorted[0], inkA = sorted[3], inkB = sorted[2];
+    const crop = 1.6 + mode.variation / 100 * 1.6, sw = W * crop, sh = sw * img.height / img.width, smp = sampler(img, sw, sh, 1.5);
+    const ox = (sw - W) * hash(1, 2, seed), oy = (sh - H) * hash(3, 4, seed), mis = cell * (1 + Math.round(hash(5, 6, seed) * 2));
+    gridPaint(ctx, W, H, cell, (x, y, px, py) => {
+      const a = smp(px + ox, py + oy), b = smp(px + ox + mis, py + oy + mis * .6);
+      const ta = BAYER[(y % 4) * 4 + (x % 4)] / 16, tb = BAYER[((y + 2) % 4) * 4 + ((x + 1) % 4)] / 16;
+      const ka = 1 - luma(a) / 255 > ta * .9 + .1, kb = (a[2] - a[0] + 255) / 510 > tb * .7 + .3 && 1 - luma(b) / 255 > ta * .6;
+      let c = paper.slice(); if (ka) c = c.map((q, i) => q + (inkA[i] - q) * .85); if (kb) c = c.map((q, i) => q * (.55 + inkB[i] / 255 * .45)); // multiply like overprinted ink
+      return c.map(Math.round);
+    });
+  },
+  // Growth: cells spread out from the screen's edge, each inheriting its parent's colour with a small drift
+  grow(ctx, W, H, pal, img, R, seed) {
+    const cell = cellSize(), w = Math.ceil(W / cell), h = Math.ceil(H / cell), smp = sampler(img, R.w, R.h, 0), rnd = rng(seed * 31 + 7);
+    const col = new Array(w * h), cost = new Float32Array(w * h).fill(Infinity), heap = [];
+    const push = (n, c) => { heap.push([c, n]); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+    const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const px = x * cell + cell / 2, py = y * cell + cell / 2;
+      if (px >= R.x && px <= R.x + R.w && py >= R.y && py <= R.y + R.h) { const n = y * w + x; col[n] = rampColor(pal, smp(px - R.x, py - R.y)); cost[n] = 0; push(n, 0); } }
+    const reach = Math.max(W, H) * (.25 + mode.variation / 100 * .5) / cell, drift = 6 + mode.variation / 100 * 10;
+    while (heap.length) { const [c, n] = pop(); if (c > cost[n]) continue; const x = n % w, y = n / w | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= w || Y >= h) continue;
+        const m = Y * w + X, nc = c + .4 + rnd() * rnd() * 3 * (1.2 - fbm(X * .05, Y * .05, seed)); if (nc >= cost[m] || nc > reach) continue;
+        cost[m] = nc; col[m] = col[n].map((q) => q + (rnd() - .5) * drift); push(m, nc); } }
+    gridPaint(ctx, W, H, cell, (x, y) => { const n = y * w + x; if (!col[n]) return pal.slice().sort((a, b) => luma(a) - luma(b))[0];
+      const f = Math.min(1, cost[n] / reach) ** 2, bg = pal.slice().sort((a, b) => luma(a) - luma(b))[0]; return col[n].map((q, i) => Math.round(q + (bg[i] - q) * f * .6)); });
+  },
+};
+function rng(seed) { let v = seed >>> 0; return () => { v = (v * 1664525 + 1013904223) >>> 0; return v / 4294967296; }; }
+
+const shots = {};
+function screenPalette(img) { return fieldPalette(mode.pal === 'screenshot' ? paletteFrom(img) : FIXED[mode.pal]); }
+async function renderScreen(el) {
+  const key = el.dataset.screen, img = await load(RAW[key]);
+  el.replaceChildren();
+  const maxW = Math.min(el.clientWidth || 860, 860);
+  if (mode.t === 'off') { const i = new Image(); i.src = RAW[key]; i.alt = ''; i.style.width = Math.min(maxW * .7, img.width * 1.6) + 'px'; el.append(i); return; }
+  const innerW = Math.min(maxW * .62, img.width * 1.6), innerH = innerW * img.height / img.width;
+  const pad = Math.round(Math.max(16, innerW * mode.pad / 100));
+  const W = Math.round(innerW + pad * 2), H = Math.round(innerH + pad * 2);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const cv = document.createElement('canvas'); cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', 'Screenshot on a generated background');
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const pal = screenPalette(img), seed = mode.seed + key.length;
+  if (SOURCE[mode.f]) SOURCE[mode.f](ctx, W, H, pal, img, { x: pad, y: pad, w: innerW, h: innerH }, seed);
+  else if (STUDY.draw[mode.f]) STUDY.draw[mode.f](ctx, W, H, pal.map((c) => `rgb(${c})`), mode.density, mode.variation / 100, seed * 7919);
+  else drawField(ctx, W, H, pal, mode.f, seed);
+  ctx.globalAlpha = 1; ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, pad, pad, innerW, innerH);
+  el.append(cv);
+}
+
+function renderPhoto(el) {
+  const key = el.dataset.photo; el.replaceChildren();
+  const i = new Image(); i.alt = ''; i.decoding = 'async';
+  if (mode.t === 'on') { i.onload = () => { i.style.width = i.naturalWidth / 2 + 'px'; }; i.src = GROWN[`${key}-${mode.p}`]; } // rendered at 2x
+  else { i.src = RAW[key]; i.style.width = key === 'portrait' ? '360px' : '720px'; }
+  el.append(i);
+}
+
+const screens = () => document.querySelectorAll('[data-screen]').forEach(renderScreen);
+let raf; const screensSoon = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(screens); };
+function chips(id, list, keyName) {
+  const box = document.getElementById(id);
+  for (const [v, label] of list) { const b = document.createElement('button'); b.type = 'button'; b.dataset[keyName] = v; b.textContent = label; box.append(b);
+    b.addEventListener('click', () => { mode[keyName] = v; syncLab(); save(); screens(); }); }
+}
+chips('src-chips', SRC, 'f'); chips('gen-chips', OKS, 'f'); chips('bad-chips', BAD, 'f'); chips('pal-chips', PALS, 'pal');
+const SLIDERS = { grade: (v) => v + '%', range: (v) => v + '%', density: (v) => v, variation: (v) => v + '%', pad: (v) => v + '%' };
+for (const k of Object.keys(SLIDERS)) document.getElementById('s-' + k).addEventListener('input', (e) => { mode[k] = +e.target.value; syncLab(); save(); screensSoon(); });
+function syncLab() {
+  press('f', mode.f); press('pal', mode.pal); press('p', mode.p); press('t', mode.t);
+  for (const [k, f] of Object.entries(SLIDERS)) { document.getElementById('s-' + k).value = mode[k]; document.getElementById('o-' + k).textContent = f(mode[k]); }
+  const sw = document.getElementById('swatches'); sw.replaceChildren();
+  const base = mode.pal === 'screenshot' ? null : fieldPalette(FIXED[mode.pal]);
+  if (base) for (const c of base) { const i = document.createElement('i'); i.style.background = `rgb(${c})`; sw.append(i); }
+}
+function renderAll() {
+  document.querySelectorAll('[data-photo]').forEach(renderPhoto);
+  screens();
+  document.querySelectorAll('[data-p], #lab-toggle').forEach((b) => { b.disabled = mode.t === 'off'; });
+}
+function press(attr, val) { document.querySelectorAll(`[data-${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[attr] === val))); }
+document.querySelectorAll('[data-t]').forEach((b) => b.addEventListener('click', () => { mode.t = b.dataset.t; press('t', mode.t); save(); renderAll(); }));
+document.querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => { mode.p = b.dataset.p; press('p', mode.p); save(); document.querySelectorAll('[data-photo]').forEach(renderPhoto); }));
+const lab = document.getElementById('lab'), labBtn = document.getElementById('lab-toggle');
+function setLab(open) { lab.hidden = !open; labBtn.setAttribute('aria-expanded', String(open)); labBtn.setAttribute('aria-pressed', String(open)); document.body.classList.toggle('lab-open', open); screensSoon();
+  if (open && innerWidth <= 760) { const next = [...document.querySelectorAll('[data-screen]')].find((e) => e.getBoundingClientRect().bottom > 80); if (next) next.scrollIntoView({ block: 'start' }); } } // on a phone, put a screen above the sheet
+labBtn.addEventListener('click', () => setLab(lab.hidden));
+document.getElementById('lab-close').addEventListener('click', () => { setLab(false); labBtn.focus(); });
+document.getElementById('f-new').addEventListener('click', () => { mode.seed += 1; save(); screens(); });
+document.getElementById('f-reset').addEventListener('click', () => { Object.assign(mode, DEFAULTS, { t: mode.t, p: mode.p }); syncLab(); save(); screens(); });
+document.getElementById('f-copy').addEventListener('click', async () => {
+  const txt = `${GENS.find((g) => g[0] === mode.f)[1]} · ${PALS.find((p) => p[0] === mode.pal)[1]} · grade ${mode.grade}% · contrast ${mode.range}% · density ${mode.density} · variation ${mode.variation}% · margin ${mode.pad}% · seed ${mode.seed}`;
+  const note = document.getElementById('copy-note');
+  try { await navigator.clipboard.writeText(txt); note.textContent = 'Copied: ' + txt; } catch (e) { note.textContent = txt; }
+});
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(screens, 200); });
+syncLab(); renderAll();
+</script>

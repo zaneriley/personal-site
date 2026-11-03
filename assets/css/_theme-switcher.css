@@ -1,9 +1,8 @@
 .theme-toggle {
   display: inline-grid;
   place-items: center;
-  place-self: center end;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: var(--tap-target);
+  height: var(--tap-target);
   padding: 0.5rem;
   border: 0;
   border-radius: 50%;
@@ -15,11 +14,6 @@
 
 .theme-toggle:not([data-ready]) {
   visibility: hidden;
-}
-
-.theme-toggle:focus-visible {
-  outline: 0.125rem solid currentcolor;
-  outline-offset: 0.1875rem;
 }
 
 @media (forced-colors: active) {
