@@ -27,6 +27,7 @@ vi.mock("node:fs", async (importOriginal) => {
 
 // --- Test Subject ---
 import fs from "node:fs";
+import { flexaWeightConfig } from "../../tailwind/configs/type-config";
 import * as generateTypeTokensModule from "../../tailwind/generate-type-tokens";
 
 // Import latinTypeConfig if needed for labels, although the test doesn't directly use it now
@@ -36,6 +37,7 @@ import * as generateTypeTokensModule from "../../tailwind/generate-type-tokens";
 const DEFAULT_OUTPUT_PATH = path.resolve("css/_type-tokens.generated.css");
 
 const {
+  flexaWeightRungs,
   generateCSS, // This is the function we want to test directly now
   generateAndWriteCSS,
   writeCSS,
@@ -107,14 +109,57 @@ describe("generateCSS Output Contract", () => {
   });
 
   it("should derive the GT Flexa optical weight rungs from the knobs", () => {
-    // The curve is derived: regular(step) = base − opszSlope·step;
-    // bold(step) = regular + boldDelta − boldSlope·step. md is the anchor (step 0).
-    // These exact values are the contract — a mismatch means the relationship,
-    // not a literal, changed (knobs: base 268, opsz 30, boldDelta 350, boldSlope 40).
-    expect(generatedCSS).toContain("--fw-flexa-md: 268;"); // anchor regular
-    expect(generatedCSS).toContain("--fw-flexa-md-bold: 618;"); // anchor + delta
-    expect(generatedCSS).toContain("--fw-flexa-4xl: 148;"); // +4 steps lighter
-    expect(generatedCSS).toContain("--fw-flexa-2xs-bold: 758;"); // −2 steps, near 800 ceiling
+    // The anchor (md) keeps the weights set by eye; other sizes get the weight
+    // whose measured stem gives stem(md) · (size/md)^−opticalExponent.
+    expect(generatedCSS).toContain("--fw-flexa-md: 268;");
+    expect(generatedCSS).toContain("--fw-flexa-md-bold: 618;");
+    expect(generatedCSS).toContain("--fw-flexa-4xl: 222;");
+    expect(generatedCSS).toContain("--fw-flexa-3xs-bold: 710;");
+  });
+
+  it("keeps stroke width growing with size while its share of the size shrinks", () => {
+    // The bug this guards: −30 wght/step held the stroke at ~2px from 2xl to
+    // 4xl, so large type read 46% lighter relative to its size than md.
+    const stem = (w: number) => {
+      const t = flexaWeightConfig.stems;
+      for (let i = 1; i < t.length; i++)
+        if (w <= t[i][0])
+          return (
+            t[i - 1][1] +
+            ((t[i][1] - t[i - 1][1]) * (w - t[i - 1][0])) /
+              (t[i][0] - t[i - 1][0])
+          );
+      return t[t.length - 1][1];
+    };
+    for (const weight of ["regular", "bold"] as const) {
+      const rungs = flexaWeightRungs(flexaWeightConfig);
+      for (let i = 1; i < rungs.length; i++) {
+        const larger = rungs[i - 1];
+        const smaller = rungs[i];
+        const largerStemPx = stem(larger[weight]) * larger.size;
+        const smallerStemPx = stem(smaller[weight]) * smaller.size;
+        expect(largerStemPx).toBeGreaterThan(smallerStemPx);
+        expect(stem(larger[weight])).toBeLessThanOrEqual(stem(smaller[weight]));
+      }
+    }
+  });
+
+  it("stays inside the font's weight range at every rung", () => {
+    for (const r of flexaWeightRungs(flexaWeightConfig)) {
+      expect(r.regular).toBeGreaterThanOrEqual(100);
+      expect(r.bold).toBeLessThanOrEqual(800);
+    }
+  });
+
+  it("holds every size at the anchor's ratio when the exponent is 0", () => {
+    const rungs = flexaWeightRungs({
+      ...flexaWeightConfig,
+      opticalExponent: 0,
+    });
+    for (const r of rungs) {
+      expect(r.regular).toBe(flexaWeightConfig.regular);
+      expect(r.bold).toBe(flexaWeightConfig.bold);
+    }
   });
 });
 
