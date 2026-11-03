@@ -8,7 +8,7 @@ import {
   spacingMultipliers,
 } from "./configs/type-config";
 
-import { generateTypeCSSVariables } from "./font-size";
+import { calculateTypeScale, generateTypeCSSVariables } from "./font-size";
 
 const debugLog = (...args: unknown[]): void => {
   if (process.env.TYPE_SCALE_DEBUG === "1") {
@@ -165,31 +165,83 @@ function generateLatinLineHeightCSS(): string {
   ].join("\n");
 }
 
+/** Linear interpolation through a [x, y] table that ascends in both columns. */
+function interpolate(
+  table: [number, number][],
+  x: number,
+  from: 0 | 1,
+): number {
+  const to = from === 0 ? 1 : 0;
+  if (x <= table[0][from]) return table[0][to];
+  for (let i = 1; i < table.length; i++) {
+    const a = table[i - 1];
+    const b = table[i];
+    if (x <= b[from]) {
+      return a[to] + ((b[to] - a[to]) * (x - a[from])) / (b[from] - a[from]);
+    }
+  }
+  return table[table.length - 1][to];
+}
+
 /**
- * Generates the GT Flexa optical weight rungs from the calibration knobs.
- * GT Flexa has no opsz axis, so weight is compensated per size step on the wght
- * axis: regular(step) = base − opszSlope·step, and bold lifts off its own
- * regular rung by (boldDelta − boldSlope·step). `step` is each label's distance
- * from the anchor. Emits literal `--fw-flexa-{size}[-bold]` values, same shape
- * as the size/line-height tokens — the relationship lives in the config + here.
+ * The px size a label's weight is tuned for: the geometric middle of its fluid
+ * range (fixed small steps have min = max).
+ */
+function representativeSizes(): Map<string, number> {
+  const steps = calculateTypeScale(latinTypeConfig);
+  return new Map(
+    latinTypeConfig.typeLabels.map((label, i) => [
+      label,
+      Math.sqrt(steps[i].minFontSize * steps[i].maxFontSize),
+    ]),
+  );
+}
+
+/**
+ * Computes the GT Flexa optical weight for every rung. GT Flexa has no opsz
+ * axis, so each size gets a target stroke-to-size ratio,
+ *   stem(anchor weight) · (size / anchor size) ^ −opticalExponent,
+ * and the weight that draws it is read back from the measured stem table.
+ * Results are clamped to the measured (= font's) weight range.
+ */
+export function flexaWeightRungs(
+  config: WeightConfig,
+  sizes: Map<string, number> = representativeSizes(),
+): { label: string; size: number; regular: number; bold: number }[] {
+  const anchorSize = sizes.get(config.anchorLabel);
+  if (!anchorSize) throw new Error(`No size for ${config.anchorLabel}`);
+  const weightFor = (anchorWeight: number, size: number) => {
+    const ratio = (size / anchorSize) ** -config.opticalExponent;
+    const target = interpolate(config.stems, anchorWeight, 0) * ratio;
+    return Math.round(interpolate(config.stems, target, 1));
+  };
+  return config.labels.map((label) => {
+    const size = sizes.get(label);
+    if (!size) throw new Error(`No size for ${label}`);
+    return {
+      label,
+      size,
+      regular: weightFor(config.regular, size),
+      bold: weightFor(config.bold, size),
+    };
+  });
+}
+
+/**
+ * Generates the GT Flexa optical weight rungs. Emits literal
+ * `--fw-flexa-{size}[-bold]` values, same shape as the size/line-height
+ * tokens — the relationship lives in the config + here.
  * @param config - The GT Flexa weight configuration
  * @returns Generated weight CSS variables
  */
 export function generateFlexaWeightCSS(config: WeightConfig): string {
-  const anchorIndex = config.labels.indexOf(config.anchorLabel);
-  const step = (label: string) => anchorIndex - config.labels.indexOf(label);
-  const regular = (label: string) =>
-    config.base - config.opszSlope * step(label);
-  const bold = (label: string) =>
-    regular(label) + config.boldDelta - config.boldSlope * step(label);
-
-  const regularVars = config.labels
-    .map((label) => `  --fw-flexa-${label}: ${regular(label)};`)
+  const rungs = flexaWeightRungs(config);
+  const regularVars = rungs
+    .map((r) => `  --fw-flexa-${r.label}: ${r.regular};`)
     .join("\n");
-  const boldVars = config.labels
-    .map((label) => `  --fw-flexa-${label}-bold: ${bold(label)};`)
+  const boldVars = rungs
+    .map((r) => `  --fw-flexa-${r.label}-bold: ${r.bold};`)
     .join("\n");
-
   return `${regularVars}\n${boldVars}`;
 }
 

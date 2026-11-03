@@ -238,22 +238,22 @@
   --gt-flexa-trial-vf-distance-bottom: 0.2;
 
   /* GT Flexa Optical Weight (derived from flexaWeightConfig) */
-  --fw-flexa-4xl: 148;
-  --fw-flexa-3xl: 178;
-  --fw-flexa-2xl: 208;
-  --fw-flexa-1xl: 238;
+  --fw-flexa-4xl: 222;
+  --fw-flexa-3xl: 232;
+  --fw-flexa-2xl: 243;
+  --fw-flexa-1xl: 254;
   --fw-flexa-md: 268;
-  --fw-flexa-1xs: 298;
-  --fw-flexa-2xs: 328;
-  --fw-flexa-3xs: 358;
-  --fw-flexa-4xl-bold: 338;
-  --fw-flexa-3xl-bold: 408;
-  --fw-flexa-2xl-bold: 478;
-  --fw-flexa-1xl-bold: 548;
+  --fw-flexa-1xs: 285;
+  --fw-flexa-2xs: 304;
+  --fw-flexa-3xs: 331;
+  --fw-flexa-4xl-bold: 494;
+  --fw-flexa-3xl-bold: 522;
+  --fw-flexa-2xl-bold: 554;
+  --fw-flexa-1xl-bold: 587;
   --fw-flexa-md-bold: 618;
-  --fw-flexa-1xs-bold: 688;
-  --fw-flexa-2xs-bold: 758;
-  --fw-flexa-3xs-bold: 828;
+  --fw-flexa-1xs-bold: 654;
+  --fw-flexa-2xs-bold: 688;
+  --fw-flexa-3xs-bold: 710;
 
   /* Semantic Variables (Default to Latin) */
   --fs-7xl: var(--latin-fs-7xl);

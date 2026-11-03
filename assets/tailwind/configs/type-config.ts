@@ -33,12 +33,18 @@ export const spacingMultipliers = {
 };
 
 export interface WeightConfig {
-  base: number; // regular weight at the anchor size (step 0)
-  opszSlope: number; // regular weight gained per step toward smaller text
-  boldDelta: number; // how much heavier bold is than regular, at the anchor
-  boldSlope: number; // bold's extra lift shrinks by this per step toward display
-  anchorLabel: string; // size label at step 0
+  anchorLabel: string; // size label whose weights are set by eye
+  regular: number; // regular wght at the anchor size
+  bold: number; // bold wght at the anchor size
+  // How much lighter, relative to its size, a stroke gets as type grows:
+  // stem/size ∝ (size / anchorSize) ^ −opticalExponent. 0 = every size keeps
+  // the anchor's stroke-to-size ratio; 1 = every size keeps the same stroke in
+  // px. The old linear rule (−30 wght/step) behaved like ≈0.8.
+  opticalExponent: number;
   labels: string[]; // size labels that get a weight rung (display → small)
+  // Measured once from the font: [wght, stem width as a fraction of the em].
+  // Ascending in both columns; weights are read back from it by interpolation.
+  stems: [number, number][];
 }
 
 /* All the value are primarily derived from
@@ -116,19 +122,46 @@ export const cjkTypeConfig: TypeConfig = {
 };
 
 /* GT Flexa optical weight. GT Flexa exposes wght 100–800 but has NO opsz/GRAD
- * axis, so optical-size weight compensation rides the wght axis, derived per
- * size step from these four knobs (calibrated by eye in /weight-calibration):
- *   regular(step) = base − opszSlope · step
- *   bold(step)    = regular(step) + boldDelta − boldSlope · step
- * `step` is each label's distance from the anchor (+ display, − small). The
- * label list stops at 4xl on the display end: 5xl/6xl/7xl regular weights would
- * fall under GT Flexa's 100 floor. Cardinal/Noto are static faces — no rungs.
+ * axis, so optical-size compensation rides the wght axis.
+ *
+ * Each size gets a target stroke-to-size ratio, then the weight that draws that
+ * stroke is looked up in `stems`:
+ *   target(size) = stem(anchor weight) · (size / anchor size) ^ −opticalExponent
+ * Large type gets a slightly lighter ratio (so it doesn't look heavy) while its
+ * strokes still grow in px; small type gets a slightly heavier one. Regular and
+ * bold follow the same rule from their own anchor weights.
+ *
+ * The previous rule subtracted 30 wght per step. Because the scale is
+ * geometric and stroke width isn't linear in wght, that held the stroke at
+ * ~2px from 2xl to 4xl, so 4xl was ~46% lighter relative to its size than md
+ * (measured 2026-11-03) and 3xs-bold asked for 828, past the font's 800 max.
+ *
+ * `stems`: Chromium canvas, the served gt-flexa.woff2 at 100px, default width,
+ * widest ink run through "l" 0.35em above the baseline (alpha-weighted).
+ * Re-measure if the font file changes. The steep 700→800 end is the design.
+ * Cardinal/Noto are static faces — no rungs.
  * This is the single source of truth; generate-type-tokens.ts emits the rungs. */
 export const flexaWeightConfig: WeightConfig = {
-  base: 268,
-  opszSlope: 30,
-  boldDelta: 350,
-  boldSlope: 40,
   anchorLabel: "md",
+  regular: 268,
+  bold: 618,
+  opticalExponent: 0.2,
   labels: ["4xl", "3xl", "2xl", "1xl", "md", "1xs", "2xs", "3xs"],
+  stems: [
+    [100, 0.0306],
+    [150, 0.0435],
+    [200, 0.0568],
+    [250, 0.0709],
+    [300, 0.083],
+    [350, 0.0911],
+    [400, 0.0997],
+    [450, 0.1115],
+    [500, 0.1234],
+    [550, 0.1326],
+    [600, 0.1418],
+    [650, 0.1527],
+    [700, 0.1646],
+    [750, 0.1935],
+    [800, 0.2227],
+  ],
 };
