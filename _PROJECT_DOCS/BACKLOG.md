@@ -111,6 +111,10 @@ handling and regression checks**.
   weather styles in `_footer.css`, the toggle styles in `_theme-switcher.css`,
   and the navigation and weather hooks. Remove each exception when its number
   is back under the ratchet; do not extend them.
+  2026-10-31: the header language switch landed at no net CSS cost by moving
+  link and hero layout onto existing utilities and removing the unused
+  `.logo-monochrome` rule from `_color.css` (an employer-logo mask, never
+  called). Restore it from git history when a page first needs it.
 
 ## Asset handling and regression checks
 
@@ -329,6 +333,27 @@ handling and regression checks**.
   Both render today in whatever font the visitor's device supplies. Either add
   them to the character set in `assets/fonts/generate-fonts.mjs` or replace them
   with characters already covered.
+
+## Media treatment
+
+Direction and defaults live in [media-treatment.md](media-treatment.md). The
+items below are the points it marks for revisiting.
+
+- **Tune the screen fields.** Pick per-field grade and variation defaults in
+  the Field lab. Echo and Compression wash out on white screenshots.
+- **Pick the photo tint.** Graded or muted purple, judged on real case-study
+  photos.
+- **Settle the grown-border width.** The floor is 12px. Confirm how it scales
+  on real figure sizes.
+- **Test for distraction in real content.** Judge the treatment on a real case
+  study before adopting it site-wide.
+- **Define small-size behaviour.** Set where the grown edge turns off for cards
+  and avatars.
+- **Choose publish-time or browser rendering.** Prefer pre-rendered images so
+  the treatment adds no JavaScript. Check against the page-weight budget.
+- **Check the light theme.** Everything so far was judged on dark.
+- **Rerun with real seeds.** Use raw Figma exports without frames or
+  backgrounds.
 
 ## Theme toggle, footer weather, and weather icons
 

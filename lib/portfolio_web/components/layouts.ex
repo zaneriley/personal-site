@@ -14,40 +14,39 @@ defmodule PortfolioWeb.Layouts do
     end
   end
 
+  @doc """
+  The same page in `locale`: swaps the locale prefix, or adds one.
+
+      localized_path("/en/work/foo", "ja") #=> "/ja/work/foo"
+      localized_path("/en", "ja")          #=> "/ja"
+
+  The one place a cross-language address is built; the header's language
+  switch and the `hreflang` alternates both call it.
+  """
+  @spec localized_path(String.t(), String.t()) :: String.t()
+  def localized_path(path, locale) do
+    case remove_locale_from_path(path) do
+      "/" -> "/#{locale}"
+      rest -> "/#{locale}#{rest}"
+    end
+  end
+
+  # Alternates point at canonical pages, so they carry no query string.
   def hreflang_tags(conn) do
-    current_path = Phoenix.Controller.current_path(conn)
-
-    # Remove locale from the beginning of the path
-    path_without_locale =
-      current_path
-      |> String.split("/", parts: 3)
-      |> Enum.at(2, "")
-      |> String.trim_leading("/")
-
     base_url = url(conn, ~p"/") |> String.trim_trailing("/")
 
-    tags =
-      @supported_locales
-      |> Enum.map(fn locale ->
-        locale_path = "/#{locale}/#{path_without_locale}"
-        locale_url = base_url <> locale_path
+    alternates =
+      for locale <- @supported_locales do
+        {locale, base_url <> localized_path(conn.request_path, locale)}
+      end
 
-        query_string =
-          if conn.query_string != "", do: "?#{conn.query_string}", else: ""
-
-        full_url = locale_url <> query_string
-
-        ~s(<link rel="alternate" hreflang="#{locale}" href="#{full_url}" />)
-      end)
-
-    # Add x-default tag (usually pointing to the default locale or homepage)
-    default_url = base_url <> "/"
-
-    default_tag =
-      ~s(<link rel="alternate" hreflang="x-default" href="#{default_url}" />)
-
-    (tags ++ [default_tag])
-    |> Enum.join("\n")
+    (alternates ++ [{"x-default", base_url <> "/"}])
+    |> Enum.map_join("\n", fn {hreflang, href} ->
+      ~s(<link rel="alternate" hreflang="#{hreflang}" href="#{escape(href)}" />)
+    end)
     |> Phoenix.HTML.raw()
   end
+
+  defp escape(text),
+    do: text |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()
 end
