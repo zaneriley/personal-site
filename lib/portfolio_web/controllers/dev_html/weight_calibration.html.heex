@@ -102,78 +102,54 @@
             axis exists — this is the manual compensation.
           </p>
 
-          <div class="wcal__ctl">
-            <label>Anchor size <b id="v-anchor">2xl</b></label>
-            <div class="wcal__seg" id="seg-anchor">
-              <%= for s <- @sizes do %>
-                <button
-                  type="button"
-                  data-anchor={s.step}
-                  aria-pressed={s.label == "2xl"}
-                >
-                  {s.label}
-                </button>
-              <% end %>
-            </div>
-          </div>
-
+          <p data-typography-calibration class="wcal__lede">
+            Each size gets a target stroke-to-size ratio,
+            <code>stem(md weight) · (size / md) ^ −k</code>, and the weight that
+            draws it is read from GT Flexa's measured stem table. Sizes here are
+            this window's live sizes; the generator uses each size's mid-range
+            size, so its numbers can differ by a few units.
+          </p>
           <div class="wcal__ctl">
             <label>
-              Base regular @ anchor <b><span id="v-base">300</span></b>
+              Regular @ md <b><span id="v-regular">268</span></b>
             </label>
             <input
               type="range"
-              id="c-base"
+              id="c-regular"
               min="100"
               max="800"
               step="1"
-              value="300"
+              value="268"
             />
           </div>
           <div class="wcal__ctl">
             <label>
-              Regular opsz slope (wght / step)
-              <b><span id="v-opsz">15</span></b>
-            </label>
-            <input
-              type="range"
-              id="c-opsz"
-              min="-60"
-              max="60"
-              step="1"
-              value="15"
-            />
-            <p data-typography-calibration class="wcal__lede">
-              + = smaller sizes get heavier (hold apparent weight)
-            </p>
-          </div>
-          <div class="wcal__ctl">
-            <label>
-              Bold delta @ anchor (wght) <b><span id="v-bold">125</span></b>
+              Bold @ md <b><span id="v-bold">618</span></b>
             </label>
             <input
               type="range"
               id="c-bold"
-              min="0"
-              max="350"
+              min="100"
+              max="800"
               step="1"
-              value="125"
+              value="618"
             />
           </div>
           <div class="wcal__ctl">
             <label>
-              Bold slope (wght / step) <b><span id="v-boldslope">0</span></b>
+              Optical exponent k <b><span id="v-k">0.2</span></b>
             </label>
             <input
               type="range"
-              id="c-boldslope"
-              min="-40"
-              max="40"
-              step="1"
-              value="0"
+              id="c-k"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.2"
             />
             <p data-typography-calibration class="wcal__lede">
-              how much the bold delta itself drifts by size
+              0 = every size keeps md's stroke-to-size ratio. 1 = every size
+              keeps md's stroke in px. The old −30/step rule behaved like ≈0.8.
             </p>
           </div>
 
@@ -391,11 +367,36 @@
         ];
         const root = document.querySelector(".wcal");
         const $ = id => document.getElementById(id);
-        const state = { anchor:2, base:300, opsz:15, bold:125, boldslope:0, famsize:"md", text:"Product designer at Google" };
-
-        const clampW = w => Math.round(Math.min(800, Math.max(100, w)));
-        const regular = step => clampW(state.base + state.opsz * (state.anchor - step));
-        const bold = step => clampW(regular(step) + state.bold + state.boldslope * (state.anchor - step));
+        const state = { regular:268, bold:618, k:0.2, famsize:"md", text:"Product designer at Google" };
+        // Mirror of flexaWeightConfig.stems in assets/tailwind/configs/type-config.ts:
+        // [wght, stem width / em]. Keep the two in sync if the font is re-measured.
+        const STEMS = [[100,.0306],[150,.0435],[200,.0568],[250,.0709],[300,.083],[350,.0911],[400,.0997],
+          [450,.1115],[500,.1234],[550,.1326],[600,.1418],[650,.1527],[700,.1646],[750,.1935],[800,.2227]];
+        const lerpTable = (x, from) => {
+          const to = 1 - from;
+          if (x <= STEMS[0][from]) return STEMS[0][to];
+          for (let i = 1; i < STEMS.length; i++) {
+            const a = STEMS[i-1], b = STEMS[i];
+            if (x <= b[from]) return a[to] + (b[to]-a[to]) * (x-a[from]) / (b[from]-a[from]);
+          }
+          return STEMS[STEMS.length-1][to];
+        };
+        const stemOf = w => lerpTable(w, 0);
+        const probe = document.createElement("span");
+        probe.style.position = "absolute"; probe.style.visibility = "hidden";
+        root.appendChild(probe);
+        const sizePx = label => { probe.style.fontSize = "var(--fs-" + label + ")"; return parseFloat(getComputedStyle(probe).fontSize); };
+        const weightFor = (anchorWeight, label) => {
+          const ratio = (sizePx(label) / sizePx("md")) ** -state.k;
+          return Math.round(lerpTable(stemOf(anchorWeight) * ratio, 1));
+        };
+        const labelOf = step => SIZES.find(s => s.step === step).label;
+        const regular = step => weightFor(state.regular, labelOf(step));
+        const bold = step => weightFor(state.bold, labelOf(step));
+        const stemNote = (w, step) => {
+          const px = sizePx(labelOf(step));
+          return (stemOf(w) * px).toFixed(2) + "px stem, " + (stemOf(w) * 100).toFixed(1) + "% of size";
+        };
 
         function setVars() {
           for (const s of SIZES) {
@@ -412,8 +413,8 @@
             const wr = regular(step), wb = bold(step);
             row.querySelector('[data-variant="regular"]').textContent = state.text;
             row.querySelector('[data-variant="bold"]').textContent = state.text;
-            row.querySelector('[data-w="regular"]').textContent = "wght " + wr;
-            row.querySelector('[data-w="bold"]').textContent = "wght " + wb + "  (Δ" + (wb - wr) + ")";
+            row.querySelector('[data-w="regular"]').textContent = "wght " + wr + " · " + stemNote(wr, step);
+            row.querySelector('[data-w="bold"]').textContent = "wght " + wb + " · " + stemNote(wb, step);
           });
 
           const fs = SIZES.find(s => s.label === state.famsize);
@@ -439,17 +440,15 @@
         }
 
         function paintOutput() {
-          const anchorLabel = SIZES.find(s => s.step === state.anchor).label;
-          let css = "/* GT Flexa weight ladder — generated by /weight-calibration\n";
-          css += "   anchor " + anchorLabel + " | base(regular) " + state.base + " | regular opsz " + state.opsz + " wght/step\n";
-          css += "   bold delta +" + state.bold + " | bold slope " + state.boldslope + " wght/step */\n";
+          let css = "/* GT Flexa weight ladder — generated by /weight-calibration at " + innerWidth + "px wide\n";
+          css += "   regular @ md " + state.regular + " | bold @ md " + state.bold + " | k " + state.k + " */\n";
           css += ":root {\n";
           for (const s of SIZES) {
             css += "  --fw-flexa-" + s.label + ": " + regular(s.step) + ";  --fw-flexa-" + s.label + "-bold: " + bold(s.step) + ";\n";
           }
           css += "}\n\n";
-          const params = { flexa: { anchorStep: state.anchor, base: state.base, opszSlope: state.opsz, boldDelta: state.bold, boldSlope: state.boldslope } };
-          css += JSON.stringify(params, null, 2);
+          css += "// paste into flexaWeightConfig (assets/tailwind/configs/type-config.ts)\n";
+          css += JSON.stringify({ regular: state.regular, bold: state.bold, opticalExponent: state.k }, null, 2);
           $("out").textContent = css;
         }
 
@@ -461,10 +460,9 @@
             paint();
           });
         };
-        bind("c-base","base","v-base");
-        bind("c-opsz","opsz","v-opsz");
+        bind("c-regular","regular","v-regular");
         bind("c-bold","bold","v-bold");
-        bind("c-boldslope","boldslope","v-boldslope");
+        bind("c-k","k","v-k");
         $("c-text").addEventListener("input", e => { state.text = e.target.value || " "; paint(); });
 
         const seg = (segId, attr, apply) => {
@@ -474,12 +472,12 @@
             apply(btn.dataset[attr]); paint();
           });
         };
-        seg("seg-anchor","anchor", v => { state.anchor = parseInt(v,10); $("v-anchor").textContent = SIZES.find(s=>s.step===state.anchor).label; });
         seg("seg-famsize","famsize", v => { state.famsize = v; });
         seg("seg-bg","bg", v => { root.dataset.bg = v; });
 
         $("btn-copy").addEventListener("click", () => navigator.clipboard.writeText($("out").textContent));
 
+        addEventListener("resize", paint);
         paint();
       })();
     </script>
