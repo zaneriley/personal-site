@@ -79,7 +79,7 @@ defmodule PortfolioWeb.HomeLive do
           tag="p"
           font="flexa"
           size="2xl"
-          class="hero-role"
+          class="hero-role whitespace-nowrap"
         >
           プロダクトデザイナー（<img
             src={~p"/images/logos/google-g.svg"}
@@ -109,7 +109,12 @@ defmodule PortfolioWeb.HomeLive do
       <% else %>
         <%!-- "Product designer" = callout (absolute white), 2xl. "at" is the
            soft tier; the G mark sits on the baseline. --%>
-        <.typography locale={@user_locale} tag="p" size="2xl" class="hero-role">
+        <.typography
+          locale={@user_locale}
+          tag="p"
+          size="2xl"
+          class="hero-role whitespace-nowrap"
+        >
           <span class="text-callout">Product designer</span>
           <span class="text-md fw-flexa-md text-deemphasized">at</span>
           <img

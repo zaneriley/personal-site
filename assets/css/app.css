@@ -164,58 +164,32 @@ html[lang="ja"] * {
   container-type: inline-size;
 }
 
-html[lang="ja"] .hero {
+.hero:lang(ja) {
   max-inline-size: 30em;
 }
 
-/* The role line never wraps. It steps down the type scale until it fits.
-   Each threshold = the line's measured length in em x that rung's phone size.
-   EN "Product designer at G" = 10.33em in GT Flexa:
-     2xl (1.98rem) needs 20.45rem; 1xl (1.65rem) needs 17.05rem.
-   JA プロダクトデザイナー（G）= 13.3em, measured in the dev site on
-   2026-11-03 (worst case across 360-430px phones):
-     2xl (1.98rem) needs 26.33rem; 1xl (1.65rem) needs 21.95rem. */
-.hero-role {
-  white-space: nowrap;
-}
-
+/* The role line never wraps (whitespace-nowrap in the template); it steps
+   down the type scale until it fits. Threshold = the line's measured length
+   in em x that rung's phone size. EN "Product designer at G" = 10.33em in
+   GT Flexa, so 1xl (1.65rem) below 20.45rem; md is left out because it only
+   matters under 304px screens. JA プロダクトデザイナー（G）= 13.3em, measured on
+   the dev site 2026-11-03: 1xl below 26.33rem, md below 21.95rem. Plain
+   selectors win over the size utilities because they load later. */
 @container (width < 20.45rem) {
-  .hero .hero-role {
+  .hero-role {
     font-size: var(--fs-1xl);
-  }
-
-  html:not([lang="ja"]) .hero .hero-role {
-    font-weight: var(--fw-flexa-1xl);
-  }
-}
-
-@container (width < 17.05rem) {
-  .hero .hero-role {
-    font-size: var(--fs-md);
-  }
-
-  html:not([lang="ja"]) .hero .hero-role {
-    font-weight: var(--fw-flexa-md);
   }
 }
 
 @container (width < 26.33rem) {
-  html[lang="ja"] .hero .hero-role {
+  .hero-role:lang(ja) {
     font-size: var(--fs-1xl);
   }
 }
 
 @container (width < 21.95rem) {
-  html[lang="ja"] .hero .hero-role {
+  .hero-role:lang(ja) {
     font-size: var(--fs-md);
-  }
-}
-
-@supports (text-justify: inter-character) {
-  .text-justify {
-    text-align: justify;
-    text-justify: inter-character;
-    text-align-last: left;
   }
 }
 

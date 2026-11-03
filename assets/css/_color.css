@@ -50,8 +50,6 @@
      Lightness + chroma are per-mode; only the hue is shared and re-anchored
      in the light block. */
   --hue-warm-text: 65deg; /* dark warm-text anchor; light re-anchors to 6deg */
-  --hue-cool-surface: 268deg; /* 250–286 band, surfaces + mid/dark neutrals */
-  --hue-link: 264deg; /* 252–277 band, links */
 
   /* Brand mark colour — the hanko's single canonical colour, referencing the
      per-theme accent so it tracks light/dark. Change here to recolour the mark
