@@ -155,25 +155,59 @@ html[lang="ja"] * {
     "palt" 1;
 }
 
-/* Top lockup. The measure is per locale: Latin reads to ~36rem; Japanese is
-   character-counted (1em = 1 fullwidth glyph), so ~30 chars = 30em. The
-   portrait is three body lines tall (the 3xl space rung = 3 x the md line),
-   a small mark beside the role lines with its foot on the last one. */
+/* Top lockup: what (role), how (blurb), where (place). The measure is per
+   locale: Latin reads to ~36rem; Japanese is character-counted (1em = 1
+   fullwidth glyph), so ~30 chars = 30em. The portrait is off for now: the
+   words come first, and it returns on larger screens once placed. */
 .hero {
   max-inline-size: 36rem;
+  container-type: inline-size;
 }
 
 html[lang="ja"] .hero {
   max-inline-size: 30em;
 }
 
-.hero-identity {
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: end;
+/* The role line never wraps. It steps down the type scale until it fits.
+   Each threshold = the line's measured length in em x that rung's phone size.
+   EN "Product designer at G" = 10.33em in GT Flexa:
+     2xl (1.98rem) needs 20.45rem; 1xl (1.65rem) needs 17.05rem.
+   JA プロダクトデザイナー（G）≈ 11.85em (ten kana, two palt brackets, the G):
+     2xl needs 23.46rem; 1xl needs 19.55rem. */
+.hero-role {
+  white-space: nowrap;
 }
 
-.hero-portrait {
-  block-size: var(--space-3xl);
+@container (width < 20.45rem) {
+  .hero .hero-role {
+    font-size: var(--fs-1xl);
+  }
+
+  html:not([lang="ja"]) .hero .hero-role {
+    font-weight: var(--fw-flexa-1xl);
+  }
+}
+
+@container (width < 17.05rem) {
+  .hero .hero-role {
+    font-size: var(--fs-md);
+  }
+
+  html:not([lang="ja"]) .hero .hero-role {
+    font-weight: var(--fw-flexa-md);
+  }
+}
+
+@container (width < 23.46rem) {
+  html[lang="ja"] .hero .hero-role {
+    font-size: var(--fs-1xl);
+  }
+}
+
+@container (width < 19.55rem) {
+  html[lang="ja"] .hero .hero-role {
+    font-size: var(--fs-md);
+  }
 }
 
 @supports (text-justify: inter-character) {
