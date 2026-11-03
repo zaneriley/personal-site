@@ -155,32 +155,41 @@ html[lang="ja"] * {
     "palt" 1;
 }
 
-/* Top lockup. The measure is per locale: Latin reads to ~36rem; Japanese is
-   character-counted (1em = 1 fullwidth glyph), so ~30 chars = 30em. The
-   portrait is three body lines tall (the 3xl space rung = 3 x the md line),
-   a small mark beside the role lines with its foot on the last one. */
+/* Top lockup: what (role), how (blurb), where (place). The measure is per
+   locale: Latin reads to ~36rem; Japanese is character-counted (1em = 1
+   fullwidth glyph), so ~30 chars = 30em. The portrait is off for now: the
+   words come first, and it returns on larger screens once placed. */
 .hero {
   max-inline-size: 36rem;
+  container-type: inline-size;
 }
 
-html[lang="ja"] .hero {
+.hero:lang(ja) {
   max-inline-size: 30em;
 }
 
-.hero-identity {
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: end;
+/* The role line never wraps (whitespace-nowrap in the template); it steps
+   down the type scale until it fits. Threshold = the line's measured length
+   in em x that rung's phone size. EN "Product designer at G" = 10.33em in
+   GT Flexa, so 1xl (1.65rem) below 20.45rem; md is left out because it only
+   matters under 304px screens. JA プロダクトデザイナー（G）= 13.3em, measured on
+   the dev site 2026-11-03: 1xl below 26.33rem, md below 21.95rem. Plain
+   selectors win over the size utilities because they load later. */
+@container (width < 20.45rem) {
+  .hero-role {
+    font-size: var(--fs-1xl);
+  }
 }
 
-.hero-portrait {
-  block-size: var(--space-3xl);
+@container (width < 26.33rem) {
+  .hero-role:lang(ja) {
+    font-size: var(--fs-1xl);
+  }
 }
 
-@supports (text-justify: inter-character) {
-  .text-justify {
-    text-align: justify;
-    text-justify: inter-character;
-    text-align-last: left;
+@container (width < 21.95rem) {
+  .hero-role:lang(ja) {
+    font-size: var(--fs-md);
   }
 }
 

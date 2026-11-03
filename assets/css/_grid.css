@@ -24,7 +24,6 @@
 
   /* --- derived --- */
   --content-cap: calc(3 * var(--reading-measure) + 2 * var(--gutter));
-  --column: calc((var(--reading-measure) - 3 * var(--gutter)) / 4);
 }
 
 /* Retain the existing column transitions while exploring mobile spacing. */
