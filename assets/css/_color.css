@@ -304,10 +304,13 @@ html[data-theme="light"] {
 
 /* ---- SURFACE: fixed full-viewport background, behind all content.
    Two gradient fills cross-fade on theme toggle (dusk transition, not a hard
-   flash). Turbulence cloud/grain layers will be added inside .surface next. ---- */
+   flash). Sized to the large viewport (100lvh) so a phone's toolbar
+   collapsing mid-scroll never resizes it: a resize clears the cloud canvas
+   and re-rasterizes the grain, which read as flashing. ---- */
 .surface {
   position: fixed;
-  inset: 0;
+  inset: 0 0 auto;
+  height: 100lvh;
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
