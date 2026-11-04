@@ -210,6 +210,7 @@ html[data-theme="light"] .footer-surface {
 /* No reading means no icon and nothing to reserve room for. */
 .footer-weather[data-freshness="unavailable"] {
   --weather-icon-offset: 0;
+
   min-block-size: 0;
 }
 
