@@ -214,9 +214,10 @@ export function initCloudSurface() {
     canvas.width = w;
     canvas.height = h;
     gl.viewport(0, 0, w, h);
-    // The drawing buffer is cleared by resize; repaint immediately or the
-    // canvas flashes black in light mode.
-    if (rafId === null && isLight()) draw();
+    // Resizing clears the drawing buffer, and this observer runs after the
+    // frame's rAF draw but before paint, so repaint now even while animating;
+    // waiting for the next rAF puts a black frame on screen.
+    if (isLight()) draw();
   }
 
   // Scene time accumulates from real elapsed time (clamped against tab-switch
