@@ -57,12 +57,7 @@ defmodule PortfolioWeb.Components.Weather do
           <% end %>
         </span>
         <.temperature :if={@reading} temperature_c={@reading.temperature_c} />
-        <.typography
-          :if={!@reading}
-          tag="span"
-          size="2xs"
-          color="inherit"
-        >
+        <.typography :if={!@reading} tag="span" size="2xs" color="inherit">
           {gettext("Weather unavailable")}
         </.typography>
       </div>
