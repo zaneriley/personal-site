@@ -1,7 +1,7 @@
 defmodule PortfolioWeb.Components.Footer do
   @moduledoc """
   The site footer — a colophon of how the site is made (the typefaces it's set
-  in, the machine it runs on) plus contact and meta links.
+  in, and the site's version and change history) plus contact and meta links.
 
   `spec_sheet/1` is the shared "framed list of labelled facts" primitive: a
   bordered, titled box whose rows are a semantic description list (`<dl>`). The
@@ -12,33 +12,34 @@ defmodule PortfolioWeb.Components.Footer do
   """
   use PortfolioWeb, :html
 
-  # Static facts for the Server sheet. The live-data item in
-  # _PROJECT_DOCS/BACKLOG.md owns these future sources:
-  #   * temp       -> Raspberry Pi thermal zone (/sys/class/thermal/thermal_zone*/temp)
-  #   * deploy     -> real build/git short SHA (release stamp / compile_env)
-  #   * node_up    -> healthcheck (we already serve /up)
-  # The markup reads this map, so wiring real data later never touches the HEEx.
-  @default_status %{
+  # Facts for the Server sheet. Every value is either a fixed fact about the
+  # site or comes from Portfolio.SiteHistory; a history fact with no source is
+  # nil and its row is left out, so the card never shows an invented value.
+  # Header (node name + status dot) is still static: hosting is undecided
+  # (see ADR 0003) and the live-data item in _PROJECT_DOCS/BACKLOG.md owns it.
+  @static_status %{
     node_name: "Raspberry Pi 3B",
     node_up: true,
-    stack: "Elixir | Phoenix",
-    temp: "45.2°C",
-    cost: "$0.12/day",
-    deploy: "passing :: 8f3a12"
+    # Versions of zaneriley.com since 2010, from the Internet Archive record:
+    # 2010 photography site, 2011, 2015, 2017, and this codebase (2024).
+    version: "5",
+    stack: "Elixir · Phoenix"
   }
 
   @doc """
   Renders the site footer.
 
-  `status` carries the (currently static) server facts; see
-  `@default_status` and the repository backlog for the live-data plan.
+  `status` carries the Server sheet's facts. Leave it unset to use the site's
+  own (`default_status/0`); tests pass a map with the same keys.
   """
   attr :user_locale, :string, default: "en"
   attr :current_year, :integer, required: true
-  attr :status, :map, default: @default_status
+  attr :status, :map, default: nil
   slot :weather
 
   def site_footer(assigns) do
+    assigns = assign(assigns, :status, assigns.status || default_status())
+
     ~H"""
     <%!-- Full-bleed solid panel (Figma bg/90): the footer paints over the page's
          surface gradient instead of letting it show through. Bottom-pinning
@@ -134,7 +135,37 @@ defmodule PortfolioWeb.Components.Footer do
             locale={@user_locale}
             class="mt-md"
           >
-            <:row label={gettext("Stack")}>
+            <:row label={gettext("Version")}>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {@status.version}
+              </.typography>
+            </:row>
+            <:row label={gettext("Changes")} :if={@status.changes}>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {@status.changes}
+              </.typography>
+            </:row>
+            <:row label={gettext("Last change")} :if={@status.last_change_at}>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {last_change_label(@status.last_change_at)}
+              </.typography>
+            </:row>
+            <:row label={gettext("Built with")}>
               <.typography
                 tag="span"
                 font="mono"
@@ -142,36 +173,6 @@ defmodule PortfolioWeb.Components.Footer do
                 class="spec-sheet-value"
               >
                 {@status.stack}
-              </.typography>
-            </:row>
-            <:row label={gettext("Temp")}>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-value"
-              >
-                {@status.temp}
-              </.typography>
-            </:row>
-            <:row label={gettext("Cost")}>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-value"
-              >
-                {@status.cost}
-              </.typography>
-            </:row>
-            <:row label={gettext("Deploy")}>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-value spec-sheet-value-ok"
-              >
-                {@status.deploy}
               </.typography>
             </:row>
           </.spec_sheet>
@@ -196,7 +197,7 @@ defmodule PortfolioWeb.Components.Footer do
             locale={@user_locale}
             class="caps footer-copyright col-span-full lg:col-span-2"
           >
-            © 2011 – {@current_year}
+            © 2010 – {@current_year}
           </.typography>
 
           <nav
@@ -285,6 +286,42 @@ defmodule PortfolioWeb.Components.Footer do
       </footer>
     </div>
     """
+  end
+
+  @doc """
+  The Server sheet's facts: the fixed ones plus the site's change history.
+  """
+  @spec default_status() :: map()
+  def default_status do
+    Map.merge(@static_status, Portfolio.SiteHistory.facts())
+  end
+
+  @doc """
+  Says how long ago the last change landed, counted in whole calendar days
+  (UTC): "today", "yesterday", "N days ago", then "N months ago" from 60 days.
+  Returns `nil` when there is no timestamp.
+  """
+  @spec last_change_label(DateTime.t() | nil, DateTime.t()) :: String.t() | nil
+  def last_change_label(at, now \\ DateTime.utc_now())
+  def last_change_label(nil, _now), do: nil
+
+  def last_change_label(%DateTime{} = at, %DateTime{} = now) do
+    days = Date.diff(DateTime.to_date(now), DateTime.to_date(at))
+
+    cond do
+      days <= 0 ->
+        gettext("today")
+
+      days == 1 ->
+        gettext("yesterday")
+
+      days < 60 ->
+        ngettext("%{count} day ago", "%{count} days ago", days)
+
+      true ->
+        months = div(days, 30)
+        ngettext("%{count} month ago", "%{count} months ago", months)
+    end
   end
 
   @doc """
