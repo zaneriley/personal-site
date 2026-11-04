@@ -145,7 +145,7 @@ defmodule PortfolioWeb.Components.Footer do
                 {@status.version}
               </.typography>
             </:row>
-            <:row label={gettext("Changes")} :if={@status.changes}>
+            <:row :if={@status.changes} label={gettext("Changes")}>
               <.typography
                 tag="span"
                 font="mono"
@@ -155,7 +155,7 @@ defmodule PortfolioWeb.Components.Footer do
                 {@status.changes}
               </.typography>
             </:row>
-            <:row label={gettext("Last change")} :if={@status.last_change_at}>
+            <:row :if={@status.last_change_at} label={gettext("Last change")}>
               <.typography
                 tag="span"
                 font="mono"

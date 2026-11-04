@@ -34,13 +34,20 @@ defmodule Portfolio.SiteHistoryTest do
   test "unreadable or missing sources give nil, never a made-up value" do
     git = fn _ -> nil end
 
-    assert SiteHistory.read(env(%{}), git) == %{changes: nil, last_change_at: nil}
+    assert SiteHistory.read(env(%{}), git) == %{
+             changes: nil,
+             last_change_at: nil
+           }
 
     assert SiteHistory.read(
-             env(%{"SITE_CHANGE_COUNT" => "lots", "SITE_LAST_CHANGE_AT" => "soon"}),
+             env(%{
+               "SITE_CHANGE_COUNT" => "lots",
+               "SITE_LAST_CHANGE_AT" => "soon"
+             }),
              git
            ) == %{changes: nil, last_change_at: nil}
 
-    assert SiteHistory.read(env(%{"SITE_CHANGE_COUNT" => "0"}), git).changes == nil
+    assert SiteHistory.read(env(%{"SITE_CHANGE_COUNT" => "0"}), git).changes ==
+             nil
   end
 end
