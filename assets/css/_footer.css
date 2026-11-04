@@ -27,7 +27,7 @@
   /* Server datum colours ARE the code palette's green + blue (Figma reuses
      them here): the PASSING status and the metric values. Alias, don't copy —
      the code tokens re-seat per theme, so these track light/dark automatically. */
-  --footer-ok: var(--code-green); /* status "up" dot / PASSING */
+  --footer-ok: var(--code-green); /* status "up" dot */
   --footer-datum: var(--code-teal); /* stack / temp / cost values */
 }
 
@@ -191,14 +191,9 @@ html[data-theme="light"] .footer-surface {
 }
 
 /* Server datum values: rendered through <.typography font="mono" size="2xs">;
-   keep only the role-specific datum teal (Figma code/blue). The PASSING
-   deploy state reads "ok" green instead. */
+   keep only the role-specific datum teal (Figma code/blue). */
 .spec-sheet-value {
   color: var(--footer-datum);
-}
-
-.spec-sheet-value-ok {
-  color: var(--footer-ok);
 }
 
 /* Typeface specimen: primary name set in its own face, JP fallback muted.
