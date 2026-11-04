@@ -10,10 +10,18 @@ defmodule PortfolioWeb.Components.FooterTest do
     test "counts whole days, then months" do
       assert Footer.last_change_label(nil, @now) == nil
       assert Footer.last_change_label(~U[2026-11-04 00:10:00Z], @now) == "today"
-      assert Footer.last_change_label(~U[2026-11-03 23:59:00Z], @now) == "yesterday"
-      assert Footer.last_change_label(~U[2026-11-02 12:00:00Z], @now) == "2 days ago"
-      assert Footer.last_change_label(~U[2026-09-06 12:00:00Z], @now) == "59 days ago"
-      assert Footer.last_change_label(~U[2026-09-05 12:00:00Z], @now) == "2 months ago"
+
+      assert Footer.last_change_label(~U[2026-11-03 23:59:00Z], @now) ==
+               "yesterday"
+
+      assert Footer.last_change_label(~U[2026-11-02 12:00:00Z], @now) ==
+               "2 days ago"
+
+      assert Footer.last_change_label(~U[2026-09-06 12:00:00Z], @now) ==
+               "59 days ago"
+
+      assert Footer.last_change_label(~U[2026-09-05 12:00:00Z], @now) ==
+               "2 months ago"
     end
   end
 
@@ -28,9 +36,20 @@ defmodule PortfolioWeb.Components.FooterTest do
     }
 
     test "shows the version, change count, last change and stack" do
-      html = render_component(&Footer.site_footer/1, current_year: 2026, status: @status)
+      html =
+        render_component(&Footer.site_footer/1,
+          current_year: 2026,
+          status: @status
+        )
 
-      for text <- ["Version", "Changes", "503", "Last change", "today", "Built with"] do
+      for text <- [
+            "Version",
+            "Changes",
+            "503",
+            "Last change",
+            "today",
+            "Built with"
+          ] do
         assert html =~ text
       end
 
@@ -42,7 +61,12 @@ defmodule PortfolioWeb.Components.FooterTest do
 
     test "leaves out history rows it has no source for" do
       status = %{@status | changes: nil, last_change_at: nil}
-      html = render_component(&Footer.site_footer/1, current_year: 2026, status: status)
+
+      html =
+        render_component(&Footer.site_footer/1,
+          current_year: 2026,
+          status: status
+        )
 
       assert html =~ "Version"
       refute html =~ "Changes"
