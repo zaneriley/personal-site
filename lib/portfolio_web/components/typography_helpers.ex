@@ -194,7 +194,8 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
   # (cardinal/noto) keep their own cut weights.
   @spec add_weight_class(list(String.t()), map(), String.t()) ::
           list(String.t())
-  defp add_weight_class(classes, assigns, font_key) when font_key in ["flexa", "mono"] do
+  defp add_weight_class(classes, assigns, font_key)
+       when font_key in ["flexa", "mono"] do
     size = assigns[:size] || "md"
     suffix = if assigns[:weight] == "bold", do: "-bold", else: ""
     ["fw-flexa-#{size}#{suffix}" | classes]
