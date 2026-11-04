@@ -294,10 +294,16 @@ handling and regression checks**.
   Transition spike should proceed. Note ADR 0006's future "edge-cacheable
   HTML" question touches the same LiveView/session design — adjudicate them
   with each other in view, not separately.
-- **Replace display-only footer status with owned live data.** Give temperature,
-  deploy identity/status, node health, and operating cost bounded
-  cached owners while retaining explicit assigns for deterministic tests and
-  degraded operation. Tokyo weather is scoped separately under **Theme toggle,
+- **Replace display-only footer status with owned live data.** Decided
+  2026-11-04 with Z: the Server sheet shows plain facts a visitor can check —
+  Version (5th site since 2010, per the Internet Archive), Changes (commit
+  count), Last change (relative, e.g. "2 days ago"), Built with. Temperature,
+  cost and the deploy hash are gone (made up, or meaningless to visitors).
+  `Portfolio.SiteHistory` reads `SITE_CHANGE_COUNT` / `SITE_LAST_CHANGE_AT`,
+  else local git; rows with no source are hidden. Still open: the release
+  build/deploy must set those two variables (images ship without `.git`), and
+  the sheet header (node name, up dot) plus the "Self-hosted on my home
+  server" line wait on the hosting decision. Tokyo weather is scoped separately under **Theme toggle,
   footer weather, and weather icons**.
 - **Decided 2026-10-24: one name per thing — Work for the collection, project
   for one item.** Z chose this for hiring readers and search. The menu reads
