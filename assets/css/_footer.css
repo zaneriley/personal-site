@@ -298,11 +298,6 @@ html[data-theme="light"] .footer-surface {
   font-size: 0.82em;
 }
 
-.weather-unavailable {
-  font-size: var(--fs-2xs);
-  font-weight: var(--fw-flexa-2xs);
-}
-
 .weather-credit {
   --cjk-lh: 1;
 
