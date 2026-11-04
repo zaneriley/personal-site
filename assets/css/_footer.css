@@ -207,11 +207,10 @@ html[data-theme="light"] .footer-surface {
   min-block-size: 10rem;
 }
 
-/* No reading means no icon and nothing to reserve room for. */
-.footer-weather[data-freshness="unavailable"] {
-  --weather-icon-offset: 0;
-
-  min-block-size: 0;
+/* No reading: hide the whole Tokyo section (its grid slot too, so no empty
+   row gap). It stays mounted, so a later reading brings it back live. */
+.reading-grid > section:has([data-freshness="unavailable"]) {
+  display: none;
 }
 
 .weather-mark {
