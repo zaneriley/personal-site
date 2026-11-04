@@ -97,8 +97,10 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
       for font <- ["flexa", "mono"] do
         regular = %{font: font, size: "2xs"}
         bold = Map.put(regular, :weight, "bold")
-        assert TypographyHelpers.build_class_names(regular, "en") =~ "fw-flexa-2xs"
-        assert TypographyHelpers.build_class_names(bold, "en") =~ "fw-flexa-2xs-bold"
+        regular_classes = TypographyHelpers.build_class_names(regular, "en")
+        bold_classes = TypographyHelpers.build_class_names(bold, "en")
+        assert regular_classes =~ "fw-flexa-2xs"
+        assert bold_classes =~ "fw-flexa-2xs-bold"
       end
     end
 
