@@ -297,6 +297,7 @@ html[data-theme="light"] .footer-surface {
 
 .weather-unavailable {
   font-size: var(--fs-2xs);
+  font-weight: var(--fw-flexa-2xs);
 }
 
 .weather-credit {

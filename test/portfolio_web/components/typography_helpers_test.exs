@@ -92,6 +92,22 @@ defmodule PortfolioWeb.Components.TypographyHelpersTest do
     end
   end
 
+  describe "build_class_names/2 optical weight" do
+    test "gives GT Flexa and GT Flexa Mono the size-matched weight rung" do
+      for font <- ["flexa", "mono"] do
+        regular = %{font: font, size: "2xs"}
+        bold = Map.put(regular, :weight, "bold")
+        assert TypographyHelpers.build_class_names(regular, "en") =~ "fw-flexa-2xs"
+        assert TypographyHelpers.build_class_names(bold, "en") =~ "fw-flexa-2xs-bold"
+      end
+    end
+
+    test "leaves static faces at their own cut weight" do
+      assigns = %{font: "cardinal", size: "2xs"}
+      refute TypographyHelpers.build_class_names(assigns, "en") =~ "fw-flexa"
+    end
+  end
+
   # Optional tests for internal helpers can remain commented or removed
   # if the main describe block provides sufficient coverage.
   # describe "internal helpers (optional tests)" do
