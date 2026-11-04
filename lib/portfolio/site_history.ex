@@ -77,6 +77,9 @@ defmodule Portfolio.SiteHistory do
   defp git(:last_change), do: run_git(["log", "-1", "--format=%cI"])
 
   defp run_git(args) do
+    # Only the two fixed read-only git queries above reach this; neither runs
+    # hooks or credential helpers, so the inherited environment is not exposed.
+    # credo:disable-for-next-line Credo.Check.Warning.LeakyEnvironment
     case System.cmd("git", args, stderr_to_stdout: true) do
       {out, 0} -> String.trim(out)
       _ -> nil
