@@ -196,18 +196,21 @@ html[data-theme="light"] .footer-surface {
 }
 
 /* The mark is fully composed in HTML. Only changed glyphs animate after a
-   live patch; font loading remains owned by the site's typography pipeline. */
+   live patch; font loading remains owned by the site's typography pipeline.
+   Heading and credit sit on the column's start edge like Colophon and Server;
+   only the mark makes room for its icon. */
 .footer-weather {
   --weather-icon-offset: calc(var(--latin-fs-4xl) + var(--space-1xs));
-  --weather-text-indent: var(--weather-icon-offset);
 
   color: var(--text-color-main);
   text-align: left;
   min-block-size: 10rem;
 }
 
-.weather-heading {
-  margin-inline-start: var(--weather-text-indent);
+/* No reading means no icon and nothing to reserve room for. */
+.footer-weather[data-freshness="unavailable"] {
+  --weather-icon-offset: 0;
+  min-block-size: 0;
 }
 
 .weather-mark {
@@ -308,7 +311,6 @@ html[data-theme="light"] .footer-surface {
   inline-size: fit-content;
   margin: 0;
   margin-block-start: var(--space-md);
-  margin-inline-start: var(--weather-text-indent);
   padding: 0;
   min-block-size: 1.5rem;
   font-size: var(--fs-3xs);
@@ -325,10 +327,6 @@ html[data-theme="light"] .footer-surface {
 
 @media (width >= 64rem) {
   /* The text starts on column 10; column 9 gives the hanging icon its own room. */
-  .footer-surface .footer-weather {
-    --weather-text-indent: 0;
-  }
-
   .footer-surface .weather-mark {
     margin-inline-start: calc(-1 * var(--weather-icon-offset));
   }

@@ -133,9 +133,9 @@ msgid "NEVER EXISTED IN THE FIRST PLACE"
 msgstr ""
 
 #: lib/portfolio_web/components/footer.ex:132
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Node"
-msgstr "Note"
+msgstr ""
 
 #: lib/portfolio_web/components/navigation.ex:76
 #: lib/portfolio_web/live/note_live/show.ex:51

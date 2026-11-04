@@ -35,7 +35,10 @@
     "destinations destinations";
   gap: var(--space-1xs) var(--gutter);
   align-items: center;
-  padding-block: var(--space-2xs);
+
+  /* Phones: the header sits as far from the top as the page is from the
+     sides, scrolled or not (the body adds no top space there). */
+  padding-block: var(--page-inset);
 }
 
 /* Enhancement only: the source order is home, destinations, controls. */
@@ -77,6 +80,10 @@
 }
 
 @media (width >= 40rem) {
+  .site-navigation {
+    padding-block: var(--space-2xs);
+  }
+
   .site-navigation-destinations ul {
     gap: var(--space-1xl);
   }
