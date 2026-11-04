@@ -200,7 +200,8 @@ function representativeSizes(): Map<string, number> {
 /**
  * Computes the GT Flexa optical weight for every rung. GT Flexa has no opsz
  * axis, so each size gets a target stroke-to-size ratio,
- *   stem(anchor weight) · (size / anchor size) ^ −opticalExponent,
+ *   stem(anchor weight) · (size / anchor size) ^ −k,
+ * with k = opticalExponent.display above the anchor and .text below it,
  * and the weight that draws it is read back from the measured stem table.
  * Results are clamped to the measured (= font's) weight range.
  */
@@ -211,7 +212,11 @@ export function flexaWeightRungs(
   const anchorSize = sizes.get(config.anchorLabel);
   if (!anchorSize) throw new Error(`No size for ${config.anchorLabel}`);
   const weightFor = (anchorWeight: number, size: number) => {
-    const ratio = (size / anchorSize) ** -config.opticalExponent;
+    const k =
+      size > anchorSize
+        ? config.opticalExponent.display
+        : config.opticalExponent.text;
+    const ratio = (size / anchorSize) ** -k;
     const target = interpolate(config.stems, anchorWeight, 0) * ratio;
     return Math.round(interpolate(config.stems, target, 1));
   };

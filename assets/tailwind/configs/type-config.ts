@@ -36,11 +36,12 @@ export interface WeightConfig {
   anchorLabel: string; // size label whose weights are set by eye
   regular: number; // regular wght at the anchor size
   bold: number; // bold wght at the anchor size
-  // How much lighter, relative to its size, a stroke gets as type grows:
-  // stem/size ∝ (size / anchorSize) ^ −opticalExponent. 0 = every size keeps
-  // the anchor's stroke-to-size ratio; 1 = every size keeps the same stroke in
-  // px. The old linear rule (−30 wght/step) behaved like ≈0.8.
-  opticalExponent: number;
+  // How the stroke-to-size ratio changes away from the anchor:
+  // stem/size ∝ (size / anchorSize) ^ −k. 0 = every size keeps the anchor's
+  // ratio; 1 = every size keeps the anchor's stroke in px. `display` applies
+  // above the anchor, `text` below it. Small text needs more help than large
+  // type needs taking away, so the two differ.
+  opticalExponent: { display: number; text: number };
   labels: string[]; // size labels that get a weight rung (display → small)
   // Measured once from the font: [wght, stem width as a fraction of the em].
   // Ascending in both columns; weights are read back from it by interpolation.
@@ -126,10 +127,16 @@ export const cjkTypeConfig: TypeConfig = {
  *
  * Each size gets a target stroke-to-size ratio, then the weight that draws that
  * stroke is looked up in `stems`:
- *   target(size) = stem(anchor weight) · (size / anchor size) ^ −opticalExponent
- * Large type gets a slightly lighter ratio (so it doesn't look heavy) while its
- * strokes still grow in px; small type gets a slightly heavier one. Regular and
- * bold follow the same rule from their own anchor weights.
+ *   target(size) = stem(anchor weight) · (size / anchor size) ^ −k
+ * Large type gets a slightly lighter ratio (k = display) so it doesn't look
+ * heavy, while its strokes still grow in px. Small type gets a clearly heavier
+ * one (k = text): at 10–17px the strokes are only about a pixel wide and read
+ * faint unless they are boosted more. Regular and bold follow the same rule
+ * from their own anchor weights.
+ *
+ * 2026-11-04: one shared k = 0.2 made small text lighter than the old rule
+ * (3xs 358 → 331), which read thin on a phone. The old rule's small end acted
+ * like k ≈ 0.3; text = 0.45 is a step heavier than that.
  *
  * The previous rule subtracted 30 wght per step. Because the scale is
  * geometric and stroke width isn't linear in wght, that held the stroke at
@@ -145,7 +152,7 @@ export const flexaWeightConfig: WeightConfig = {
   anchorLabel: "md",
   regular: 268,
   bold: 618,
-  opticalExponent: 0.2,
+  opticalExponent: { display: 0.2, text: 0.45 },
   labels: ["4xl", "3xl", "2xl", "1xl", "md", "1xs", "2xs", "3xs"],
   stems: [
     [100, 0.0306],
