@@ -63,9 +63,22 @@
   color: inherit;
 }
 
+/* From 40rem the header is one row: seal, destinations, controls. The
+   destinations keep the phone's md gap and the groups sit md apart, so the
+   row fits at 640px with a desktop scrollbar in both languages (EN needs
+   528px of the 541px field: seal 44, destinations 243, controls 185). */
 @media (width >= 40rem) {
   .site-navigation {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "home destinations controls";
+    column-gap: var(--space-md);
     padding-block: var(--space-2xs);
+  }
+}
+
+@media (width >= 64rem) {
+  .site-navigation {
+    column-gap: var(--gutter);
   }
 
   .site-navigation-destinations ul {
