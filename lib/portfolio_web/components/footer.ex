@@ -191,9 +191,8 @@ defmodule PortfolioWeb.Components.Footer do
              screens. On phones the links come first (and wrap), then © and
              back-to-top share the last row at either end. Source order is
              unchanged; only grid placement moves. Rows sit one 1xs step
-             apart, about one line of this 2xs text. Items align on their
-             text baseline: © is a bare span but back-to-top is a link
-             wrapping one, so their boxes differ and centring them drifts. --%>
+             apart, about one line of this 2xs text. Links are flex (see
+             .footer-link) so they line up with the bare © span. --%>
         <div class="col-span-full grid grid-cols-subgrid items-baseline gap-y-1xs">
           <.typography
             tag="span"
@@ -274,7 +273,7 @@ defmodule PortfolioWeb.Components.Footer do
 
           <a
             href="#main-content"
-            class="footer-link row-start-2 col-end-[-1] col-start-[span_2] text-right lg:row-start-1 lg:col-start-11 lg:col-end-13"
+            class="footer-link row-start-2 col-end-[-1] col-start-[span_2] justify-end lg:row-start-1 lg:col-start-11 lg:col-end-13"
           >
             <.typography
               tag="span"
