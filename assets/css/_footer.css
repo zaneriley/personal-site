@@ -215,6 +215,38 @@ html[data-theme="light"] .footer-surface {
   color: var(--footer-datum);
 }
 
+/* "Built with" badges, after the GitHub README convention: each project's
+   mark and name on its own brand colour (Elixir #4B275F, Phoenix #FD4F00).
+   Brand colours, not theme tokens, so they stay the same in both themes. */
+.tech-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+.tech-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  padding: var(--space-3xs) var(--space-2xs);
+  border-radius: var(--space-3xs);
+  color: oklch(100% 0 0deg);
+}
+
+.tech-badge svg {
+  inline-size: var(--fs-2xs);
+  block-size: var(--fs-2xs);
+  fill: currentcolor;
+}
+
+.tech-badge-elixir {
+  background: #4b275f;
+}
+
+.tech-badge-phoenix {
+  background: #fd4f00;
+}
+
 /* Typeface specimen: primary name set in its own face, JP fallback muted.
    These are raw spans (not <.typography>) because each row shows the face
    itself as the specimen. */
