@@ -150,7 +150,7 @@ export const cjkTypeConfig: TypeConfig = {
  * This is the single source of truth; generate-type-tokens.ts emits the rungs. */
 export const flexaWeightConfig: WeightConfig = {
   anchorLabel: "md",
-  regular: 268,
+  regular: 300,
   bold: 618,
   opticalExponent: { display: 0.2, text: 0.45 },
   labels: ["4xl", "3xl", "2xl", "1xl", "md", "1xs", "2xs", "3xs"],
