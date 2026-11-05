@@ -18,10 +18,6 @@ beforeEach(() => {
     value: 100,
     configurable: true,
   });
-  vi.spyOn(document.documentElement, "scrollHeight", "get").mockReturnValue(
-    2800,
-  );
-  vi.stubGlobal("innerHeight", 800);
   vi.stubGlobal("scrollY", 0);
   vi.stubGlobal(
     "ResizeObserver",
@@ -42,52 +38,26 @@ afterEach(() => {
   document.body.removeAttribute("style");
 });
 
-it("ignores small reversals and clamps overscroll at both document edges", () => {
-  scroll(120);
+it("stays shown and marks scrolled only past the header and body inset", () => {
+  scroll(156);
+  expect(header.hasAttribute("data-scrolled")).toBe(false);
+  scroll(157);
+  expect(header.hasAttribute("data-scrolled")).toBe(true);
+  scroll(2000);
+  expect(header.hasAttribute("data-scrolled")).toBe(true);
   expect(header.hasAttribute("data-hidden")).toBe(false);
-  scroll(300);
-  expect(header.hasAttribute("data-hidden")).toBe(true);
-  scroll(296);
-  scroll(290);
-  expect(header.hasAttribute("data-hidden")).toBe(true);
-  scroll(280);
-  expect(header.hasAttribute("data-hidden")).toBe(false);
-  scroll(2100);
-  expect(header.hasAttribute("data-hidden")).toBe(true);
-  scroll(2020);
-  expect(header.hasAttribute("data-hidden")).toBe(true);
   scroll(-20);
-  expect(header.hasAttribute("data-hidden")).toBe(false);
   expect(header.hasAttribute("data-scrolled")).toBe(false);
 });
 
-it("reveals focused navigation and preserves access during further scrolling", () => {
+it("reconciles patches and releases listeners on removal", () => {
   scroll(400);
-  const link = header.querySelector("a") as HTMLAnchorElement;
-  link.focus();
-  expect(header.hasAttribute("data-hidden")).toBe(false);
-  scroll(700);
-  expect(header.hasAttribute("data-hidden")).toBe(false);
-  link.blur();
-  scroll(780);
-  expect(header.hasAttribute("data-hidden")).toBe(true);
-});
-
-it("resets during navigation, reconciles patches, and releases listeners on removal", () => {
-  scroll(400);
-  window.dispatchEvent(new Event("phx:page-loading-start"));
-  scroll(800);
-  expect(header.hasAttribute("data-hidden")).toBe(false);
-  window.dispatchEvent(new Event("phx:page-loading-stop"));
-  scroll(900);
-  expect(header.hasAttribute("data-hidden")).toBe(true);
-  header.removeAttribute("data-hidden");
+  header.removeAttribute("data-scrolled");
   hook.updated?.call(context);
-  expect(header.hasAttribute("data-hidden")).toBe(true);
-  window.dispatchEvent(new Event("popstate"));
-  expect(header.hasAttribute("data-hidden")).toBe(false);
+  expect(header.hasAttribute("data-scrolled")).toBe(true);
   hook.destroyed?.call(context);
+  expect(header.hasAttribute("data-scrolled")).toBe(false);
   scroll(1000);
-  expect(header.hasAttribute("data-hidden")).toBe(false);
+  expect(header.hasAttribute("data-scrolled")).toBe(false);
   expect(disconnect).toHaveBeenCalledTimes(1);
 });
