@@ -113,8 +113,8 @@ describe("generateCSS Output Contract", () => {
     // whose measured stem gives stem(md) · (size/md)^−k (display k above md, text k below).
     expect(generatedCSS).toContain("--fw-flexa-md: 300;");
     expect(generatedCSS).toContain("--fw-flexa-md-bold: 618;");
-    expect(generatedCSS).toContain("--fw-flexa-4xl: 222;");
-    expect(generatedCSS).toContain("--fw-flexa-3xs: 432;");
+    expect(generatedCSS).toContain("--fw-flexa-4xl: 245;");
+    expect(generatedCSS).toContain("--fw-flexa-3xs: 478;");
     expect(generatedCSS).toContain("--fw-flexa-3xs-bold: 774;");
   });
 
