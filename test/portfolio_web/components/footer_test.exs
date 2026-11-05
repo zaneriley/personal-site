@@ -30,7 +30,7 @@ defmodule PortfolioWeb.Components.FooterTest do
       node_name: "zaneriley.com",
       node_up: true,
       version: "5",
-      stack: "Elixir · Phoenix",
+      stack: [:elixir, :phoenix],
       changes: 503,
       last_change_at: DateTime.utc_now()
     }
@@ -53,7 +53,8 @@ defmodule PortfolioWeb.Components.FooterTest do
         assert html =~ text
       end
 
-      assert html =~ "Elixir · Phoenix"
+      assert html =~ "Elixir"
+      assert html =~ "Phoenix"
       assert html =~ "© 2010 – 2026"
       refute html =~ "Temp"
       refute html =~ "Cost"
