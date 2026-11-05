@@ -238,14 +238,14 @@
   --gt-flexa-trial-vf-distance-bottom: 0.2;
 
   /* GT Flexa Optical Weight (derived from flexaWeightConfig) */
-  --fw-flexa-4xl: 222;
-  --fw-flexa-3xl: 232;
-  --fw-flexa-2xl: 243;
-  --fw-flexa-1xl: 254;
-  --fw-flexa-md: 268;
-  --fw-flexa-1xs: 310;
-  --fw-flexa-2xs: 374;
-  --fw-flexa-3xs: 432;
+  --fw-flexa-4xl: 245;
+  --fw-flexa-3xl: 257;
+  --fw-flexa-2xl: 271;
+  --fw-flexa-1xl: 285;
+  --fw-flexa-md: 300;
+  --fw-flexa-1xs: 363;
+  --fw-flexa-2xs: 423;
+  --fw-flexa-3xs: 478;
   --fw-flexa-4xl-bold: 494;
   --fw-flexa-3xl-bold: 522;
   --fw-flexa-2xl-bold: 554;
