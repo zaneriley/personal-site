@@ -27,7 +27,7 @@ defmodule PortfolioWeb.Components.FooterTest do
 
   describe "site_footer/1" do
     @status %{
-      node_name: "Raspberry Pi 3B",
+      node_name: "zaneriley.com",
       node_up: true,
       version: "5",
       stack: "Elixir · Phoenix",
