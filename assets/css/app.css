@@ -170,6 +170,55 @@ html[lang="ja"] * {
   max-inline-size: 30em;
 }
 
+/* 2xl from the name's baseline, not from the tail of its y: the signature
+   SVG (545x168) sits on y=137.3, so 30.7/545 of its width hangs below. */
+.hero-signature {
+  margin-block-end: calc(var(--space-2xl) - min(34rem, 100cqi) * 0.0563);
+}
+
+/* Phones: the lockup is the first screen. It fills the screen minus the
+   header and a peek of the Work list (the 4xl rung), so the cut-off list
+   says "scroll". Leftover space splits 2:3 above:below, which centres the
+   block optically, a little above the middle. Only in portrait; on wide or
+   short screens the lockup sizes to its content. */
+@media (width < 40rem) {
+  .hero {
+    display: flex;
+    flex-direction: column;
+    margin-inline: auto;
+    margin-block: 0 var(--space-md);
+    text-align: center;
+  }
+
+  .hero::before,
+  .hero::after {
+    content: "";
+  }
+
+  .hero::before {
+    flex: 2;
+  }
+
+  .hero::after {
+    flex: 3;
+  }
+
+  .hero-signature {
+    margin-inline: auto;
+  }
+}
+
+/* The phone header is two rows of tap targets (seal and controls, then the
+   destinations) with a 1xs gap, inset top and bottom (_navigation.css). */
+@media (width < 40rem) and (orientation: portrait) {
+  .hero {
+    min-block-size: calc(
+      100svh - 2 * var(--page-inset) - 2 * var(--tap-target) - var(--space-1xs) -
+        var(--space-4xl)
+    );
+  }
+}
+
 /* The role line never wraps (whitespace-nowrap in the template); it steps
    down the type scale until it fits. Threshold = the line's measured length
    in em x that rung's phone size. EN "Product designer at G" = 10.33em in

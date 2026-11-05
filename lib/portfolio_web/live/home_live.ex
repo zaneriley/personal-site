@@ -62,9 +62,15 @@ defmodule PortfolioWeb.HomeLive do
     ~H"""
     <%!-- Top lockup, words first: what (role), how (blurb), where (place).
          The portrait is off for now; it comes back on larger screens once
-         its place relative to the words is settled. Copy is composed per
-         locale (bespoke), not a gettext translation, so only the copy
-         branches; the frame is shared.
+         its place relative to the words is settled.
+
+         Spacing uses two units, measured from the letters: 2xl under the
+         name (from its baseline, see .hero-signature), md between role,
+         blurb and place. On phones the lockup fills the first screen and
+         sits centred, slightly above the middle (app.css .hero).
+
+         Copy is composed per locale (bespoke), not a gettext translation,
+         so only the copy branches; the frame is shared.
 
          Line breaks are authored: whitespace-nowrap glues a phrase that must
          not split, inline-block keeps a clause whole when it fits (so a break
@@ -72,7 +78,7 @@ defmodule PortfolioWeb.HomeLive do
          phrase boundaries (break-keep). The role line never wraps; app.css
          steps it down the type scale until it fits. --%>
     <section class="hero mt-1xl mb-3xl">
-      <.signature class="block max-w-[34rem] mb-1xl" />
+      <.signature class="hero-signature block max-w-[34rem]" />
       <%= if @user_locale == "ja" do %>
         <.typography
           locale={@user_locale}
@@ -92,7 +98,7 @@ defmodule PortfolioWeb.HomeLive do
           locale={@user_locale}
           tag="p"
           size="md"
-          class="mt-1xs text-balance break-keep"
+          class="mt-md text-balance break-keep"
         >
           15年以上、<wbr />戦略・<wbr />デザイン・<wbr />コード——<wbr />手段を<wbr />選ばず、<wbr />デジタルプロダクトを<wbr />つくって<wbr />きました。
         </.typography>
@@ -128,7 +134,7 @@ defmodule PortfolioWeb.HomeLive do
           tag="p"
           size="md"
           color="deemphasized"
-          class="mt-1xs text-balance"
+          class="mt-md text-balance"
         >
           <span class="whitespace-nowrap">15+ years</span>
           making <span class="whitespace-nowrap">digital products</span>
