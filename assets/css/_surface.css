@@ -1,0 +1,27 @@
+/* Surface steps: raise or lower an element one flat step from whatever is
+   underneath it. The step is a translucent layer painted as a background
+   image, so it sits over the element's own background colour (or shows the
+   parent through when the element has none) and nested steps stack:
+   a .surface-raise inside a .surface-raise is two steps up.
+   Step strengths per theme live in _color.css (--surface-step-up/-down).
+   Not to be confused with .surface / .surface-fill, the page background. */
+.surface-raise {
+  background-image: linear-gradient(
+    var(--surface-step-up),
+    var(--surface-step-up)
+  );
+}
+
+.surface-sink {
+  background-image: linear-gradient(
+    var(--surface-step-down),
+    var(--surface-step-down)
+  );
+}
+
+@media (forced-colors: active) {
+  .surface-raise,
+  .surface-sink {
+    background-image: none;
+  }
+}

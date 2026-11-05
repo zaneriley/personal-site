@@ -14,13 +14,14 @@ defmodule PortfolioWeb.Components.ThemeSwitcher do
     <button
       id={@id}
       type="button"
-      class={["theme-toggle noscript", @class]}
+      class={["theme-toggle action surface-raise noscript", @class]}
       phx-hook="ThemeSwitcher"
       phx-update="ignore"
       aria-label={gettext("Dark mode")}
       aria-pressed="false"
       title={gettext("Toggle light and dark mode")}
     >
+      <PortfolioWeb.Components.Action.light />
       <svg
         width="28"
         height="28"

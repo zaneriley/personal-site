@@ -11,6 +11,8 @@
 @import url("./_footer.css");
 @import url("./_theme-switcher.css");
 @import url("./_language-switch.css");
+@import url("./_surface.css");
+@import url("./_action.css");
 
 @property --fantazio-rotate {
   syntax: "<angle>";
