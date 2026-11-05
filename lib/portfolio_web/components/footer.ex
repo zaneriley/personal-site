@@ -47,7 +47,7 @@ defmodule PortfolioWeb.Components.Footer do
          layout classes sit on this wrapper so the bg spans the viewport while
          content stays on the reading grid. --%>
     <div class="footer-surface mt-auto sticky top-[100vh]">
-      <footer role="contentinfo" class="reading-grid pt-2xl pb-2xl">
+      <footer role="contentinfo" class="reading-grid site-footer">
         <%!-- Seal. The hanko SVG draws its own ring; no extra wrapper ring. --%>
         <div class="footer-seal">
           <.hanko id="footer" />

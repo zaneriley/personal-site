@@ -63,6 +63,11 @@ html[data-theme="light"] .footer-surface {
   }
 }
 
+/* A section's distance from the one above, and the page edge below it. */
+.site-footer {
+  padding-block: var(--gutter) var(--page-inset-block);
+}
+
 /* Section layout, derived from the content. The Server sheet is the widest
    thing that must not wrap: 282px with its rows on one line (238px in
    Japanese, so English sets every step). Each step is the narrowest viewport,

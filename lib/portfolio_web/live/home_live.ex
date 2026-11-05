@@ -77,7 +77,7 @@ defmodule PortfolioWeb.HomeLive do
          lands where the sentence turns), and Japanese only breaks at <wbr />
          phrase boundaries (break-keep). The role line never wraps; app.css
          steps it down the type scale until it fits. --%>
-    <section class="hero mt-1xl mb-3xl">
+    <section class="hero">
       <.signature class="hero-signature block max-w-[34rem]" />
       <%= if @user_locale == "ja" do %>
         <.typography

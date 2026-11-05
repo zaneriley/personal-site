@@ -20,9 +20,9 @@
   gap: var(--space-1xs) var(--gutter);
   align-items: center;
 
-  /* Phones: the header sits as far from the top as the page is from the
-     sides, scrolled or not (the body adds no top space there). */
-  padding-block: var(--page-inset);
+  /* Two rows: the header sits on the page edge, scrolled or not (the body
+     adds no top space here). */
+  padding-block: var(--page-inset-block);
 }
 
 /* Enhancement only: the source order is home, destinations, controls. */
@@ -63,11 +63,11 @@
   color: inherit;
 }
 
-/* From 40rem the header is one row: seal, destinations, controls. The
-   destinations keep the phone's md gap and the groups sit md apart, so the
-   row fits at 640px with a desktop scrollbar in both languages (EN needs
-   528px of the 541px field: seal 44, destinations 243, controls 185). */
-@media (width >= 40rem) {
+/* One row once its content fits: seal 44 + destinations 243 + controls 185 +
+   two md gaps = 528px in English (519px in Japanese). 36rem leaves 529px after
+   a 15px scrollbar and the inset at that width. The bar stays slim and the
+   body supplies the rest of the page edge (app.css), so it scrolls away. */
+@media (width >= 36rem) {
   .site-navigation {
     grid-template-columns: auto 1fr auto;
     grid-template-areas: "home destinations controls";

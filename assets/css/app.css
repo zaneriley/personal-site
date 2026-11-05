@@ -56,6 +56,14 @@ body {
   hanging-punctuation: allow-end last; /* Safari only */
 }
 
+/* With a one-row header (_navigation.css), the body supplies the page edge
+   above it, less the bar's own padding, so the bar stays slim once scrolled. */
+@media (width >= 36rem) {
+  body {
+    padding-block-start: calc(var(--page-inset-block) - var(--space-2xs));
+  }
+}
+
 /* Interaction primitives, stated once. --tap-target is the minimum hit size
    for anything you press (44px); the focus ring is the one keyboard focus
    style for links and buttons. :where() keeps it overridable. */
@@ -163,6 +171,7 @@ html[lang="ja"] * {
    words come first, and it returns on larger screens once placed. */
 .hero {
   max-inline-size: 36rem;
+  margin-block: var(--gutter);
   container-type: inline-size;
 }
 
@@ -190,16 +199,16 @@ html[lang="ja"] * {
   }
 }
 
-/* Phones: the lockup is the first screen. It fills the screen minus the
-   header and a peek of the Work list (the 4xl rung), so the cut-off list
-   says "scroll". Leftover space splits 2:3 above:below, which centres the
-   block optically, a little above the middle. Only in portrait; on wide or
-   short screens the lockup sizes to its content. */
-@media (width < 40rem) {
+/* While the header is two rows (_navigation.css), the lockup is the first
+   screen. It fills the screen minus the header and a peek of the Work list
+   (the 4xl rung), so the cut-off list says "scroll". Leftover space splits
+   2:3 above:below, which centres the block optically, a little above the
+   middle. Only in portrait; on wide or short screens the lockup sizes to its
+   content. */
+@media (width < 36rem) {
   .hero {
     display: flex;
     flex-direction: column;
-    margin-block: 0 var(--space-md);
   }
 
   .hero::before,
@@ -218,11 +227,12 @@ html[lang="ja"] * {
 
 /* The phone header is two rows of tap targets (seal and controls, then the
    destinations) with a 1xs gap, inset top and bottom (_navigation.css). */
-@media (width < 40rem) and (orientation: portrait) {
+@media (width < 36rem) and (orientation: portrait) {
   .hero {
+    margin-block-start: 0;
     min-block-size: calc(
-      100svh - 2 * var(--page-inset) - 2 * var(--tap-target) - var(--space-1xs) -
-        var(--space-4xl)
+      100svh - 2 * var(--page-inset-block) - 2 * var(--tap-target) -
+        var(--space-1xs) - var(--space-4xl)
     );
   }
 }
