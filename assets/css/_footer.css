@@ -113,6 +113,7 @@ html[data-theme="light"] .footer-surface {
    One primitive; the Typefaces sheet and the Server sheet differ only by the
    optional header tag + status dot. Rows are a semantic <dl>. */
 .spec-sheet {
+  container-type: inline-size;
   border: 1px solid var(--footer-rule);
   border-radius: var(--space-2xs);
   background: var(--footer-inset);
@@ -188,6 +189,24 @@ html[data-theme="light"] .footer-surface {
 .spec-sheet-row dd {
   margin: 0;
   color: var(--text-color-main);
+}
+
+/* A narrow sheet can't hold label and value side by side (single words like
+   "yesterday" or "zaneriley.com" can't wrap), so below the width the Server
+   rows need, each label sits above its value and the header may wrap.
+   15.75rem = 9 × the md space step (container queries can't read tokens). */
+@container (inline-size < 15.75rem) {
+  .spec-sheet-head {
+    flex-wrap: wrap;
+  }
+
+  .spec-sheet-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .spec-sheet-row {
+    row-gap: var(--space-3xs);
+  }
 }
 
 /* Server datum values: rendered through <.typography font="mono" size="2xs">;

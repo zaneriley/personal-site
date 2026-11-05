@@ -15,10 +15,11 @@ defmodule PortfolioWeb.Components.Footer do
   # Facts for the Server sheet. Every value is either a fixed fact about the
   # site or comes from Portfolio.SiteHistory; a history fact with no source is
   # nil and its row is left out, so the card never shows an invented value.
-  # Header (node name + status dot) is still static: hosting is undecided
-  # (see ADR 0003) and the live-data item in _PROJECT_DOCS/BACKLOG.md owns it.
+  # Header names the site itself, not the machine: hosting is undecided
+  # (see ADR 0003). The status dot is still static; the live-data item in
+  # _PROJECT_DOCS/BACKLOG.md owns it.
   @static_status %{
-    node_name: "Raspberry Pi 3B",
+    node_name: "zaneriley.com",
     node_up: true,
     # Versions of zaneriley.com since 2010, from the Internet Archive record:
     # 2010 photography site, 2011, 2015, 2017, and this codebase (2024).
