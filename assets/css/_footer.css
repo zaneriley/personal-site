@@ -63,6 +63,106 @@ html[data-theme="light"] .footer-surface {
   }
 }
 
+/* Section layout, derived from the content. The Server sheet is the widest
+   thing that must not wrap: 282px with its rows on one line (238px in
+   Japanese, so English sets every step). Each step is the narrowest viewport,
+   with a 15px scrollbar, where a column still holds that sheet.
+     45rem: two columns (half the field each). Seal and Tokyo share the top
+       row, so the row still works when the weather is hidden.
+     66.25rem: three columns (span 4 of 12), seal on its own row.
+     87.5rem: the seal gets its own column (span 3 of 12 reaches 282px), and
+       column 9 gives the Tokyo icon room to hang. */
+.footer-seal,
+.footer-colophon,
+.footer-server,
+.footer-tokyo {
+  grid-column: 1 / -1;
+}
+
+@media (width >= 45rem) {
+  .footer-seal,
+  .footer-tokyo {
+    grid-row: 1;
+  }
+
+  .footer-colophon,
+  .footer-server {
+    grid-row: 2;
+  }
+
+  .footer-seal,
+  .footer-colophon {
+    grid-column: 1 / 5;
+  }
+
+  .footer-server,
+  .footer-tokyo {
+    grid-column: 5 / 9;
+  }
+}
+
+/* Same two columns once the field steps from 8 to 12 columns. */
+@media (width >= 64rem) {
+  .footer-seal,
+  .footer-colophon {
+    grid-column: 1 / 7;
+  }
+
+  .footer-server,
+  .footer-tokyo {
+    grid-column: 7 / 13;
+  }
+}
+
+@media (width >= 66.25rem) {
+  .footer-seal {
+    grid-column: 1 / -1;
+  }
+
+  .footer-colophon,
+  .footer-server,
+  .footer-tokyo {
+    grid-row: 2;
+  }
+
+  .footer-colophon {
+    grid-column: 1 / 5;
+  }
+
+  .footer-server {
+    grid-column: 5 / 9;
+  }
+
+  .footer-tokyo {
+    grid-column: 9 / 13;
+  }
+}
+
+@media (width >= 87.5rem) {
+  .footer-seal,
+  .footer-colophon,
+  .footer-server,
+  .footer-tokyo {
+    grid-row: 1;
+  }
+
+  .footer-seal {
+    grid-column: 1 / 3;
+  }
+
+  .footer-colophon {
+    grid-column: 3 / 6;
+  }
+
+  .footer-server {
+    grid-column: 6 / 9;
+  }
+
+  .footer-tokyo {
+    grid-column: 10 / 13;
+  }
+}
+
 /* Footer navigation color. The Typography component owns the text treatment.
    Flex so the link has no line box of its own: as a block, its 22px body
    line box lifted the trimmed 2xs span ~9px above the bare copyright span. */
@@ -357,7 +457,7 @@ html[data-theme="light"] .footer-surface {
   text-underline-offset: 0.15em;
 }
 
-@media (width >= 64rem) {
+@media (width >= 87.5rem) {
   /* The text starts on column 10; column 9 gives the hanging icon its own room. */
   .footer-surface .weather-mark {
     margin-inline-start: calc(-1 * var(--weather-icon-offset));
