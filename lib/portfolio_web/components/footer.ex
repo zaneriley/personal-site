@@ -188,21 +188,23 @@ defmodule PortfolioWeb.Components.Footer do
         </section>
 
         <%!-- Bottom bar: copyright · links · back-to-top. One row on wide
-             screens; on phones the three stack, and the links wrap. Rows sit
-             one 1xs step apart, about one line of this 2xs text. --%>
+             screens. On phones the links come first (and wrap), then © and
+             back-to-top share the last row at either end. Source order is
+             unchanged; only grid placement moves. Rows sit one 1xs step
+             apart, about one line of this 2xs text. --%>
         <div class="col-span-full grid grid-cols-subgrid items-center gap-y-1xs">
           <.typography
             tag="span"
             font="mono"
             size="2xs"
             locale={@user_locale}
-            class="caps footer-copyright col-span-full lg:col-span-2"
+            class="caps footer-copyright col-span-2 row-start-2 lg:row-start-1"
           >
             © 2011 – {@current_year}
           </.typography>
 
           <nav
-            class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-x-md gap-y-1xs"
+            class="row-start-1 col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-x-md gap-y-1xs"
             aria-label={gettext("Footer")}
           >
             <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
@@ -270,7 +272,7 @@ defmodule PortfolioWeb.Components.Footer do
 
           <a
             href="#main-content"
-            class="footer-link col-span-full lg:col-start-11 lg:col-end-13 lg:text-right"
+            class="footer-link row-start-2 col-end-[-1] col-start-[span_2] text-right lg:row-start-1 lg:col-start-11 lg:col-end-13"
           >
             <.typography
               tag="span"
