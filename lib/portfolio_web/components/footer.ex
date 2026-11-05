@@ -187,8 +187,10 @@ defmodule PortfolioWeb.Components.Footer do
           <% end %>
         </section>
 
-        <%!-- Bottom bar: copyright · links · back-to-top --%>
-        <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
+        <%!-- Bottom bar: copyright · links · back-to-top. One row on wide
+             screens; on phones the three stack, and the links wrap. Rows sit
+             one 1xs step apart, about one line of this 2xs text. --%>
+        <div class="col-span-full grid grid-cols-subgrid items-center gap-y-1xs">
           <.typography
             tag="span"
             font="mono"
@@ -200,7 +202,7 @@ defmodule PortfolioWeb.Components.Footer do
           </.typography>
 
           <nav
-            class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-md"
+            class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-x-md gap-y-1xs"
             aria-label={gettext("Footer")}
           >
             <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
