@@ -189,11 +189,13 @@ defmodule PortfolioWeb.Components.TypographyHelpers do
   # no opsz axis, so the regular weight is compensated per size step (the curve
   # is generated from type-config.ts into _type-tokens.generated.css; the
   # .fw-flexa-* utilities live in _type-utilities.css); `weight="bold"` selects
-  # the bold rung. Only emitted for the flexa face — static faces (cardinal/noto)
-  # keep their own cut weights.
+  # the bold rung. GT Flexa Mono shares the rungs: its measured strokes match
+  # GT Flexa's within ~4% at the regular weights used (2026-11-04). Static faces
+  # (cardinal/noto) keep their own cut weights.
   @spec add_weight_class(list(String.t()), map(), String.t()) ::
           list(String.t())
-  defp add_weight_class(classes, assigns, "flexa") do
+  defp add_weight_class(classes, assigns, font_key)
+       when font_key in ["flexa", "mono"] do
     size = assigns[:size] || "md"
     suffix = if assigns[:weight] == "bold", do: "-bold", else: ""
     ["fw-flexa-#{size}#{suffix}" | classes]

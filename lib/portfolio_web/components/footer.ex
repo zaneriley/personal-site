@@ -1,7 +1,7 @@
 defmodule PortfolioWeb.Components.Footer do
   @moduledoc """
   The site footer — a colophon of how the site is made (the typefaces it's set
-  in, the machine it runs on) plus contact and meta links.
+  in, and the site's version and change history) plus contact and meta links.
 
   `spec_sheet/1` is the shared "framed list of labelled facts" primitive: a
   bordered, titled box whose rows are a semantic description list (`<dl>`). The
@@ -12,33 +12,35 @@ defmodule PortfolioWeb.Components.Footer do
   """
   use PortfolioWeb, :html
 
-  # Static facts for the Server sheet. The live-data item in
-  # _PROJECT_DOCS/BACKLOG.md owns these future sources:
-  #   * temp       -> Raspberry Pi thermal zone (/sys/class/thermal/thermal_zone*/temp)
-  #   * deploy     -> real build/git short SHA (release stamp / compile_env)
-  #   * node_up    -> healthcheck (we already serve /up)
-  # The markup reads this map, so wiring real data later never touches the HEEx.
-  @default_status %{
-    node_name: "Raspberry Pi 3B",
+  # Facts for the Server sheet. Every value is either a fixed fact about the
+  # site or comes from Portfolio.SiteHistory; a history fact with no source is
+  # nil and its row is left out, so the card never shows an invented value.
+  # Header names the site itself, not the machine: hosting is undecided
+  # (see ADR 0003). The status dot is still static; the live-data item in
+  # _PROJECT_DOCS/BACKLOG.md owns it.
+  @static_status %{
+    node_name: "zaneriley.com",
     node_up: true,
-    stack: "Elixir | Phoenix",
-    temp: "45.2°C",
-    cost: "$0.12/day",
-    deploy: "passing :: 8f3a12"
+    # Versions of zaneriley.com since 2010, from the Internet Archive record:
+    # 2010 photography site, 2011, 2015, 2017, and this codebase (2024).
+    version: "5",
+    stack: "Elixir · Phoenix"
   }
 
   @doc """
   Renders the site footer.
 
-  `status` carries the (currently static) server facts; see
-  `@default_status` and the repository backlog for the live-data plan.
+  `status` carries the Server sheet's facts. Leave it unset to use the site's
+  own (`default_status/0`); tests pass a map with the same keys.
   """
   attr :user_locale, :string, default: "en"
   attr :current_year, :integer, required: true
-  attr :status, :map, default: @default_status
+  attr :status, :map, default: nil
   slot :weather
 
   def site_footer(assigns) do
+    assigns = assign(assigns, :status, assigns.status || default_status())
+
     ~H"""
     <%!-- Full-bleed solid panel (Figma bg/90): the footer paints over the page's
          surface gradient instead of letting it show through. Bottom-pinning
@@ -85,23 +87,17 @@ defmodule PortfolioWeb.Components.Footer do
                 Noto Sans JP
               </span>
             </:row>
+            <%!-- Raw spans like the other rows, with the classes the
+                 typography component would give mono 2xs (face, size-matched
+                 weight, size), but without its trimmed inline-block box, which
+                 kept the two names on one line. --%>
             <:row label={gettext("Mono")}>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-specimen"
-              >
+              <span class="spec-sheet-specimen font-gt-flexa-mono fw-flexa-2xs text-2xs">
                 GT Flexa Mono
-              </.typography>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-specimen-sub"
-              >
+              </span>
+              <span class="spec-sheet-specimen-sub font-gt-flexa-mono fw-flexa-2xs text-2xs">
                 GT Flexa Mono
-              </.typography>
+              </span>
             </:row>
             <:row label={gettext("Headers")}>
               <span class="spec-sheet-specimen font-cheee">Cheee</span>
@@ -129,12 +125,41 @@ defmodule PortfolioWeb.Components.Footer do
 
           <.spec_sheet
             label={@status.node_name}
-            tag={gettext("Node")}
             status={if @status.node_up, do: :up, else: :down}
             locale={@user_locale}
             class="mt-md"
           >
-            <:row label={gettext("Stack")}>
+            <:row label={gettext("Version")}>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {@status.version}
+              </.typography>
+            </:row>
+            <:row :if={@status.changes} label={gettext("Changes")}>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {@status.changes}
+              </.typography>
+            </:row>
+            <:row :if={@status.last_change_at} label={gettext("Last change")}>
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                class="spec-sheet-value"
+              >
+                {last_change_label(@status.last_change_at)}
+              </.typography>
+            </:row>
+            <:row label={gettext("Built with")}>
               <.typography
                 tag="span"
                 font="mono"
@@ -142,36 +167,6 @@ defmodule PortfolioWeb.Components.Footer do
                 class="spec-sheet-value"
               >
                 {@status.stack}
-              </.typography>
-            </:row>
-            <:row label={gettext("Temp")}>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-value"
-              >
-                {@status.temp}
-              </.typography>
-            </:row>
-            <:row label={gettext("Cost")}>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-value"
-              >
-                {@status.cost}
-              </.typography>
-            </:row>
-            <:row label={gettext("Deploy")}>
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                class="spec-sheet-value spec-sheet-value-ok"
-              >
-                {@status.deploy}
               </.typography>
             </:row>
           </.spec_sheet>
@@ -187,20 +182,25 @@ defmodule PortfolioWeb.Components.Footer do
           <% end %>
         </section>
 
-        <%!-- Bottom bar: copyright · links · back-to-top --%>
-        <div class="col-span-full grid grid-cols-subgrid items-center gap-y-md">
+        <%!-- Bottom bar: copyright · links · back-to-top. One row on wide
+             screens. On phones the links come first (and wrap), then © and
+             back-to-top share the last row at either end. Source order is
+             unchanged; only grid placement moves. Rows sit one 1xs step
+             apart, about one line of this 2xs text. Links are flex (see
+             .footer-link) so they line up with the bare © span. --%>
+        <div class="col-span-full grid grid-cols-subgrid items-baseline gap-y-1xs">
           <.typography
             tag="span"
             font="mono"
             size="2xs"
             locale={@user_locale}
-            class="caps footer-copyright col-span-full lg:col-span-2"
+            class="caps footer-copyright col-span-2 row-start-2 lg:row-start-1"
           >
-            © 2011 – {@current_year}
+            © 2010 – {@current_year}
           </.typography>
 
           <nav
-            class="col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-md"
+            class="row-start-1 col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-x-md gap-y-1xs"
             aria-label={gettext("Footer")}
           >
             <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
@@ -266,25 +266,70 @@ defmodule PortfolioWeb.Components.Footer do
             </.link>
           </nav>
 
-          <a
-            href="#main-content"
-            class="footer-link col-span-full lg:col-start-11 lg:col-end-13 lg:text-right"
-          >
-            <.typography
-              tag="span"
-              font="mono"
-              size="2xs"
-              color="inherit"
-              locale={@user_locale}
-              class="caps"
+          <%!-- Back-to-top is an action, not a link, so it takes the action
+               button primitive (a raised disc with the press light). The
+               arrow sits inside a 2xs mono span so it shares the bar's text
+               baseline; the label moves to aria-label. --%>
+          <div class="row-start-2 col-end-[-1] col-start-[span_2] flex justify-end lg:row-start-1 lg:col-start-11 lg:col-end-13">
+            <a
+              href="#main-content"
+              aria-label={gettext("Go to top")}
+              class="footer-top action surface-raise"
             >
-              ↑ {gettext("Go to top")}
-            </.typography>
-          </a>
+              <PortfolioWeb.Components.Action.light />
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                color="inherit"
+                locale={@user_locale}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 1.1C15.1 4.8 18.8 8.1 22.4 11.8L16.45 11.3Q14.7 11.15 14.65 12.95C14.45 16.3 14.55 19.2 15.45 21.6C13.3 22.5 10.35 22.85 8.2 22.4Q7.45 22.2 7.8 21.4C8.95 18.95 9.4 16.2 9.15 13Q9.05 11.5 7.65 11.6L1.55 12.2C4.9 8.6 8.65 4.95 12 1.1Z" />
+                </svg>
+              </.typography>
+            </a>
+          </div>
         </div>
       </footer>
     </div>
     """
+  end
+
+  @doc """
+  The Server sheet's facts: the fixed ones plus the site's change history.
+  """
+  @spec default_status() :: map()
+  def default_status do
+    Map.merge(@static_status, Portfolio.SiteHistory.facts())
+  end
+
+  @doc """
+  Says how long ago the last change landed, counted in whole calendar days
+  (UTC): "today", "yesterday", "N days ago", then "N months ago" from 60 days.
+  Returns `nil` when there is no timestamp.
+  """
+  @spec last_change_label(DateTime.t() | nil, DateTime.t()) :: String.t() | nil
+  def last_change_label(at, now \\ DateTime.utc_now())
+  def last_change_label(nil, _now), do: nil
+
+  def last_change_label(%DateTime{} = at, %DateTime{} = now) do
+    days = Date.diff(DateTime.to_date(now), DateTime.to_date(at))
+
+    cond do
+      days <= 0 ->
+        gettext("today")
+
+      days == 1 ->
+        gettext("yesterday")
+
+      days < 60 ->
+        ngettext("%{count} day ago", "%{count} days ago", days)
+
+      true ->
+        months = div(days, 30)
+        ngettext("%{count} month ago", "%{count} months ago", months)
+    end
   end
 
   @doc """

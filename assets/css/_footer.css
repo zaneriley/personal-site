@@ -27,7 +27,7 @@
   /* Server datum colours ARE the code palette's green + blue (Figma reuses
      them here): the PASSING status and the metric values. Alias, don't copy —
      the code tokens re-seat per theme, so these track light/dark automatically. */
-  --footer-ok: var(--code-green); /* status "up" dot / PASSING */
+  --footer-ok: var(--code-green); /* status "up" dot */
   --footer-datum: var(--code-teal); /* stack / temp / cost values */
 }
 
@@ -63,9 +63,31 @@ html[data-theme="light"] .footer-surface {
   }
 }
 
-/* Footer navigation color. The Typography component owns the text treatment. */
+/* Footer navigation color. The Typography component owns the text treatment.
+   Flex so the link has no line box of its own: as a block, its 22px body
+   line box lifted the trimmed 2xs span ~9px above the bare copyright span. */
 .footer-link {
+  display: flex;
   color: var(--neutral-50);
+}
+
+/* Back-to-top: an action disc, a 2xs arrow with 1xs padding on each side
+   (about the tap-target size). The arrow is one 2xs em square, inline in its
+   text span, so its bottom edge rests on the bar's text baseline. */
+.footer-top {
+  display: inline-grid;
+  place-items: center;
+  inline-size: calc(var(--fs-2xs) + 2 * var(--space-1xs));
+  block-size: calc(var(--fs-2xs) + 2 * var(--space-1xs));
+  color: var(--neutral-50);
+}
+
+.footer-top svg {
+  display: inline-block;
+  width: var(--fs-2xs);
+  height: var(--fs-2xs);
+  vertical-align: baseline;
+  fill: currentcolor;
 }
 
 /* Cheee section headers (Colophon / Server / Tokyo) take the same emphasis grey as the
@@ -91,6 +113,7 @@ html[data-theme="light"] .footer-surface {
    One primitive; the Typefaces sheet and the Server sheet differ only by the
    optional header tag + status dot. Rows are a semantic <dl>. */
 .spec-sheet {
+  container-type: inline-size;
   border: 1px solid var(--footer-rule);
   border-radius: var(--space-2xs);
   background: var(--footer-inset);
@@ -168,15 +191,28 @@ html[data-theme="light"] .footer-surface {
   color: var(--text-color-main);
 }
 
-/* Server datum values: rendered through <.typography font="mono" size="2xs">;
-   keep only the role-specific datum teal (Figma code/blue). The PASSING
-   deploy state reads "ok" green instead. */
-.spec-sheet-value {
-  color: var(--footer-datum);
+/* A narrow sheet can't hold label and value side by side (single words like
+   "yesterday" or "zaneriley.com" can't wrap), so below the width the Server
+   rows need, each label sits above its value and the header may wrap.
+   15.75rem = 9 × the md space step (container queries can't read tokens). */
+@container (inline-size < 15.75rem) {
+  .spec-sheet-head {
+    flex-wrap: wrap;
+  }
+
+  .spec-sheet-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .spec-sheet-row {
+    row-gap: var(--space-3xs);
+  }
 }
 
-.spec-sheet-value-ok {
-  color: var(--footer-ok);
+/* Server datum values: rendered through <.typography font="mono" size="2xs">;
+   keep only the role-specific datum teal (Figma code/blue). */
+.spec-sheet-value {
+  color: var(--footer-datum);
 }
 
 /* Typeface specimen: primary name set in its own face, JP fallback muted.
@@ -296,10 +332,6 @@ html[data-theme="light"] .footer-surface {
 
 .weather-unit {
   font-size: 0.82em;
-}
-
-.weather-unavailable {
-  font-size: var(--fs-2xs);
 }
 
 .weather-credit {

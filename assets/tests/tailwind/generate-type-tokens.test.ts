@@ -110,11 +110,12 @@ describe("generateCSS Output Contract", () => {
 
   it("should derive the GT Flexa optical weight rungs from the knobs", () => {
     // The anchor (md) keeps the weights set by eye; other sizes get the weight
-    // whose measured stem gives stem(md) · (size/md)^−opticalExponent.
-    expect(generatedCSS).toContain("--fw-flexa-md: 268;");
+    // whose measured stem gives stem(md) · (size/md)^−k (display k above md, text k below).
+    expect(generatedCSS).toContain("--fw-flexa-md: 300;");
     expect(generatedCSS).toContain("--fw-flexa-md-bold: 618;");
-    expect(generatedCSS).toContain("--fw-flexa-4xl: 222;");
-    expect(generatedCSS).toContain("--fw-flexa-3xs-bold: 710;");
+    expect(generatedCSS).toContain("--fw-flexa-4xl: 245;");
+    expect(generatedCSS).toContain("--fw-flexa-3xs: 478;");
+    expect(generatedCSS).toContain("--fw-flexa-3xs-bold: 774;");
   });
 
   it("keeps stroke width growing with size while its share of the size shrinks", () => {
@@ -144,6 +145,14 @@ describe("generateCSS Output Contract", () => {
     }
   });
 
+  it("makes small text heavier than the old linear rule did", () => {
+    // 2026-11-04 regression: a shared k = 0.2 dropped 3xs from 358 to 331.
+    const old: Record<string, number> = { "1xs": 298, "2xs": 328, "3xs": 358 };
+    for (const r of flexaWeightRungs(flexaWeightConfig)) {
+      if (r.label in old) expect(r.regular).toBeGreaterThan(old[r.label]);
+    }
+  });
+
   it("stays inside the font's weight range at every rung", () => {
     for (const r of flexaWeightRungs(flexaWeightConfig)) {
       expect(r.regular).toBeGreaterThanOrEqual(100);
@@ -154,7 +163,7 @@ describe("generateCSS Output Contract", () => {
   it("holds every size at the anchor's ratio when the exponent is 0", () => {
     const rungs = flexaWeightRungs({
       ...flexaWeightConfig,
-      opticalExponent: 0,
+      opticalExponent: { display: 0, text: 0 },
     });
     for (const r of rungs) {
       expect(r.regular).toBe(flexaWeightConfig.regular);

@@ -1,0 +1,133 @@
+/* Action: the button primitive for controls that do something here (back to
+   top, theme, language), as opposed to links that take you somewhere.
+   Pair it with a surface step for its fill: class="action surface-raise".
+
+   The light, adapted from the shiny-system composer's control buttons:
+   a press sends a wave of light out from the touch point, but only a soft
+   ring at the rim lets it through, so the middle stays calm and the edge
+   lights up from the side you pressed. The wave's leading edge is the top of
+   the --action-light ramp and the light behind it steps down the ramp.
+   With a mouse, a faint version of the same light follows the cursor.
+
+   Markup: <PortfolioWeb.Components.Action.light /> as the first child.
+   Pointer position and the press class come from assets/js/action-light.ts. */
+.action {
+  --action-edge: var(
+    --space-2xs
+  ); /* width of the rim the light shows through */
+
+  --action-x: 50%;
+  --action-y: 50%;
+  --action-scale: 1;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-pill {
+  border-radius: calc(var(--tap-target) / 2);
+}
+
+/* Blur feathers the ring; the ring is cut with a content-box mask so it
+   follows any border radius. */
+.action-light {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  filter: blur(calc(var(--action-edge) / 2));
+  pointer-events: none;
+}
+
+.action-light-ring {
+  position: absolute;
+  inset: 0;
+  padding: var(--action-edge);
+  border-radius: inherit;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+/* Twice the button's width so the ramp spans the button: the rim nearest the
+   press sees the leading edge, the far rim the cooler light behind it. */
+.action-light-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  aspect-ratio: 1;
+  margin-top: -100%;
+  margin-left: -100%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side in oklch,
+    var(--action-light-4) 0%,
+    var(--action-light-3) 40%,
+    var(--action-light-2) 70%,
+    var(--action-light-1) 90%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: scale(var(--action-scale));
+  translate: var(--action-x) var(--action-y);
+  transition: opacity 240ms ease-out;
+}
+
+/* Composer timing: 0.7s, its expand curve, and its fast decelerating fade. */
+.action.is-pressed .action-light-wave {
+  animation:
+    action-light-expand 0.7s cubic-bezier(0.3, 0, 0.7, 1) forwards,
+    action-light-fade 0.7s cubic-bezier(0, 0, 0, 1) forwards;
+}
+
+@keyframes action-light-expand {
+  from {
+    transform: scale(0.1);
+  }
+
+  to {
+    transform: scale(var(--action-scale));
+  }
+}
+
+@keyframes action-light-fade {
+  0% {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Hover light only where hover is real; phones keep :hover stuck after a tap. */
+@media (hover: hover) and (pointer: fine) {
+  .action:hover .action-light-wave {
+    opacity: 0.22;
+    transform: scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-light {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .action {
+    border: 1px solid ButtonText;
+  }
+
+  .action-light {
+    display: none;
+  }
+}
