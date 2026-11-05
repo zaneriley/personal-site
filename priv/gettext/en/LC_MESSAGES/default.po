@@ -532,7 +532,3 @@ msgstr ""
 msgid "yesterday"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:151
-#, elixir-autogen, elixir-format
-msgid "%{count} since %{year}"
-msgstr ""

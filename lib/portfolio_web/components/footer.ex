@@ -24,9 +24,7 @@ defmodule PortfolioWeb.Components.Footer do
     # Versions of zaneriley.com since 2010, from the Internet Archive record:
     # 2010 photography site, 2011, 2015, 2017, and this codebase (2024).
     version: "5",
-    stack: "Elixir · Phoenix",
-    # The repository's first commit (2017-01-30); the change count runs from it.
-    changes_since: "2017"
+    stack: "Elixir · Phoenix"
   }
 
   @doc """
@@ -148,10 +146,7 @@ defmodule PortfolioWeb.Components.Footer do
                 size="2xs"
                 class="spec-sheet-value"
               >
-                {gettext("%{count} since %{year}",
-                  count: @status.changes,
-                  year: @status.changes_since
-                )}
+                {@status.changes}
               </.typography>
             </:row>
             <:row :if={@status.last_change_at} label={gettext("Last change")}>

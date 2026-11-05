@@ -529,7 +529,3 @@ msgstr "今日"
 msgid "yesterday"
 msgstr "昨日"
 
-#: lib/portfolio_web/components/footer.ex:151
-#, elixir-autogen, elixir-format
-msgid "%{count} since %{year}"
-msgstr "%{year}年から%{count}件"

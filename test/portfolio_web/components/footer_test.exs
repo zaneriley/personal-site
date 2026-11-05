@@ -31,7 +31,6 @@ defmodule PortfolioWeb.Components.FooterTest do
       node_up: true,
       version: "5",
       stack: "Elixir · Phoenix",
-      changes_since: "2017",
       changes: 503,
       last_change_at: DateTime.utc_now()
     }
@@ -46,7 +45,7 @@ defmodule PortfolioWeb.Components.FooterTest do
       for text <- [
             "Version",
             "Changes",
-            "503 since 2017",
+            "503",
             "Last change",
             "today",
             "Built with"
