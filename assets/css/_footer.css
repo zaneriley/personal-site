@@ -63,8 +63,11 @@ html[data-theme="light"] .footer-surface {
   }
 }
 
-/* Footer navigation color. The Typography component owns the text treatment. */
+/* Footer navigation color. The Typography component owns the text treatment.
+   Flex so the link has no line box of its own: as a block, its 22px body
+   line box lifted the trimmed 2xs span ~9px above the bare copyright span. */
 .footer-link {
+  display: flex;
   color: var(--neutral-50);
 }
 
