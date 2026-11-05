@@ -26,17 +26,17 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:83
+#: lib/portfolio_web/components/footer.ex:86
 #, elixir-autogen, elixir-format
 msgid "Body"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:64
+#: lib/portfolio_web/components/footer.ex:67
 #, elixir-autogen, elixir-format
 msgid "Colophon"
 msgstr "Colophon"
 
-#: lib/portfolio_web/components/footer.ex:67
+#: lib/portfolio_web/components/footer.ex:70
 #, elixir-autogen, elixir-format
 msgid "Created on a 2014 macbook. Mocks in figma, remix freely."
 msgstr ""
@@ -61,12 +61,12 @@ msgstr ""
 msgid "EVERY DEAD END IS JUST A NEW BEGINNING."
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:231
+#: lib/portfolio_web/components/footer.ex:235
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:205
+#: lib/portfolio_web/components/footer.ex:209
 #, elixir-autogen, elixir-format
 msgid "Footer"
 msgstr ""
@@ -76,17 +76,17 @@ msgstr ""
 msgid "GREETINGS,"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:248
+#: lib/portfolio_web/components/footer.ex:252
 #, elixir-autogen, elixir-format
 msgid "Github"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:282
+#: lib/portfolio_web/components/footer.ex:281
 #, elixir-autogen, elixir-format
 msgid "Go to top"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:107
+#: lib/portfolio_web/components/footer.ex:104
 #, elixir-autogen, elixir-format
 msgid "Headers"
 msgstr ""
@@ -101,7 +101,7 @@ msgstr "Language switcher"
 msgid "Learn more about Zane Riley, a Product Designer with over 10 years of experience in various industries."
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:265
+#: lib/portfolio_web/components/footer.ex:269
 #, elixir-autogen, elixir-format
 msgid "LinkedIn"
 msgstr ""
@@ -112,7 +112,7 @@ msgstr ""
 msgid "Metadata separator"
 msgstr " • "
 
-#: lib/portfolio_web/components/footer.ex:89
+#: lib/portfolio_web/components/footer.ex:96
 #, elixir-autogen, elixir-format
 msgid "Mono"
 msgstr ""
@@ -120,11 +120,6 @@ msgstr ""
 #: lib/portfolio_web/controllers/error_html/404.html.heex:110
 #, elixir-autogen, elixir-format
 msgid "NEVER EXISTED IN THE FIRST PLACE"
-msgstr ""
-
-#: lib/portfolio_web/components/footer.ex:133
-#, elixir-autogen, elixir-format
-msgid "Node"
 msgstr ""
 
 #: lib/portfolio_web/components/navigation.ex:85
@@ -183,12 +178,12 @@ msgstr ""
 msgid "SYSTEM: Zane's Design Portfolio"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:128
+#: lib/portfolio_web/components/footer.ex:125
 #, elixir-autogen, elixir-format
 msgid "Self-hosted on my home server. Open source on Github."
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:125
+#: lib/portfolio_web/components/footer.ex:122
 #, elixir-autogen, elixir-format
 msgid "Server"
 msgstr ""
@@ -215,12 +210,12 @@ msgstr ""
 msgid "Timeline"
 msgstr "Timeline"
 
-#: lib/portfolio_web/components/footer.ex:75
+#: lib/portfolio_web/components/footer.ex:78
 #, elixir-autogen, elixir-format
 msgid "Titles"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:71
+#: lib/portfolio_web/components/footer.ex:74
 #, elixir-autogen, elixir-format
 msgid "Typefaces"
 msgstr ""
@@ -285,12 +280,12 @@ msgid_plural "minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/portfolio_web/components/footer.ex:219
+#: lib/portfolio_web/components/footer.ex:223
 #, elixir-autogen, elixir-format
 msgid " (PDF)"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:219
+#: lib/portfolio_web/components/footer.ex:223
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Resume"
 msgstr ""
@@ -351,7 +346,7 @@ msgstr ""
 msgid "Tokyo"
 msgstr "Tokyo"
 
-#: lib/portfolio_web/components/weather.ex:60
+#: lib/portfolio_web/components/weather.ex:61
 #, elixir-autogen
 msgid "Weather unavailable"
 msgstr "Weather unavailable"
@@ -493,46 +488,51 @@ msgstr ""
 msgid "Zane Riley — projects"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:319
+#: lib/portfolio_web/components/footer.ex:332
 #, elixir-autogen, elixir-format
 msgid "%{count} day ago"
 msgid_plural "%{count} days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/portfolio_web/components/footer.ex:323
+#: lib/portfolio_web/components/footer.ex:336
 #, elixir-autogen, elixir-format
 msgid "%{count} month ago"
 msgid_plural "%{count} months ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/portfolio_web/components/footer.ex:168
+#: lib/portfolio_web/components/footer.ex:167
 #, elixir-autogen, elixir-format
 msgid "Built with"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:148
+#: lib/portfolio_web/components/footer.ex:144
 #, elixir-autogen, elixir-format
 msgid "Changes"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:158
+#: lib/portfolio_web/components/footer.ex:157
 #, elixir-autogen, elixir-format
 msgid "Last change"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:138
+#: lib/portfolio_web/components/footer.ex:134
 #, elixir-autogen, elixir-format
 msgid "Version"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:313
+#: lib/portfolio_web/components/footer.ex:326
 #, elixir-autogen, elixir-format
 msgid "today"
 msgstr ""
 
-#: lib/portfolio_web/components/footer.ex:316
+#: lib/portfolio_web/components/footer.ex:329
 #, elixir-autogen, elixir-format
 msgid "yesterday"
+msgstr ""
+
+#: lib/portfolio_web/components/footer.ex:151
+#, elixir-autogen, elixir-format
+msgid "%{count} since %{year}"
 msgstr ""
