@@ -149,6 +149,19 @@ html[data-theme="dark"] {
   --neutral-25: oklch(53.32% 0.0379 277.61deg);
   --neutral-50: oklch(70.59% 0.0781 277.55deg);
 
+  /* SURFACE STEPS (dark) — one flat step up or down from whatever is underneath,
+     painted as a translucent layer so steps stack when nested (see _surface.css).
+     Up mixes toward the white-point; down toward the black-point. */
+  --surface-step-up: oklch(90.76% 0.0184 316.61deg / 7%);
+  --surface-step-down: oklch(11.47% 0 0deg / 30%);
+
+  /* ACTION LIGHT (dark) — the press glow walks the dusk ramp, top to bottom:
+     pink, violet, blue-violet, slate. */
+  --action-light-1: var(--dusk-100);
+  --action-light-2: var(--dusk-300);
+  --action-light-3: var(--dusk-500);
+  --action-light-4: var(--dusk-600);
+
   /* Footer panel — a solid surface the footer paints over the page gradient
      (Figma bg/90). Its own token: it tracks the code bg in dark, but sits
      lighter than it in light mode. */
@@ -243,6 +256,17 @@ html[data-theme="light"] {
   --neutral-25: oklch(53.32% 0.0379 277.61deg);
   --neutral-50: oklch(45% 0.11 278deg);
 
+  /* SURFACE STEPS (light) — up mixes toward white, down toward the cool ink. */
+  --surface-step-up: oklch(100% 0 0deg / 60%);
+  --surface-step-down: oklch(33% 0.05 258deg / 7%);
+
+  /* ACTION LIGHT (light) — the signature wordmark's light grade:
+     mint, sky, teal, indigo. */
+  --action-light-1: var(--signature-1);
+  --action-light-2: var(--signature-2);
+  --action-light-3: var(--signature-3);
+  --action-light-4: var(--signature-4);
+
   /* Figma light footer bg #E8EEF7 — measured, not eyeballed. */
   --surface-panel: oklch(94.7% 0.014 258deg);
   --footer-bg: var(--surface-panel);
@@ -289,6 +313,17 @@ html[data-theme="light"] {
     /* neutral ramp — light (same as html[data-theme="light"]) */
     --neutral-25: oklch(53.32% 0.0379 277.61deg);
     --neutral-50: oklch(45% 0.11 278deg);
+
+    /* SURFACE STEPS (light) — up mixes toward white, down toward the cool ink. */
+    --surface-step-up: oklch(100% 0 0deg / 60%);
+    --surface-step-down: oklch(33% 0.05 258deg / 7%);
+
+    /* ACTION LIGHT (light) — the signature wordmark's light grade:
+       mint, sky, teal, indigo. */
+    --action-light-1: var(--signature-1);
+    --action-light-2: var(--signature-2);
+    --action-light-3: var(--signature-3);
+    --action-light-4: var(--signature-4);
     --surface-panel: oklch(94.7% 0.014 258deg);
     --footer-bg: var(--surface-panel);
 

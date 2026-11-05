@@ -71,8 +71,17 @@ html[data-theme="light"] .footer-surface {
   color: var(--neutral-50);
 }
 
-/* Back-to-top arrow: one 2xs em square, so it matches the bottom-bar text
-   size. Inline in its text span, its bottom edge rests on the text baseline. */
+/* Back-to-top: an action disc, a 2xs arrow with 1xs padding on each side
+   (about the tap-target size). The arrow is one 2xs em square, inline in its
+   text span, so its bottom edge rests on the bar's text baseline. */
+.footer-top {
+  display: inline-grid;
+  place-items: center;
+  inline-size: calc(var(--fs-2xs) + 2 * var(--space-1xs));
+  block-size: calc(var(--fs-2xs) + 2 * var(--space-1xs));
+  color: var(--neutral-50);
+}
+
 .footer-top svg {
   display: inline-block;
   width: var(--fs-2xs);

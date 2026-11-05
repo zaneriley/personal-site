@@ -30,12 +30,6 @@
   transform: scale(0.96);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .theme-toggle:hover {
-    background: color-mix(in srgb, currentcolor 10%, transparent);
-  }
-}
-
 html[data-theme-motion="instant"] .surface-fill,
 html[data-theme-motion="instant"] .surface-layer {
   transition: none;

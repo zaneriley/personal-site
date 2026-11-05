@@ -271,26 +271,30 @@ defmodule PortfolioWeb.Components.Footer do
             </.link>
           </nav>
 
-          <%!-- Back-to-top is the arrow alone; the label moves to aria-label.
-               The arrow sits inside a 2xs mono span so it shares the bar's
-               text baseline, and fills with currentColor for the link grey. --%>
-          <a
-            href="#main-content"
-            aria-label={gettext("Go to top")}
-            class="footer-link footer-top row-start-2 col-end-[-1] col-start-[span_2] justify-end lg:row-start-1 lg:col-start-11 lg:col-end-13"
-          >
-            <.typography
-              tag="span"
-              font="mono"
-              size="2xs"
-              color="inherit"
-              locale={@user_locale}
+          <%!-- Back-to-top is an action, not a link, so it takes the action
+               button primitive (a raised disc with the press light). The
+               arrow sits inside a 2xs mono span so it shares the bar's text
+               baseline; the label moves to aria-label. --%>
+          <div class="row-start-2 col-end-[-1] col-start-[span_2] flex justify-end lg:row-start-1 lg:col-start-11 lg:col-end-13">
+            <a
+              href="#main-content"
+              aria-label={gettext("Go to top")}
+              class="footer-top action surface-raise"
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 1.1C15.1 4.8 18.8 8.1 22.4 11.8L16.45 11.3Q14.7 11.15 14.65 12.95C14.45 16.3 14.55 19.2 15.45 21.6C13.3 22.5 10.35 22.85 8.2 22.4Q7.45 22.2 7.8 21.4C8.95 18.95 9.4 16.2 9.15 13Q9.05 11.5 7.65 11.6L1.55 12.2C4.9 8.6 8.65 4.95 12 1.1Z" />
-              </svg>
-            </.typography>
-          </a>
+              <PortfolioWeb.Components.Action.light />
+              <.typography
+                tag="span"
+                font="mono"
+                size="2xs"
+                color="inherit"
+                locale={@user_locale}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 1.1C15.1 4.8 18.8 8.1 22.4 11.8L16.45 11.3Q14.7 11.15 14.65 12.95C14.45 16.3 14.55 19.2 15.45 21.6C13.3 22.5 10.35 22.85 8.2 22.4Q7.45 22.2 7.8 21.4C8.95 18.95 9.4 16.2 9.15 13Q9.05 11.5 7.65 11.6L1.55 12.2C4.9 8.6 8.65 4.95 12 1.1Z" />
+                </svg>
+              </.typography>
+            </a>
+          </div>
         </div>
       </footer>
     </div>
