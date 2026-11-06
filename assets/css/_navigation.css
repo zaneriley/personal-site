@@ -2,26 +2,10 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 30;
-  transition: transform 160ms cubic-bezier(0, 0, 0, 1);
 }
 
 .site-header[data-scrolled] {
   background: var(--surface-panel);
-}
-
-.site-header[data-hidden] {
-  transform: translateY(-100%);
-}
-
-.site-header:focus-within {
-  transform: none;
-  transition: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .site-header {
-    transition: none;
-  }
 }
 
 /* The page field owns the inset and width cap. Narrow: two rows, the seal
@@ -36,9 +20,9 @@
   gap: var(--space-1xs) var(--gutter);
   align-items: center;
 
-  /* Phones: the header sits as far from the top as the page is from the
-     sides, scrolled or not (the body adds no top space there). */
-  padding-block: var(--page-inset);
+  /* Two rows: the header sits on the page edge, scrolled or not (the body
+     adds no top space here). */
+  padding-block: var(--page-inset-block);
 }
 
 /* Enhancement only: the source order is home, destinations, controls. */
@@ -79,9 +63,22 @@
   color: inherit;
 }
 
-@media (width >= 40rem) {
+/* One row once its content fits: seal 44 + destinations 243 + controls 185 +
+   two md gaps = 528px in English (519px in Japanese). 36rem leaves 529px after
+   a 15px scrollbar and the inset at that width. The bar stays slim and the
+   body supplies the rest of the page edge (app.css), so it scrolls away. */
+@media (width >= 36rem) {
   .site-navigation {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "home destinations controls";
+    column-gap: var(--space-md);
     padding-block: var(--space-2xs);
+  }
+}
+
+@media (width >= 64rem) {
+  .site-navigation {
+    column-gap: var(--gutter);
   }
 
   .site-navigation-destinations ul {

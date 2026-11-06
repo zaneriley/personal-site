@@ -4,9 +4,17 @@
    choices; everything else is computed, so the whole grid regenerates from a
    single knob. Speaks the same language as --space-* (see _type-tokens.generated.css).
 
-   Mobile ladder (consecutive --space-* rungs):
-     page-inset = 1xs → paragraph spacing = md → horizontal gutter = 1xl
-   Wider layouts retain page-inset = 1xl and horizontal gutter = 2xl.
+   Three spacing roles, each with one owner:
+     page edge       --page-inset (sides), --page-inset-block (top, bottom)
+     between sections --gutter, the same vertically as horizontally
+     inside a section the md rung and below
+
+   The inset is a negotiation, not a step. The widest thing that scales with
+   the page is the name at its full 34rem. Until it has that room the page
+   keeps the minimum inset; after that, spare width goes to the margins until
+   the inset reaches its maximum. Vertically the canvas gets a say too: a short
+   window takes less from its height (5svh), never more than the sides.
+   Nothing here is a breakpoint; components set their own from their content.
    Derivation:
      1 measure = 4 of 12 columns
      content-cap = 3·reading-measure + 2·gutter   (the 9 inner gutters live
@@ -19,18 +27,18 @@
   /* --- the only hand-set values --- */
   --reading-measure: 50ch; /* seed: narrowest comfortable prose line */
   --gutter: var(--space-1xl); /* one rung above paragraph spacing */
-  --page-inset: var(--space-1xs); /* one rung below paragraph spacing */
+  --page-inset: clamp(var(--space-1xs), (100vw - 34rem) / 2, var(--space-1xl));
+  --page-inset-block: clamp(var(--space-1xs), 5svh, var(--page-inset));
   --columns: 4; /* mobile = 1 measure (4 cols); steps to 8 then 12 below */
 
   /* --- derived --- */
   --content-cap: calc(3 * var(--reading-measure) + 2 * var(--gutter));
 }
 
-/* Retain the existing column transitions while exploring mobile spacing. */
+/* Gutters belong to columns, so the gutter steps with the column count. */
 @media (width >= 40rem) {
   :root {
     --gutter: var(--space-2xl);
-    --page-inset: var(--space-1xl);
     --columns: 8;
   }
 }
@@ -48,7 +56,7 @@
 .reading-grid {
   display: grid;
   grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-  gap: var(--space-2xl) var(--gutter);
+  gap: var(--gutter);
   max-width: var(--content-cap);
   padding-inline: var(--page-inset);
   margin-inline: auto;
