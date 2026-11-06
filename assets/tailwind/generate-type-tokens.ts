@@ -83,14 +83,13 @@ function generateScriptVariables(script: ScriptType) {
     script,
   );
 
-  const base =
-    script === "latin"
-      ? config.type.lineHeightConfig.paragraphLeading
-      : config.type.lineHeightConfig.paragraphSize;
+  // Spacing serves the text, so it follows the body: its line height in Latin,
+  // its size in CJK (which has no snapped line-height token).
+  const base = script === "latin" ? "var(--lh-en-md)" : "var(--cjk-fs-md)";
   const spaceVars = Object.entries(spacingMultipliers)
     .map(
       ([label, multiplier]) =>
-        `  --${script}-space-${label}: calc(${base / 16}rem * ${multiplier});`,
+        `  --${script}-space-${label}: calc(${base} * ${multiplier});`,
     )
     .join("\n");
 
@@ -149,7 +148,7 @@ function generateFontMetricsCSS(metricsData: FontMetricsData): string {
 }
 
 /**
- * Generates CSS variables for snapped Latin line heights
+ * Generates CSS variables for Latin line heights
  * @returns Generated line height CSS variables
  */
 function generateLatinLineHeightCSS(): string {
@@ -293,7 +292,7 @@ ${cjkVars.typeVars}
   /* CJK Spacing Variables */
 ${cjkVars.spaceVars}
 
-  /* Latin Line Heights (Snapped) */
+  /* Latin Line Heights */
 ${latinLineHeightVars}
 
   /* Font Metrics */

@@ -8,21 +8,21 @@ import { calculateLineHeight } from "../../tailwind/line-height";
 describe("paragraph-derived rhythm", () => {
   it("preserves the Latin paragraph anchor and never folds at large sizes", () => {
     expect(calculateLineHeight(latin, 22)).toBe(28);
-    expect(calculateLineHeight(latin, 66)).toBe(56);
-    expect(calculateLineHeight(latin, 100)).toBe(84);
+    expect(calculateLineHeight(latin, 66)).toBe(59);
+    expect(calculateLineHeight(latin, 100)).toBe(83);
     let previous = 0;
     for (let size = 8; size <= 140; size += 0.25) {
       const leading = calculateLineHeight(latin, size);
       expect(leading).toBeGreaterThanOrEqual(previous);
-      expect(leading % 7).toBe(0);
+      expect(leading % 1).toBe(0);
       expect(Math.abs(leading - (0.7 * size + 12.6))).toBeLessThanOrEqual(
-        3.5 + 1e-10,
+        0.5 + 1e-10,
       );
       previous = leading;
     }
   });
   it("uses the selected face's cap height at the rendered size", () => {
-    expect(calculateLineHeight(latin, 46.03, 0.75)).toBe(49);
+    expect(calculateLineHeight(latin, 46.03, 0.75)).toBe(47);
     expect(calculateLineHeight(latin, 46.03, 0.64)).toBe(42);
   });
   it("keeps an 11px CJK interline gap across sizes instead of snapping total leading", () => {

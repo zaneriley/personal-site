@@ -242,31 +242,6 @@ html[lang="ja"] * {
   }
 }
 
-/* The role line never wraps (whitespace-nowrap in the template); it steps
-   down the type scale until it fits. Threshold = the line's measured length
-   in em x that rung's phone size. EN "Product designer at G" = 10.33em in
-   GT Flexa, so 1xl (1.65rem) below 20.45rem; md is left out because it only
-   matters under 304px screens. JA プロダクトデザイナー（G）= 13.3em, measured on
-   the dev site 2026-11-03: 1xl below 26.33rem, md below 21.95rem. Plain
-   selectors win over the size utilities because they load later. */
-@container (width < 20.45rem) {
-  .hero-role {
-    font-size: var(--fs-1xl);
-  }
-}
-
-@container (width < 26.33rem) {
-  .hero-role:lang(ja) {
-    font-size: var(--fs-1xl);
-  }
-}
-
-@container (width < 21.95rem) {
-  .hero-role:lang(ja) {
-    font-size: var(--fs-md);
-  }
-}
-
 html[lang="ja"] body {
   line-height: var(--cjk-lh);
 }

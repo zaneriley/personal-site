@@ -102,10 +102,16 @@ describe("generateCSS Output Contract", () => {
     expect(generatedCSS).toContain("--cjk-interline-gap: 0.6875rem;");
   });
 
-  it("anchors layout spacing to the paragraph separately for each script", () => {
-    expect(generatedCSS).toContain("--latin-space-md: calc(1.75rem * 1);");
-    expect(generatedCSS).toContain("--cjk-space-md: calc(1.375rem * 1);");
-    expect(generatedCSS).toContain("--latin-space-3xs: calc(1.75rem * 0.125);");
+  it("derives layout spacing from the body separately for each script", () => {
+    expect(generatedCSS).toContain(
+      "--latin-space-md: calc(var(--lh-en-md) * 1);",
+    );
+    expect(generatedCSS).toContain(
+      "--cjk-space-md: calc(var(--cjk-fs-md) * 1);",
+    );
+    expect(generatedCSS).toContain(
+      "--latin-space-3xs: calc(var(--lh-en-md) * 0.125);",
+    );
   });
 
   it("should derive the GT Flexa optical weight rungs from the knobs", () => {
