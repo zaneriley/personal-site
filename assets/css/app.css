@@ -14,6 +14,21 @@
 @import url("./_surface.css");
 @import url("./_action.css");
 
+/* The reading unit. Two systems share the page: the canvas sets the name
+   (the signature fills the column, up to 34rem), and the reader sets the text
+   (body, leading and every space, all built in rem from one 22px/28px unit).
+   They meet where the name reaches its full 34rem. Above that width the unit
+   is the user's own root size, as before. Below it the unit shrinks with the
+   column (the name's width over its 34rem; 1.75rem = the two 1xs insets), by
+   at most one step of the phone scale (1/1.2), so every phone gets 22 -> 18.3px
+   body and the name keeps more of its lead. Everything in rem moves together,
+   so the text keeps its own proportions. Media queries read rem from the
+   initial size, so breakpoints don't move. Only physical minimums (the tap
+   target) are held in px. */
+html {
+  font-size: clamp(83.3333%, (100vw - 1.75rem) / 34, 100%);
+}
+
 @property --fantazio-rotate {
   syntax: "<angle>";
   inherits: false;
@@ -65,10 +80,11 @@ body {
 }
 
 /* Interaction primitives, stated once. --tap-target is the minimum hit size
-   for anything you press (44px); the focus ring is the one keyboard focus
-   style for links and buttons. :where() keeps it overridable. */
+   for anything you press (44px). It's a finger, not text, so it doesn't
+   shrink with the reading unit (see html above). The focus ring is the one
+   keyboard focus style for links and buttons. :where() keeps it overridable. */
 :root {
-  --tap-target: 2.75rem;
+  --tap-target: max(2.75rem, 44px);
 }
 
 :where(a, button):focus-visible {

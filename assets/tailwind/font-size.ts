@@ -4,6 +4,10 @@
 //   This is because the minimum font size is usually bottlenecked by
 //   the user's distance from screen. Larger scales work for sizing type up,
 //   but not down from the base. The font size shrinks too much otherwise.
+// - The one exception is on phones, and it lives in app.css (html font-size),
+//   not here: below the width where the name reaches its full 34rem, the whole
+//   rem unit steps down by up to one scale step so the body doesn't crowd the
+//   full-width name.
 
 // Interfaces
 
