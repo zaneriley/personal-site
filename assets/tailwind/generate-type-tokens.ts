@@ -208,15 +208,19 @@ function representativeSizes(): Map<string, number> {
 export function flexaWeightRungs(
   config: WeightConfig,
   sizes: Map<string, number> = representativeSizes(),
+  // Steps below the body are fixed sizes, derived from the wide-end body
+  // (font-size.ts: maxFontSize / maxTypeScale^n). Their weight is measured
+  // against that same body, so a smaller phone base doesn't thin them out.
+  textAnchorSize: number = latinTypeConfig.maxFontSize,
 ): { label: string; size: number; regular: number; bold: number }[] {
   const anchorSize = sizes.get(config.anchorLabel);
   if (!anchorSize) throw new Error(`No size for ${config.anchorLabel}`);
   const weightFor = (anchorWeight: number, size: number) => {
-    const k =
-      size > anchorSize
-        ? config.opticalExponent.display
-        : config.opticalExponent.text;
-    const ratio = (size / anchorSize) ** -k;
+    const above = size >= anchorSize;
+    const k = above
+      ? config.opticalExponent.display
+      : config.opticalExponent.text;
+    const ratio = (size / (above ? anchorSize : textAnchorSize)) ** -k;
     const target = interpolate(config.stems, anchorWeight, 0) * ratio;
     return Math.round(interpolate(config.stems, target, 1));
   };

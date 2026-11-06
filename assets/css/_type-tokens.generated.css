@@ -243,17 +243,17 @@
   --fw-flexa-2xl: 271;
   --fw-flexa-1xl: 285;
   --fw-flexa-md: 300;
-  --fw-flexa-1xs: 341;
-  --fw-flexa-2xs: 405;
-  --fw-flexa-3xs: 459;
+  --fw-flexa-1xs: 363;
+  --fw-flexa-2xs: 423;
+  --fw-flexa-3xs: 478;
   --fw-flexa-4xl-bold: 494;
   --fw-flexa-3xl-bold: 522;
   --fw-flexa-2xl-bold: 554;
   --fw-flexa-1xl-bold: 587;
   --fw-flexa-md-bold: 618;
-  --fw-flexa-1xs-bold: 670;
-  --fw-flexa-2xs-bold: 722;
-  --fw-flexa-3xs-bold: 760;
+  --fw-flexa-1xs-bold: 697;
+  --fw-flexa-2xs-bold: 734;
+  --fw-flexa-3xs-bold: 774;
 
   /* Semantic Variables (Default to Latin) */
   --fs-7xl: var(--latin-fs-7xl);
