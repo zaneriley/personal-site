@@ -60,6 +60,9 @@ never-worse-than-now ratchets.**
 5. **The websocket byte budget is deleted.** The gate keeps measuring and
    reporting the number in its artifact; it is no longer pass/fail.
 
+   **Amended 2026-11-06:** Z removed the CSS byte ratchet (`max_css_bytes`). CSS
+   bytes are still reported and still count toward `max_total_bytes`.
+
 ## Consequences
 
 - The gate is green today by construction, so the next red run means something

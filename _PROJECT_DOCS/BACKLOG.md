@@ -101,6 +101,9 @@ handling and regression checks**.
   here that does not mean abandoning LiveView, which is ADR 0002's separate and
   unratified question.
 
+- **Done 2026-11-06: the CSS byte budget is removed.** Z's call: it was blocking
+  layout work without helping right now. The gate still reports CSS bytes, and
+  the total-bytes budget still applies. The JS half of the item below stands.
 - **Get CSS and JS back under budget before 2026-11-30.** PR #110 (header
   rework, sun/moon toggle, footer weather) pushed every contracted route to
   10,733 compressed CSS bytes against the 10,000 ratchet and 52,098 JS bytes
