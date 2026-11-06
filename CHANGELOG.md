@@ -3,6 +3,66 @@
 Automatically updated using Release Please. Follows [semantic versioning](https://semver.org/spec/v2.0.0.html), using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 
+## [0.4.12](https://github.com/zaneriley/personal-site/compare/v0.4.11...v0.4.12) (2026-11-06)
+
+
+### Features
+
+* button primitive, footer spacing and server card content, font weights ([387253e](https://github.com/zaneriley/personal-site/commit/387253e18b99facb6bdddff13b9e330fba01097b))
+* **footer:** Elixir and Phoenix badges; stack the Mono specimen ([1f85692](https://github.com/zaneriley/personal-site/commit/1f85692a7ac012531f0a6c0a82c43bc51e0f3d9d))
+* **footer:** replace the Go to top text with an up-arrow icon ([99a87d8](https://github.com/zaneriley/personal-site/commit/99a87d83acff66c2260fc3bd2d431c79764a8215))
+* **footer:** set section breakpoints from the Server sheet's width ([2fb148c](https://github.com/zaneriley/personal-site/commit/2fb148c78c500c00d962a83fc2d2bff29f540646))
+* **footer:** show the site's version, change count and last change on the Server sheet ([5041c96](https://github.com/zaneriley/personal-site/commit/5041c963de82e139206cde0ac071ae0ead2129ae))
+* **header:** add the EN/日本語 switch and rebuild the homepage top lockup ([6e39a4f](https://github.com/zaneriley/personal-site/commit/6e39a4f0bb35f2f0907354925fd695ca171a70d9))
+* **home:** centre the lockup below the 12-column layout ([d31870b](https://github.com/zaneriley/personal-site/commit/d31870b7406dd921cbddb0793369d70c97288c9f))
+* **home:** fill the first screen on phones with a centred lockup ([ff893d9](https://github.com/zaneriley/personal-site/commit/ff893d91ac8198c7ab479accfd80b6a30da8da83))
+* **home:** words-first top lockup with authored line breaks ([00ad02a](https://github.com/zaneriley/personal-site/commit/00ad02a99685ce481f528faf9d60379bc46757f7))
+* **layout:** negotiate page layout between canvas and content ([19ce9f8](https://github.com/zaneriley/personal-site/commit/19ce9f8af211e95ef50e46d38ef4680a77bc1692))
+* **layout:** negotiate page spacing between canvas and content ([d774bef](https://github.com/zaneriley/personal-site/commit/d774bef64b4a63552897167193e9b2eb2c6ee7a8))
+* **navigation:** call the sections Work and About, with matching addresses ([d46fbc8](https://github.com/zaneriley/personal-site/commit/d46fbc8956b5eb93819f713be7c2a9e515293552))
+* **navigation:** make the header fit phones and step out of the way while reading ([b639957](https://github.com/zaneriley/personal-site/commit/b639957187cd379b2495bdde4e0309a16bad0c25))
+* **nav:** one row from 40rem in both languages ([346fc2f](https://github.com/zaneriley/personal-site/commit/346fc2f21527312528699d00513d860ceb8062a8))
+* **theme:** replace theme choices with a sun and moon toggle ([61713ba](https://github.com/zaneriley/personal-site/commit/61713ba14b82566d494c65b496fc24f87d26b332))
+* **type:** fix the body on phones and desktop, and even out line gaps ([fb3cf43](https://github.com/zaneriley/personal-site/commit/fb3cf43e7bd2636299923de21571c565d3d123ad))
+* **type:** fix the body on phones and desktop, and even out line gaps ([012417d](https://github.com/zaneriley/personal-site/commit/012417d60346b438eee72213470b155893e3b4e3))
+* **type:** raise the GT Flexa regular anchor (md) from 268 to 300 ([f6f8ffe](https://github.com/zaneriley/personal-site/commit/f6f8ffef4f3177843d4c4b1a0dbfea519de2b6ad))
+* **type:** start the type scale one step smaller on phones ([62adb93](https://github.com/zaneriley/personal-site/commit/62adb93e7f9ac8022c287946ce97e9885ad0f732))
+* **type:** start the type scale one step smaller on the narrowest screens ([0b0e700](https://github.com/zaneriley/personal-site/commit/0b0e700a3e0b15a2107e98a41a7bc04aae7740d8))
+* **typography:** add a private reading and spacing review bench ([283ad1c](https://github.com/zaneriley/personal-site/commit/283ad1c50c346117c0f40c0d35ddfc7cf9daf894))
+* **ui:** surface steps and an action button primitive with the press light ([1b4d707](https://github.com/zaneriley/personal-site/commit/1b4d70793f4e507d188e2ccfcd474e78ac6a6e59))
+* **weather:** add live Tokyo weather to the footer ([4cf391b](https://github.com/zaneriley/personal-site/commit/4cf391b080602ded0b4d5cedd7a29c4ff7aea42b))
+
+
+### Bug Fixes
+
+* **footer,header:** align Tokyo, drop stray page padding, label the node ([d129c04](https://github.com/zaneriley/personal-site/commit/d129c04809a37ef1a6a4f581b4593201b0aff321))
+* **footer,header:** align Tokyo, drop stray page padding, label the node ([82bf85d](https://github.com/zaneriley/personal-site/commit/82bf85df80f4677a70e0f8acb07b5cd5ce0b20f1))
+* **footer:** align the bottom bar on text baselines ([227a7f7](https://github.com/zaneriley/personal-site/commit/227a7f78cd3cf6a5de77d4deb32ae94ccc0cd877))
+* **footer:** drop the since-2017 label from the change count ([0430d8d](https://github.com/zaneriley/personal-site/commit/0430d8df46757c936677243a5d3bac04ada07e1b))
+* **footer:** flex links so bottom-bar text shares one line ([b7a303d](https://github.com/zaneriley/personal-site/commit/b7a303d82512a908caf107a7d16efcfff768f640))
+* **footer:** give footer links and the Tokyo heading the same type as the rest of the site ([b4bf149](https://github.com/zaneriley/personal-site/commit/b4bf149efe74e6b3acd7dfd8e804e328c00a0570))
+* **footer:** hide the Tokyo section when there is no weather reading ([472b1a3](https://github.com/zaneriley/personal-site/commit/472b1a3b34c266c238b29a1522cb8b35a363d0b7))
+* **footer:** name the Server sheet after the site; stack narrow sheet rows ([3aabe34](https://github.com/zaneriley/personal-site/commit/3aabe341cbd2e3f954f04035a02cb2bda70b58dc))
+* **footer:** plain Built with text, no Node tag, change count since 2017 ([4f49618](https://github.com/zaneriley/personal-site/commit/4f4961810725fcfcc6965c3a57e164f2229e355a))
+* **home:** base the Japanese role-line steps on its measured width ([7f97c0a](https://github.com/zaneriley/personal-site/commit/7f97c0ad19f14d1ea433c78a52946b8acd0a5597))
+* **nav:** drop hide-on-scroll; the header stays shown ([24db4ac](https://github.com/zaneriley/personal-site/commit/24db4aca3707ed04b96b2c5151049904b3d3c6a0))
+* **surface:** stop light-mode backgrounds flashing on phone scroll ([28d93ae](https://github.com/zaneriley/personal-site/commit/28d93ae6aa7ab8fd255d4874ed668c3c8c80b2bf))
+* **surface:** stop light-mode backgrounds flashing on phone scroll ([aa47b72](https://github.com/zaneriley/personal-site/commit/aa47b722e3258190f77f0dce5e7aceedbaf92e8f))
+* **type:** weigh small text against the full body size ([4cb89a5](https://github.com/zaneriley/personal-site/commit/4cb89a590ae3e5ba15dae3591b02849e674953ba))
+* **typography-bench:** stop the dev bench from reading files by variable path ([62d46a9](https://github.com/zaneriley/personal-site/commit/62d46a9392073886709435f5c3950dcea46b2891))
+* **typography:** align text boxes and restore consistent spacing ([fb681ed](https://github.com/zaneriley/personal-site/commit/fb681ede86bb677a4ce1ecf08babfe239c16c8f0))
+* **typography:** give mono and the weather fallback their size-matched weights ([1e113f7](https://github.com/zaneriley/personal-site/commit/1e113f734b92e5f38c41515a766f87f02e5cadb4))
+* **typography:** give small GT Flexa text more weight than large type loses ([4a458f7](https://github.com/zaneriley/personal-site/commit/4a458f78738cb8c4cd542776e8201e716cf31cce))
+* **typography:** keep large GT Flexa type from reading thinner than body text ([b19f223](https://github.com/zaneriley/personal-site/commit/b19f22396f4c610a6a039375b51115d08ad1b11b))
+* **typography:** keep large GT Flexa type from reading thinner than body text ([96c0aa2](https://github.com/zaneriley/personal-site/commit/96c0aa287bcbe028f4c5647ea3eead8b2eb58953))
+* **ui:** drop the disconnected banner ([70b91f1](https://github.com/zaneriley/personal-site/commit/70b91f1beb75031ae291f9e356938920cc3e21fe))
+
+
+### Performance
+
+* **css:** bring the homepage lockup back under the CSS budget ([fa37b55](https://github.com/zaneriley/personal-site/commit/fa37b557417c930e370bbd24de2c944de7d45dc1))
+* **css:** land the language switch at no net CSS cost ([39704a9](https://github.com/zaneriley/personal-site/commit/39704a93bbfaa224a105ec2c1a34dd87132c116b))
+
 ## [0.4.11](https://github.com/zaneriley/personal-site/compare/v0.4.10...v0.4.11) (2026-08-30)
 
 
