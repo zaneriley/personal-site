@@ -27,11 +27,7 @@
   /* --- the only hand-set values --- */
   --reading-measure: 50ch; /* seed: narrowest comfortable prose line */
   --gutter: var(--space-1xl); /* one rung above paragraph spacing */
-  --page-inset: clamp(
-    var(--space-1xs),
-    (100vw - 34rem) / 2,
-    var(--space-1xl)
-  );
+  --page-inset: clamp(var(--space-1xs), (100vw - 34rem) / 2, var(--space-1xl));
   --page-inset-block: clamp(var(--space-1xs), 5svh, var(--page-inset));
   --columns: 4; /* mobile = 1 measure (4 cols); steps to 8 then 12 below */
 

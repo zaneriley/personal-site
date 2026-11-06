@@ -231,8 +231,13 @@ html[lang="ja"] * {
   .hero {
     margin-block-start: 0;
     min-block-size: calc(
-      100svh - 2 * var(--page-inset-block) - 2 * var(--tap-target) -
-        var(--space-1xs) - var(--space-4xl)
+      100svh -
+      2 *
+      var(--page-inset-block) -
+      2 *
+      var(--tap-target) -
+      var(--space-1xs) -
+      var(--space-4xl)
     );
   }
 }
