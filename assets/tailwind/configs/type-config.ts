@@ -48,6 +48,20 @@ export interface WeightConfig {
   stems: [number, number][];
 }
 
+/* Phones (below the width where the name reaches its full 34rem) shrink the
+ * whole rem unit by up to `unitFloor` (app.css html font-size; keep the two in
+ * sync). The sizes below the body can't shrink with it: they already sit at
+ * the reader's limit. So `smallestPx` (3xs, unchanged from the fixed scale)
+ * is a hard floor, and on phones the steps below the body are re-spaced
+ * evenly, on a ratio of their own, between the shrunken body and that floor:
+ *   ratio = (md · unitFloor / smallestPx) ^ (1 / negativeSteps)
+ * Each small rung = max(its usual rem size, its phone floor), so above the
+ * seam nothing changes. */
+export const phoneUnitConfig = {
+  unitFloor: 1 / 1.2,
+  smallestPx: 10.0144,
+};
+
 /* All the value are primarily derived from
  * the base font size and line-height. These values are used to calculate the
  * vertical rhythm, grid, spacing, etc.

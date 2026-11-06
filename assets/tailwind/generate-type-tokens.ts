@@ -1,10 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { WeightConfig } from "./configs/type-config";
+import type { TypeConfig, WeightConfig } from "./configs/type-config";
 import {
   cjkTypeConfig,
   flexaWeightConfig,
   latinTypeConfig,
+  phoneUnitConfig,
   spacingMultipliers,
 } from "./configs/type-config";
 
@@ -71,6 +72,28 @@ export function namespaceVariables(
 }
 
 /**
+ * Gives each step below the body a phone floor (see phoneUnitConfig): on
+ * phones the rem unit shrinks, but small text holds an even scale from the
+ * shrunken body down to a fixed smallest size.
+ */
+function floorSmallSteps(typeVars: string, type: TypeConfig): string {
+  const { unitFloor, smallestPx } = phoneUnitConfig;
+  const steps = type.negativeSteps;
+  const bodyAtFloor = type.minFontSize * unitFloor;
+  const ratio = (bodyAtFloor / smallestPx) ** (1 / steps);
+  const small = type.typeLabels.slice(-steps);
+  return typeVars.replace(
+    /(--\w+-fs-([\w]+)): ([\d.]+rem);/g,
+    (match, name: string, label: string, value: string) => {
+      const index = small.indexOf(label);
+      if (index === -1) return match;
+      const floor = bodyAtFloor / ratio ** (index + 1);
+      return `${name}: max(${value}, ${floor.toFixed(2)}px);`;
+    },
+  );
+}
+
+/**
  * Generates CSS variables for a specific script configuration
  * @param script - Script type ('latin' or 'cjk')
  * @returns Generated CSS variables
@@ -78,9 +101,9 @@ export function namespaceVariables(
 function generateScriptVariables(script: ScriptType) {
   const config = scriptConfigs[script];
 
-  const typeVars = namespaceVariables(
-    generateTypeCSSVariables(config.type),
-    script,
+  const typeVars = floorSmallSteps(
+    namespaceVariables(generateTypeCSSVariables(config.type), script),
+    config.type,
   );
 
   const base =

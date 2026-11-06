@@ -62,9 +62,9 @@
     1.375rem
   ); /* min: 22px, max: 22px */
 
-  --latin-fs-1xs: 1.0577rem; /* 16.9232px */
-  --latin-fs-2xs: 0.8136rem; /* 13.0176px */
-  --latin-fs-3xs: 0.6259rem; /* 10.0144px */
+  --latin-fs-1xs: max(1.0577rem, 14.99px); /* 16.9232px */
+  --latin-fs-2xs: max(0.8136rem, 12.25px); /* 13.0176px */
+  --latin-fs-3xs: max(0.6259rem, 10.01px); /* 10.0144px */
 
   /* Latin Spacing Variables */
   --latin-space-3xs: calc(1.75rem * 0.125);
@@ -134,9 +134,9 @@
     1.375rem
   ); /* min: 22px, max: 22px */
 
-  --cjk-fs-1xs: 1.0577rem; /* 16.9232px */
-  --cjk-fs-2xs: 0.8136rem; /* 13.0176px */
-  --cjk-fs-3xs: 0.6259rem; /* 10.0144px */
+  --cjk-fs-1xs: max(1.0577rem, 14.99px); /* 16.9232px */
+  --cjk-fs-2xs: max(0.8136rem, 12.25px); /* 13.0176px */
+  --cjk-fs-3xs: max(0.6259rem, 10.01px); /* 10.0144px */
   --cjk-lh: calc(1em + var(--cjk-interline-gap));
 
   /* CJK Spacing Variables */
