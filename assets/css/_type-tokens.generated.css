@@ -8,57 +8,50 @@
   /* Latin Typography Variables */
   --latin-fs-7xl: clamp(
     4.1057rem,
-    3.1979rem +
-    4.5392vi,
+    max(3.0748rem + 2.8939vi, 0.6686rem + 6.6536vi),
     8.6279rem
   ); /* min: 65.6916px, max: 138.0467px */
 
   --latin-fs-6xl: clamp(
     3.4214rem,
-    2.7759rem +
-    3.2275vi,
+    max(2.5623rem + 2.4116vi, 1.1935rem + 4.5504vi),
     6.6369rem
   ); /* min: 54.743px, max: 106.1898px */
 
   --latin-fs-5xl: clamp(
     2.8512rem,
-    2.3987rem +
-    2.2626vi,
+    max(2.1353rem + 2.0097vi, 1.4841rem + 3.0271vi),
     5.1053rem
   ); /* min: 45.6192px, max: 81.6845px */
 
   --latin-fs-4xl: clamp(
     2.376rem,
-    2.0646rem +
-    1.557vi,
+    max(1.7794rem + 1.6747vi, 1.6133rem + 1.9343vi),
     3.9271rem
   ); /* min: 38.016px, max: 62.8342px */
 
   --latin-fs-3xl: clamp(
     1.98rem,
-    1.771rem +
-    1.0448vi,
+    min(1.4828rem + 1.3956vi, 1.634rem + 1.1593vi),
     3.0209rem
   ); /* min: 31.68px, max: 48.334px */
 
   --latin-fs-2xl: clamp(
     1.65rem,
-    1.5147rem +
-    0.6763vi,
+    min(1.2357rem + 1.163vi, 1.5845rem + 0.618vi),
     2.3238rem
   ); /* min: 26.4px, max: 37.18px */
 
   --latin-fs-1xl: clamp(
     1.375rem,
-    1.2922rem +
-    0.4141vi,
+    min(1.0297rem + 0.9692vi, 1.4918rem + 0.2472vi),
     1.7875rem
   ); /* min: 22px, max: 28.6px */
 
   --latin-fs-md: clamp(
     1.1458rem,
-    1.0998rem +
-    0.23vi,
+    0.8581rem +
+    0.8076vi,
     1.375rem
   ); /* min: 18.3333px, max: 22px */
 
@@ -67,70 +60,63 @@
   --latin-fs-3xs: 0.6259rem; /* 10.0144px */
 
   /* Latin Spacing Variables */
-  --latin-space-3xs: calc(1.75rem * 0.125);
-  --latin-space-2xs: calc(1.75rem * 0.25);
-  --latin-space-1xs: calc(1.75rem * 0.5);
-  --latin-space-md: calc(1.75rem * 1);
-  --latin-space-1xl: calc(1.75rem * 1.5);
-  --latin-space-2xl: calc(1.75rem * 2);
-  --latin-space-3xl: calc(1.75rem * 3);
-  --latin-space-4xl: calc(1.75rem * 4);
-  --latin-space-5xl: calc(1.75rem * 6);
+  --latin-space-3xs: calc(var(--lh-en-md) * 0.125);
+  --latin-space-2xs: calc(var(--lh-en-md) * 0.25);
+  --latin-space-1xs: calc(var(--lh-en-md) * 0.5);
+  --latin-space-md: calc(var(--lh-en-md) * 1);
+  --latin-space-1xl: calc(var(--lh-en-md) * 1.5);
+  --latin-space-2xl: calc(var(--lh-en-md) * 2);
+  --latin-space-3xl: calc(var(--lh-en-md) * 3);
+  --latin-space-4xl: calc(var(--lh-en-md) * 4);
+  --latin-space-5xl: calc(var(--lh-en-md) * 6);
 
   /* CJK Typography Variables */
   --cjk-fs-7xl: clamp(
     4.1057rem,
-    3.1979rem +
-    4.5392vi,
+    max(3.0748rem + 2.8939vi, 0.6686rem + 6.6536vi),
     8.6279rem
   ); /* min: 65.6916px, max: 138.0467px */
 
   --cjk-fs-6xl: clamp(
     3.4214rem,
-    2.7759rem +
-    3.2275vi,
+    max(2.5623rem + 2.4116vi, 1.1935rem + 4.5504vi),
     6.6369rem
   ); /* min: 54.743px, max: 106.1898px */
 
   --cjk-fs-5xl: clamp(
     2.8512rem,
-    2.3987rem +
-    2.2626vi,
+    max(2.1353rem + 2.0097vi, 1.4841rem + 3.0271vi),
     5.1053rem
   ); /* min: 45.6192px, max: 81.6845px */
 
   --cjk-fs-4xl: clamp(
     2.376rem,
-    2.0646rem +
-    1.557vi,
+    max(1.7794rem + 1.6747vi, 1.6133rem + 1.9343vi),
     3.9271rem
   ); /* min: 38.016px, max: 62.8342px */
 
   --cjk-fs-3xl: clamp(
     1.98rem,
-    1.771rem +
-    1.0448vi,
+    min(1.4828rem + 1.3956vi, 1.634rem + 1.1593vi),
     3.0209rem
   ); /* min: 31.68px, max: 48.334px */
 
   --cjk-fs-2xl: clamp(
     1.65rem,
-    1.5147rem +
-    0.6763vi,
+    min(1.2357rem + 1.163vi, 1.5845rem + 0.618vi),
     2.3238rem
   ); /* min: 26.4px, max: 37.18px */
 
   --cjk-fs-1xl: clamp(
     1.375rem,
-    1.2922rem +
-    0.4141vi,
+    min(1.0297rem + 0.9692vi, 1.4918rem + 0.2472vi),
     1.7875rem
   ); /* min: 22px, max: 28.6px */
 
   --cjk-fs-md: clamp(
     1.1458rem,
-    1.0998rem +
-    0.23vi,
+    0.8581rem +
+    0.8076vi,
     1.375rem
   ); /* min: 18.3333px, max: 22px */
 
@@ -140,19 +126,19 @@
   --cjk-lh: calc(1em + var(--cjk-interline-gap));
 
   /* CJK Spacing Variables */
-  --cjk-space-3xs: calc(1.375rem * 0.125);
-  --cjk-space-2xs: calc(1.375rem * 0.25);
-  --cjk-space-1xs: calc(1.375rem * 0.5);
-  --cjk-space-md: calc(1.375rem * 1);
-  --cjk-space-1xl: calc(1.375rem * 1.5);
-  --cjk-space-2xl: calc(1.375rem * 2);
-  --cjk-space-3xl: calc(1.375rem * 3);
-  --cjk-space-4xl: calc(1.375rem * 4);
-  --cjk-space-5xl: calc(1.375rem * 6);
+  --cjk-space-3xs: calc(var(--cjk-fs-md) * 0.125);
+  --cjk-space-2xs: calc(var(--cjk-fs-md) * 0.25);
+  --cjk-space-1xs: calc(var(--cjk-fs-md) * 0.5);
+  --cjk-space-md: calc(var(--cjk-fs-md) * 1);
+  --cjk-space-1xl: calc(var(--cjk-fs-md) * 1.5);
+  --cjk-space-2xl: calc(var(--cjk-fs-md) * 2);
+  --cjk-space-3xl: calc(var(--cjk-fs-md) * 3);
+  --cjk-space-4xl: calc(var(--cjk-fs-md) * 4);
+  --cjk-space-5xl: calc(var(--cjk-fs-md) * 6);
 
-  /* Latin Line Heights (Snapped) */
+  /* Latin Line Heights */
   --latin-interline-gap: 0.7875rem;
-  --latin-leading-unit: 0.4375rem;
+  --latin-leading-unit: 0.0625rem;
   --cjk-interline-gap: 0.6875rem;
   --lh-en-7xl: round(
     nearest,

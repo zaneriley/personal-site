@@ -59,6 +59,7 @@ describe("calculateTypeScale", () => {
       positiveSteps: 2,
       negativeSteps: 1,
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -81,6 +82,7 @@ describe("calculateTypeScale", () => {
       positiveSteps: 3,
       negativeSteps: 0,
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -103,6 +105,7 @@ describe("calculateTypeScale", () => {
       positiveSteps: 0,
       negativeSteps: 2,
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -124,6 +127,7 @@ describe("calculateTypeScale", () => {
       positiveSteps: 1,
       negativeSteps: 1,
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -153,6 +157,7 @@ describe("calculateTypeScale", () => {
   it("should not clamp font sizes smaller than md", () => {
     const config = {
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -180,6 +185,7 @@ describe("calculateTypeScale", () => {
   it("uses the max scale (fixed) for sizes below md", () => {
     const config = {
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -213,6 +219,7 @@ describe("generateTypeCSSVariables", () => {
   it("should generate correct CSS variables for a valid configuration", () => {
     const config = {
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -250,6 +257,7 @@ describe("generateTypeCSSVariables", () => {
   it("should handle configuration with only positive steps", () => {
     const config = {
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -272,6 +280,7 @@ describe("generateTypeCSSVariables", () => {
   it("should handle configuration with only negative steps", () => {
     const config = {
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -293,6 +302,7 @@ describe("generateTypeCSSVariables", () => {
   it("generates fixed values for sizes smaller than md, divided by the max ratio", () => {
     const config = {
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,
@@ -316,6 +326,7 @@ describe("generateTypeCSSVariables", () => {
   it("should handle more sizes than available labels by extending the default labeling system", () => {
     const config = {
       minWidth: 320,
+      bodyFullWidth: 800,
       maxWidth: 1200,
       minFontSize: 16,
       maxFontSize: 20,

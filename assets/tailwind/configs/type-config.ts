@@ -1,6 +1,7 @@
 export interface TypeConfig {
-  minWidth: number;
-  maxWidth: number;
+  minWidth: number; // the body is flat up to here
+  bodyFullWidth: number; // the body reaches maxFontSize here
+  maxWidth: number; // the headings reach their full ratio here
   minTypeScale: number;
   maxTypeScale: number;
   minFontSize: number;
@@ -17,7 +18,7 @@ export interface LineHeightConfig {
   paragraphSize: number; // px at the default root size
   paragraphLeading: number; // px; Latin spacing anchor
   referenceCapHeight: number; // normalized em metric of paragraph face
-  subdivision: number; // divide the Latin paragraph leading once
+  subdivision: number; // Latin line heights round to paragraphLeading / this
 }
 
 export const spacingMultipliers = {
@@ -54,12 +55,20 @@ export interface WeightConfig {
  */
 const baseFontSize = 22;
 
+/* Where the body changes size. 570 is where the name reaches its full 34rem
+ * (34rem + 2 x the 12.5px phone inset). 1024 is where the home layout and the
+ * 12-column grid already change. */
+const bodyFlatUntil = 570;
+const bodyFullAt = 1024;
+
 export const latinLineHeightConfig: LineHeightConfig = {
   script: "latin",
   paragraphSize: baseFontSize,
   paragraphLeading: 28,
   referenceCapHeight: 0.7,
-  subdivision: 4,
+  // Rounds to 1px, not a coarser grid, so the gap between lines stays even at
+  // every size. A 7px grid left gaps from 9px to 16px.
+  subdivision: 28,
 };
 
 export const cjkLineHeightConfig: LineHeightConfig = {
@@ -71,11 +80,12 @@ export const cjkLineHeightConfig: LineHeightConfig = {
 };
 
 export const latinTypeConfig: TypeConfig = {
-  minWidth: 320,
+  minWidth: bodyFlatUntil,
+  bodyFullWidth: bodyFullAt,
   maxWidth: 1914,
   minTypeScale: 1.2,
   maxTypeScale: 1.3,
-  minFontSize: baseFontSize / 1.2, // one step down on the narrowest screen
+  minFontSize: baseFontSize / 1.2, // one step down on phones
   maxFontSize: baseFontSize, // This is how large the base font will scale.
   positiveSteps: 7,
   negativeSteps: 3,
@@ -97,11 +107,12 @@ export const latinTypeConfig: TypeConfig = {
 };
 
 export const cjkTypeConfig: TypeConfig = {
-  minWidth: 320,
+  minWidth: bodyFlatUntil,
+  bodyFullWidth: bodyFullAt,
   maxWidth: 1914,
   minTypeScale: 1.2,
   maxTypeScale: 1.3,
-  minFontSize: baseFontSize / 1.2, // one step down on the narrowest screen
+  minFontSize: baseFontSize / 1.2, // one step down on phones
   maxFontSize: baseFontSize, // This is how large the base font will scale.
   positiveSteps: 7,
   negativeSteps: 3,

@@ -1,9 +1,12 @@
 // This is a modified from Utopia.fyi
 // In particular, there are changes to the logic.
-// - text/spacing should only grow, not shrink, on larger devices.
-//   This is because the minimum font size is usually bottlenecked by
-//   the user's distance from screen. Larger scales work for sizing type up,
-//   but not down from the base. The font size shrinks too much otherwise.
+// - Text only grows on larger devices. The minimum size is bottlenecked by the
+//   reader's distance from the screen, so sizes below the body never shrink.
+// - The body has its own short range, set by the config: flat up to minWidth,
+//   a straight line to its full size at bodyFullWidth, flat after that.
+// - Sizes above the body are body x the min ratio up to bodyFullWidth, so they
+//   follow it exactly. From there the body holds and the ratio opens to the max
+//   ratio at maxWidth. That is two straight segments per heading.
 
 // Interfaces
 
@@ -25,6 +28,7 @@ interface WCAGConfig {
 
 interface TypeConfig {
   minWidth: number;
+  bodyFullWidth: number;
   maxWidth: number;
   minTypeScale: number;
   maxTypeScale: number;
@@ -51,6 +55,7 @@ interface SpaceConfig {
 
 interface TypeSizeConfig {
   minWidth: number;
+  bodyFullWidth: number;
   maxWidth: number;
   minTypeScale: number;
   maxTypeScale: number;
@@ -206,6 +211,43 @@ export const calculateClamp = (config: ClampConfig): string => {
   )}${unit})`;
 };
 
+// The straight line through two [width, size] points, as a CSS length in rem.
+const fluidLine = (
+  [fromWidth, fromSize]: [number, number],
+  [toWidth, toSize]: [number, number],
+  relativeUnit: string,
+): string => {
+  const slope = (toSize - fromSize) / (toWidth - fromWidth);
+  const intersection = (fromSize - fromWidth * slope) / 16;
+  return `${roundValue(intersection)}rem + ${roundValue(slope * 100)}${relativeUnit}`;
+};
+
+// A heading's size: flat, up to its knee at bodyFullWidth, up to its top size,
+// flat. The two lines cross at the knee; min() or max() takes the right one on
+// each side, depending on which segment is steeper.
+const calculateHeadingClamp = (
+  config: TypeStepConfig,
+  start: number,
+  knee: number,
+  end: number,
+): string => {
+  const relativeUnit = config.relativeTo === "container" ? "cqi" : "vi";
+  const first = fluidLine(
+    [config.minWidth, start],
+    [config.bodyFullWidth, knee],
+    relativeUnit,
+  );
+  const second = fluidLine(
+    [config.bodyFullWidth, knee],
+    [config.maxWidth, end],
+    relativeUnit,
+  );
+  const firstIsSteeper =
+    (knee - start) / (config.bodyFullWidth - config.minWidth) >
+    (end - knee) / (config.maxWidth - config.bodyFullWidth);
+  return `clamp(${roundValue(start / 16)}rem, ${firstIsSteeper ? "min" : "max"}(${first}, ${second}), ${roundValue(end / 16)}rem)`;
+};
+
 export function checkWCAG({
   min,
   max,
@@ -291,7 +333,7 @@ const calculateTypeSize = (
   step: number,
 ): number => {
   const scale = range(
-    config.minWidth,
+    config.bodyFullWidth,
     config.maxWidth,
     config.minTypeScale,
     config.maxTypeScale,
@@ -299,7 +341,7 @@ const calculateTypeSize = (
   );
   const fontSize = range(
     config.minWidth,
-    config.maxWidth,
+    config.bodyFullWidth,
     config.minFontSize,
     config.maxFontSize,
     viewport,
@@ -312,13 +354,21 @@ const calculateTypeStep = (
   step: number,
 ): TypeStepResult => {
   const minFontSize = calculateTypeSize(config, config.minWidth, step);
+  const kneeFontSize = calculateTypeSize(config, config.bodyFullWidth, step);
   const maxFontSize = calculateTypeSize(config, config.maxWidth, step);
-  const wcag = checkWCAG({
-    min: minFontSize,
-    max: maxFontSize,
-    minWidth: config.minWidth,
-    maxWidth: config.maxWidth,
-  });
+  const wcag =
+    checkWCAG({
+      min: minFontSize,
+      max: kneeFontSize,
+      minWidth: config.minWidth,
+      maxWidth: config.bodyFullWidth,
+    }) ??
+    checkWCAG({
+      min: kneeFontSize,
+      max: maxFontSize,
+      minWidth: config.bodyFullWidth,
+      maxWidth: config.maxWidth,
+    });
 
   // Steps below the base are fixed (small text shouldn't fluid-shrink on
   // narrow screens). They divide the WIDE-end base (maxFontSize) by the MAX
@@ -345,13 +395,15 @@ const calculateTypeStep = (
       : null,
     clamp: isFixed
       ? `${roundValue(fixedSize / 16)}rem`
-      : calculateClamp({
-          minSize: minFontSize,
-          maxSize: maxFontSize,
-          minWidth: config.minWidth,
-          maxWidth: config.maxWidth,
-          relativeTo: config.relativeTo,
-        }),
+      : step === 0
+        ? calculateClamp({
+            minSize: minFontSize,
+            maxSize: maxFontSize,
+            minWidth: config.minWidth,
+            maxWidth: config.bodyFullWidth,
+            relativeTo: config.relativeTo,
+          })
+        : calculateHeadingClamp(config, minFontSize, kneeFontSize, maxFontSize),
     isFixed,
   };
 };
