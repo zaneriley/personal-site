@@ -75,7 +75,7 @@ export const latinTypeConfig: TypeConfig = {
   maxWidth: 1914,
   minTypeScale: 1.2,
   maxTypeScale: 1.3,
-  minFontSize: baseFontSize,
+  minFontSize: baseFontSize / 1.2, // one step down on the narrowest screen
   maxFontSize: baseFontSize, // This is how large the base font will scale.
   positiveSteps: 7,
   negativeSteps: 3,
@@ -101,7 +101,7 @@ export const cjkTypeConfig: TypeConfig = {
   maxWidth: 1914,
   minTypeScale: 1.2,
   maxTypeScale: 1.3,
-  minFontSize: baseFontSize,
+  minFontSize: baseFontSize / 1.2, // one step down on the narrowest screen
   maxFontSize: baseFontSize, // This is how large the base font will scale.
   positiveSteps: 7,
   negativeSteps: 3,

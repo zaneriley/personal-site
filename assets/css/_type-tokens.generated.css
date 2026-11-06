@@ -7,60 +7,60 @@
 :root {
   /* Latin Typography Variables */
   --latin-fs-7xl: clamp(
-    4.9269rem,
-    4.1839rem +
-    3.715vi,
+    4.1057rem,
+    3.1979rem +
+    4.5392vi,
     8.6279rem
-  ); /* min: 78.83px, max: 138.0467px */
+  ); /* min: 65.6916px, max: 138.0467px */
 
   --latin-fs-6xl: clamp(
-    4.1057rem,
-    3.5976rem +
-    2.5407vi,
+    3.4214rem,
+    2.7759rem +
+    3.2275vi,
     6.6369rem
-  ); /* min: 65.6916px, max: 106.1898px */
+  ); /* min: 54.743px, max: 106.1898px */
 
   --latin-fs-5xl: clamp(
-    3.4214rem,
-    3.0834rem +
-    1.6902vi,
+    2.8512rem,
+    2.3987rem +
+    2.2626vi,
     5.1053rem
-  ); /* min: 54.743px, max: 81.6845px */
+  ); /* min: 45.6192px, max: 81.6845px */
 
   --latin-fs-4xl: clamp(
-    2.8512rem,
-    2.6352rem +
-    1.08vi,
+    2.376rem,
+    2.0646rem +
+    1.557vi,
     3.9271rem
-  ); /* min: 45.6192px, max: 62.8342px */
+  ); /* min: 38.016px, max: 62.8342px */
 
   --latin-fs-3xl: clamp(
-    2.376rem,
-    2.2465rem +
-    0.6473vi,
+    1.98rem,
+    1.771rem +
+    1.0448vi,
     3.0209rem
-  ); /* min: 38.016px, max: 48.334px */
+  ); /* min: 31.68px, max: 48.334px */
 
   --latin-fs-2xl: clamp(
-    1.98rem,
-    1.911rem +
-    0.345vi,
+    1.65rem,
+    1.5147rem +
+    0.6763vi,
     2.3238rem
-  ); /* min: 31.68px, max: 37.18px */
+  ); /* min: 26.4px, max: 37.18px */
 
   --latin-fs-1xl: clamp(
-    1.65rem,
-    1.6224rem +
-    0.138vi,
+    1.375rem,
+    1.2922rem +
+    0.4141vi,
     1.7875rem
-  ); /* min: 26.4px, max: 28.6px */
+  ); /* min: 22px, max: 28.6px */
 
   --latin-fs-md: clamp(
-    1.375rem,
-    1.375rem +
-    0vi,
+    1.1458rem,
+    1.0998rem +
+    0.23vi,
     1.375rem
-  ); /* min: 22px, max: 22px */
+  ); /* min: 18.3333px, max: 22px */
 
   --latin-fs-1xs: 1.0577rem; /* 16.9232px */
   --latin-fs-2xs: 0.8136rem; /* 13.0176px */
@@ -79,60 +79,60 @@
 
   /* CJK Typography Variables */
   --cjk-fs-7xl: clamp(
-    4.9269rem,
-    4.1839rem +
-    3.715vi,
+    4.1057rem,
+    3.1979rem +
+    4.5392vi,
     8.6279rem
-  ); /* min: 78.83px, max: 138.0467px */
+  ); /* min: 65.6916px, max: 138.0467px */
 
   --cjk-fs-6xl: clamp(
-    4.1057rem,
-    3.5976rem +
-    2.5407vi,
+    3.4214rem,
+    2.7759rem +
+    3.2275vi,
     6.6369rem
-  ); /* min: 65.6916px, max: 106.1898px */
+  ); /* min: 54.743px, max: 106.1898px */
 
   --cjk-fs-5xl: clamp(
-    3.4214rem,
-    3.0834rem +
-    1.6902vi,
+    2.8512rem,
+    2.3987rem +
+    2.2626vi,
     5.1053rem
-  ); /* min: 54.743px, max: 81.6845px */
+  ); /* min: 45.6192px, max: 81.6845px */
 
   --cjk-fs-4xl: clamp(
-    2.8512rem,
-    2.6352rem +
-    1.08vi,
+    2.376rem,
+    2.0646rem +
+    1.557vi,
     3.9271rem
-  ); /* min: 45.6192px, max: 62.8342px */
+  ); /* min: 38.016px, max: 62.8342px */
 
   --cjk-fs-3xl: clamp(
-    2.376rem,
-    2.2465rem +
-    0.6473vi,
+    1.98rem,
+    1.771rem +
+    1.0448vi,
     3.0209rem
-  ); /* min: 38.016px, max: 48.334px */
+  ); /* min: 31.68px, max: 48.334px */
 
   --cjk-fs-2xl: clamp(
-    1.98rem,
-    1.911rem +
-    0.345vi,
+    1.65rem,
+    1.5147rem +
+    0.6763vi,
     2.3238rem
-  ); /* min: 31.68px, max: 37.18px */
+  ); /* min: 26.4px, max: 37.18px */
 
   --cjk-fs-1xl: clamp(
-    1.65rem,
-    1.6224rem +
-    0.138vi,
+    1.375rem,
+    1.2922rem +
+    0.4141vi,
     1.7875rem
-  ); /* min: 26.4px, max: 28.6px */
+  ); /* min: 22px, max: 28.6px */
 
   --cjk-fs-md: clamp(
-    1.375rem,
-    1.375rem +
-    0vi,
+    1.1458rem,
+    1.0998rem +
+    0.23vi,
     1.375rem
-  ); /* min: 22px, max: 22px */
+  ); /* min: 18.3333px, max: 22px */
 
   --cjk-fs-1xs: 1.0577rem; /* 16.9232px */
   --cjk-fs-2xs: 0.8136rem; /* 13.0176px */
