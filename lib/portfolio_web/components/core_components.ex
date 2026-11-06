@@ -220,18 +220,6 @@ defmodule PortfolioWeb.CoreComponents do
     <div id={@id}>
       <.flash kind={:info} title="Success!" flash={@flash} />
       <.flash kind={:error} title="Error!" flash={@flash} />
-      <.flash
-        id="disconnected"
-        kind={:error}
-        title="We can't find the internet"
-        close={false}
-        autoshow={false}
-        phx-disconnected={show("#disconnected")}
-        phx-connected={hide("#disconnected")}
-      >
-        Attempting to reconnect
-        <Heroicons.arrow_path class="inline-block h-md w-md" />
-      </.flash>
     </div>
     """
   end
