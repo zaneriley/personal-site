@@ -170,15 +170,14 @@ html[data-theme="light"] .footer-surface {
 
 /* Footer navigation color. The Typography component owns the text treatment.
    Flex so the link has no line box of its own: as a block, its 22px body
-   line box lifted the trimmed 2xs span ~9px above the bare copyright span. */
+   line box would offset the trimmed 2xs span from the bare copyright span. */
 .footer-link {
   display: flex;
   color: var(--neutral-50);
 }
 
 /* Back-to-top: an action disc, a 2xs arrow with 1xs padding on each side
-   (about the tap-target size). The arrow is one 2xs em square, inline in its
-   text span, so its bottom edge rests on the bar's text baseline. */
+   (about the tap-target size). The disc centres the arrow's 2xs square. */
 .footer-top {
   display: inline-grid;
   place-items: center;
@@ -188,10 +187,9 @@ html[data-theme="light"] .footer-surface {
 }
 
 .footer-top svg {
-  display: inline-block;
+  display: block;
   width: var(--fs-2xs);
   height: var(--fs-2xs);
-  vertical-align: baseline;
   fill: currentcolor;
 }
 
