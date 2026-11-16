@@ -73,19 +73,24 @@ defmodule PortfolioWeb.Components.CodeBlock do
 
   The first clause is the markdown pipeline's entry point: the renderer applies
   registered components with `%{component:, attrs:, content:}` (attrs are
-  string-keyed after DB round-tripping), so this clause only normalizes that
+  string-keyed after DB round-tripping, atom-keyed straight from the
+  compiler), so this clause only normalizes that
   shape to the component's attrs — the renderer owns converting the result to
   HTML. The baked `code` HTML is our own compile-time tokenizer output: trusted.
   """
   @spec code_block(map()) :: Phoenix.LiveView.Rendered.t()
   def code_block(%{component: :code_block, attrs: attrs}) do
     code_block(%{
-      code: {:safe, Map.fetch!(attrs, "code")},
-      language: Map.get(attrs, "language"),
-      filename: Map.get(attrs, "filename"),
+      code: {:safe, attr(attrs, :code) || raise(KeyError, key: :code, term: attrs)},
+      language: attr(attrs, :language),
+      filename: attr(attrs, :filename),
       __changed__: nil
     })
   end
+
+  # Attrs are string-keyed when they come from the stored AST and atom-keyed
+  # when the page compiles its Markdown fresh. Accept both.
+  defp attr(attrs, key), do: attrs[Atom.to_string(key)] || attrs[key]
 
   def code_block(assigns) do
     code = ensure_safe(assigns.code)
