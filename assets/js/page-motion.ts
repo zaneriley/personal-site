@@ -1,8 +1,9 @@
 // Page-to-page motion. The choreography and timing live in
 // assets/css/_motion.css; this file decides which relation a navigation is
-// and moves <html data-phase> through two steps:
-//   out  on the tap, the old page leaves while the server answers
-//   in   the new page is swapped in unseen, then arrives
+// and moves <html data-phase> through three steps:
+//   out   on the tap, the old page leaves while the server answers
+//   hold  the new page is swapped in and scrolled to the top, unseen
+//   in    once it has painted, the new page arrives
 // The live page itself is animated; there are no snapshots to swap back.
 //
 // LiveView calls onDocumentPatch for every patch (weather, forms, the theme),
@@ -22,6 +23,12 @@ const ms = (token: string) =>
   Number.parseFloat(getComputedStyle(root).getPropertyValue(token));
 const wait = (time: number) =>
   new Promise<void>((done) => setTimeout(done, time));
+// Two frames: the swapped-in page is painted (unseen) before it animates.
+// Without this a tall page's first frames are skipped and it pops in.
+const painted = () =>
+  new Promise<void>((done) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => done())),
+  );
 
 // TEMP diagnostic (remove before merge): reports what the transition did on
 // a real phone as a request the dev server logs.
@@ -113,7 +120,7 @@ const leave = (href: string, isPop: boolean) => {
 const settle = () => {
   const mine = turn;
   root.dataset.phase = "in";
-  return wait(ms("--motion-paint") + ms("--motion-base")).then(() => {
+  return wait(ms("--motion-base")).then(() => {
     if (turn !== mine) return;
     delete root.dataset.phase;
     delete root.dataset.nav;
@@ -150,8 +157,9 @@ window.addEventListener("phx:page-loading-stop", () => {
 // The nav marker slides from where it was to where it now is.
 const marker = () => document.querySelector<HTMLElement>(".nav-marker");
 
-const arrive = (start: () => void) => {
-  const settled = settle();
+const arrive = async (start: () => void) => {
+  const mine = turn;
+  root.dataset.phase = "hold";
   // A new page starts at the top. Nothing is showing at this point, so the
   // jump is never seen. Back and forward keep the position LiveView restores.
   if (!pop) window.scrollTo(0, 0);
@@ -174,7 +182,8 @@ const arrive = (start: () => void) => {
       { duration: ms("--motion-travel"), easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
     );
   }
-  return settled;
+  await painted();
+  if (turn === mine) await settle();
 };
 
 export const onDocumentPatch = (start: () => void) => {
