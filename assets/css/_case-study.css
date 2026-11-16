@@ -61,7 +61,7 @@
   margin-block-start: var(--gap-item);
 }
 
-.cs-title > .cs-eyebrow + * {
+.cs-eyebrow + * {
   margin-block-start: var(--gap-pair);
 }
 

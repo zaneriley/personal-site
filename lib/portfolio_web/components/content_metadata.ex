@@ -65,7 +65,7 @@ defmodule PortfolioWeb.Components.ContentMetadata do
     >
       <%!-- The row sits inside the trimmed block: as the flex container
            itself, the trim spacers became flex items and broke the gaps. --%>
-      <span class="flex flex-wrap items-baseline gap-x-1xl">
+      <span class="flex flex-wrap items-baseline gap-x-1xs">
         <%= if @updated_on_segment != "" do %>
           <span>{@updated_on_segment}</span>
         <% end %>
