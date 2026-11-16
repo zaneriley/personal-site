@@ -40,7 +40,7 @@
 }
 
 .first-paint [data-main-view] {
-  animation: vt-fade-in var(--motion-base) var(--ease-enter) both;
+  animation: vt-in var(--motion-base) var(--ease-enter) both;
 }
 
 .cs-next-media,
@@ -96,13 +96,13 @@
 }
 
 ::view-transition-old(main-view) {
-  animation: var(--motion-quick) var(--ease-move) both vt-fade-out;
+  animation: var(--motion-quick) var(--ease-move) both vt-out;
 }
 
 /* No gap between the two: the new page starts arriving as the old one
    leaves, so the screen is never empty. */
 ::view-transition-new(main-view) {
-  animation: var(--motion-base) var(--ease-move) both vt-fade-in;
+  animation: var(--motion-base) var(--ease-move) both vt-in;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -118,21 +118,14 @@
     animation-timing-function: var(--ease-move);
   }
 
-  /* Across: the page steps sideways in the nav's direction. */
-  [data-nav="across-forward"]::view-transition-old(main-view) {
-    animation-name: vt-out-left;
+  /* Across: the page steps sideways in the nav's direction. Everywhere else
+     --dir is 0 and the same keyframes are a plain fade. */
+  [data-nav="across-forward"] {
+    --dir: 1;
   }
 
-  [data-nav="across-forward"]::view-transition-new(main-view) {
-    animation-name: vt-in-right;
-  }
-
-  [data-nav="across-back"]::view-transition-old(main-view) {
-    animation-name: vt-out-right;
-  }
-
-  [data-nav="across-back"]::view-transition-new(main-view) {
-    animation-name: vt-in-left;
+  [data-nav="across-back"] {
+    --dir: -1;
   }
 
   /* When an image travels (data-travel), the text arrives over the same
@@ -160,43 +153,17 @@
   }
 }
 
-@keyframes vt-fade-out {
+@keyframes vt-out {
   to {
     opacity: 0;
+    transform: translateX(calc(var(--step) * var(--dir, 0) * -1));
   }
 }
 
-@keyframes vt-fade-in {
+@keyframes vt-in {
   from {
     opacity: 0;
-  }
-}
-
-@keyframes vt-out-left {
-  to {
-    opacity: 0;
-    transform: translateX(calc(var(--step) * -1));
-  }
-}
-
-@keyframes vt-out-right {
-  to {
-    opacity: 0;
-    transform: translateX(var(--step));
-  }
-}
-
-@keyframes vt-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(var(--step));
-  }
-}
-
-@keyframes vt-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(calc(var(--step) * -1));
+    transform: translateX(calc(var(--step) * var(--dir, 0)));
   }
 }
 

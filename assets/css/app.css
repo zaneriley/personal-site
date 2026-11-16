@@ -84,15 +84,6 @@ body {
   margin-inline: auto;
 }
 
-.u-grid {
-  display: grid;
-  gap: var(--gutter);
-}
-
-.col-span-12-children > * {
-  grid-column: span 12;
-}
-
 .dropcap {
   display: block;
   float: left;

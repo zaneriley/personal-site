@@ -122,13 +122,14 @@ defmodule Portfolio.Content.EntryAssembler do
   end
 
   # The body was parsed and stored when the entry was published; reading
-  # that copy is a cheap walk. Parse the Markdown only when there is none.
+  # that copy is a cheap walk. An entry without one was never published
+  # properly, so say so instead of quietly parsing it here.
   defp body_ast(%{stored_ast: stored_ast}) when is_list(stored_ast) do
     {:ok, Compiler.deserialize_and_process_ast(stored_ast)}
   end
 
   defp body_ast(content) do
-    with {:ok, %{ast: ast}} <- Compiler.compile(content.content), do: {:ok, ast}
+    {:error, {:missing_stored_ast, content.url}}
   end
 
   # Helper function to compile translations
