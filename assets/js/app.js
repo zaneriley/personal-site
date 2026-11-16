@@ -5,10 +5,10 @@ import topbar from "topbar";
 
 import { initActionLight } from "./action-light";
 import { initCloudSurface } from "./cloud-surface";
-import { onDocumentPatch } from "./page-motion";
 import NavigationHook from "./hooks/navigation_hook";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
 import WeatherHook from "./hooks/weather_hook";
+import { onDocumentPatch } from "./page-motion";
 import { themeController } from "./theme-switcher";
 
 // Define hooks before using them

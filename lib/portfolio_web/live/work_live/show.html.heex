@@ -32,20 +32,38 @@
 
   <dl class="cs-facts cs-column">
     <div>
-      <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee" class="cs-trim">
+      <.typography
+        locale={@user_locale}
+        tag="dt"
+        size="1xs"
+        font="cheee"
+        class="cs-trim"
+      >
         {gettext("Role")}
       </.typography>
       <dd class="cs-trim">{@translations["role"] || @project.role}</dd>
     </div>
     <div>
-      <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee" class="cs-trim">
+      <.typography
+        locale={@user_locale}
+        tag="dt"
+        size="1xs"
+        font="cheee"
+        class="cs-trim"
+      >
         {gettext("Timeline")}
       </.typography>
       <dd class="cs-trim">{@translations["timeline"] || @project.timeline}</dd>
     </div>
     <div>
       <% platforms = @translations["platforms"] || @project.platforms || [] %>
-      <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee" class="cs-trim">
+      <.typography
+        locale={@user_locale}
+        tag="dt"
+        size="1xs"
+        font="cheee"
+        class="cs-trim"
+      >
         {ngettext("Platform", "Platforms", length(platforms))}
       </.typography>
       <dd class="cs-trim">{Enum.join(platforms, " · ")}</dd>

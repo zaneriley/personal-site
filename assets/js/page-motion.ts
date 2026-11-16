@@ -21,7 +21,9 @@ document.addEventListener("click", (event) => {
   const link = (event.target as Element).closest?.("a[data-phx-link]");
   if (!link || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   clearNames();
-  for (const el of link.querySelectorAll<HTMLElement>("[data-vt-hero], [data-vt-title]")) {
+  for (const el of link.querySelectorAll<HTMLElement>(
+    "[data-vt-hero], [data-vt-title]",
+  )) {
     el.style.viewTransitionName = el.dataset.vtHero || el.dataset.vtTitle || "";
     named.push(el);
   }
