@@ -40,6 +40,7 @@ defmodule Portfolio.ContentFixtures do
       %Note{publication_generation_id: publication_generation_id}
       |> Note.changeset(Map.merge(default_attrs, string_attrs))
       |> Repo.insert!()
+      |> store_ast()
 
     maybe_accept_fixture_generation(
       note,
@@ -53,6 +54,14 @@ defmodule Portfolio.ContentFixtures do
     end
 
     note
+  end
+
+  # Publishing parses the Markdown body and stores the result; pages read
+  # that stored copy. Fixtures insert rows directly, so do the same here.
+  defp store_ast(entry) do
+    {:ok, %{ast: ast}} = Portfolio.Content.Entry.Compiler.compile(entry.content)
+    {:ok, entry} = Portfolio.Content.Entry.Records.update_stored_ast(entry, ast)
+    entry
   end
 
   @doc """
@@ -90,6 +99,7 @@ defmodule Portfolio.ContentFixtures do
       %Project{publication_generation_id: publication_generation_id}
       |> Project.changeset(Map.merge(default_attrs, string_attrs))
       |> Repo.insert!()
+      |> store_ast()
 
     maybe_accept_fixture_generation(
       project,
