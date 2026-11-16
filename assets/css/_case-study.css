@@ -65,6 +65,16 @@
   margin-block-start: var(--gap-pair);
 }
 
+/* Grey box: a stand-in for media without a design yet. */
+.blockout {
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklch, currentcolor 10%, transparent);
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-2xs);
+  color: color-mix(in oklch, currentcolor 55%, transparent);
+}
+
 /* Contents rail: beside the prose on wide screens only, in the two columns
    under the nav's seal. */
 .cs-body {
@@ -95,14 +105,4 @@
 .cs-next-media {
   aspect-ratio: 21 / 9;
   max-height: 60svh;
-}
-
-/* Grey box: a stand-in for media without a design yet. */
-.blockout {
-  display: grid;
-  place-items: center;
-  background: color-mix(in oklch, currentcolor 10%, transparent);
-  font-family: ui-monospace, monospace;
-  font-size: var(--fs-2xs);
-  color: color-mix(in oklch, currentcolor 55%, transparent);
 }

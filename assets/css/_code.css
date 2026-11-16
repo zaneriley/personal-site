@@ -87,6 +87,7 @@
    gutter, scrollable code area, bottom scrim as a scroll affordance. */
 .code-block {
   inline-size: min(var(--content-cap), calc(100vi - (var(--page-inset) * 2)));
+  max-inline-size: 100%; /* never wider than the column it sits in */
   margin-block: var(--space-2xl);
   margin-inline: auto;
   position: relative;
