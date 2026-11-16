@@ -10,6 +10,8 @@ const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 let here = location.pathname;
 let pending: string | null = null;
 let source: HTMLElement | null = null;
+let pop = false;
+let loading = 0;
 
 // Site position: section index in nav order, and whether it's a detail page.
 const place = (path: string) => {
@@ -41,24 +43,28 @@ document.addEventListener("click", (event) => {
 
 // Live navigations announce themselves here. Back and forward only send
 // phx:navigate (no page-loading event), so both are handled.
-const leave = (href: string) => {
+const leave = (href: string, isPop: boolean) => {
   root.classList.remove("first-paint");
   pending = new URL(href, location.href).pathname;
-  if (pending !== here) root.classList.add("is-leaving");
+  pop = isPop;
 };
 
+// The loading bar (styled in _motion.css) shows only when a page is slow.
 window.addEventListener("phx:page-loading-start", (event) => {
   const { kind, to } = (event as CustomEvent).detail;
-  if (kind === "redirect") leave(to);
+  if (kind === "redirect") leave(to, false);
+  loading ||= window.setTimeout(() => root.classList.add("is-loading"), 200);
 });
 
 window.addEventListener("phx:navigate", (event) => {
-  const { href, patch } = (event as CustomEvent).detail;
-  if (!patch) leave(href);
+  const { href, patch, pop: isPop } = (event as CustomEvent).detail;
+  if (!patch) leave(href, !!isPop);
 });
 
 window.addEventListener("phx:page-loading-stop", () => {
-  root.classList.remove("is-leaving");
+  clearTimeout(loading);
+  loading = 0;
+  root.classList.remove("is-loading");
 });
 
 export const onDocumentPatch = (start: () => void) => {
@@ -66,9 +72,7 @@ export const onDocumentPatch = (start: () => void) => {
   pending = null;
   if (!to || to === here || !document.startViewTransition) {
     if (to) here = to;
-    start();
-    root.classList.remove("is-leaving");
-    return;
+    return start();
   }
 
   const nav = relation(here, to);
@@ -82,21 +86,30 @@ export const onDocumentPatch = (start: () => void) => {
   if (hero && nav !== "up") hero.style.viewTransitionName = "none";
   if (travel && source && nav !== "up") {
     source.style.viewTransitionName = nameOf(source);
+    root.dataset.travel = "";
   }
 
   root.dataset.nav = nav;
   const transition = document.startViewTransition(() => {
     start();
-    root.classList.remove("is-leaving");
+    // A new page starts at the top. Do it now, inside the transition, so the
+    // new snapshot is taken where the page will actually sit. Back and
+    // forward keep the position LiveView restores.
+    if (!pop) window.scrollTo(0, 0);
     if (travel && nav === "up" && heroName) {
       const card = document.querySelector<HTMLElement>(
         `[data-vt-hero="${heroName}"]`,
       );
-      if (card) card.style.viewTransitionName = heroName;
+      if (card) {
+        card.style.viewTransitionName = heroName;
+        root.dataset.travel = "";
+      }
     }
   });
+  transition.ready.catch(() => {});
   transition.finished.finally(() => {
     delete root.dataset.nav;
+    delete root.dataset.travel;
     for (const el of document.querySelectorAll<HTMLElement>("[data-vt-hero]")) {
       el.style.viewTransitionName = "";
     }

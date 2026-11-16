@@ -1,7 +1,6 @@
 import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
-import topbar from "topbar";
 
 import { initActionLight } from "./action-light";
 import { initCloudSurface } from "./cloud-surface";
@@ -26,26 +25,6 @@ const liveSocket = new LiveSocket("/live", Socket, {
   hooks: Hooks,
   params: { _csrf_token: csrfToken },
   dom: { onDocumentPatch },
-});
-
-// Loading bar: reports network state when a page takes a while. Kept quiet
-// (thin, no glow) because the page motion answers the tap itself.
-topbar.config({
-  barColors: { 0: "#C4FB50" },
-  barThickness: 2,
-  shadowBlur: 0,
-});
-
-let topBarScheduled;
-window.addEventListener("phx:page-loading-start", () => {
-  if (!topBarScheduled) {
-    topBarScheduled = setTimeout(() => topbar.show(), 200);
-  }
-});
-window.addEventListener("phx:page-loading-stop", () => {
-  clearTimeout(topBarScheduled);
-  topBarScheduled = undefined;
-  topbar.hide();
 });
 
 themeController();
