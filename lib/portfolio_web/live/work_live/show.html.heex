@@ -35,31 +35,31 @@
 
     <div class="cs-facts-group">
       <dl class="cs-facts">
-      <div class="cs-fact">
-        <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
-          {gettext("Role")}
-        </.typography>
-        <.typography locale={@user_locale} tag="dd">
-          {@translations["role"] || @project.role}
-        </.typography>
-      </div>
-      <% platforms = @translations["platforms"] || @project.platforms || [] %>
-      <div class="cs-fact">
-        <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
-          {gettext("Timeline")}
-        </.typography>
-        <.typography locale={@user_locale} tag="dd">
-          {@translations["timeline"] || @project.timeline}
-        </.typography>
-      </div>
-      <div class="cs-fact">
-        <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
-          {ngettext("Platform", "Platforms", length(platforms))}
-        </.typography>
-        <.typography locale={@user_locale} tag="dd">
-          {Enum.join(platforms, " · ")}
-        </.typography>
-      </div>
+        <div class="cs-fact">
+          <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
+            {gettext("Role")}
+          </.typography>
+          <.typography locale={@user_locale} tag="dd">
+            {@translations["role"] || @project.role}
+          </.typography>
+        </div>
+        <% platforms = @translations["platforms"] || @project.platforms || [] %>
+        <div class="cs-fact">
+          <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
+            {gettext("Timeline")}
+          </.typography>
+          <.typography locale={@user_locale} tag="dd">
+            {@translations["timeline"] || @project.timeline}
+          </.typography>
+        </div>
+        <div class="cs-fact">
+          <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
+            {ngettext("Platform", "Platforms", length(platforms))}
+          </.typography>
+          <.typography locale={@user_locale} tag="dd">
+            {Enum.join(platforms, " · ")}
+          </.typography>
+        </div>
       </dl>
       <.content_metadata
         read_time={@translations["read_time"] || @project.read_time}

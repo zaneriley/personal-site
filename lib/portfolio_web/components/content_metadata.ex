@@ -66,25 +66,25 @@ defmodule PortfolioWeb.Components.ContentMetadata do
       <%!-- The row sits inside the trimmed block: as the flex container
            itself, the trim spacers became flex items and broke the gaps. --%>
       <span class="flex flex-wrap items-baseline gap-x-1xl">
-      <%= if @updated_on_segment != "" do %>
-        <span>{@updated_on_segment}</span>
-      <% end %>
+        <%= if @updated_on_segment != "" do %>
+          <span>{@updated_on_segment}</span>
+        <% end %>
 
-      <%= if @read_time_segment != "" or @word_count_segment != "" do %>
-        <span>
-          <%= if @read_time_segment != "" do %>
-            <span>{@read_time_segment}</span>
-          <% end %>
+        <%= if @read_time_segment != "" or @word_count_segment != "" do %>
+          <span>
+            <%= if @read_time_segment != "" do %>
+              <span>{@read_time_segment}</span>
+            <% end %>
 
-          <%= if @read_time_segment != "" and @word_count_segment != "" do %>
-            <span>{@separator}</span>
-          <% end %>
+            <%= if @read_time_segment != "" and @word_count_segment != "" do %>
+              <span>{@separator}</span>
+            <% end %>
 
-          <%= if @word_count_segment != "" do %>
-            <span>{@word_count_segment}</span>
-          <% end %>
-        </span>
-      <% end %>
+            <%= if @word_count_segment != "" do %>
+              <span>{@word_count_segment}</span>
+            <% end %>
+          </span>
+        <% end %>
       </span>
     </.typography>
     """
