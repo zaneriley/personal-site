@@ -3,72 +3,64 @@
      its blocks on the reading grid at three widths (see _case-study.css):
      column (prose), wide (the content cap) and full (the viewport). --%>
 <article class="case-study">
-  <header class="cs-title cs-column">
-    <.typography
-      locale={@user_locale}
-      tag="p"
-      size="1xs"
-      font="cheee"
-      class="cs-trim"
-    >
-      <.link navigate={~p"/#{@user_locale}/work"}>{gettext("Case study")}</.link>
-      <span aria-hidden="true">›</span>
-      {@translations["company"] || @project.company}
-    </.typography>
-    <.typography
-      locale={@user_locale}
-      tag="h1"
-      size="4xl"
-      font="cardinal"
-      class="cs-trim"
-      style={"--vt-title: project-title-#{@project.url}"}
-    >
-      {@translations["title"] || @project.title}
-    </.typography>
-    <.typography locale={@user_locale} tag="p" size="1xl" class="cs-trim">
-      {@translations["introduction"] || @project.introduction}
-    </.typography>
-  </header>
+  <%!-- Spacing: every gap is ink to ink (Typography trims each text block)
+       and has one of four jobs, each double the last: pair, item, group,
+       block. See _case-study.css. --%>
+  <div class="cs-intro cs-column">
+    <header class="cs-title">
+      <.typography
+        locale={@user_locale}
+        tag="p"
+        size="1xs"
+        font="cheee"
+        class="cs-eyebrow"
+      >
+        <.link navigate={~p"/#{@user_locale}/work"}>{gettext("Case study")}</.link>
+        <span aria-hidden="true">›</span>
+        {@translations["company"] || @project.company}
+      </.typography>
+      <.typography
+        locale={@user_locale}
+        tag="h1"
+        size="4xl"
+        font="cardinal"
+        style={"--vt-title: project-title-#{@project.url}"}
+      >
+        {@translations["title"] || @project.title}
+      </.typography>
+      <.typography locale={@user_locale} tag="p" size="1xl">
+        {@translations["introduction"] || @project.introduction}
+      </.typography>
+    </header>
 
-  <dl class="cs-facts cs-column">
-    <div>
-      <.typography
-        locale={@user_locale}
-        tag="dt"
-        size="1xs"
-        font="cheee"
-        class="cs-trim"
-      >
-        {gettext("Role")}
-      </.typography>
-      <dd class="cs-trim">{@translations["role"] || @project.role}</dd>
-    </div>
-    <div>
-      <.typography
-        locale={@user_locale}
-        tag="dt"
-        size="1xs"
-        font="cheee"
-        class="cs-trim"
-      >
-        {gettext("Timeline")}
-      </.typography>
-      <dd class="cs-trim">{@translations["timeline"] || @project.timeline}</dd>
-    </div>
-    <div>
+    <div class="cs-facts-group">
+      <dl class="cs-facts">
+      <div class="cs-fact">
+        <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
+          {gettext("Role")}
+        </.typography>
+        <.typography locale={@user_locale} tag="dd">
+          {@translations["role"] || @project.role}
+        </.typography>
+      </div>
       <% platforms = @translations["platforms"] || @project.platforms || [] %>
-      <.typography
-        locale={@user_locale}
-        tag="dt"
-        size="1xs"
-        font="cheee"
-        class="cs-trim"
-      >
-        {ngettext("Platform", "Platforms", length(platforms))}
-      </.typography>
-      <dd class="cs-trim">{Enum.join(platforms, " · ")}</dd>
-    </div>
-    <div class="cs-facts-meta">
+      <div class="cs-fact">
+        <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
+          {gettext("Timeline")}
+        </.typography>
+        <.typography locale={@user_locale} tag="dd">
+          {@translations["timeline"] || @project.timeline}
+        </.typography>
+      </div>
+      <div class="cs-fact">
+        <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
+          {ngettext("Platform", "Platforms", length(platforms))}
+        </.typography>
+        <.typography locale={@user_locale} tag="dd">
+          {Enum.join(platforms, " · ")}
+        </.typography>
+      </div>
+      </dl>
       <.content_metadata
         read_time={@translations["read_time"] || @project.read_time}
         word_count={@translations["word_count"] || @project.word_count}
@@ -76,7 +68,7 @@
         user_locale={@user_locale}
       />
     </div>
-  </dl>
+  </div>
 
   <div
     class="cs-hero cs-wide blockout"
@@ -91,7 +83,7 @@
       <span>contents</span>
     </aside>
 
-    <div class="cs-story space-y-md">
+    <div class="cs-story">
       <%= if @translations["content"] do %>
         {render_to_safe(@translations["content"])}
       <% else %>
@@ -122,7 +114,6 @@
         tag="span"
         size="3xl"
         font="cardinal"
-        class="cs-column"
         data-vt-title={"project-title-#{@next_project.url}"}
       >
         {@next_project.translations["title"] || @next_project.title}
