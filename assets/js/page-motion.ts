@@ -1,10 +1,8 @@
 // Page-to-page motion. The choreography and timing live in
 // assets/css/_motion.css; this file decides which relation a navigation is
-// and moves <html data-phase> through four steps:
-//   recede  on the tap, the old page dims and holds while the server answers
-//   out     once the new page is ready, the old one finishes leaving
-//   hold    the page is swapped and scrolled while nothing is showing
-//   in      the new page arrives
+// and moves <html data-phase> through two steps:
+//   out  on the tap, the old page leaves while the server answers
+//   in   the new page is swapped in unseen, then arrives
 // The live page itself is animated; there are no snapshots to swap back.
 //
 // LiveView calls onDocumentPatch for every patch (weather, forms, the theme),
@@ -16,6 +14,7 @@ let here = location.pathname;
 let pending: string | null = null;
 let pop = false;
 let loading = 0;
+let turn = 0;
 let exit: Promise<void> | null = null;
 let queue: Promise<void> | null = null;
 
@@ -23,12 +22,6 @@ const ms = (token: string) =>
   Number.parseFloat(getComputedStyle(root).getPropertyValue(token));
 const wait = (time: number) =>
   new Promise<void>((done) => setTimeout(done, time));
-// Two frames: time for the browser to paint a state before the next one
-// animates from it. Without it, a tall page's first frames are skipped.
-const painted = () =>
-  new Promise<void>((done) =>
-    requestAnimationFrame(() => requestAnimationFrame(() => done())),
-  );
 
 // TEMP diagnostic (remove before merge): reports what the transition did on
 // a real phone as a request the dev server logs.
@@ -50,7 +43,12 @@ decodeURIComponent(location.hash)
       () => {
         if (step === "back") history.back();
         else if (step.startsWith("scroll:")) scrollTo(0, Number(step.slice(7)));
-        else document.querySelector<HTMLElement>(step)?.click();
+        else {
+          // A finger is down for a moment before the click.
+          const link = document.querySelector<HTMLElement>(step);
+          link?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+          setTimeout(() => link?.click(), 90);
+        }
       },
       4000 + index * 3000,
     );
@@ -77,9 +75,24 @@ const relation = (from: string, to: string) => {
   return b.index < a.index ? "across-back" : "across-forward";
 };
 
+// A finger going down on a link readies the page's layers (will-change, in
+// _motion.css), so the exit's first frames are painted, not skipped.
+document.addEventListener(
+  "pointerdown",
+  (event) => {
+    if (!(event.target as Element).closest?.("a[data-phx-link]")) return;
+    root.dataset.nav ??= "";
+    const mine = turn;
+    wait(1000).then(() => {
+      if (turn === mine && !root.dataset.phase) delete root.dataset.nav;
+    });
+  },
+  { passive: true },
+);
+
 // Live navigations announce themselves here, more than once each. Back and
 // forward only send phx:navigate (no page-loading event), so both are
-// handled. The old page recedes now, before the server replies.
+// handled. The old page starts leaving now, before the server replies.
 const leave = (href: string, isPop: boolean) => {
   const to = new URL(href, location.href).pathname;
   if (to === pending) return;
@@ -88,18 +101,20 @@ const leave = (href: string, isPop: boolean) => {
   pop = isPop;
   report({ step: "leave", to, pop: isPop });
   if (to === here) return;
+  turn++;
   root.dataset.nav = relation(here, to);
-  exit = painted().then(() => {
-    root.dataset.phase = "recede";
-    return wait(ms("--motion-quick"));
-  });
+  root.dataset.phase = "out";
+  exit = wait(ms("--motion-leave"));
 };
 
 // The page (new, or the old one if nothing arrived) eases in, then the
-// attributes go so nothing is left animating.
+// attributes go so nothing is left animating. A newer page change takes
+// over the attributes; this one then leaves them alone.
 const settle = () => {
+  const mine = turn;
   root.dataset.phase = "in";
-  return wait(ms("--motion-base")).then(() => {
+  return wait(ms("--motion-paint") + ms("--motion-base")).then(() => {
+    if (turn !== mine) return;
     delete root.dataset.phase;
     delete root.dataset.nav;
   });
@@ -123,8 +138,9 @@ window.addEventListener("phx:page-loading-stop", () => {
   root.classList.remove("is-loading");
   // Never leave a page hidden: if loading ended and no page arrived (a
   // failed or cancelled navigation), bring the old one back.
+  const mine = turn;
   wait(ms("--motion-travel")).then(() => {
-    if (root.dataset.phase === "recede" && !queue) {
+    if (turn === mine && root.dataset.phase === "out" && !queue) {
       pending = null;
       settle();
     }
@@ -134,15 +150,17 @@ window.addEventListener("phx:page-loading-stop", () => {
 // The nav marker slides from where it was to where it now is.
 const marker = () => document.querySelector<HTMLElement>(".nav-marker");
 
-const arrive = async (start: () => void) => {
-  root.dataset.phase = "out";
-  await wait(ms("--motion-quick") / 2);
-  root.dataset.phase = "hold";
+const arrive = (start: () => void) => {
+  const settled = settle();
   // A new page starts at the top. Nothing is showing at this point, so the
   // jump is never seen. Back and forward keep the position LiveView restores.
   if (!pop) window.scrollTo(0, 0);
   const from = marker()?.getBoundingClientRect();
-  start();
+  try {
+    start();
+  } finally {
+    report({ step: "in", nav: root.dataset.nav, scroll: Math.round(scrollY) });
+  }
   const to = marker()?.getBoundingClientRect();
   if (from && to && !reduced.matches) {
     marker()?.animate(
@@ -156,9 +174,7 @@ const arrive = async (start: () => void) => {
       { duration: ms("--motion-travel"), easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
     );
   }
-  report({ step: "in", nav: root.dataset.nav, scroll: Math.round(scrollY) });
-  await painted();
-  return settle();
+  return settled;
 };
 
 export const onDocumentPatch = (start: () => void) => {
@@ -173,10 +189,11 @@ export const onDocumentPatch = (start: () => void) => {
   }
   pending = null;
   here = to;
-  queue = (exit ?? Promise.resolve())
+  const mine = (queue = (exit ?? Promise.resolve())
     .then(() => arrive(start))
+    .catch(() => {})
     .finally(() => {
-      queue = null;
-    });
+      if (queue === mine) queue = null;
+    }));
   exit = null;
 };

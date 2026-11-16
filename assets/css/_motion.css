@@ -3,9 +3,8 @@
    Page-to-page motion, wired in assets/js/page-motion.ts. Storyboards and
    the route map: https://claude.ai/artifact/2WuLRzBPwXBT1ShgB9xdos
 
-   Every page change is a fade through: the old page recedes on the tap,
-   leaves when the new one is ready, then the new one eases in, with the
-   header holding still. Between
+   Every page change is a fade through: the old page eases out on the tap,
+   then the new one eases in, with the header holding still. Between
    sections (Home, Work, Notes, About) the page also steps sideways in the
    nav's direction and the nav marker slides; into and out of a project or
    note it fades in place. The relation is set on <html data-nav> for the
@@ -26,14 +25,15 @@
 ============================================================================ */
 
 :root {
-  --motion-quick: 120ms; /* the tap response; the old page leaving */
+  --motion-quick: 120ms; /* the tap response */
+  --motion-leave: 180ms; /* the old page leaving, while the server answers */
+  --motion-paint: 50ms; /* a swapped-in page painting before it shows */
   --motion-base: 200ms; /* new content arriving */
   --motion-travel: 300ms; /* something moving on screen: the nav marker */
-  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* leaving: starts slow, goes */
+  --ease-exit: cubic-bezier(0.4, 0, 0.6, 1); /* leaving: soft at both ends */
   --ease-enter: cubic-bezier(0.2, 0, 0.2, 1); /* arriving: prompt, soft landing */
   --ease-move: cubic-bezier(0.4, 0, 0.2, 1); /* moving: soft at both ends */
   --step: var(--space-md); /* how far content steps sideways: one line */
-  --recede: 0.35; /* how far a page dims while it waits to leave */
 }
 
 /* Full page loads (first visit, reload, the language switch) fade in once.
@@ -65,34 +65,29 @@
   animation: loading-creep 4s var(--ease-move) both;
 }
 
-/* A page change, in the steps page-motion.ts sets on <html data-phase>.
+/* A page change, in the two steps page-motion.ts sets on <html data-phase>.
    The live page and footer are animated; the header and the background are
    simply not, so they hold still.
-     recede  on the tap the old page dims and holds while the server answers,
-             so the page is never blank however slow the network is
-     out     the new page is ready: the old one finishes leaving
-     hold    the swap and the jump to the top happen with nothing showing
-     in      the new page arrives
+     out  on the tap the old page leaves, over about as long as a phone's
+          network takes to answer, so the page is rarely blank
+     in   the new page is swapped in and scrolled to the top unseen, given
+          a moment to paint, then arrives
+   Each step is one animation: a browser skips the first frames of a new
+   animation on a tall page, so there are as few starts as possible and the
+   layers are readied (will-change) from the moment a finger goes down.
    Between sections the page also steps sideways in the nav's direction;
    everywhere else --dir is 0 and the same keyframes are a plain fade. */
-[data-nav] :is([data-main-view], .site-footer) {
+[data-nav] :is([data-main-view], .footer-surface) {
   will-change: opacity, transform;
 }
 
-[data-phase="recede"] :is([data-main-view], .site-footer) {
-  animation: vt-recede var(--motion-quick) var(--ease-move) both;
+[data-phase="out"] :is([data-main-view], .footer-surface) {
+  animation: vt-out var(--motion-leave) var(--ease-exit) both;
 }
 
-[data-phase="out"] :is([data-main-view], .site-footer) {
-  animation: vt-out calc(var(--motion-quick) / 2) var(--ease-exit) both;
-}
-
-[data-phase="hold"] :is([data-main-view], .site-footer) {
-  opacity: 0;
-}
-
-[data-phase="in"] :is([data-main-view], .site-footer) {
-  animation: vt-in var(--motion-base) var(--ease-enter) both;
+[data-phase="in"] :is([data-main-view], .footer-surface) {
+  animation: vt-in var(--motion-base) var(--ease-enter) var(--motion-paint)
+    both;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -115,17 +110,7 @@
   }
 }
 
-@keyframes vt-recede {
-  to {
-    opacity: var(--recede);
-  }
-}
-
 @keyframes vt-out {
-  from {
-    opacity: var(--recede);
-  }
-
   to {
     opacity: 0;
     transform: translateX(calc(var(--step) * var(--dir, 0) * -1));
