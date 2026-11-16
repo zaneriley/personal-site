@@ -225,6 +225,28 @@ defmodule Portfolio.Content.Markdown.RendererTest do
   end
 
   describe "render_to_safe/1" do
+    test "renders a code block the same as render_html/1" do
+      Portfolio.Content.Markdown.Component.Registry.register(
+        :code_block,
+        PortfolioWeb.Components.CodeBlock,
+        custom_function: :code_block
+      )
+
+      attrs = %{
+        "code" => ~s(<span class="tok-keyword">def</span> run),
+        "language" => "elixir",
+        "filename" => nil
+      }
+
+      ast = [{:component, :code_block, attrs, [], %{}}]
+
+      {:safe, iodata} = Renderer.render_to_safe(ast)
+      html = IO.iodata_to_binary(iodata)
+
+      assert html =~ ~s(<span class="tok-keyword">def</span> run)
+      assert html == Renderer.render_html(ast)
+    end
+
     test "returns a Phoenix.HTML safe tuple" do
       ast = [{"p", [], ["Hello"], %{}}]
       assert {:safe, _} = Renderer.render_to_safe(ast)

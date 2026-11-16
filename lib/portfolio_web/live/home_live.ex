@@ -22,18 +22,7 @@ defmodule PortfolioWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    projects =
-      Content.list(
-        "project",
-        [sort_by: :sort_order, sort_order: :desc],
-        socket.assigns.user_locale
-      )
-
-    Logger.debug("Projects: #{inspect(projects)}")
-
-    socket =
-      assign(socket, projects: projects)
-
+    # handle_params loads the projects; it runs on every mount.
     {:ok, socket}
   end
 
@@ -42,7 +31,6 @@ defmodule PortfolioWeb.HomeLive do
     socket =
       PortfolioWeb.LiveHelpers.handle_locale_and_path(socket, params, uri)
 
-    # Re-fetch the projects with the updated locale
     projects =
       Content.list(
         "project",

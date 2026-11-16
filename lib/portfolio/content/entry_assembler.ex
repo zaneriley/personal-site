@@ -53,7 +53,7 @@ defmodule Portfolio.Content.EntryAssembler do
       markdown_fields = schema.markdown_fields()
 
       # Process content and translations
-      with {:ok, %{ast: ast}} <- Compiler.compile(content.content),
+      with {:ok, ast} <- body_ast(content),
            {:ok, compiled_translations} <-
              compile_translations(translations, content_type, markdown_fields) do
         # Set compiled_content to nil to indicate we're using AST
@@ -119,6 +119,16 @@ defmodule Portfolio.Content.EntryAssembler do
       end)
 
     result
+  end
+
+  # The body was parsed and stored when the entry was published; reading
+  # that copy is a cheap walk. Parse the Markdown only when there is none.
+  defp body_ast(%{stored_ast: stored_ast}) when is_list(stored_ast) do
+    {:ok, Compiler.deserialize_and_process_ast(stored_ast)}
+  end
+
+  defp body_ast(content) do
+    with {:ok, %{ast: ast}} <- Compiler.compile(content.content), do: {:ok, ast}
   end
 
   # Helper function to compile translations
