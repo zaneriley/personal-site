@@ -13,6 +13,17 @@ let source: HTMLElement | null = null;
 let pop = false;
 let loading = 0;
 
+// TEMP diagnostic (remove before merge): reports what the transition did on
+// a real phone as a request the dev server logs.
+const report = (data: Record<string, unknown>) => {
+  const query = new URLSearchParams(
+    Object.entries(data).map(([key, value]) => [key, String(value)]),
+  );
+  fetch(`/__vt?${query}`).catch(() => {});
+};
+const size = () =>
+  `${innerWidth}x${innerHeight}/${Math.round(visualViewport?.width ?? 0)}x${Math.round(visualViewport?.height ?? 0)}`;
+
 // Site position: section index in nav order, and whether it's a detail page.
 const place = (path: string) => {
   const [section = "", slug] = path.split("/").filter(Boolean).slice(1);
@@ -47,6 +58,7 @@ const leave = (href: string, isPop: boolean) => {
   root.classList.remove("first-paint");
   pending = new URL(href, location.href).pathname;
   pop = isPop;
+  report({ step: "leave", to: pending, pop: isPop });
 };
 
 // The loading bar (styled in _motion.css) shows only when a page is slow.
@@ -71,7 +83,10 @@ export const onDocumentPatch = (start: () => void) => {
   const to = pending;
   pending = null;
   if (!to || to === here || !document.startViewTransition) {
-    if (to) here = to;
+    if (to) {
+      report({ step: "plain", to, same: to === here, vt: !!document.startViewTransition });
+      here = to;
+    }
     return start();
   }
 
@@ -90,6 +105,18 @@ export const onDocumentPatch = (start: () => void) => {
   }
 
   root.dataset.nav = nav;
+  const t0 = performance.now();
+  const before = size();
+  const facts = () => ({
+    nav,
+    travel: "travel" in root.dataset,
+    reduced: reduced.matches,
+    ms: Math.round(performance.now() - t0),
+    before,
+    after: size(),
+    scroll: Math.round(scrollY),
+    ua: navigator.userAgent.replace(/^.*?\) /, ""),
+  });
   const transition = document.startViewTransition(() => {
     start();
     // A new page starts at the top. Do it now, inside the transition, so the
@@ -106,8 +133,12 @@ export const onDocumentPatch = (start: () => void) => {
       }
     }
   });
-  transition.ready.catch(() => {});
+  transition.ready.then(
+    () => report({ step: "ready", ...facts() }),
+    (error) => report({ step: "skipped", why: `${error.name}: ${error.message}`, ...facts() }),
+  );
   transition.finished.finally(() => {
+    report({ step: "finished", ...facts() });
     delete root.dataset.nav;
     delete root.dataset.travel;
     for (const el of document.querySelectorAll<HTMLElement>("[data-vt-hero]")) {
