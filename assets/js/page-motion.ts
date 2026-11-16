@@ -17,7 +17,10 @@ const place = (path: string) => {
   const index = ["", "work", "notes", "about"].indexOf(
     section === "note" ? "notes" : section,
   );
-  return { index, detail: section === "note" || (section === "work" && !!slug) };
+  return {
+    index,
+    detail: section === "note" || (section === "work" && !!slug),
+  };
 };
 
 const relation = (from: string, to: string) => {
