@@ -1,7 +1,10 @@
 // Page-to-page motion. The choreography and timing live in
 // assets/css/_motion.css; this file decides which relation a navigation is
-// and moves <html data-phase> through "out" (the old page leaves, starting
-// on the tap, while the server answers) and "in" (the new page arrives).
+// and moves <html data-phase> through four steps:
+//   recede  on the tap, the old page dims and holds while the server answers
+//   out     once the new page is ready, the old one finishes leaving
+//   hold    the page is swapped and scrolled while nothing is showing
+//   in      the new page arrives
 // The live page itself is animated; there are no snapshots to swap back.
 //
 // LiveView calls onDocumentPatch for every patch (weather, forms, the theme),
@@ -18,8 +21,14 @@ let queue: Promise<void> | null = null;
 
 const ms = (token: string) =>
   Number.parseFloat(getComputedStyle(root).getPropertyValue(token));
-const wait = (token: string) =>
-  new Promise<void>((done) => setTimeout(done, ms(token)));
+const wait = (time: number) =>
+  new Promise<void>((done) => setTimeout(done, time));
+// Two frames: time for the browser to paint a state before the next one
+// animates from it. Without it, a tall page's first frames are skipped.
+const painted = () =>
+  new Promise<void>((done) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => done())),
+  );
 
 // TEMP diagnostic (remove before merge): reports what the transition did on
 // a real phone as a request the dev server logs.
@@ -70,7 +79,7 @@ const relation = (from: string, to: string) => {
 
 // Live navigations announce themselves here, more than once each. Back and
 // forward only send phx:navigate (no page-loading event), so both are
-// handled. The old page starts leaving now, before the server replies.
+// handled. The old page recedes now, before the server replies.
 const leave = (href: string, isPop: boolean) => {
   const to = new URL(href, location.href).pathname;
   if (to === pending) return;
@@ -80,15 +89,17 @@ const leave = (href: string, isPop: boolean) => {
   report({ step: "leave", to, pop: isPop });
   if (to === here) return;
   root.dataset.nav = relation(here, to);
-  root.dataset.phase = "out";
-  exit = wait("--motion-quick");
+  exit = painted().then(() => {
+    root.dataset.phase = "recede";
+    return wait(ms("--motion-quick"));
+  });
 };
 
 // The page (new, or the old one if nothing arrived) eases in, then the
 // attributes go so nothing is left animating.
 const settle = () => {
   root.dataset.phase = "in";
-  return wait("--motion-base").then(() => {
+  return wait(ms("--motion-base")).then(() => {
     delete root.dataset.phase;
     delete root.dataset.nav;
   });
@@ -112,8 +123,8 @@ window.addEventListener("phx:page-loading-stop", () => {
   root.classList.remove("is-loading");
   // Never leave a page hidden: if loading ended and no page arrived (a
   // failed or cancelled navigation), bring the old one back.
-  wait("--motion-travel").then(() => {
-    if (root.dataset.phase === "out" && !queue) {
+  wait(ms("--motion-travel")).then(() => {
+    if (root.dataset.phase === "recede" && !queue) {
       pending = null;
       settle();
     }
@@ -123,13 +134,15 @@ window.addEventListener("phx:page-loading-stop", () => {
 // The nav marker slides from where it was to where it now is.
 const marker = () => document.querySelector<HTMLElement>(".nav-marker");
 
-const arrive = (start: () => void) => {
-  const from = marker()?.getBoundingClientRect();
-  start();
-  // A new page starts at the top; it is invisible at this point, so the
+const arrive = async (start: () => void) => {
+  root.dataset.phase = "out";
+  await wait(ms("--motion-quick") / 2);
+  root.dataset.phase = "hold";
+  // A new page starts at the top. Nothing is showing at this point, so the
   // jump is never seen. Back and forward keep the position LiveView restores.
   if (!pop) window.scrollTo(0, 0);
-  const settled = settle();
+  const from = marker()?.getBoundingClientRect();
+  start();
   const to = marker()?.getBoundingClientRect();
   if (from && to && !reduced.matches) {
     marker()?.animate(
@@ -144,7 +157,8 @@ const arrive = (start: () => void) => {
     );
   }
   report({ step: "in", nav: root.dataset.nav, scroll: Math.round(scrollY) });
-  return settled;
+  await painted();
+  return settle();
 };
 
 export const onDocumentPatch = (start: () => void) => {
