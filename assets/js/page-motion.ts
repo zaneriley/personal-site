@@ -187,6 +187,10 @@ const arrive = async (start: () => void) => {
     }
     window.scrollTo(0, 0);
   }
+  // Let the pinned, emptied frame go out before the new page is swapped in.
+  // Swapped in the same task, WebKit presents the new page late and the
+  // entrance's first frames are lost.
+  await wait(0);
   const from = marker()?.getBoundingClientRect();
   // Whatever the patch does, the page must come back into view.
   try {
