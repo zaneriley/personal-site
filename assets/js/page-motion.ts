@@ -39,12 +39,22 @@ document.addEventListener("click", (event) => {
   source = link?.querySelector<HTMLElement>("[data-vt-hero]") ?? null;
 });
 
+// Live navigations announce themselves here. Back and forward only send
+// phx:navigate (no page-loading event), so both are handled.
+const leave = (href: string) => {
+  root.classList.remove("first-paint");
+  pending = new URL(href, location.href).pathname;
+  if (pending !== here) root.classList.add("is-leaving");
+};
+
 window.addEventListener("phx:page-loading-start", (event) => {
   const { kind, to } = (event as CustomEvent).detail;
-  if (kind !== "redirect") return;
-  root.classList.remove("first-paint");
-  pending = new URL(to, location.href).pathname;
-  if (pending !== here) root.classList.add("is-leaving");
+  if (kind === "redirect") leave(to);
+});
+
+window.addEventListener("phx:navigate", (event) => {
+  const { href, patch } = (event as CustomEvent).detail;
+  if (!patch) leave(href);
 });
 
 window.addEventListener("phx:page-loading-stop", () => {

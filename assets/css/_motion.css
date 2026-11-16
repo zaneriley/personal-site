@@ -33,14 +33,17 @@
 /* Full page loads (first visit, reload, the language switch) fade in once.
    The class is removed on the first live navigation so later pages are
    left to the view transition. */
+/* The page content is its own layer, so the fixed background never moves.
+   The tap is answered at once, before the server replies. */
+[data-main-view] {
+  view-transition-name: main-view;
+  transition: opacity var(--motion-quick) var(--ease-enter);
+}
+
 .first-paint [data-main-view] {
   animation: vt-fade-in var(--motion-base) var(--ease-enter) both;
 }
 
-/* The tap is answered at once, before the server replies. */
-[data-main-view] {
-  transition: opacity var(--motion-quick) var(--ease-enter);
-}
 
 .is-leaving [data-main-view] {
   opacity: 0.55;
@@ -58,14 +61,9 @@
   transition: transform var(--motion-quick) var(--ease-enter);
 }
 
-/* Named layers. The header holds still; the page content is its own layer
-   so the fixed background never moves. */
+/* The header holds still. */
 .site-header {
   view-transition-name: site-header;
-}
-
-[data-main-view] {
-  view-transition-name: page;
 }
 
 ::view-transition-group(site-header),
@@ -85,15 +83,15 @@
 
 /* The page layer: old leaves quickly, new arrives. Defaults, then each
    relation sets its own delay and step. */
-::view-transition-group(page) {
+::view-transition-group(main-view) {
   animation: none;
 }
 
-::view-transition-old(page) {
+::view-transition-old(main-view) {
   animation: var(--motion-quick) var(--ease-enter) both vt-fade-out;
 }
 
-::view-transition-new(page) {
+::view-transition-new(main-view) {
   animation: var(--motion-base) var(--ease-enter) var(--motion-quick) both
     vt-fade-in;
 }
@@ -118,29 +116,29 @@
   }
 
   /* Across: the page steps sideways in the nav's direction. */
-  [data-nav="across-forward"]::view-transition-old(page) {
+  [data-nav="across-forward"]::view-transition-old(main-view) {
     animation-name: vt-out-left;
   }
 
-  [data-nav="across-forward"]::view-transition-new(page) {
+  [data-nav="across-forward"]::view-transition-new(main-view) {
     animation-name: vt-in-right;
   }
 
-  [data-nav="across-back"]::view-transition-old(page) {
+  [data-nav="across-back"]::view-transition-old(main-view) {
     animation-name: vt-out-right;
   }
 
-  [data-nav="across-back"]::view-transition-new(page) {
+  [data-nav="across-back"]::view-transition-new(main-view) {
     animation-name: vt-in-left;
   }
 
   /* Down, next and up: the text waits for the image to land. */
-  [data-nav="down"]::view-transition-new(page),
-  [data-nav="next"]::view-transition-new(page) {
+  [data-nav="down"]::view-transition-new(main-view),
+  [data-nav="next"]::view-transition-new(main-view) {
     animation-delay: calc(var(--motion-quick) + var(--motion-travel) * 0.6);
   }
 
-  [data-nav="up"]::view-transition-new(page) {
+  [data-nav="up"]::view-transition-new(main-view) {
     animation-delay: calc(var(--motion-quick) + var(--motion-travel) * 0.5);
   }
 

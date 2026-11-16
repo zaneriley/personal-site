@@ -115,7 +115,6 @@
   position: absolute;
   inset-inline: 0;
   inset-block-end: var(--space-2xs);
-  block-size: 2px;
-  background: currentcolor;
+  border-block-end: 2px solid currentcolor;
   view-transition-name: nav-marker;
 }
