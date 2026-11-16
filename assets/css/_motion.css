@@ -70,6 +70,7 @@
 /* A page change, in the two steps page-motion.ts sets on <html data-phase>.
    The live page and footer are animated; the header and the background are
    simply not, so they hold still.
+     ready the two moving blocks get their layers and are drawn once
      out   on the tap the old page leaves, over about as long as a phone's
            network takes to answer, so the page is rarely blank
      hold  the new page is swapped in and scrolled to the top unseen, and

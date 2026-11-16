@@ -117,8 +117,15 @@ const leave = (href: string, isPop: boolean) => {
   if (to === here) return;
   turn++;
   root.dataset.nav = relation(here, to);
-  root.dataset.phase = "out";
-  exit = wait(ms("--motion-leave"));
+  // The layers are readied first and the exit starts once they are drawn,
+  // so its first frames are not spent drawing them.
+  const mine = turn;
+  root.dataset.phase = "ready";
+  exit = painted().then(() => {
+    if (turn !== mine) return;
+    root.dataset.phase = "out";
+    return wait(ms("--motion-leave"));
+  });
 };
 
 // The page (new, or the old one if nothing arrived) eases in, then the
