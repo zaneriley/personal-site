@@ -66,7 +66,9 @@ export const onDocumentPatch = (start: () => void) => {
   pending = null;
   if (!to || to === here || !document.startViewTransition) {
     if (to) here = to;
-    return start();
+    start();
+    root.classList.remove("is-leaving");
+    return;
   }
 
   const nav = relation(here, to);
