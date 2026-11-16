@@ -24,6 +24,23 @@ const report = (data: Record<string, unknown>) => {
 const size = () =>
   `${innerWidth}x${innerHeight}/${Math.round(visualViewport?.width ?? 0)}x${Math.round(visualViewport?.height ?? 0)}`;
 
+// TEMP diagnostic (remove before merge): scripted taps for recording, e.g.
+// /en#tap=a[href="/en/work"]|scroll:600|a[href="/en/work/oddity"]|back
+// One step every 3 s, starting 4 s after load.
+decodeURIComponent(location.hash)
+  .match(/^#tap=(.*)/)?.[1]
+  .split("|")
+  .forEach((step, index) =>
+    setTimeout(
+      () => {
+        if (step === "back") history.back();
+        else if (step.startsWith("scroll:")) scrollTo(0, Number(step.slice(7)));
+        else document.querySelector<HTMLElement>(step)?.click();
+      },
+      4000 + index * 3000,
+    ),
+  );
+
 // Site position: section index in nav order, and whether it's a detail page.
 const place = (path: string) => {
   const [section = "", slug] = path.split("/").filter(Boolean).slice(1);
