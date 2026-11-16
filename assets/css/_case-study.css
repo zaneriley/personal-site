@@ -65,6 +65,12 @@
   margin-block-start: var(--gap-pair);
 }
 
+/* Media in the story stands two lines clear on both sides. */
+.cs-story > * + .code-block,
+.cs-story > .code-block + * {
+  margin-block-start: var(--gap-group);
+}
+
 /* Grey box: a stand-in for media without a design yet. */
 .blockout {
   display: grid;

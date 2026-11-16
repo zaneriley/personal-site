@@ -84,22 +84,49 @@
 
 /* ── code-block component chrome (PortfolioWeb.Components.CodeBlock) ──
    A framed listing: header (file path or language label + copy), line-number
-   gutter, scrollable code area, bottom scrim as a scroll affordance. */
+   gutter, scrollable code area, bottom scrim as a scroll affordance.
+
+   Its relationships, each with one owner:
+     slot   the block fills whatever the page places it in; it never measures
+            the screen
+     flow   it carries no outside spacing; the flow around it sets the gaps
+     edge   text to a frame edge is the page-inset job at the block's scale:
+            the code gets its 80 characters first, spare width goes to the
+            inset, between half a line and a line
+     label  a line number labels its line, so it sits a pair gap from the
+            frame, in a column as wide as two digits */
+@property --code-inset {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --code-text-start {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0;
+}
+
 .code-block {
-  inline-size: min(var(--content-cap), calc(100vi - (var(--page-inset) * 2)));
-  max-inline-size: 100%; /* never wider than the column it sits in */
-  margin-block: var(--space-2xl);
-  margin-inline: auto;
+  container-type: inline-size;
   position: relative;
   background: var(--code-bg-card);
   border: 1px solid var(--code-border);
   border-radius: var(--space-md);
   overflow: clip;
   font-family: var(--font-mono);
+  font-size: var(--fs-1xs);
   font-feature-settings:
     "salt" 1,
     "lnum" 1,
     "pnum" 1;
+}
+
+/* Registered lengths, so the character units resolve once, here, at the
+   code's size, and every part below reads the same value. */
+.code-block > * {
+  --code-inset: clamp(var(--space-1xs), (100cqi - 80ch) / 2, var(--space-md));
+  --code-text-start: calc(var(--code-inset) + 2ch + var(--space-1xs));
 }
 
 .code-block-header {
@@ -107,7 +134,7 @@
   align-items: center;
   justify-content: space-between;
   block-size: var(--space-2xl);
-  padding-inline: var(--space-md);
+  padding-inline: var(--code-inset);
 }
 
 .code-block-filename {
@@ -143,8 +170,6 @@
 }
 
 .code-block-body {
-  --code-block-gutter-inline-size: calc((var(--space-md) * 2) + 2ch);
-
   position: relative;
   overflow: hidden;
   max-block-size: calc(100vb - var(--space-4xl));
@@ -155,7 +180,7 @@
 .code-block-frame {
   position: absolute;
   inset-block: 0;
-  inset-inline: var(--code-block-gutter-inline-size) 0;
+  inset-inline: var(--code-text-start) 0;
   background: var(--code-bg);
   border: 1px solid var(--code-border);
 
@@ -169,7 +194,7 @@
 .code-block-scroll {
   position: relative;
   display: grid;
-  grid-template-columns: var(--code-block-gutter-inline-size) minmax(0, 1fr);
+  grid-template-columns: var(--code-text-start) minmax(0, 1fr);
   max-block-size: inherit;
   overflow-block: auto;
   overflow-inline: hidden;
@@ -177,12 +202,10 @@
 
 .code-block-gutter {
   grid-column: 1;
-  box-sizing: border-box;
-  inline-size: var(--code-block-gutter-inline-size);
   white-space: pre;
   text-align: end;
-  padding-block: var(--space-md);
-  padding-inline: var(--space-md);
+  padding-block: var(--code-inset);
+  padding-inline: var(--code-inset) var(--space-1xs);
   color: var(--code-folder);
   font-size: var(--fs-2xs);
   line-height: calc(var(--fs-1xs) * var(--lh-en-1xs));
@@ -195,8 +218,7 @@
   min-inline-size: 0;
   overflow-block: clip;
   overflow-inline: auto;
-  padding-block: var(--space-md);
-  padding-inline: var(--space-md) var(--gutter);
+  padding: var(--code-inset);
 }
 
 .code-block-code {
