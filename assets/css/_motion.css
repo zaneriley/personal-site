@@ -36,9 +36,12 @@
 }
 
 /* Full page loads (first visit, reload, the language switch) fade in once.
-   The class is removed on the first live navigation. */
+   The class is removed on the first live navigation. The fill is backwards
+   only: an animation that holds its end keeps the page on a layer of its
+   own, and text on a layer is drawn softer than text on the page. At rest
+   nothing here may leave a layer behind. */
 .first-paint [data-main-view] {
-  animation: vt-in var(--motion-base) var(--ease-enter) both;
+  animation: vt-in var(--motion-base) var(--ease-enter) backwards;
 }
 
 /* The tap is answered at once, before the server replies: the tapped panel
