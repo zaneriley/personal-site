@@ -1,8 +1,11 @@
 // Page-to-page motion. The choreography and timing live in
-// assets/css/_motion.css; this file decides which relation a navigation is.
+// assets/css/_motion.css; this file decides which relation a navigation is
+// and moves <html data-phase> through "out" (the old page leaves, starting
+// on the tap, while the server answers) and "in" (the new page arrives).
+// The live page itself is animated; there are no snapshots to swap back.
 //
 // LiveView calls onDocumentPatch for every patch (weather, forms, the theme),
-// so only the patch that follows a live navigation runs as a view transition.
+// so only the patch that follows a live navigation is held for the exit.
 
 const root = document.documentElement;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
@@ -10,6 +13,13 @@ let here = location.pathname;
 let pending: string | null = null;
 let pop = false;
 let loading = 0;
+let exit: Promise<void> | null = null;
+let queue: Promise<void> | null = null;
+
+const ms = (token: string) =>
+  Number.parseFloat(getComputedStyle(root).getPropertyValue(token));
+const wait = (token: string) =>
+  new Promise<void>((done) => setTimeout(done, ms(token)));
 
 // TEMP diagnostic (remove before merge): reports what the transition did on
 // a real phone as a request the dev server logs.
@@ -19,8 +29,6 @@ const report = (data: Record<string, unknown>) => {
   );
   fetch(`/__vt?${query}`).catch(() => {});
 };
-const size = () =>
-  `${innerWidth}x${innerHeight}/${Math.round(visualViewport?.width ?? 0)}x${Math.round(visualViewport?.height ?? 0)}`;
 
 // TEMP diagnostic (remove before merge): scripted taps for recording, e.g.
 // /en#tap=a[href="/en/work"]|scroll:600|a[href="/en/work/oddity"]|back
@@ -60,13 +68,30 @@ const relation = (from: string, to: string) => {
   return b.index < a.index ? "across-back" : "across-forward";
 };
 
-// Live navigations announce themselves here. Back and forward only send
-// phx:navigate (no page-loading event), so both are handled.
+// Live navigations announce themselves here, more than once each. Back and
+// forward only send phx:navigate (no page-loading event), so both are
+// handled. The old page starts leaving now, before the server replies.
 const leave = (href: string, isPop: boolean) => {
+  const to = new URL(href, location.href).pathname;
+  if (to === pending) return;
   root.classList.remove("first-paint");
-  pending = new URL(href, location.href).pathname;
+  pending = to;
   pop = isPop;
-  report({ step: "leave", to: pending, pop: isPop });
+  report({ step: "leave", to, pop: isPop });
+  if (to === here) return;
+  root.dataset.nav = relation(here, to);
+  root.dataset.phase = "out";
+  exit = wait("--motion-quick");
+};
+
+// The page (new, or the old one if nothing arrived) eases in, then the
+// attributes go so nothing is left animating.
+const settle = () => {
+  root.dataset.phase = "in";
+  return wait("--motion-base").then(() => {
+    delete root.dataset.phase;
+    delete root.dataset.nav;
+  });
 };
 
 // The loading bar (styled in _motion.css) shows only when a page is slow.
@@ -85,68 +110,59 @@ window.addEventListener("phx:page-loading-stop", () => {
   clearTimeout(loading);
   loading = 0;
   root.classList.remove("is-loading");
+  // Never leave a page hidden: if loading ended and no page arrived (a
+  // failed or cancelled navigation), bring the old one back.
+  wait("--motion-travel").then(() => {
+    if (root.dataset.phase === "out" && !queue) {
+      pending = null;
+      settle();
+    }
+  });
 });
+
+// The nav marker slides from where it was to where it now is.
+const marker = () => document.querySelector<HTMLElement>(".nav-marker");
+
+const arrive = (start: () => void) => {
+  const from = marker()?.getBoundingClientRect();
+  start();
+  // A new page starts at the top; it is invisible at this point, so the
+  // jump is never seen. Back and forward keep the position LiveView restores.
+  if (!pop) window.scrollTo(0, 0);
+  const settled = settle();
+  const to = marker()?.getBoundingClientRect();
+  if (from && to && !reduced.matches) {
+    marker()?.animate(
+      {
+        transformOrigin: ["0 0", "0 0"],
+        transform: [
+          `translateX(${from.x - to.x}px) scaleX(${from.width / to.width})`,
+          "none",
+        ],
+      },
+      { duration: ms("--motion-travel"), easing: "cubic-bezier(0.4, 0, 0.2, 1)" },
+    );
+  }
+  report({ step: "in", nav: root.dataset.nav, scroll: Math.round(scrollY) });
+  return settled;
+};
 
 export const onDocumentPatch = (start: () => void) => {
   const to = pending;
-  pending = null;
-  if (!to || to === here || !document.startViewTransition) {
-    if (to) {
-      report({ step: "plain", to, same: to === here, vt: !!document.startViewTransition });
-      here = to;
-    }
-    return start();
+  if (!to || to === here) {
+    pending = null;
+    // Patches apply in order: one that lands during a page change waits
+    // its turn behind it.
+    if (queue) queue = queue.then(start);
+    else start();
+    return;
   }
-
-  const nav = relation(here, to);
+  pending = null;
   here = to;
-  root.dataset.nav = nav;
-  const t0 = performance.now();
-  const before = size();
-  let resized = 0;
-  // A browser whose toolbar resizes the screen mid-transition (Firefox on
-  // iOS, when the page was scrolled) makes the engine drop the transition.
-  // Fade the new page in ourselves so it is never a hard cut.
-  const onResize = () => {
-    if (resized++) return;
-    document.querySelector("[data-main-view]")?.animate(
-      { opacity: [0, 1] },
-      {
-        duration: Number.parseFloat(
-          getComputedStyle(root).getPropertyValue("--motion-base"),
-        ),
-        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-      },
-    );
-  };
-  addEventListener("resize", onResize);
-  visualViewport?.addEventListener("resize", onResize);
-  const facts = () => ({
-    nav,
-    resized,
-    reduced: reduced.matches,
-    ms: Math.round(performance.now() - t0),
-    before,
-    after: size(),
-    scroll: Math.round(scrollY),
-    ua: navigator.userAgent.replace(/^.*?\) /, ""),
-  });
-  const transition = document.startViewTransition(() => {
-    start();
-    // A new page starts at the top. Do it now, inside the transition, so the
-    // new snapshot is taken where the page will actually sit. Back and
-    // forward keep the position LiveView restores.
-    if (!pop) window.scrollTo(0, 0);
-  });
-  transition.ready.then(
-    () => report({ step: "ready", ...facts() }),
-    (error) => report({ step: "skipped", why: `${error.name}: ${error.message}`, ...facts() }),
-  );
-  transition.finished.finally(() => {
-    report({ step: "finished", ...facts() });
-    removeEventListener("resize", onResize);
-    visualViewport?.removeEventListener("resize", onResize);
-    setTimeout(() => report({ step: "settled", after: size() }), 500);
-    delete root.dataset.nav;
-  });
+  queue = (exit ?? Promise.resolve())
+    .then(() => arrive(start))
+    .finally(() => {
+      queue = null;
+    });
+  exit = null;
 };

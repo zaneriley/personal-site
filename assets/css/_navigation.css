@@ -116,5 +116,4 @@
   inset-inline: 0;
   inset-block-end: var(--space-2xs);
   border-block-end: 2px solid currentcolor;
-  view-transition-name: nav-marker;
 }

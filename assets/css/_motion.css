@@ -1,14 +1,19 @@
 /* ============================================================================
    MOTION
-   Page-to-page motion runs on the browser's View Transitions (wired in
-   assets/js/page-motion.ts). Storyboards and the route map:
-   https://claude.ai/artifact/2WuLRzBPwXBT1ShgB9xdos
+   Page-to-page motion, wired in assets/js/page-motion.ts. Storyboards and
+   the route map: https://claude.ai/artifact/2WuLRzBPwXBT1ShgB9xdos
 
-   Every page change is a fade through: the old page eases out, then the new
-   one eases in, with the header holding still. Between sections (Home, Work,
-   Notes, About) the page also steps sideways in the nav's direction and the
-   nav marker slides; into and out of a project or note it fades in place.
-   The relation is set on <html data-nav> for the length of the transition.
+   Every page change is a fade through: the old page eases out on the tap,
+   then the new one eases in, with the header holding still. Between
+   sections (Home, Work, Notes, About) the page also steps sideways in the
+   nav's direction and the nav marker slides; into and out of a project or
+   note it fades in place. The relation is set on <html data-nav> for the
+   length of the change.
+
+   It animates the live page, not View Transition snapshots: snapshots
+   swapped back to the live page with a shimmer of every text edge, were
+   dropped by the engine when a toolbar resized the screen, and needed a
+   layer for everything outside the page.
 
    Rules: nothing appears or leaves in one frame; text never scales; only
    transform and opacity move. With reduced motion nothing steps or slides,
@@ -22,27 +27,21 @@
 :root {
   --motion-quick: 120ms; /* the tap response; the old page leaving */
   --motion-base: 200ms; /* new content arriving */
-  --motion-travel: 300ms; /* a whole page change; the nav marker's slide */
+  --motion-travel: 300ms; /* something moving on screen: the nav marker */
   --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* leaving: starts slow, goes */
-  --ease-move: cubic-bezier(0.4, 0, 0.2, 1); /* arriving, moving: soft at both ends */
+  --ease-enter: cubic-bezier(0.2, 0, 0.2, 1); /* arriving: prompt, soft landing */
+  --ease-move: cubic-bezier(0.4, 0, 0.2, 1); /* moving: soft at both ends */
   --step: var(--space-md); /* how far content steps sideways: one line */
 }
 
-/* The page content is its own layer, so the fixed background never moves. */
-[data-main-view] {
-  view-transition-name: main-view;
-}
-
 /* Full page loads (first visit, reload, the language switch) fade in once.
-   The class is removed on the first live navigation so later pages are
-   left to the view transition. */
+   The class is removed on the first live navigation. */
 .first-paint [data-main-view] {
-  animation: vt-in var(--motion-base) var(--ease-move) both;
+  animation: vt-in var(--motion-base) var(--ease-enter) both;
 }
 
 /* The tap is answered at once, before the server replies: the tapped panel
-   presses in. (The page itself is never dimmed; a dimmed page would be what
-   the transition captures.) */
+   presses in. */
 .cs-next-media {
   transition: transform var(--motion-quick) var(--ease-move);
 }
@@ -64,60 +63,22 @@
   animation: loading-creep 4s var(--ease-move) both;
 }
 
-/* The header holds still. */
-.site-header {
-  view-transition-name: site-header;
+/* A page change in two phases, set on <html data-phase> by page-motion.ts.
+   The live page and footer are animated; the header and the background are
+   simply not, so they hold still.
+     out  the old page leaves, starting on the tap, while the server answers
+     in   the new page arrives
+   Between sections the page also steps sideways in the nav's direction;
+   everywhere else --dir is 0 and the same keyframes are a plain fade. */
+[data-phase="out"] :is([data-main-view], .site-footer) {
+  animation: vt-out var(--motion-quick) var(--ease-exit) both;
 }
 
-::view-transition-group(site-header),
-::view-transition-new(site-header) {
-  animation: none;
-}
-
-::view-transition-old(site-header) {
-  display: none;
-}
-
-::view-transition-group(root),
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-}
-
-/* The page layer, a fade through: the old page is nearly gone before the
-   new one starts, so two pages of text are never legible at once, and the
-   new one finishes exactly when the whole change does. */
-::view-transition-group(main-view) {
-  animation: none;
-}
-
-::view-transition-old(main-view) {
-  animation: var(--motion-quick) var(--ease-exit) both vt-out;
-}
-
-::view-transition-new(main-view) {
-  animation: var(--motion-base) var(--ease-move)
-    calc(var(--motion-travel) - var(--motion-base)) both vt-in;
+[data-phase="in"] :is([data-main-view], .site-footer) {
+  animation: vt-in var(--motion-base) var(--ease-enter) both;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* The nav marker slides to its new place over the whole change. */
-  ::view-transition-group(nav-marker) {
-    animation-duration: var(--motion-travel);
-    animation-timing-function: var(--ease-move);
-  }
-
-  /* Its two snapshots are the same line; no crossfade flash between them. */
-  ::view-transition-old(nav-marker) {
-    display: none;
-  }
-
-  ::view-transition-new(nav-marker) {
-    animation: none;
-  }
-
-  /* Across: the page steps sideways in the nav's direction. Everywhere else
-     --dir is 0 and the same keyframes are a plain fade. */
   [data-nav="across-forward"] {
     --dir: 1;
   }
