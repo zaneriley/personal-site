@@ -1,9 +1,7 @@
 /* ============================================================================
    CASE STUDY (block-out)
-   Widths: blocks sit on the reading grid at one of three widths.
-     column  the prose line: the whole field on phones, columns 3–10 wide
-     wide    the content cap (the whole field)
-     full    the viewport (.bleed, from _grid.css)
+   Widths come from _grid.css: .col-prose (the reading column), the whole
+   field (the default inside .subgrid), and .bleed (the viewport).
 
    Spacing: every gap is measured ink to ink (the Typography component trims
    each text block to its cap height and baseline) and has one of four jobs.
@@ -26,63 +24,19 @@
   --gap-group: var(--space-2xl);
   --gap-block: var(--space-4xl);
 
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
   row-gap: var(--gap-block);
 }
 
-.case-study > * {
-  grid-column: 1 / -1;
-}
-
-@media (width >= 64rem) {
-  .case-study > .cs-column {
-    grid-column: 3 / 11;
-  }
-}
-
-/* Intro block: the title group, then the facts group. */
 .cs-intro {
-  display: grid;
-  grid-template-columns: subgrid;
   row-gap: var(--gap-group);
 }
 
-.cs-intro > * {
-  grid-column: 1 / -1;
-}
-
-.cs-title {
-  max-width: 66ch;
-}
-
-.cs-title > * + * {
-  margin-block-start: var(--gap-item);
-}
-
-.cs-eyebrow + * {
-  margin-block-start: var(--gap-pair);
-}
-
-/* Facts: on the page's columns, two to a row on phones (two columns each of
-   four) and across on wider screens. */
-.cs-facts-group {
-  display: grid;
-  grid-template-columns: subgrid;
-  row-gap: var(--gap-item);
-}
-
-.cs-facts-group > * {
-  grid-column: 1 / -1;
-}
-
+.cs-facts-group,
 .cs-facts {
-  display: grid;
-  grid-template-columns: subgrid;
   row-gap: var(--gap-item);
 }
 
+/* Two facts to a row on phones (two of four columns each), across when wide. */
 .cs-fact {
   grid-column: span 2;
   display: grid;
@@ -90,19 +44,14 @@
   align-content: start;
 }
 
-/* Body: the rail and the prose share one row. The rail shows on wide
-   screens only, in the two columns the nav's seal sits over. */
-.cs-body {
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: start;
-}
-
+/* Running text: items a line apart, a heading two lines from what came
+   before and half a line from what it introduces. */
+.cs-title,
 .cs-story {
-  grid-column: 1 / -1;
   max-width: 66ch;
 }
 
+.cs-title > * + *,
 .cs-story > * + * {
   margin-block-start: var(--gap-item);
 }
@@ -111,8 +60,15 @@
   margin-block-start: var(--gap-group);
 }
 
+.cs-eyebrow + *,
 .cs-story > :where(h2, h3, h4) + * {
   margin-block-start: var(--gap-pair);
+}
+
+/* Contents rail: beside the prose on wide screens only, in the two columns
+   under the nav's seal. */
+.cs-body {
+  align-items: start;
 }
 
 .cs-rail {
@@ -120,30 +76,16 @@
 }
 
 @media (width >= 64rem) {
-  .cs-story {
-    grid-column: 3 / 11;
-  }
-
   .cs-rail {
     display: grid;
-    grid-column: 1 / 3;
-    grid-row: 1;
+    grid-area: 1 / 1 / 2 / 3;
     position: sticky;
     inset-block-start: var(--space-5xl);
     aspect-ratio: 1;
   }
 }
 
-/* Media slots. */
-.cs-hero {
-  aspect-ratio: 16 / 9;
-}
-
-.cs-media-wide {
-  aspect-ratio: 3 / 2;
-}
-
-/* Next project: a full-bleed panel, its title on the prose column. */
+/* Next project: a full-bleed panel with its title on the reading column. */
 .cs-next {
   display: grid;
   row-gap: var(--gap-pair);
@@ -153,17 +95,6 @@
 .cs-next-media {
   aspect-ratio: 21 / 9;
   max-height: 60svh;
-  width: 100%;
-}
-
-.cs-next-title > * {
-  grid-column: 1 / -1;
-}
-
-@media (width >= 64rem) {
-  .cs-next-title > * {
-    grid-column: 3 / 11;
-  }
 }
 
 /* Grey box: a stand-in for media without a design yet. */

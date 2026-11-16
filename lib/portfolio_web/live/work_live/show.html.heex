@@ -2,11 +2,11 @@
      grey boxes stand in for media that has no design yet. The page places
      its blocks on the reading grid at three widths (see _case-study.css):
      column (prose), wide (the content cap) and full (the viewport). --%>
-<article class="case-study">
+<article class="case-study subgrid">
   <%!-- Spacing: every gap is ink to ink (Typography trims each text block)
        and has one of four jobs, each double the last: pair, item, group,
        block. See _case-study.css. --%>
-  <div class="cs-intro cs-column">
+  <div class="cs-intro subgrid col-prose">
     <header class="cs-title">
       <.typography
         locale={@user_locale}
@@ -32,8 +32,8 @@
       </.typography>
     </header>
 
-    <div class="cs-facts-group">
-      <dl class="cs-facts">
+    <div class="cs-facts-group subgrid">
+      <dl class="cs-facts subgrid">
         <div class="cs-fact">
           <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee">
             {gettext("Role")}
@@ -70,19 +70,19 @@
   </div>
 
   <div
-    class="cs-hero cs-wide blockout"
+    class="cs-hero blockout aspect-video"
     style={"--vt-hero: project-hero-#{@project.url}"}
     aria-hidden="true"
   >
     <span>hero · finished product · 16:9</span>
   </div>
 
-  <div class="cs-body">
+  <div class="cs-body subgrid">
     <aside class="cs-rail blockout" aria-hidden="true">
       <span>contents</span>
     </aside>
 
-    <div class="cs-story">
+    <div class="cs-story col-prose">
       <%= if @translations["content"] do %>
         {render_to_safe(@translations["content"])}
       <% else %>
@@ -91,7 +91,7 @@
     </div>
   </div>
 
-  <div class="cs-wide blockout cs-media-wide" aria-hidden="true">
+  <div class="blockout aspect-[3/2]" aria-hidden="true">
     <span>wide media · 3:2</span>
   </div>
 
@@ -113,6 +113,7 @@
         tag="span"
         size="3xl"
         font="cardinal"
+        class="col-prose"
       >
         {@next_project.translations["title"] || @next_project.title}
       </.typography>

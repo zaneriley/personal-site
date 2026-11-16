@@ -267,7 +267,9 @@ export function initCloudSurface() {
   }
 
   function sync() {
-    if (!isLight()) {
+    // Dark theme has no clouds. During a page transition (data-nav, set by
+    // page-motion.ts) the loop rests so the GPU only has the transition.
+    if (!isLight() || document.documentElement.hasAttribute("data-nav")) {
       stop();
       return;
     }
@@ -292,7 +294,7 @@ export function initCloudSurface() {
 
   new MutationObserver(sync).observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ["data-theme"],
+    attributeFilter: ["data-theme", "data-nav"],
   });
   lightQuery.addEventListener("change", sync);
   motionQuery.addEventListener("change", sync);

@@ -11,8 +11,8 @@
        own blocks (the case study does, for its wide and full-bleed media). --%>
   <main class={
     if assigns[:page_field] == :full,
-      do: "page-field",
-      else: "col-span-full lg:col-start-3 lg:col-end-11"
+      do: "subgrid",
+      else: "col-prose"
   }>
     {@inner_content}
   </main>
