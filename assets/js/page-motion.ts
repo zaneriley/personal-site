@@ -107,9 +107,14 @@ export const onDocumentPatch = (start: () => void) => {
   root.dataset.nav = nav;
   const t0 = performance.now();
   const before = size();
+  let resized = 0;
+  const onResize = () => resized++;
+  addEventListener("resize", onResize);
+  visualViewport?.addEventListener("resize", onResize);
   const facts = () => ({
     nav,
     travel: "travel" in root.dataset,
+    resized,
     reduced: reduced.matches,
     ms: Math.round(performance.now() - t0),
     before,
@@ -139,6 +144,9 @@ export const onDocumentPatch = (start: () => void) => {
   );
   transition.finished.finally(() => {
     report({ step: "finished", ...facts() });
+    removeEventListener("resize", onResize);
+    visualViewport?.removeEventListener("resize", onResize);
+    setTimeout(() => report({ step: "settled", after: size() }), 500);
     delete root.dataset.nav;
     delete root.dataset.travel;
     for (const el of document.querySelectorAll<HTMLElement>("[data-vt-hero]")) {
