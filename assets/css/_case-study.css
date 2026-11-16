@@ -107,11 +107,11 @@
   margin-block-start: var(--gap-item);
 }
 
-.cs-story > * + :is(h2, h3, h4) {
+.cs-story > * + :where(h2, h3, h4) {
   margin-block-start: var(--gap-group);
 }
 
-.cs-story > :is(h2, h3, h4) + * {
+.cs-story > :where(h2, h3, h4) + * {
   margin-block-start: var(--gap-pair);
 }
 
