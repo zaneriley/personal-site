@@ -104,3 +104,18 @@
     grid-area: 1 / 9 / 2 / -1;
   }
 }
+
+/* Current-page marker: a short bar under the current destination. It is the
+   shape that travels when you move across sections (see _motion.css). */
+.site-navigation-destinations a {
+  position: relative;
+}
+
+.nav-marker {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--space-2xs);
+  block-size: 2px;
+  background: currentcolor;
+  view-transition-name: nav-marker;
+}

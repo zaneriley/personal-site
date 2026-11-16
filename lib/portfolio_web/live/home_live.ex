@@ -188,7 +188,6 @@ defmodule PortfolioWeb.HomeLive do
                 tag="h3"
                 size="2xl"
                 font="cardinal"
-                data-vt-title={"project-title-#{project.url}"}
               >
                 {project.translations["title"] || project.title}
               </.typography>

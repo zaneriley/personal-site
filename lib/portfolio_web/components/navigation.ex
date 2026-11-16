@@ -62,6 +62,8 @@ defmodule PortfolioWeb.Navigation do
                 >
                   {label}
                 </.typography>
+                <span :if={@section == section} class="nav-marker" aria-hidden="true">
+                </span>
               </.link>
             </li>
           </ul>

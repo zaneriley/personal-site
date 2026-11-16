@@ -24,7 +24,6 @@
         tag="h1"
         size="4xl"
         font="cardinal"
-        style={"--vt-title: project-title-#{@project.url}"}
       >
         {@translations["title"] || @project.title}
       </.typography>
@@ -114,7 +113,6 @@
         tag="span"
         size="3xl"
         font="cardinal"
-        data-vt-title={"project-title-#{@next_project.url}"}
       >
         {@next_project.translations["title"] || @next_project.title}
       </.typography>

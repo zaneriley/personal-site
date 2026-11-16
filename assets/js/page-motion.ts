@@ -1,38 +1,47 @@
-// Page-to-page motion. See assets/css/_motion.css for the timing and the
-// rule ("what you tap becomes the next page").
+// Page-to-page motion. The choreography and timing live in
+// assets/css/_motion.css; this file decides which relation a navigation is
+// and names the one shape that travels.
 //
-// LiveView calls onDocumentPatch for every patch (weather, forms, the
-// theme), so only a patch that follows a live navigation runs inside a view
-// transition. The tap itself is answered at once with .is-leaving, so the
-// page moves before the server replies; the loading bar still reports the
-// network if the reply is slow.
+// LiveView calls onDocumentPatch for every patch (weather, forms, the theme),
+// so only the patch that follows a live navigation runs as a view transition.
 
 const root = document.documentElement;
-let navigating = false;
-let named: HTMLElement[] = [];
+const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+let here = location.pathname;
+let pending: string | null = null;
+let source: HTMLElement | null = null;
 
-const clearNames = () => {
-  for (const el of named) el.style.viewTransitionName = "";
-  named = [];
+// Site position: section index in nav order, and whether it's a detail page.
+const place = (path: string) => {
+  const [section = "", slug] = path.split("/").filter(Boolean).slice(1);
+  const index = ["", "work", "notes", "about"].indexOf(
+    section === "note" ? "notes" : section,
+  );
+  return { index, detail: section === "note" || (section === "work" && !!slug) };
 };
 
-// Name the tapped link's shared elements so they morph into the next page.
+const relation = (from: string, to: string) => {
+  const a = place(from);
+  const b = place(to);
+  if (b.detail) return a.detail ? "next" : "down";
+  if (a.detail && a.index === b.index) return "up";
+  return b.index < a.index ? "across-back" : "across-forward";
+};
+
+const nameOf = (el: Element | null) =>
+  (el as HTMLElement | null)?.dataset.vtHero || "";
+
 document.addEventListener("click", (event) => {
   const link = (event.target as Element).closest?.("a[data-phx-link]");
-  if (!link || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  clearNames();
-  for (const el of link.querySelectorAll<HTMLElement>(
-    "[data-vt-hero], [data-vt-title]",
-  )) {
-    el.style.viewTransitionName = el.dataset.vtHero || el.dataset.vtTitle || "";
-    named.push(el);
-  }
+  source = link?.querySelector<HTMLElement>("[data-vt-hero]") ?? null;
 });
 
 window.addEventListener("phx:page-loading-start", (event) => {
-  if ((event as CustomEvent).detail.kind !== "redirect") return;
-  navigating = true;
-  root.classList.add("is-leaving");
+  const { kind, to } = (event as CustomEvent).detail;
+  if (kind !== "redirect") return;
+  root.classList.remove("first-paint");
+  pending = new URL(to, location.href).pathname;
+  if (pending !== here) root.classList.add("is-leaving");
 });
 
 window.addEventListener("phx:page-loading-stop", () => {
@@ -40,11 +49,42 @@ window.addEventListener("phx:page-loading-stop", () => {
 });
 
 export const onDocumentPatch = (start: () => void) => {
-  if (!navigating || !document.startViewTransition) return start();
-  navigating = false;
-  document.startViewTransition(() => {
+  const to = pending;
+  pending = null;
+  if (!to || to === here || !document.startViewTransition) {
+    if (to) here = to;
+    return start();
+  }
+
+  const nav = relation(here, to);
+  here = to;
+  const hero = document.querySelector<HTMLElement>(".cs-hero");
+  const heroName = hero?.style.getPropertyValue("--vt-hero").trim() || "";
+  const travel = !reduced.matches;
+
+  // Only one shape travels: the tapped image going down, or the hero
+  // closing back into its card going up. Anything else fades with the page.
+  if (hero && nav !== "up") hero.style.viewTransitionName = "none";
+  if (travel && source && nav !== "up") {
+    source.style.viewTransitionName = nameOf(source);
+  }
+
+  root.dataset.nav = nav;
+  const transition = document.startViewTransition(() => {
     start();
     root.classList.remove("is-leaving");
-    clearNames();
+    if (travel && nav === "up" && heroName) {
+      const card = document.querySelector<HTMLElement>(
+        `[data-vt-hero="${heroName}"]`,
+      );
+      if (card) card.style.viewTransitionName = heroName;
+    }
+  });
+  transition.finished.finally(() => {
+    delete root.dataset.nav;
+    for (const el of document.querySelectorAll<HTMLElement>("[data-vt-hero]")) {
+      el.style.viewTransitionName = "";
+    }
+    source = null;
   });
 };

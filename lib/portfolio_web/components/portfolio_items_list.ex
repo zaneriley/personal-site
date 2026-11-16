@@ -47,7 +47,6 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
                   tag="h3"
                   size="1xl"
                   font="cardinal"
-                  data-vt-title={@morph && "#{@morph}-title-#{item.url}"}
                 >
                   {item.title}
                 </.typography>

@@ -1,68 +1,75 @@
 /* ============================================================================
    MOTION
    Page-to-page motion runs on the browser's View Transitions (wired in
-   assets/js/page-motion.ts). Timing comes from these tokens, the way spacing
-   comes from --space-*: a few durations and two easings, nothing hand-set
-   per element.
+   assets/js/page-motion.ts). Storyboards and the route map:
+   https://claude.ai/artifact/2WuLRzBPwXBT1ShgB9xdos
 
-   The rule: what you tap becomes the next page. A tapped project's image and
-   title morph into the case study's hero and headline; everything else
-   fades. The header and footer hold still.
+   Every route is one of four relations, set on <html data-nav> for the
+   length of the transition. The relation comes from where the destination
+   sits in the site, not from which link was tapped:
+     across-forward / across-back  between sections (Home, Work, Notes,
+                                   About); the nav marker slides, the page
+                                   steps sideways in the nav's direction
+     down / next                   into a project (or the next one); its image
+                                   opens into the hero, then the text fades up
+     up                            back to the list; the hero closes into its
+                                   card, then the list fades in
 
-   Only transform and opacity move, so the compositor does the work and phones
-   keep 60fps. With reduced motion, nothing morphs: the page crossfades.
+   Rules: answer the tap at once; one shape travels and everything else only
+   fades; text never scales; only transform and opacity move. With reduced
+   motion nothing travels or slides, but pages still fade subtly (Z: a very
+   subtle fade smooths a lot out).
 ============================================================================ */
 
 :root {
-  --motion-quick: 120ms; /* acknowledging a tap */
-  --motion-base: 240ms; /* content leaving and arriving */
-  --motion-travel: 420ms; /* a shape travelling across the page */
-  --ease-out: cubic-bezier(0.2, 0, 0, 1);
-  --ease-in-out: cubic-bezier(0.6, 0, 0.2, 1);
+  --motion-quick: 120ms; /* the tap response; old text leaving */
+  --motion-base: 240ms; /* new content arriving */
+  --motion-travel: 300ms; /* the one shape that travels */
+  --ease-enter: cubic-bezier(0, 0, 0, 1); /* entering or leaving: decelerate */
+  --ease-move: cubic-bezier(0.2, 0, 0, 1); /* moving on screen: standard */
+  --step: var(--space-1xs); /* how far content steps sideways */
 }
 
-/* The page answers the tap at once, before the server does. */
+/* Full page loads (first visit, reload, the language switch) fade in once.
+   The class is removed on the first live navigation so later pages are
+   left to the view transition. */
+.first-paint [data-main-view] {
+  animation: vt-fade-in var(--motion-base) var(--ease-enter) both;
+}
+
+/* The tap is answered at once, before the server replies. */
 [data-main-view] {
-  transition: opacity var(--motion-quick) var(--ease-out);
+  transition: opacity var(--motion-quick) var(--ease-enter);
 }
 
 .is-leaving [data-main-view] {
   opacity: 0.55;
 }
 
-/* Header and footer are the same on every page; keep them out of the fade. */
+@media (hover: hover) and (pointer: fine) {
+  .cs-next:active .cs-next-media,
+  .portfolio-item-list a:active .blockout {
+    transform: scale(0.97);
+  }
+}
+
+.cs-next-media,
+.portfolio-item-list .blockout {
+  transition: transform var(--motion-quick) var(--ease-enter);
+}
+
+/* Named layers. The header holds still; the page content is its own layer
+   so the fixed background never moves. */
 .site-header {
   view-transition-name: site-header;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  /* Shared elements. Names come from custom properties (server-rendered on
-     the destination, set on tap on the source) so this block can switch the
-     morph off for reduced motion. */
-  .cs-hero {
-    view-transition-name: var(--vt-hero);
-  }
-
-  .cs-title h1 {
-    view-transition-name: var(--vt-title);
-  }
-
-  ::view-transition-group(*) {
-    animation-duration: var(--motion-travel);
-    animation-timing-function: var(--ease-in-out);
-  }
-
-  ::view-transition-old(root) {
-    animation: var(--motion-quick) var(--ease-out) both vt-fade-out;
-  }
-
-  ::view-transition-new(root) {
-    animation: var(--motion-base) var(--ease-out) var(--motion-quick) both
-      vt-rise-in;
-  }
+[data-main-view] {
+  view-transition-name: page;
 }
 
-::view-transition-group(site-header) {
+::view-transition-group(site-header),
+::view-transition-new(site-header) {
   animation: none;
 }
 
@@ -70,8 +77,79 @@
   display: none;
 }
 
-::view-transition-new(site-header) {
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
   animation: none;
+}
+
+/* The page layer: old leaves quickly, new arrives. Defaults, then each
+   relation sets its own delay and step. */
+::view-transition-group(page) {
+  animation: none;
+}
+
+::view-transition-old(page) {
+  animation: var(--motion-quick) var(--ease-enter) both vt-fade-out;
+}
+
+::view-transition-new(page) {
+  animation: var(--motion-base) var(--ease-enter) var(--motion-quick) both
+    vt-fade-in;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The traveller's landing spot: a case study's hero is named for its
+     project. The source (a card or the next panel) is named on tap by
+     page-motion.ts, and the card it closes into on the way up. */
+  .cs-hero {
+    view-transition-name: var(--vt-hero);
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: var(--motion-travel);
+    animation-timing-function: var(--ease-move);
+  }
+
+  [data-nav="down"]::view-transition-group(*),
+  [data-nav="next"]::view-transition-group(*),
+  [data-nav="up"]::view-transition-group(*) {
+    animation-delay: var(--motion-quick);
+  }
+
+  /* Across: the page steps sideways in the nav's direction. */
+  [data-nav="across-forward"]::view-transition-old(page) {
+    animation-name: vt-out-left;
+  }
+
+  [data-nav="across-forward"]::view-transition-new(page) {
+    animation-name: vt-in-right;
+  }
+
+  [data-nav="across-back"]::view-transition-old(page) {
+    animation-name: vt-out-right;
+  }
+
+  [data-nav="across-back"]::view-transition-new(page) {
+    animation-name: vt-in-left;
+  }
+
+  /* Down, next and up: the text waits for the image to land. */
+  [data-nav="down"]::view-transition-new(page),
+  [data-nav="next"]::view-transition-new(page) {
+    animation-delay: calc(var(--motion-quick) + var(--motion-travel) * 0.6);
+  }
+
+  [data-nav="up"]::view-transition-new(page) {
+    animation-delay: calc(var(--motion-quick) + var(--motion-travel) * 0.5);
+  }
+
+  /* The image groups crossfade their two snapshots without the default
+     plus-lighter flash. */
+  ::view-transition-old(*):only-child,
+  ::view-transition-new(*):only-child {
+    animation: none;
+  }
 }
 
 @keyframes vt-fade-out {
@@ -80,15 +158,43 @@
   }
 }
 
-@keyframes vt-rise-in {
+@keyframes vt-fade-in {
   from {
     opacity: 0;
-    transform: translateY(var(--space-1xs));
+  }
+}
+
+@keyframes vt-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--step) * -1));
+  }
+}
+
+@keyframes vt-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(var(--step));
+  }
+}
+
+@keyframes vt-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(var(--step));
+  }
+}
+
+@keyframes vt-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--step) * -1));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-main-view] {
+  .cs-next-media,
+  .portfolio-item-list .blockout {
     transition: none;
   }
 }
