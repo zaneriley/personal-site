@@ -128,11 +128,12 @@
     --dir: -1;
   }
 
-  /* When an image travels (data-travel), the text arrives over the same
-     time the image takes, so the two land together and the page is never
-     empty. */
+  /* When an image travels (data-travel) it carries the eye, so the moves
+     run in order: the old page leaves, the image is on its way, then the
+     text arrives and lands with it. */
   [data-travel]::view-transition-new(main-view) {
-    animation-duration: var(--motion-travel);
+    animation-delay: var(--motion-quick);
+    animation-duration: calc(var(--motion-travel) - var(--motion-quick));
   }
 
   /* The image groups crossfade their two snapshots without the default

@@ -108,7 +108,21 @@ export const onDocumentPatch = (start: () => void) => {
   const t0 = performance.now();
   const before = size();
   let resized = 0;
-  const onResize = () => resized++;
+  // A browser whose toolbar resizes the screen mid-transition (Firefox on
+  // iOS, when the page was scrolled) makes the engine drop the transition.
+  // Fade the new page in ourselves so it is never a hard cut.
+  const onResize = () => {
+    if (resized++) return;
+    document.querySelector("[data-main-view]")?.animate(
+      { opacity: [0, 1] },
+      {
+        duration: Number.parseFloat(
+          getComputedStyle(root).getPropertyValue("--motion-base"),
+        ),
+        easing: "cubic-bezier(0.2, 0, 0, 1)",
+      },
+    );
+  };
   addEventListener("resize", onResize);
   visualViewport?.addEventListener("resize", onResize);
   const facts = () => ({
