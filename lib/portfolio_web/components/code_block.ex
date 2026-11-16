@@ -81,8 +81,7 @@ defmodule PortfolioWeb.Components.CodeBlock do
   @spec code_block(map()) :: Phoenix.LiveView.Rendered.t()
   def code_block(%{component: :code_block, attrs: attrs}) do
     code_block(%{
-      code:
-        {:safe, attr(attrs, :code) || raise(KeyError, key: :code, term: attrs)},
+      code: {:safe, attr(attrs, :code) || raise(KeyError, key: :code, term: attrs)},
       language: attr(attrs, :language),
       filename: attr(attrs, :filename),
       __changed__: nil
