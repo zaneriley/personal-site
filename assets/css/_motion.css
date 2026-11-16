@@ -33,6 +33,7 @@
 /* Full page loads (first visit, reload, the language switch) fade in once.
    The class is removed on the first live navigation so later pages are
    left to the view transition. */
+
 /* The page content is its own layer, so the fixed background never moves.
    The tap is answered at once, before the server replies. */
 [data-main-view] {
@@ -43,7 +44,6 @@
 .first-paint [data-main-view] {
   animation: vt-fade-in var(--motion-base) var(--ease-enter) both;
 }
-
 
 .is-leaving [data-main-view] {
   opacity: 0.55;
