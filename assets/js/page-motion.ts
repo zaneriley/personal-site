@@ -164,11 +164,13 @@ const arrive = async (start: () => void) => {
   // jump is never seen. Back and forward keep the position LiveView restores.
   if (!pop) window.scrollTo(0, 0);
   const from = marker()?.getBoundingClientRect();
+  // Whatever the patch does, the page must come back into view.
   try {
     start();
-  } finally {
-    report({ step: "in", nav: root.dataset.nav, scroll: Math.round(scrollY) });
+  } catch (error) {
+    console.error(error);
   }
+  report({ step: "in", nav: root.dataset.nav, scroll: Math.round(scrollY) });
   const to = marker()?.getBoundingClientRect();
   if (from && to && !reduced.matches) {
     marker()?.animate(
