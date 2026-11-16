@@ -36,18 +36,6 @@
   row-gap: var(--gap-item);
 }
 
-/* Hero. On a one-measure page (phones) a card image is already as wide as
-   the column, so the hero comes first and runs edge to edge: the image has
-   somewhere to go, up and wider. With more columns it follows the intro on
-   the field, and the image grows into it. */
-@media (width < 40rem) {
-  .cs-hero {
-    order: -1;
-    width: 100vw;
-    margin-inline: calc(50% - 50vw);
-  }
-}
-
 /* Two facts to a row on phones (two of four columns each), across when wide. */
 .cs-fact {
   grid-column: span 2;
