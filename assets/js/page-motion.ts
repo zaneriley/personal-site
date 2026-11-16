@@ -86,9 +86,8 @@ const relation = (from: string, to: string) => {
   return b.index < a.index ? "across-back" : "across-forward";
 };
 
-// A finger going down on a link readies the page (its layers and the
-// direction it will step, in _motion.css), so the exit's first frames are
-// painted, not spent restyling.
+// A finger going down on a link sets the direction the page will step (in
+// _motion.css), so the exit's first frames are painted, not spent restyling.
 document.addEventListener(
   "pointerdown",
   (event) => {
