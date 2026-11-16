@@ -69,7 +69,6 @@
   animation: loading-creep 4s var(--ease-enter) both;
 }
 
-
 /* The header holds still. */
 .site-header {
   view-transition-name: site-header;
