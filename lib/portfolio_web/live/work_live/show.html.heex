@@ -69,14 +69,6 @@
     </div>
   </div>
 
-  <div
-    class="cs-hero blockout aspect-video"
-    style={"--vt-hero: project-hero-#{@project.url}"}
-    aria-hidden="true"
-  >
-    <span>hero · finished product · 16:9</span>
-  </div>
-
   <div class="cs-body subgrid">
     <aside class="cs-rail blockout" aria-hidden="true">
       <span>contents</span>
@@ -100,11 +92,7 @@
     navigate={~p"/#{@user_locale}/work/#{@next_project.url}"}
     class="cs-next bleed"
   >
-    <span
-      class="cs-next-media blockout"
-      data-vt-hero={"project-hero-#{@next_project.url}"}
-      aria-hidden="true"
-    >
+    <span class="cs-next-media blockout" aria-hidden="true">
       <span>next project · full bleed</span>
     </span>
     <span class="cs-next-title reading-grid">

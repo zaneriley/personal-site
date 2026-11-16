@@ -4,55 +4,50 @@
    assets/js/page-motion.ts). Storyboards and the route map:
    https://claude.ai/artifact/2WuLRzBPwXBT1ShgB9xdos
 
-   Every route is one of four relations, set on <html data-nav> for the
-   length of the transition. The relation comes from where the destination
-   sits in the site, not from which link was tapped:
-     across-forward / across-back  between sections (Home, Work, Notes,
-                                   About); the nav marker slides, the page
-                                   steps sideways in the nav's direction
-     down / next                   into a project (or the next one); its image
-                                   opens into the hero, then the text fades up
-     up                            back to the list; the hero closes into its
-                                   card, then the list fades in
+   Every page change is a fade through: the old page eases out, then the new
+   one eases in, with the header holding still. Between sections (Home, Work,
+   Notes, About) the page also steps sideways in the nav's direction and the
+   nav marker slides; into and out of a project or note it fades in place.
+   The relation is set on <html data-nav> for the length of the transition.
 
-   Rules: answer the tap at once; one shape travels and everything else only
-   fades, with no empty beat between pages; text never scales; only transform and opacity move. With reduced
-   motion nothing travels or slides, but pages still fade subtly (Z: a very
-   subtle fade smooths a lot out).
+   Rules: nothing appears or leaves in one frame; text never scales; only
+   transform and opacity move. With reduced motion nothing steps or slides,
+   but pages still fade (Z: a very subtle fade smooths a lot out).
+
+   Judge changes here only on frame-by-frame recordings of real Safari
+   rendering at phone size. The first curves looked right in numbers and
+   read as a cut on a phone: they did a third of their change in one frame.
 ============================================================================ */
 
 :root {
-  --motion-quick: 120ms; /* the tap response; old text leaving */
-  --motion-base: 240ms; /* new content arriving */
-  --motion-travel: 300ms; /* the one shape that travels */
-  --ease-enter: cubic-bezier(0, 0, 0, 1); /* entering or leaving: decelerate */
-  --ease-move: cubic-bezier(0.2, 0, 0, 1); /* moving on screen: standard */
+  --motion-quick: 120ms; /* the tap response; the old page leaving */
+  --motion-base: 200ms; /* new content arriving */
+  --motion-travel: 300ms; /* a whole page change; the nav marker's slide */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* leaving: starts slow, goes */
+  --ease-move: cubic-bezier(0.4, 0, 0.2, 1); /* arriving, moving: soft at both ends */
   --step: var(--space-md); /* how far content steps sideways: one line */
 }
-
-/* Full page loads (first visit, reload, the language switch) fade in once.
-   The class is removed on the first live navigation so later pages are
-   left to the view transition. */
 
 /* The page content is its own layer, so the fixed background never moves. */
 [data-main-view] {
   view-transition-name: main-view;
 }
 
+/* Full page loads (first visit, reload, the language switch) fade in once.
+   The class is removed on the first live navigation so later pages are
+   left to the view transition. */
 .first-paint [data-main-view] {
-  animation: vt-in var(--motion-base) var(--ease-enter) both;
+  animation: vt-in var(--motion-base) var(--ease-move) both;
 }
 
-.cs-next-media,
-.portfolio-item-list .blockout {
-  transition: transform var(--motion-quick) var(--ease-enter);
-}
-
-/* The tap is answered at once, before the server replies: the tapped image
+/* The tap is answered at once, before the server replies: the tapped panel
    presses in. (The page itself is never dimmed; a dimmed page would be what
    the transition captures.) */
-.cs-next:active .cs-next-media,
-.portfolio-item-list a:active .blockout {
+.cs-next-media {
+  transition: transform var(--motion-quick) var(--ease-move);
+}
+
+.cs-next:active .cs-next-media {
   transform: scale(0.97);
 }
 
@@ -66,7 +61,7 @@
   z-index: 40;
   border-block-start: 2px solid var(--accent);
   transform-origin: 0 0;
-  animation: loading-creep 4s var(--ease-enter) both;
+  animation: loading-creep 4s var(--ease-move) both;
 }
 
 /* The header holds still. */
@@ -89,33 +84,36 @@
   animation: none;
 }
 
-/* The page layer: old leaves quickly, new arrives. Defaults, then each
-   relation sets its own delay and step. */
+/* The page layer, a fade through: the old page is nearly gone before the
+   new one starts, so two pages of text are never legible at once, and the
+   new one finishes exactly when the whole change does. */
 ::view-transition-group(main-view) {
   animation: none;
 }
 
 ::view-transition-old(main-view) {
-  animation: var(--motion-quick) var(--ease-move) both vt-out;
+  animation: var(--motion-quick) var(--ease-exit) both vt-out;
 }
 
-/* No gap between the two: the new page starts arriving as the old one
-   leaves, so the screen is never empty. */
 ::view-transition-new(main-view) {
-  animation: var(--motion-base) var(--ease-move) both vt-in;
+  animation: var(--motion-base) var(--ease-move)
+    calc(var(--motion-travel) - var(--motion-base)) both vt-in;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* The traveller's landing spot: a case study's hero is named for its
-     project. The source (a card or the next panel) is named on tap by
-     page-motion.ts, and the card it closes into on the way up. */
-  .cs-hero {
-    view-transition-name: var(--vt-hero);
-  }
-
-  ::view-transition-group(*) {
+  /* The nav marker slides to its new place over the whole change. */
+  ::view-transition-group(nav-marker) {
     animation-duration: var(--motion-travel);
     animation-timing-function: var(--ease-move);
+  }
+
+  /* Its two snapshots are the same line; no crossfade flash between them. */
+  ::view-transition-old(nav-marker) {
+    display: none;
+  }
+
+  ::view-transition-new(nav-marker) {
+    animation: none;
   }
 
   /* Across: the page steps sideways in the nav's direction. Everywhere else
@@ -126,21 +124,6 @@
 
   [data-nav="across-back"] {
     --dir: -1;
-  }
-
-  /* When an image travels (data-travel) it carries the eye, so the moves
-     run in order: the old page leaves, the image is on its way, then the
-     text arrives and lands with it. */
-  [data-travel]::view-transition-new(main-view) {
-    animation-delay: var(--motion-quick);
-    animation-duration: calc(var(--motion-travel) - var(--motion-quick));
-  }
-
-  /* The image groups crossfade their two snapshots without the default
-     plus-lighter flash. */
-  ::view-transition-old(*):only-child,
-  ::view-transition-new(*):only-child {
-    animation: none;
   }
 }
 
@@ -169,8 +152,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cs-next-media,
-  .portfolio-item-list .blockout {
+  .cs-next-media {
     transition: none;
   }
 }
