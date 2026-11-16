@@ -23,11 +23,15 @@ const ms = (token: string) =>
   Number.parseFloat(getComputedStyle(root).getPropertyValue(token));
 const wait = (time: number) =>
   new Promise<void>((done) => setTimeout(done, time));
-// Two frames: the swapped-in page is painted (unseen) before it animates.
-// Without this a tall page's first frames are skipped and it pops in.
+// Two frames, yielding after each: the swapped-in page is committed and
+// painted (unseen) before it animates. A bare frame callback fires before
+// WebKit has painted a heavy page, and the entrance then runs unseen and the
+// page pops in.
 const painted = () =>
   new Promise<void>((done) =>
-    requestAnimationFrame(() => requestAnimationFrame(() => done())),
+    requestAnimationFrame(() =>
+      setTimeout(() => requestAnimationFrame(() => setTimeout(done, 0)), 0),
+    ),
   );
 
 // TEMP diagnostic (remove before merge): reports what the transition did on
