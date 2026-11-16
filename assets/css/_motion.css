@@ -26,10 +26,10 @@
 
 :root {
   --motion-quick: 120ms; /* the tap response */
-  --motion-leave: 180ms; /* the old page leaving, while the server answers */
+  --motion-leave: 160ms; /* the old page leaving, while the server answers */
   --motion-base: 200ms; /* new content arriving */
   --motion-travel: 300ms; /* something moving on screen: the nav marker */
-  --ease-exit: cubic-bezier(0.4, 0, 0.6, 1); /* leaving: soft at both ends */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* leaving: starts slow, goes */
   --ease-enter: cubic-bezier(0.2, 0, 0.2, 1); /* arriving: prompt, soft landing */
   --ease-move: cubic-bezier(0.4, 0, 0.2, 1); /* moving: soft at both ends */
   --step: var(--space-md); /* how far content steps sideways: one line */
@@ -93,12 +93,14 @@
   animation: vt-in var(--motion-base) var(--ease-enter) both;
 }
 
+/* The direction sits on the two moving blocks, not on the root, where it
+   would restyle the whole document just as the exit starts. */
 @media (prefers-reduced-motion: no-preference) {
-  [data-nav="across-forward"] {
+  [data-nav="across-forward"] :is([data-main-view], .footer-surface) {
     --dir: 1;
   }
 
-  [data-nav="across-back"] {
+  [data-nav="across-back"] :is([data-main-view], .footer-surface) {
     --dir: -1;
   }
 }

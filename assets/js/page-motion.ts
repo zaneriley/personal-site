@@ -82,13 +82,17 @@ const relation = (from: string, to: string) => {
   return b.index < a.index ? "across-back" : "across-forward";
 };
 
-// A finger going down on a link readies the page's layers (will-change, in
-// _motion.css), so the exit's first frames are painted, not skipped.
+// A finger going down on a link readies the page (its layers and the
+// direction it will step, in _motion.css), so the exit's first frames are
+// painted, not spent restyling.
 document.addEventListener(
   "pointerdown",
   (event) => {
-    if (!(event.target as Element).closest?.("a[data-phx-link]")) return;
-    root.dataset.nav ??= "";
+    const link = (event.target as Element).closest?.<HTMLAnchorElement>(
+      "a[data-phx-link]",
+    );
+    if (!link || root.dataset.phase) return;
+    root.dataset.nav = relation(here, link.pathname);
     const mine = turn;
     wait(1000).then(() => {
       if (turn === mine && !root.dataset.phase) delete root.dataset.nav;
@@ -200,11 +204,12 @@ export const onDocumentPatch = (start: () => void) => {
   }
   pending = null;
   here = to;
-  const mine = (queue = (exit ?? Promise.resolve())
+  const mine = (exit ?? Promise.resolve())
     .then(() => arrive(start))
     .catch(() => {})
     .finally(() => {
       if (queue === mine) queue = null;
-    }));
+    });
+  queue = mine;
   exit = null;
 };
