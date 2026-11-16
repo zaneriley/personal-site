@@ -77,11 +77,29 @@
      in    the new page arrives
    Each step is one animation: a browser skips the first frames of a new
    animation on a tall page, so there are as few starts as possible and the
-   layers are readied (will-change) from the moment a finger goes down.
+   layers are readied (will-change) when the change starts and kept until
+   it ends. They are not readied on touch: text moved onto a layer is drawn
+   again without the page behind it, and its edges visibly change, so that
+   must land in a frame where the page is already fading.
    Between sections the page also steps sideways in the nav's direction;
    everywhere else --dir is 0 and the same keyframes are a plain fade. */
-[data-nav] :is([data-main-view], .footer-surface) {
+[data-phase] :is([data-main-view], .footer-surface) {
   will-change: opacity, transform;
+}
+
+/* While a new page is swapped in and arrives, the header is pinned where it
+   will come to rest, and the body keeps its room (the measures are set by
+   page-motion.ts). iOS leaves a sticky header undrawn for a few frames
+   after the jump to the top of a long page; a fixed one it keeps. */
+[data-pin] .site-header {
+  position: fixed;
+  inset-block-start: var(--pin-top);
+  inset-inline-start: var(--pin-left);
+  inline-size: var(--pin-inline);
+}
+
+[data-pin] body {
+  padding-block-start: calc(var(--pin-top) + var(--pin-block));
 }
 
 [data-phase="out"] :is([data-main-view], .footer-surface) {

@@ -132,6 +132,7 @@ const settle = () => {
     if (turn !== mine) return;
     delete root.dataset.phase;
     delete root.dataset.nav;
+    delete root.dataset.pin;
   });
 };
 
@@ -170,7 +171,23 @@ const arrive = async (start: () => void) => {
   root.dataset.phase = "hold";
   // A new page starts at the top. Nothing is showing at this point, so the
   // jump is never seen. Back and forward keep the position LiveView restores.
-  if (!pop) window.scrollTo(0, 0);
+  // iOS does not draw a sticky header for a few frames after a long jump, so
+  // the header is pinned where it will come to rest until the page is in
+  // (styled in _motion.css).
+  delete root.dataset.pin;
+  if (!pop) {
+    const header = document.querySelector(".site-header");
+    if (header) {
+      const box = header.getBoundingClientRect();
+      const top = getComputedStyle(document.body).paddingBlockStart;
+      root.style.setProperty("--pin-top", top);
+      root.style.setProperty("--pin-left", `${box.left}px`);
+      root.style.setProperty("--pin-inline", `${box.width}px`);
+      root.style.setProperty("--pin-block", `${box.height}px`);
+      root.dataset.pin = "";
+    }
+    window.scrollTo(0, 0);
+  }
   const from = marker()?.getBoundingClientRect();
   // Whatever the patch does, the page must come back into view.
   try {
