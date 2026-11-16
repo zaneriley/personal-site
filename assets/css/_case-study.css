@@ -124,3 +124,13 @@
   font-size: var(--fs-2xs);
   color: color-mix(in oklch, currentcolor 55%, transparent);
 }
+
+.cs-next-title > * {
+  grid-column: 1 / -1;
+}
+
+@media (width >= 64rem) {
+  .cs-next-title > * {
+    grid-column: 3 / 11;
+  }
+}
