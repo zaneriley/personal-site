@@ -43,6 +43,11 @@
   animation: vt-fade-in var(--motion-base) var(--ease-enter) both;
 }
 
+.cs-next-media,
+.portfolio-item-list .blockout {
+  transition: transform var(--motion-quick) var(--ease-enter);
+}
+
 /* The tap is answered at once, before the server replies: the tapped image
    presses in. (The page itself is never dimmed; a dimmed page would be what
    the transition captures.) */
@@ -64,10 +69,6 @@
   animation: loading-creep 4s var(--ease-enter) both;
 }
 
-.cs-next-media,
-.portfolio-item-list .blockout {
-  transition: transform var(--motion-quick) var(--ease-enter);
-}
 
 /* The header holds still. */
 .site-header {
@@ -135,10 +136,11 @@
     animation-name: vt-in-left;
   }
 
-  /* When an image travels (data-travel), the text waits for it to be most
-     of the way there. With no traveller the page just arrives. */
+  /* When an image travels (data-travel), the text arrives over the same
+     time the image takes, so the two land together and the page is never
+     empty. */
   [data-travel]::view-transition-new(main-view) {
-    animation-delay: calc(var(--motion-travel) * 0.5);
+    animation-duration: var(--motion-travel);
   }
 
   /* The image groups crossfade their two snapshots without the default
