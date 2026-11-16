@@ -118,7 +118,6 @@
     animation-timing-function: var(--ease-move);
   }
 
-
   /* Across: the page steps sideways in the nav's direction. */
   [data-nav="across-forward"]::view-transition-old(main-view) {
     animation-name: vt-out-left;
