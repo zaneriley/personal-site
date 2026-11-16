@@ -5,6 +5,7 @@ import topbar from "topbar";
 
 import { initActionLight } from "./action-light";
 import { initCloudSurface } from "./cloud-surface";
+import { onDocumentPatch } from "./page-motion";
 import NavigationHook from "./hooks/navigation_hook";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
 import WeatherHook from "./hooks/weather_hook";
@@ -24,12 +25,15 @@ const csrfToken = document
 const liveSocket = new LiveSocket("/live", Socket, {
   hooks: Hooks,
   params: { _csrf_token: csrfToken },
+  dom: { onDocumentPatch },
 });
 
-// Topbar loader during page loading
+// Loading bar: reports network state when a page takes a while. Kept quiet
+// (thin, no glow) because the page motion answers the tap itself.
 topbar.config({
   barColors: { 0: "#C4FB50" },
-  shadowColor: "rgba(0, 0, 0, .3)",
+  barThickness: 2,
+  shadowBlur: 0,
 });
 
 let topBarScheduled;
@@ -42,21 +46,6 @@ window.addEventListener("phx:page-loading-stop", () => {
   clearTimeout(topBarScheduled);
   topBarScheduled = undefined;
   topbar.hide();
-});
-
-// Page transition animations
-window.addEventListener("phx:page-loading-start", (info) => {
-  if (info.detail.kind === "redirect") {
-    document
-      .querySelector("[data-main-view]")
-      ?.classList.add("phx-page-loading");
-  }
-});
-
-window.addEventListener("phx:page-loading-stop", () => {
-  document
-    .querySelector("[data-main-view]")
-    ?.classList.remove("phx-page-loading");
 });
 
 themeController();

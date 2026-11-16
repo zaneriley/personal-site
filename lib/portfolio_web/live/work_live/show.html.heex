@@ -1,65 +1,114 @@
-<article class="u-grid col-span-12-children text-pretty text-balance mx-auto max-w-100">
-  <nav aria-label="Breadcrumb" class="text-sm">
-    <div class="flex items-center space-x-2">
-      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        <.link navigate={~p"/#{@user_locale}"}>
-          {gettext("Project")}
-        </.link>
-      </.typography>
-      <span aria-hidden="true">
-        <Heroicons.chevron_double_right class="inline-block h-md w-md" />
-      </span>
-      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
-        {@translations["company"] || @project.company}
-      </.typography>
-    </div>
-  </nav>
-  <!-- Title -->
-  <.typography locale={@user_locale} tag="h1" size="4xl" font="cardinal">
-    {@translations["title"] || @project.title}
-  </.typography>
-  <.typography locale={@user_locale} tag="h2" size="1xl" dropcap={true}>
-    {@translations["introduction"] || @project.introduction}
-  </.typography>
-  <!-- Meta Information -->
-  <div class="grid grid-cols-12">
-    <span class="col-span-3">
-      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
+<%!-- Case study, blocked out. Clay before chisel: the real text is in place,
+     grey boxes stand in for media that has no design yet. The page places
+     its blocks on the reading grid at three widths (see _case-study.css):
+     column (prose), wide (the content cap) and full (the viewport). --%>
+<article class="case-study">
+  <header class="cs-title cs-column">
+    <.typography
+      locale={@user_locale}
+      tag="p"
+      size="1xs"
+      font="cheee"
+      class="cs-trim"
+    >
+      <.link navigate={~p"/#{@user_locale}/work"}>{gettext("Case study")}</.link>
+      <span aria-hidden="true">›</span>
+      {@translations["company"] || @project.company}
+    </.typography>
+    <.typography
+      locale={@user_locale}
+      tag="h1"
+      size="4xl"
+      font="cardinal"
+      class="cs-trim"
+      style={"--vt-title: project-title-#{@project.url}"}
+    >
+      {@translations["title"] || @project.title}
+    </.typography>
+    <.typography locale={@user_locale} tag="p" size="1xl" class="cs-trim">
+      {@translations["introduction"] || @project.introduction}
+    </.typography>
+  </header>
+
+  <dl class="cs-facts cs-column">
+    <div>
+      <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee" class="cs-trim">
         {gettext("Role")}
       </.typography>
-      <br />{@translations["role"] || @project.role}
-    </span>
-    <span class="col-span-3">
-      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
+      <dd class="cs-trim">{@translations["role"] || @project.role}</dd>
+    </div>
+    <div>
+      <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee" class="cs-trim">
         {gettext("Timeline")}
       </.typography>
-      <br />{@translations["timeline"] || @project.timeline}
-    </span>
-    <div class="col-span-3">
-      <% platforms = @translations["platforms"] || @project.platforms %>
-      <.typography locale={@user_locale} tag="span" size="1xs" font="cheee">
+      <dd class="cs-trim">{@translations["timeline"] || @project.timeline}</dd>
+    </div>
+    <div>
+      <% platforms = @translations["platforms"] || @project.platforms || [] %>
+      <.typography locale={@user_locale} tag="dt" size="1xs" font="cheee" class="cs-trim">
         {ngettext("Platform", "Platforms", length(platforms))}
       </.typography>
-      <ul>
-        <%= for platform <- platforms do %>
-          <li>{platform}</li>
-        <% end %>
-      </ul>
+      <dd class="cs-trim">{Enum.join(platforms, " · ")}</dd>
+    </div>
+    <div class="cs-facts-meta">
+      <.content_metadata
+        read_time={@translations["read_time"] || @project.read_time}
+        word_count={@translations["word_count"] || @project.word_count}
+        updated_at={@translations["updated_at"] || @project.updated_at}
+        user_locale={@user_locale}
+      />
+    </div>
+  </dl>
+
+  <div
+    class="cs-hero cs-wide blockout"
+    style={"--vt-hero: project-hero-#{@project.url}"}
+    aria-hidden="true"
+  >
+    <span>hero · finished product · 16:9</span>
+  </div>
+
+  <div class="cs-body">
+    <aside class="cs-rail blockout" aria-hidden="true">
+      <span>contents</span>
+    </aside>
+
+    <div class="cs-story space-y-md">
+      <%= if @translations["content"] do %>
+        {render_to_safe(@translations["content"])}
+      <% else %>
+        {render_to_safe(@body_ast)}
+      <% end %>
     </div>
   </div>
 
-  <.content_metadata
-    read_time={@translations["read_time"] || @project.read_time}
-    word_count={@translations["word_count"] || @project.word_count}
-    updated_at={@translations["updated_at"] || @project.updated_at}
-    user_locale={@user_locale}
-  />
-  <!-- Main Content -->
-  <div class="space-y-md drop-cap">
-    <%= if @translations["content"] do %>
-      {render_to_safe(@translations["content"])}
-    <% else %>
-      {render_to_safe(@body_ast)}
-    <% end %>
+  <div class="cs-wide blockout cs-media-wide" aria-hidden="true">
+    <span>wide media · 3:2</span>
   </div>
+
+  <.link
+    :if={@next_project}
+    navigate={~p"/#{@user_locale}/work/#{@next_project.url}"}
+    class="cs-next bleed"
+  >
+    <span
+      class="cs-next-media blockout"
+      data-vt-hero={"project-hero-#{@next_project.url}"}
+      aria-hidden="true"
+    >
+      <span>next project · full bleed</span>
+    </span>
+    <span class="cs-next-title reading-grid">
+      <.typography
+        locale={@user_locale}
+        tag="span"
+        size="3xl"
+        font="cardinal"
+        class="cs-column"
+        data-vt-title={"project-title-#{@next_project.url}"}
+      >
+        {@next_project.translations["title"] || @next_project.title}
+      </.typography>
+    </span>
+  </.link>
 </article>

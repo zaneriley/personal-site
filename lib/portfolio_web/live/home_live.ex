@@ -183,7 +183,13 @@ defmodule PortfolioWeb.HomeLive do
               }
               title={project.translations["title"] || project.title}
             >
-              <.typography locale={@user_locale} tag="h3" size="2xl" font="cardinal">
+              <.typography
+                locale={@user_locale}
+                tag="h3"
+                size="2xl"
+                font="cardinal"
+                data-vt-title={"project-title-#{project.url}"}
+              >
                 {project.translations["title"] || project.title}
               </.typography>
             </.link>

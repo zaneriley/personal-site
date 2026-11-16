@@ -1,0 +1,94 @@
+/* ============================================================================
+   MOTION
+   Page-to-page motion runs on the browser's View Transitions (wired in
+   assets/js/page-motion.ts). Timing comes from these tokens, the way spacing
+   comes from --space-*: a few durations and two easings, nothing hand-set
+   per element.
+
+   The rule: what you tap becomes the next page. A tapped project's image and
+   title morph into the case study's hero and headline; everything else
+   fades. The header and footer hold still.
+
+   Only transform and opacity move, so the compositor does the work and phones
+   keep 60fps. With reduced motion, nothing morphs: the page crossfades.
+============================================================================ */
+
+:root {
+  --motion-quick: 120ms; /* acknowledging a tap */
+  --motion-base: 240ms; /* content leaving and arriving */
+  --motion-travel: 420ms; /* a shape travelling across the page */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.6, 0, 0.2, 1);
+}
+
+/* The page answers the tap at once, before the server does. */
+[data-main-view] {
+  transition: opacity var(--motion-quick) var(--ease-out);
+}
+
+.is-leaving [data-main-view] {
+  opacity: 0.55;
+}
+
+/* Header and footer are the same on every page; keep them out of the fade. */
+.site-header {
+  view-transition-name: site-header;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Shared elements. Names come from custom properties (server-rendered on
+     the destination, set on tap on the source) so this block can switch the
+     morph off for reduced motion. */
+  .cs-hero {
+    view-transition-name: var(--vt-hero);
+  }
+
+  .cs-title h1 {
+    view-transition-name: var(--vt-title);
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: var(--motion-travel);
+    animation-timing-function: var(--ease-in-out);
+  }
+
+  ::view-transition-old(root) {
+    animation: var(--motion-quick) var(--ease-out) both vt-fade-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: var(--motion-base) var(--ease-out) var(--motion-quick) both
+      vt-rise-in;
+  }
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1xs));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-main-view] {
+    transition: none;
+  }
+}

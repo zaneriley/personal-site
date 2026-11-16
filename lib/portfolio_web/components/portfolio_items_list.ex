@@ -21,6 +21,11 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
   attr :navigate_to, :any, required: true
   attr :user_locale, :string, required: true
 
+  attr :morph, :string,
+    default: nil,
+    doc:
+      "shared-element prefix (e.g. \"project\"): shows a media slot and names it and the title so they morph into the item's page"
+
   def portfolio_item_list(assigns) do
     ~H"""
     <div class="portfolio-item-list">
@@ -28,12 +33,21 @@ defmodule PortfolioWeb.Components.PortfolioItemList do
         <%= for {_id, item} <- @items do %>
           <li class="group rounded-lg overflow-hidden">
             <.link navigate={@navigate_to.(item)} class="block p-4">
+              <span
+                :if={@morph}
+                class="block blockout aspect-video mb-2"
+                data-vt-hero={"#{@morph}-hero-#{item.url}"}
+                aria-hidden="true"
+              >
+                <span>media</span>
+              </span>
               <div class="flex justify-between items-start mb-2">
                 <.typography
                   locale={@user_locale}
                   tag="h3"
                   size="1xl"
                   font="cardinal"
+                  data-vt-title={@morph && "#{@morph}-title-#{item.url}"}
                 >
                   {item.title}
                 </.typography>

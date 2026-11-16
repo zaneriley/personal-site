@@ -5,11 +5,15 @@
   current_path={@current_path}
   user_locale={@user_locale}
 />
-<div
-  data-main-view
-  class="reading-grid transition-opacity duration-500 ease-in-out phx-page-loading:opacity-0 text-color-main"
->
-  <main class="col-span-full lg:col-start-3 lg:col-end-11">
+<div data-main-view class="reading-grid text-color-main">
+  <%!-- Most pages read in the middle eight columns. A page that sets
+       page_field: :full gets the whole field as a subgrid and places its
+       own blocks (the case study does, for its wide and full-bleed media). --%>
+  <main class={
+    if assigns[:page_field] == :full,
+      do: "page-field",
+      else: "col-span-full lg:col-start-3 lg:col-end-11"
+  }>
     {@inner_content}
   </main>
 </div>

@@ -45,7 +45,9 @@ defmodule PortfolioWeb.WorkLive.Show do
            body_ast: body_ast,
            page_title: page_title,
            page_description: introduction,
-           share_metadata: share_meta
+           share_metadata: share_meta,
+           next_project: next_project(project, user_locale),
+           page_field: :full
          )}
 
       {:error, :not_found} ->
@@ -53,6 +55,22 @@ defmodule PortfolioWeb.WorkLive.Show do
 
       {:error, :compilation_failed} ->
         raise "project content compilation failed for slug=#{url}, locale=#{user_locale}"
+    end
+  end
+
+  # The project after this one in the homepage order, wrapping to the first.
+  defp next_project(project, user_locale) do
+    projects =
+      Content.list(
+        "project",
+        [sort_by: :sort_order, sort_order: :desc],
+        user_locale
+      )
+
+    case Enum.find_index(projects, &(&1.url == project.url)) do
+      nil -> nil
+      _ when length(projects) < 2 -> nil
+      index -> Enum.at(projects, rem(index + 1, length(projects)))
     end
   end
 

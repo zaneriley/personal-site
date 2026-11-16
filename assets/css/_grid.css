@@ -77,3 +77,12 @@
   width: 100vw;
   margin-inline: calc(50% - 50vw);
 }
+
+/* A page that places its own blocks: main spans the whole field and hands
+   its columns down, so children can sit at column, wide or full width on the
+   same lines as the header and footer. */
+.page-field {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}

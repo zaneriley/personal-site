@@ -1,0 +1,126 @@
+/* ============================================================================
+   CASE STUDY (block-out)
+   Blocks sit on the reading grid at one of three widths:
+     column  the prose line: the whole field on phones, columns 3–10 wide
+     wide    the content cap (the whole field)
+     full    the viewport (.bleed, from _grid.css)
+   Vertical space has the same two roles as the grid: --gutter between
+   blocks, md and below inside one. Text that starts or ends a block is
+   trimmed to its cap height and baseline (text-box), so a gap measures ink to
+   ink, not line box to line box. Browsers without text-box keep the leading.
+============================================================================ */
+
+.case-study {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--gutter);
+  padding-block-end: var(--gutter);
+}
+
+.case-study > * {
+  grid-column: 1 / -1;
+}
+
+@media (width >= 64rem) {
+  .case-study > .cs-column {
+    grid-column: 3 / 11;
+  }
+}
+
+.cs-trim {
+  text-box: trim-both cap alphabetic;
+}
+
+/* Title: kicker, headline, intro. */
+.cs-title {
+  display: grid;
+  gap: var(--space-md);
+  max-width: 66ch;
+}
+
+.cs-title p:first-child {
+  display: flex;
+  gap: var(--space-2xs);
+  align-items: baseline;
+}
+
+/* Facts strip: one row of label/value pairs, wrapping on narrow screens. */
+.cs-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-1xl);
+}
+
+.cs-facts > div {
+  display: grid;
+  gap: var(--space-1xs);
+}
+
+.cs-facts-meta {
+  flex-basis: 100%;
+}
+
+/* Body: the rail and the prose share one row. The rail shows on wide
+   screens only, in the two columns the nav's seal sits over. */
+.cs-body {
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: start;
+}
+
+.cs-body > .cs-story {
+  grid-column: 1 / -1;
+  max-width: 66ch;
+}
+
+.cs-rail {
+  display: none;
+}
+
+@media (width >= 64rem) {
+  .cs-body > .cs-story {
+    grid-column: 3 / 11;
+  }
+
+  .cs-rail {
+    display: grid;
+    grid-column: 1 / 3;
+    grid-row: 1;
+    position: sticky;
+    inset-block-start: var(--space-5xl);
+    aspect-ratio: 1;
+  }
+}
+
+/* Media slots. */
+.cs-hero {
+  aspect-ratio: 16 / 9;
+}
+
+.cs-media-wide {
+  aspect-ratio: 3 / 2;
+}
+
+/* Next project: a full-bleed panel, its title on the page's own columns. */
+.cs-next {
+  display: grid;
+  gap: var(--space-md);
+  text-decoration: none;
+}
+
+.cs-next-media {
+  aspect-ratio: 21 / 9;
+  max-height: 60svh;
+  width: 100%;
+}
+
+/* Grey box: a stand-in for media without a design yet. */
+.blockout {
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklch, currentcolor 10%, transparent);
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-2xs);
+  color: color-mix(in oklch, currentcolor 55%, transparent);
+}
