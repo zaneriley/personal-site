@@ -30,7 +30,7 @@
   --motion-base: 200ms; /* new content arriving */
   --motion-travel: 300ms; /* something moving on screen: the nav marker */
   --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* leaving: starts slow, goes */
-  --ease-enter: cubic-bezier(0.2, 0, 0.2, 1); /* arriving: prompt, soft landing */
+  --ease-enter: cubic-bezier(0.2, 0, 0.2, 1); /* arriving: soft landing */
   --ease-move: cubic-bezier(0.4, 0, 0.2, 1); /* moving: soft at both ends */
   --step: var(--space-md); /* how far content steps sideways: one line */
 }
