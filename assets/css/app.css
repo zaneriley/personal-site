@@ -13,6 +13,8 @@
 @import url("./_language-switch.css");
 @import url("./_surface.css");
 @import url("./_action.css");
+@import url("./_motion.css");
+@import url("./_case-study.css");
 
 @property --fantazio-rotate {
   syntax: "<angle>";
@@ -80,15 +82,6 @@ body {
   max-width: var(--content-cap);
   padding-inline: var(--page-inset);
   margin-inline: auto;
-}
-
-.u-grid {
-  display: grid;
-  gap: var(--gutter);
-}
-
-.col-span-12-children > * {
-  grid-column: span 12;
 }
 
 .dropcap {

@@ -90,11 +90,16 @@
       <%!-- The REAL component (PortfolioWeb.Components.CodeBlock). The sample's
            spans are hand-classified to mirror the Figma mock so we judge the
            color relationships; the live tokenizer (Autumn) lands later. --%>
-      <PortfolioWeb.Components.CodeBlock.code_block
-        language="elixir"
-        filename="folder1/folder2/folder3/Accounts.ex"
-        code={raw(@code_sample)}
-      />
+      <%!-- The same slot a page gives it: the reading column. --%>
+      <div class="reading-grid" style="margin-block-start: var(--space-2xl)">
+        <div class="col-prose">
+          <PortfolioWeb.Components.CodeBlock.code_block
+            language="elixir"
+            filename="folder1/folder2/folder3/Accounts.ex"
+            code={raw(@code_sample)}
+          />
+        </div>
+      </div>
     </div>
 
     <div class="panel" id="panel">

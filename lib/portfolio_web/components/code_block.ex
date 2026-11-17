@@ -71,18 +71,18 @@ defmodule PortfolioWeb.Components.CodeBlock do
   @doc """
   Renders the code-block component.
 
-  The first clause is the markdown pipeline's entry point: the renderer applies
-  registered components with `%{component:, attrs:, content:}` (attrs are
-  string-keyed after DB round-tripping), so this clause only normalizes that
-  shape to the component's attrs — the renderer owns converting the result to
-  HTML. The baked `code` HTML is our own compile-time tokenizer output: trusted.
+  The first clause is the markdown pipeline's entry point: the renderer calls
+  registered components with their attrs as top-level assigns plus
+  `:component`, so this clause only marks the baked `code` HTML as safe. It is
+  our own compile-time tokenizer output: trusted.
   """
   @spec code_block(map()) :: Phoenix.LiveView.Rendered.t()
-  def code_block(%{component: :code_block, attrs: attrs}) do
+  def code_block(%{component: :code_block, code: code} = assigns)
+      when is_binary(code) do
     code_block(%{
-      code: {:safe, Map.fetch!(attrs, "code")},
-      language: Map.get(attrs, "language"),
-      filename: Map.get(attrs, "filename"),
+      code: {:safe, code},
+      language: assigns[:language],
+      filename: assigns[:filename],
       __changed__: nil
     })
   end

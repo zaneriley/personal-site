@@ -1,0 +1,114 @@
+/* ============================================================================
+   CASE STUDY (block-out)
+   Widths come from _grid.css: .col-prose (the reading column), the whole
+   field (the default inside .subgrid), and .bleed (the viewport).
+
+   Spacing: every gap is measured ink to ink (the Typography component trims
+   each text block to its cap height and baseline) and has one of four jobs.
+   Each job is double the one below it, counted in body lines, so the levels
+   can't blur into each other at any width or in either language.
+     pair   ½ line  a thing and its label: eyebrow→headline, label→value,
+                    heading→its first paragraph, media→its title
+     item   1 line  siblings in a group: headline→intro, fact→fact,
+                    paragraph→paragraph
+     group  2 lines sections inside a block: title→facts, prose→next heading
+     block  4 lines the page's big pieces: intro, hero, story, next project
+   Trial (2026-11-16): stacked blocks use the block step, not the gutter. On
+   phones the gutter (1½ lines) is smaller than a group, so the levels would
+   invert. The gutter stays for side-by-side space.
+============================================================================ */
+
+.case-study {
+  --gap-pair: var(--space-1xs);
+  --gap-item: var(--space-md);
+  --gap-group: var(--space-2xl);
+  --gap-block: var(--space-4xl);
+
+  row-gap: var(--gap-block);
+}
+
+.cs-intro {
+  row-gap: var(--gap-group);
+}
+
+.cs-facts-group,
+.cs-facts {
+  row-gap: var(--gap-item);
+}
+
+/* Two facts to a row on phones (two of four columns each), across when wide. */
+.cs-fact {
+  grid-column: span 2;
+  display: grid;
+  row-gap: var(--gap-pair);
+  align-content: start;
+}
+
+/* Running text: items a line apart, a heading two lines from what came
+   before and half a line from what it introduces. */
+.cs-title,
+.cs-story {
+  max-width: 66ch;
+}
+
+.cs-title > * + *,
+.cs-story > * + * {
+  margin-block-start: var(--gap-item);
+}
+
+.cs-story > * + :where(h2, h3, h4) {
+  margin-block-start: var(--gap-group);
+}
+
+.cs-eyebrow + *,
+.cs-story > :where(h2, h3, h4) + * {
+  margin-block-start: var(--gap-pair);
+}
+
+/* Media in the story stands two lines clear on both sides. */
+.cs-story > * + .code-block,
+.cs-story > .code-block + * {
+  margin-block-start: var(--gap-group);
+}
+
+/* Grey box: a stand-in for media without a design yet. */
+.blockout {
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklch, currentcolor 10%, transparent);
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-2xs);
+  color: color-mix(in oklch, currentcolor 55%, transparent);
+}
+
+/* Contents rail: beside the prose on wide screens only, in the two columns
+   under the nav's seal. */
+.cs-body {
+  align-items: start;
+}
+
+.cs-rail {
+  display: none;
+}
+
+@media (width >= 64rem) {
+  .cs-rail {
+    display: grid;
+    grid-area: 1 / 1 / 2 / 3;
+    position: sticky;
+    inset-block-start: var(--space-5xl);
+    aspect-ratio: 1;
+  }
+}
+
+/* Next project: a full-bleed panel with its title on the reading column. */
+.cs-next {
+  display: grid;
+  row-gap: var(--gap-pair);
+  text-decoration: none;
+}
+
+.cs-next-media {
+  aspect-ratio: 21 / 9;
+  max-height: 60svh;
+}

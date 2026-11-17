@@ -55,9 +55,11 @@ it("reconciles patches and releases listeners on removal", () => {
   header.removeAttribute("data-scrolled");
   hook.updated?.call(context);
   expect(header.hasAttribute("data-scrolled")).toBe(true);
+  // The header keeps its panel through a page change (the next mount
+  // measures again); the old listeners stop reacting.
   hook.destroyed?.call(context);
-  expect(header.hasAttribute("data-scrolled")).toBe(false);
-  scroll(1000);
-  expect(header.hasAttribute("data-scrolled")).toBe(false);
+  expect(header.hasAttribute("data-scrolled")).toBe(true);
+  scroll(0);
+  expect(header.hasAttribute("data-scrolled")).toBe(true);
   expect(disconnect).toHaveBeenCalledTimes(1);
 });

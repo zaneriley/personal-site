@@ -1,13 +1,13 @@
 import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
-import topbar from "topbar";
 
 import { initActionLight } from "./action-light";
 import { initCloudSurface } from "./cloud-surface";
 import NavigationHook from "./hooks/navigation_hook";
 import ThemeSwitcherHook from "./hooks/theme_switcher_hook";
 import WeatherHook from "./hooks/weather_hook";
+import { onDocumentPatch } from "./page-motion";
 import { themeController } from "./theme-switcher";
 
 // Define hooks before using them
@@ -24,39 +24,7 @@ const csrfToken = document
 const liveSocket = new LiveSocket("/live", Socket, {
   hooks: Hooks,
   params: { _csrf_token: csrfToken },
-});
-
-// Topbar loader during page loading
-topbar.config({
-  barColors: { 0: "#C4FB50" },
-  shadowColor: "rgba(0, 0, 0, .3)",
-});
-
-let topBarScheduled;
-window.addEventListener("phx:page-loading-start", () => {
-  if (!topBarScheduled) {
-    topBarScheduled = setTimeout(() => topbar.show(), 200);
-  }
-});
-window.addEventListener("phx:page-loading-stop", () => {
-  clearTimeout(topBarScheduled);
-  topBarScheduled = undefined;
-  topbar.hide();
-});
-
-// Page transition animations
-window.addEventListener("phx:page-loading-start", (info) => {
-  if (info.detail.kind === "redirect") {
-    document
-      .querySelector("[data-main-view]")
-      ?.classList.add("phx-page-loading");
-  }
-});
-
-window.addEventListener("phx:page-loading-stop", () => {
-  document
-    .querySelector("[data-main-view]")
-    ?.classList.remove("phx-page-loading");
+  dom: { onDocumentPatch },
 });
 
 themeController();
