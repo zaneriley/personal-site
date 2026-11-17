@@ -34,37 +34,6 @@ const painted = () =>
     ),
   );
 
-// TEMP diagnostic (remove before merge): reports what the transition did on
-// a real phone as a request the dev server logs.
-const report = (data: Record<string, unknown>) => {
-  const query = new URLSearchParams(
-    Object.entries(data).map(([key, value]) => [key, String(value)]),
-  );
-  fetch(`/__vt?${query}`).catch(() => {});
-};
-
-// TEMP diagnostic (remove before merge): scripted taps for recording, e.g.
-// /en#tap=a[href="/en/work"]|scroll:600|a[href="/en/work/oddity"]|back
-// One step every 3 s, starting 4 s after load.
-decodeURIComponent(location.hash)
-  .match(/^#tap=(.*)/)?.[1]
-  .split("|")
-  .forEach((step, index) => {
-    setTimeout(
-      () => {
-        if (step === "back") history.back();
-        else if (step.startsWith("scroll:")) scrollTo(0, Number(step.slice(7)));
-        else {
-          // A finger is down for a moment before the click.
-          const link = document.querySelector<HTMLElement>(step);
-          link?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
-          setTimeout(() => link?.click(), 90);
-        }
-      },
-      4000 + index * 3000,
-    );
-  });
-
 // Site position: section index in nav order, and whether it's a detail page.
 const place = (path: string) => {
   const [section = "", slug] = path.split("/").filter(Boolean).slice(1);
@@ -113,7 +82,6 @@ const leave = (href: string, isPop: boolean) => {
   root.classList.remove("first-paint");
   pending = to;
   pop = isPop;
-  report({ step: "leave", to, pop: isPop });
   if (to === here) return;
   turn++;
   root.dataset.nav = relation(here, to);
@@ -205,7 +173,6 @@ const arrive = async (start: () => void) => {
   } catch (error) {
     console.error(error);
   }
-  report({ step: "in", nav: root.dataset.nav, scroll: Math.round(scrollY) });
   const to = marker()?.getBoundingClientRect();
   if (from && to && !reduced.matches) {
     marker()?.animate(
