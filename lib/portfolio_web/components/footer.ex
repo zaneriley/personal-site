@@ -182,25 +182,29 @@ defmodule PortfolioWeb.Components.Footer do
           <% end %>
         </section>
 
-        <%!-- Bottom bar: copyright · links · back-to-top. One row on wide
-             screens. On phones the links come first (and wrap), then © and
-             back-to-top share the last row at either end. Source order is
-             unchanged; only grid placement moves. Rows sit one 1xs step
-             apart, about one line of this 2xs text. Links are flex (see
-             .footer-link) so they line up with the bare © span. --%>
-        <div class="col-span-full grid grid-cols-subgrid items-baseline gap-y-1xs">
+        <%!-- Bottom bar: copyright · links · back-to-top. One row only once the
+             seal has its own column (87.5rem, see _footer.css), with © under
+             the seal and the links starting on the colophon's column. Narrower,
+             seal and colophon share column 1, so the links come first on
+             column 1 (and wrap), then © and back-to-top share the last row at
+             either end. Source order is unchanged; only grid placement moves.
+             Rows sit one 1xs step apart, about one line of this 2xs text.
+             Items centre on the row, so no browser's baseline choice can move
+             them. Links are flex (see .footer-link) so they have the same
+             trimmed height as the bare © span. --%>
+        <div class="col-span-full grid grid-cols-subgrid items-center gap-y-1xs">
           <.typography
             tag="span"
             font="mono"
             size="2xs"
             locale={@user_locale}
-            class="caps footer-copyright col-span-2 row-start-2 lg:row-start-1"
+            class="caps footer-copyright col-span-2 row-start-2 [@media(width>=87.5rem)]:row-start-1"
           >
             © 2010 – {@current_year}
           </.typography>
 
           <nav
-            class="row-start-1 col-span-full lg:col-span-6 lg:col-start-3 flex flex-wrap gap-x-md gap-y-1xs"
+            class="row-start-1 col-span-full [@media(width>=87.5rem)]:col-span-6 [@media(width>=87.5rem)]:col-start-3 flex flex-wrap gap-x-md gap-y-1xs"
             aria-label={gettext("Footer")}
           >
             <%!-- TODO(footer-links): point Resume at the real PDF asset. The "(PDF)"
@@ -268,26 +272,17 @@ defmodule PortfolioWeb.Components.Footer do
 
           <%!-- Back-to-top is an action, not a link, so it takes the action
                button primitive (a raised disc with the press light). The
-               arrow sits inside a 2xs mono span so it shares the bar's text
-               baseline; the label moves to aria-label. --%>
-          <div class="row-start-2 col-end-[-1] col-start-[span_2] flex justify-end lg:row-start-1 lg:col-start-11 lg:col-end-13">
+               label moves to aria-label. --%>
+          <div class="row-start-2 col-end-[-1] col-start-[span_2] flex justify-end [@media(width>=87.5rem)]:row-start-1 [@media(width>=87.5rem)]:col-start-11 [@media(width>=87.5rem)]:col-end-13">
             <a
               href="#main-content"
               aria-label={gettext("Go to top")}
               class="footer-top action surface-raise"
             >
               <PortfolioWeb.Components.Action.light />
-              <.typography
-                tag="span"
-                font="mono"
-                size="2xs"
-                color="inherit"
-                locale={@user_locale}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <path d="M12 1.1C15.1 4.8 18.8 8.1 22.4 11.8L16.45 11.3Q14.7 11.15 14.65 12.95C14.45 16.3 14.55 19.2 15.45 21.6C13.3 22.5 10.35 22.85 8.2 22.4Q7.45 22.2 7.8 21.4C8.95 18.95 9.4 16.2 9.15 13Q9.05 11.5 7.65 11.6L1.55 12.2C4.9 8.6 8.65 4.95 12 1.1Z" />
-                </svg>
-              </.typography>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 1.1C15.1 4.8 18.8 8.1 22.4 11.8L16.45 11.3Q14.7 11.15 14.65 12.95C14.45 16.3 14.55 19.2 15.45 21.6C13.3 22.5 10.35 22.85 8.2 22.4Q7.45 22.2 7.8 21.4C8.95 18.95 9.4 16.2 9.15 13Q9.05 11.5 7.65 11.6L1.55 12.2C4.9 8.6 8.65 4.95 12 1.1Z" />
+              </svg>
             </a>
           </div>
         </div>
