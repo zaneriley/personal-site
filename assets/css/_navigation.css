@@ -2,6 +2,7 @@
   position: sticky;
   inset-block-start: 0;
   z-index: 30;
+  transition: background-color var(--motion-quick) var(--ease-move);
 }
 
 .site-header[data-scrolled] {
@@ -103,4 +104,30 @@
   .site-navigation-controls {
     grid-area: 1 / 9 / 2 / -1;
   }
+}
+
+/* Current-page marker: a short bar under the current destination. It is the
+   shape that travels when you move across sections (see _motion.css). */
+.site-navigation-destinations a {
+  position: relative;
+}
+
+.nav-marker {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--space-2xs);
+  border-block-end: 2px solid currentcolor;
+}
+
+/* The sticky header sticks within its containing block. LiveView's wrapper
+   ends above the footer, so the header used to scroll away near the bottom
+   of a page and come back on the next one. Without a box of its own the
+   wrapper hands that job to the body. The page column then sits directly in
+   the body's flex column, where it must be told to fill the row. */
+[data-phx-main] {
+  display: contents;
+}
+
+[data-main-view] {
+  inline-size: 100%;
 }

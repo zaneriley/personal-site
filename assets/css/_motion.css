@@ -1,0 +1,158 @@
+/* ============================================================================
+   MOTION
+   Page-to-page motion, wired in assets/js/page-motion.ts. Storyboards and
+   the route map: https://claude.ai/artifact/2WuLRzBPwXBT1ShgB9xdos
+
+   Every page change is a fade through: the old page eases out on the tap,
+   then the new one eases in, with the header holding still. Between
+   sections (Home, Work, Notes, About) the page also steps sideways in the
+   nav's direction and the nav marker slides; into and out of a project or
+   note it fades in place. The relation is set on <html data-nav> for the
+   length of the change.
+
+   It animates the live page, not View Transition snapshots: snapshots
+   swapped back to the live page with a shimmer of every text edge, were
+   dropped by the engine when a toolbar resized the screen, and needed a
+   layer for everything outside the page.
+
+   Rules: nothing appears or leaves in one frame; text never scales; only
+   transform and opacity move. With reduced motion nothing steps or slides,
+   but pages still fade (Z: a very subtle fade smooths a lot out).
+
+   Judge changes here only on frame-by-frame recordings of real Safari
+   rendering at phone size. The first curves looked right in numbers and
+   read as a cut on a phone: they did a third of their change in one frame.
+============================================================================ */
+
+:root {
+  --motion-quick: 120ms; /* the tap response */
+  --motion-leave: 160ms; /* the old page leaving, while the server answers */
+  --motion-base: 200ms; /* new content arriving */
+  --motion-travel: 300ms; /* something moving on screen: the nav marker */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* leaving: starts slow, goes */
+  --ease-enter: cubic-bezier(0.2, 0, 0.2, 1); /* arriving: soft landing */
+  --ease-move: cubic-bezier(0.4, 0, 0.2, 1); /* moving: soft at both ends */
+  --step: var(--space-md); /* how far content steps sideways: one line */
+}
+
+/* Full page loads (first visit, reload, the language switch) fade in once.
+   The class is removed on the first live navigation. The fill is backwards
+   only: an animation that holds its end keeps the page on a layer of its
+   own, and text on a layer is drawn softer than text on the page. At rest
+   nothing here may leave a layer behind. */
+.first-paint [data-main-view] {
+  animation: vt-in var(--motion-base) var(--ease-enter) backwards;
+}
+
+/* The tap is answered at once, before the server replies: the tapped panel
+   presses in. */
+.cs-next-media {
+  transition: transform var(--motion-quick) var(--ease-move);
+}
+
+.cs-next:active .cs-next-media {
+  transform: scale(0.97);
+}
+
+/* Loading bar: reports network state when a page takes longer than 200 ms
+   (the class is set by page-motion.ts). It creeps toward the end and stops
+   short; the page arriving removes it. */
+.is-loading::after {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  border-block-start: 2px solid var(--accent);
+  transform-origin: 0 0;
+  animation: loading-creep 4s var(--ease-move) both;
+}
+
+/* A page change, in the two steps page-motion.ts sets on <html data-phase>.
+   The live page and footer are animated; the header and the background are
+   simply not, so they hold still.
+     ready the two moving blocks get their layers and are drawn once
+     out   on the tap the old page leaves, over about as long as a phone's
+           network takes to answer, so the page is rarely blank
+     hold  the new page is swapped in and scrolled to the top unseen, and
+           gets two frames to paint
+     in    the new page arrives
+   Each step is one animation: a browser skips the first frames of a new
+   animation on a tall page, so there are as few starts as possible and the
+   layers are readied (will-change) when the change starts and kept until
+   it ends. They are not readied on touch: text moved onto a layer is drawn
+   again without the page behind it, and its edges visibly change, so that
+   must land in a frame where the page is already fading.
+   Between sections the page also steps sideways in the nav's direction;
+   everywhere else --dir is 0 and the same keyframes are a plain fade. */
+[data-phase] :is([data-main-view], .footer-surface) {
+  will-change: opacity, transform;
+}
+
+/* While a new page is swapped in and arrives, the header is pinned where it
+   will come to rest, and the body keeps its room (the measures are set by
+   page-motion.ts). iOS leaves a sticky header undrawn for a few frames
+   after the jump to the top of a long page; a fixed one it keeps. */
+[data-pin] .site-header {
+  position: fixed;
+  inset-block-start: var(--pin-top);
+  inset-inline-start: var(--pin-left);
+  inline-size: var(--pin-inline);
+}
+
+[data-pin] body {
+  padding-block-start: calc(var(--pin-top) + var(--pin-block));
+}
+
+[data-phase="out"] :is([data-main-view], .footer-surface) {
+  animation: vt-out var(--motion-leave) var(--ease-exit) both;
+}
+
+[data-phase="hold"] :is([data-main-view], .footer-surface) {
+  opacity: 0;
+}
+
+[data-phase="in"] :is([data-main-view], .footer-surface) {
+  animation: vt-in var(--motion-base) var(--ease-enter) both;
+}
+
+/* The direction sits on the two moving blocks, not on the root, where it
+   would restyle the whole document just as the exit starts. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-nav="across-forward"] :is([data-main-view], .footer-surface) {
+    --dir: 1;
+  }
+
+  [data-nav="across-back"] :is([data-main-view], .footer-surface) {
+    --dir: -1;
+  }
+}
+
+@keyframes loading-creep {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(0.85);
+  }
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--step) * var(--dir, 0) * -1));
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--step) * var(--dir, 0)));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-next-media {
+    transition: none;
+  }
+}

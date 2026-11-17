@@ -77,3 +77,24 @@
   width: 100vw;
   margin-inline: calc(50% - 50vw);
 }
+
+/* Hand the page's columns down. Main uses this for a page that places its
+   own blocks, and blocks use it again inside, so everything sits on the same
+   lines as the header and footer. Children span the field unless they say
+   otherwise; .col-prose is the reading column (the middle eight, wide). */
+.subgrid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+.subgrid > *,
+.col-prose {
+  grid-column: 1 / -1;
+}
+
+@media (width >= 64rem) {
+  .col-prose {
+    grid-column: 3 / 11;
+  }
+}

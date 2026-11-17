@@ -250,15 +250,7 @@ defmodule Portfolio.Content.Markdown.Renderer do
     # Look up the component in the registry
     case Portfolio.Content.Markdown.Component.Registry.lookup(type) do
       {:ok, {module, function}} ->
-        # Convert keyword list to map for component
-        attrs_map = Enum.into(attrs, %{})
-
-        # Prepare assigns for the component function
-        component_assigns = %{
-          component: type,
-          attrs: attrs_map,
-          content: render_html(children)
-        }
+        component_assigns = component_assigns(type, attrs, children)
 
         # Render the component using apply/3. Registered components are
         # Phoenix function components returning %Rendered{} (or any Safe);
@@ -332,24 +324,8 @@ defmodule Portfolio.Content.Markdown.Renderer do
   defp build_safe_iodata({:component, type, attrs, children, _meta}) do
     case Portfolio.Content.Markdown.Component.Registry.lookup(type) do
       {:ok, {module, function}} ->
-        # Sanitize URL-valued attrs (e.g. `src` from a markdown image with
-        # `javascript:`). Then flatten attrs as top-level assigns so
-        # `Phoenix.Component` functions can pattern-match expected names
-        # (`:src`, `:alt`, …) directly, instead of crashing on `assigns.src`
-        # when we'd passed them as `assigns.attrs[:src]`. Keep the wrapper
-        # keys `:component`, `:attrs`, `:content` for any caller that still
-        # destructures them.
-        safe_attrs = safe_component_attrs(attrs)
-        flat_attrs = Enum.into(safe_attrs, %{}, &flatten_attr_key/1)
-
-        component_assigns =
-          flat_attrs
-          |> Map.put(:component, type)
-          |> Map.put(:attrs, flat_attrs)
-          |> Map.put(:content, render_html(children))
-
         module
-        |> apply(function, [component_assigns])
+        |> apply(function, [component_assigns(type, attrs, children)])
         |> Phoenix.HTML.Safe.to_iodata()
 
       {:error, _reason} ->
@@ -378,6 +354,18 @@ defmodule Portfolio.Content.Markdown.Renderer do
   defp build_safe_iodata(other) do
     {:safe, iodata} = Phoenix.HTML.html_escape(to_string(other))
     iodata
+  end
+
+  # The one shape every registered component receives, from both renderers:
+  # its attrs as top-level, atom-keyed assigns (`:src`, `:code`, …), plus
+  # `:component` and `:content`. URL-valued attrs are sanitized first (e.g.
+  # `src` from a markdown image with `javascript:`).
+  defp component_assigns(type, attrs, children) do
+    attrs
+    |> safe_component_attrs()
+    |> Enum.into(%{}, &flatten_attr_key/1)
+    |> Map.put(:component, type)
+    |> Map.put(:content, render_html(children))
   end
 
   defp build_safe_tag(tag, attrs, children) do

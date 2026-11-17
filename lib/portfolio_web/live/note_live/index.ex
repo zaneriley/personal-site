@@ -2,6 +2,7 @@ defmodule PortfolioWeb.NoteLive.Index do
   use PortfolioWeb, :live_view
   require Logger
   import PortfolioWeb.LiveHelpers
+  import PortfolioWeb.Components.PortfolioItemList
   alias Portfolio.Content
   alias Portfolio.Content.Schemas.Note
 
@@ -22,7 +23,7 @@ defmodule PortfolioWeb.NoteLive.Index do
      socket
      |> assign(:env, env)
      |> stream_configure(:notes, dom_id: &"note-#{&1.url}")
-     |> stream(:notes, Content.list("note"))}
+     |> stream(:notes, Content.list("note", [], socket.assigns.user_locale))}
   end
 
   @impl true

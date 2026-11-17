@@ -1,39 +1,15 @@
 <.header>
-  Listing Notes
+  {ngettext("Note", "Notes", 2)}
 </.header>
-<%= if Application.get_env(:portfolio, :environment) == :dev do %>
-  <div>
-    Debug: Gettext Locale: {Gettext.get_locale(PortfolioWeb.Gettext)},
-    Assign Locale: {@user_locale}
-  </div>
-<% end %>
-<.table
-  id="notes"
-  rows={@streams.notes}
-  row_click={
-    fn {_id, note} ->
-      JS.navigate(~p"/#{@user_locale}/note/#{note.url}")
-    end
-  }
->
-  <:col :let={{_id, note}} label="Title">{note.title}</:col>
-  <:col :let={{_id, note}} label="Content">{note.content}</:col>
-  <:action :let={{_id, note}}>
-    <div class="sr-only">
-      <.link navigate={~p"/#{@user_locale}/note/#{note.url}"}>
-        Show
-      </.link>
-    </div>
-  </:action>
-  <:action :let={{dom_id, note}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: note.id}) |> hide("##{dom_id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
+
+<%!-- The same list as Work. The generated table that was here was wider
+     than a phone screen, which widened the page and made the browser cancel
+     the page transition into Notes. --%>
+<.portfolio_item_list
+  items={@streams.notes}
+  navigate_to={fn item -> ~p"/#{@user_locale}/note/#{item.url}" end}
+  user_locale={@user_locale}
+/>
 
 <.live_component
   :if={@live_action in [:new, :edit]}

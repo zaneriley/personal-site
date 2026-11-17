@@ -36,7 +36,6 @@ const Navigation: Hook = {
       destroy() {
         lifetime.abort();
         observer.disconnect();
-        header.removeAttribute("data-scrolled");
       },
     });
   },
